@@ -1,0 +1,26 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block contenido %}
+  <div class="row row-cols-1 row-cols-md-3 g-4">              
+    {% for producto in productos %}              
+      <div class="col">
+        <div class="card h-100">
+          <img src="{{producto.imagen.url}}" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">{{producto.nombre}}</h5>
+            <p class="card-text">{{producto.descripcion}}</p>                      
+            <span class="badge text-bg-primary">Precio: ${{producto.precio}}</span>
+          </div>
+          <div class="card-footer mt-2">    
+            <div class="d-flex justify-content-between">                    
+                <a class="btn btn-primary small">Ver</a>
+                <button class="btn btn-secondary small" onclick="addToCart('{{producto.id}}', '{{csrf_token}}')" {% if not user.is_authenticated %} disabled {% endif %}>Añadir</button>                        
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <script src="{% static 'js/store.js' %}"></script>
+{% endblock %}

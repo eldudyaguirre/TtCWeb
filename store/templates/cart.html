@@ -1,0 +1,56 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block contenido %}
+    <a href="{% url 'home' %}" class="btn btn-secondary">Atrás</a>
+    {% if count_cart_items == 0 %}
+        <p class="text-center">Tu carrito está vacío</p>
+    {% else %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Imagen</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>                
+            {% for item in cart %}
+                <tr id="tr-cart-item-{{item.producto.id}}">
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td><img src="{{ item.producto.imagen.url }}" width="100" height="75"></td>
+                    <td>{{ item.producto.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>{{ item.producto.precio }}</td>
+                    <td>{{ item.subtotal }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="removeFromCart('{{item.producto.id}}', '{{csrf_token}}')">-</button>
+                    </td>
+                </tr>
+            {% endfor %}            
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"></td>
+                    <td><b>Total:</b></td>
+                    <td>{{ cart_items }}</td>
+                    <td></td>
+                    <td>$ {{ cart_total }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-4 text-center">
+            <button class="btn btn-outline-secondary" onclick="crearPedido('{{csrf_token}}')">Guardar Pedido</a>
+        </div>
+    </div>
+    {% endif %}    
+    <script src="{% static 'js/store.js' %}"></script>
+{% endblock %}
