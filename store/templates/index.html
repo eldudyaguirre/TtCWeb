@@ -168,7 +168,7 @@
                     <!-- Navbar Icons -->
                     <ul class="navbar-nav icons">
                         <li class="nav-item">
-                            <a href="#" class="nav-link" data-toggle="modal" data-target="#sign">
+                            <a href="{% url 'signin' %}" class="nav-link" aria-label="Iniciar sesión">
                                 <i class="icon-user"></i>
                             </a>
                         </li>
@@ -742,7 +742,7 @@
                         <p>Siga de cerca y reciba contenido sobre nuestra empresa y las novedades de las leyes actuales.</p>
                     </div>
                     <div class="col-12 col-md-6">
-                        <form action="{% static 'php/form.php' %}" id="nexgen-subscribe" class="row m-auto items">
+                        <form action="#" id="nexgen-subscribe" class="row m-auto items">
                             <input type="hidden" name="section" value="nexgen_subscribe">
 
                             <input type="hidden" name="reCAPTCHA">
@@ -992,86 +992,6 @@
                                 <div class="row">
                                     <div class="col-12 p-0 input-group align-self-center">
                                         <button class="btn primary-button">SEARCH</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal [sign] -->
-        <div id="sign" class="p-0 modal fade" role="dialog" aria-labelledby="sign" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-slideout" role="document">
-                <div class="modal-content full">
-                    <div class="modal-header" data-dismiss="modal">
-                        <i class="icon-close fas fa-arrow-right"></i>
-                    </div>
-                    <div class="modal-body">
-                        <form action="/" class="row">
-                            <div class="col-12 p-0 align-self-center">
-                                <div class="row">
-                                    <div class="col-12 p-0 pb-3">
-                                        <h2>Inicia Sesión</h2>
-                                        <p>¿Eres cliente? Inicia Sesión para poder acceder a tu información</p>
-                                        <!-- <p>Don't have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#register">Register now</a>.</p>
-                                        -->
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="email" class="form-control" placeholder="Ruc" required>
-                                    </div>
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="password" class="form-control" placeholder="Contraseña" required>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 p-0 input-group align-self-center">
-                                        <button class="btn primary-button">INICIAR SESION</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal [register] -->
-        <div id="register" class="p-0 modal fade" role="dialog" aria-labelledby="register" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-slideout" role="document">
-                <div class="modal-content full">
-                    <div class="modal-header" data-dismiss="modal">
-                        <i class="icon-close fas fa-arrow-right"></i>
-                    </div>
-                    <div class="modal-body">
-                        <form action="/" class="row">
-                            <div class="col-12 p-0 align-self-center">
-                                <div class="row">
-                                    <div class="col-12 p-0 pb-3">
-                                        <h2>Register</h2>
-                                        <p>Have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#sign">Sign In</a>.</p>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="text" class="form-control" placeholder="Name" required>
-                                    </div>
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="email" class="form-control" placeholder="Email" required>
-                                    </div>
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="password" class="form-control" placeholder="Password" required>
-                                    </div>
-                                    <div class="col-12 p-0 input-group">
-                                        <input type="password" class="form-control" placeholder="Confirm Password" required>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 p-0 input-group align-self-center">
-                                        <button class="btn primary-button">REGISTER</button>
                                     </div>
                                 </div>
                             </div>
