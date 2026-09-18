@@ -4,9 +4,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
 
 
-def error_404(request, exception):
-    return render(request, '404.html')
-
 
 def home(request):
     return render(request, 'index.html')
