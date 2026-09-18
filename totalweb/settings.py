@@ -34,6 +34,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'servert',
     'servert.tail351cbd.ts.net',
+    'totalcounts.com.ec',
+    'www.totalcounts.com.ec',
 ]
 
 # Application definition
@@ -148,4 +150,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://servert.tail351cbd.ts.net',
+    'https://totalcounts.com.ec',
+    'https://www.totalcounts.com.ec',
 ]
