@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from store.models import Producto, Pedido, ItemPedido
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -10,9 +9,6 @@ from datetime import datetime
 from .cart_session import ShoppingCartSession
 import json
 from django.http import JsonResponse
-from django.db import transaction
-import string
-import random
 
 def error_404(request, exception):
     return render(request, '404.html',{})
@@ -82,75 +78,6 @@ def do_signup(request):
 
 def success_signup(request):
     return render(request, 'success_signup.html')
-
-
-def get_productos_by_categoria(request, categoria_id):
-    productos = Producto.objects.filter(categorias__in=[categoria_id])
-    return render(request, 'catalog.html', {'productos': productos})
-
-
-def add_to_cart(request):
-    cart = ShoppingCartSession(request)
-    
-    payload = json.loads(request.body)
-    
-    producto_id = int(payload.get('producto_id'))
-    cantidad = int(payload.get('cantidad'))
-    
-    try:    
-        producto_existente = Producto.objects.get(pk=producto_id)
-        cart.add(producto_existente.id, cantidad)
-        return JsonResponse(status=200, data={'result': True, 'message': 'OK', 'count_cart_items': cart.__len__()})
-    except Producto.DoesNotExist:
-        return JsonResponse(status=404, data={'result': False, 'message': 'El producto no existe'})    
-    
-
-def remove_from_cart(request):
-    cart = ShoppingCartSession(request)
-    
-    payload = json.loads(request.body)    
-    producto_id = int(payload.get('producto_id'))    
-    cart.delete(producto_id)    
-    return JsonResponse(status=200, data={'result': True, 'message': 'OK', 'count_cart_items': cart.__len__()})   
-
-
-def get_shopping_cart(request):
-    cart = ShoppingCartSession(request)
-    return render(request, 'cart.html', {'cart': cart.get_cart_detail(), 'count_cart_items': cart.__len__(), 'cart_total': cart.get_total()})
-
-
-@transaction.atomic
-def crear_pedido(request):
-    cart = ShoppingCartSession(request)
-    
-    try:
-        pedido = Pedido(usuario=request.user,
-                        codigo=generar_codigo_pedido(),
-                        total=cart.get_total()
-        )
-        
-        pedido.save()
-        
-        for item in cart.get_cart_detail():
-            item_pedido = ItemPedido(
-                pedido=pedido,
-                producto=item.get('product'),
-                cantidad=item.get('cantidad')
-            )
-            
-            item_pedido.save()
-        
-        cart.clear()
-        return JsonResponse(status=200, data={'codigo_pedido': pedido.codigo})
-        
-    except Exception as error:
-        return JsonResponse(status=500, data={'error_msg': f'Ops, no se pudo registrar el pedido. Error: {error}'})
-    
-    
-def generar_codigo_pedido():
-    caracteres = string.ascii_letters + string.digits
-    codigo_pedido = 'PED-' + ''.join(random.choice(caracteres) for _ in range(5))
-    return codigo_pedido
 
 
 def about(request):
