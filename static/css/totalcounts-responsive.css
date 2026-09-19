@@ -292,11 +292,11 @@ iframe {
 }
 
 #menu .modal-content {
-    background: rgba(8, 13, 16, 0.82) !important;
+    background: rgba(33, 51, 62, 0.72) !important;
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
     border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 18px 50px rgba(10, 25, 32, 0.28);
     color: #ffffff;
 }
 
@@ -351,9 +351,9 @@ iframe {
     pointer-events: none;
     background: linear-gradient(
         135deg,
-        rgba(255, 255, 255, 0.07),
-        rgba(255, 255, 255, 0.015) 45%,
-        rgba(0, 0, 0, 0.10)
+        rgba(33, 51, 62, 0.12),
+        rgba(33, 51, 62, 0.04) 45%,
+        rgba(255, 255, 255, 0.05)
     );
 }
 
