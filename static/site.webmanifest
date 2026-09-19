@@ -1,0 +1,39 @@
+{
+  "name": "TotalCounts - C.A.S.",
+  "short_name": "TotalCounts",
+  "description": "Soluciones contables e informáticas de TotalCounts - C.A.S.",
+  "lang": "es-EC",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#21333e",
+  "theme_color": "#21333e",
+  "icons": [
+    {
+      "src": "/static/images/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/images/apple-touch-icon-114x114.png",
+      "sizes": "114x114",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Iniciar sesión",
+      "short_name": "Acceso",
+      "url": "/signin/",
+      "icons": [
+        {
+          "src": "/static/images/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
