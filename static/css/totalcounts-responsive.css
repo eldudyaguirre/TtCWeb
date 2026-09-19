@@ -521,3 +521,59 @@ iframe {
         padding-top: 70px !important;
     }
 }
+
+
+/* Final mobile fix: keep the decorative TotalCounts mark small and
+   behind the hero, and keep the responsive menu readable. */
+@media (max-width: 767px) {
+    body #slider.featured1 {
+        overflow: hidden !important;
+    }
+
+    body #slider.featured1::after {
+        width: 90px !important;
+        height: 90px !important;
+        left: calc(50% - 45px) !important;
+        top: calc(100% - 45px) !important;
+        background-size: contain !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        z-index: 1 !important;
+    }
+
+    body #slider.featured1 .slide-content {
+        position: relative;
+        z-index: 2 !important;
+    }
+
+    body #single.section-1 {
+        position: relative;
+        z-index: 10 !important;
+        background: #ffffff !important;
+    }
+
+    #menu .modal-content {
+        color: #ffffff !important;
+        background: rgba(33, 51, 62, 0.55) !important;
+    }
+
+    #menu .menu,
+    #menu .menu .items,
+    #menu .menu .navbar-nav {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #menu .menu .nav-item {
+        display: block !important;
+    }
+
+    #menu .menu .nav-link,
+    #menu .menu .nav-link span,
+    #menu .menu .nav-link i {
+        color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
