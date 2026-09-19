@@ -658,3 +658,16 @@ iframe {
         padding-top: 130px !important;
     }
 }
+
+
+/* Force the About heading block downward on mobile.
+   Using relative positioning avoids conflicts with the legacy theme's
+   padding rules and keeps the following paragraph in normal flow. */
+@media (max-width: 767px) {
+    #single.section-1 .intro {
+        position: relative !important;
+        top: 130px !important;
+        margin-bottom: 130px !important;
+        padding-top: 0 !important;
+    }
+}
