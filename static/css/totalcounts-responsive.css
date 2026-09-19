@@ -649,3 +649,12 @@ iframe {
         background: #ffffff !important;
     }
 }
+
+
+/* Mobile About: start the first section content lower, leaving clear space
+   below the hero for the decorative TotalCounts mark. */
+@media (max-width: 767px) {
+    #single.section-1 .intro {
+        padding-top: 85px !important;
+    }
+}
