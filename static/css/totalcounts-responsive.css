@@ -406,3 +406,24 @@ iframe {
         opacity: 0.18 !important;
     }
 }
+
+
+/* About page: keep the hero video crop contained on mobile.
+ * The source video places the TotalCounts logo near its lower edge;
+ * centering the crop prevents that logo from overflowing into the next section.
+ */
+@media (max-width: 767px) {
+    #slider.hero {
+        overflow: hidden;
+    }
+
+    #slider.hero .swiper-container,
+    #slider.hero .swiper-wrapper,
+    #slider.hero .swiper-slide {
+        overflow: hidden;
+    }
+
+    #slider.hero video.full-image.to-bottom {
+        object-position: center 24% !important;
+    }
+}
