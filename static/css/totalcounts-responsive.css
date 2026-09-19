@@ -671,3 +671,14 @@ iframe {
         padding-top: 0 !important;
     }
 }
+
+
+/* Mobile About: create real physical space between the hero/logo and
+   the "Una historia de éxito" section. */
+@media (max-width: 767px) {
+    body #slider.featured1 + #single.section-1 {
+        margin-top: 130px !important;
+        padding-top: 0 !important;
+        transform: none !important;
+    }
+}
