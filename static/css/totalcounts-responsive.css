@@ -292,7 +292,7 @@ iframe {
 }
 
 #menu .modal-content {
-    background: rgba(33, 51, 62, 0.72) !important;
+    background: rgba(33, 51, 62, 0.48) !important;
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
     border: 1px solid rgba(255, 255, 255, 0.10);
@@ -351,9 +351,9 @@ iframe {
     pointer-events: none;
     background: linear-gradient(
         135deg,
-        rgba(33, 51, 62, 0.12),
-        rgba(33, 51, 62, 0.04) 45%,
-        rgba(255, 255, 255, 0.05)
+        rgba(255, 255, 255, 0.10),
+        rgba(33, 51, 62, 0.05) 45%,
+        rgba(255, 255, 255, 0.02)
     );
 }
 
@@ -383,5 +383,26 @@ iframe {
 @media (min-width: 768px) {
     .team .items > .col-md-6 > .row.item {
         min-height: 151px;
+    }
+}
+
+/* Responsive menu: visible transparency over the page. */
+@media (max-width: 767px) {
+    #menu {
+        background: rgba(33, 51, 62, 0.22) !important;
+    }
+
+    #menu .modal-dialog,
+    #menu .modal-content {
+        background-color: rgba(33, 51, 62, 0.48) !important;
+    }
+
+    #menu .modal-content {
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-backdrop.show {
+        opacity: 0.18 !important;
     }
 }
