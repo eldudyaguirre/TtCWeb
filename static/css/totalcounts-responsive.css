@@ -1,0 +1,286 @@
+/* TotalCounts - responsive fixes
+ * Overrides for the legacy NEXGEN landing page.
+ */
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+    max-width: 100%;
+}
+
+#map .modal-body {
+    width: 100%;
+    overflow: hidden;
+}
+
+#map iframe {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    height: min(70vh, 600px) !important;
+    min-height: 320px;
+    border: 0;
+}
+
+@media (max-width: 1199px) {
+    .container.header {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    header .navbar.sub .navbar-brand {
+        flex-shrink: 0;
+    }
+
+    header .navbar.sub .navbar-brand .brand {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 767px) {
+    header .navbar.sub .container.header {
+        min-height: 68px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    header .navbar-brand {
+        max-width: calc(100vw - 150px);
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    header .navbar-brand img {
+        max-height: 32px;
+        width: auto;
+    }
+
+    header .navbar-brand .brand {
+        font-size: 1rem;
+    }
+
+    header .navbar.sub .navbar-nav.icons,
+    header .navbar.sub .navbar-nav.toggle,
+    header .navbar.sub .navbar-nav.action {
+        flex-shrink: 0;
+    }
+
+    header .navbar.sub .navbar-nav.icons .nav-link,
+    header .navbar.sub .navbar-nav.toggle .nav-link {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    header .navbar.sub .navbar-nav.action {
+        display: none !important;
+    }
+
+    body .full-slider .inner,
+    body .no-slider .inner {
+        padding: 0 20px;
+    }
+
+    body .full-slider .slide-content .inner .left,
+    body .full-slider .slide-content .inner .right,
+    body .full-slider .slide-content .inner .center,
+    body .no-slider .slide-content .inner .left,
+    body .no-slider .slide-content .inner .right,
+    body .no-slider .slide-content .inner .center {
+        width: 100%;
+        max-width: 100%;
+        padding: 2rem 0;
+    }
+
+    body .slide-content .title,
+    body h1 {
+        font-size: clamp(2.1rem, 9vw, 3rem);
+        line-height: 1.08;
+        margin-bottom: 1rem;
+    }
+
+    body .slide-content .description {
+        font-size: .95rem;
+        line-height: 1.55;
+        max-width: 100%;
+    }
+
+    body .slide-content .buttons .d-sm-inline-flex {
+        display: flex !important;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    body .slide-content .buttons .btn {
+        min-width: 0;
+        width: auto;
+        max-width: 100%;
+        margin: 0 !important;
+    }
+
+    body section {
+        padding: 70px 0;
+    }
+
+    body .container,
+    body .container.smaller {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    body .intro {
+        margin-bottom: 35px;
+    }
+
+    body h2 {
+        font-size: clamp(1.8rem, 7vw, 2.3rem);
+        line-height: 1.15;
+    }
+
+    body .intro p,
+    body .text-max-800 {
+        font-size: .95rem;
+    }
+
+    body .row.form-group-margin {
+        margin-left: -8px;
+        margin-right: -8px;
+    }
+
+    body .form-group-margin .input-group {
+        padding: 8px !important;
+    }
+
+    body .contacts {
+        margin-top: 35px;
+    }
+
+    body .contacts .nav-link {
+        overflow-wrap: anywhere;
+    }
+
+    body footer .footer-left,
+    body footer .footer-right {
+        width: 100%;
+    }
+
+    body footer .items .item {
+        margin-bottom: 25px;
+    }
+
+    body .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+    }
+
+    body .modal-content {
+        min-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    header .navbar.sub .container.header {
+        min-height: 62px;
+    }
+
+    header .navbar-brand {
+        max-width: calc(100vw - 125px);
+    }
+
+    header .navbar-brand img {
+        max-height: 28px;
+    }
+
+    header .navbar-brand .brand {
+        font-size: .9rem;
+    }
+
+    header .navbar.sub .navbar-nav.icons .nav-link,
+    header .navbar.sub .navbar-nav.toggle .nav-link {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    body .full-slider .inner,
+    body .no-slider .inner {
+        padding: 0 16px;
+    }
+
+    body .full-slider .slide-content .inner .left,
+    body .full-slider .slide-content .inner .right,
+    body .full-slider .slide-content .inner .center,
+    body .no-slider .slide-content .inner .left,
+    body .no-slider .slide-content .inner .right,
+    body .no-slider .slide-content .inner .center {
+        padding: 1.5rem 0;
+    }
+
+    body .slide-content .description {
+        font-size: .9rem;
+    }
+
+    body .slide-content .buttons .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body .square-image {
+        min-height: 210px;
+    }
+
+    body .funfacts .item {
+        margin-bottom: 35px;
+    }
+
+    body .funfacts .item:last-child {
+        margin-bottom: 0;
+    }
+
+    body .contact .contacts {
+        text-align: center;
+    }
+
+    body .contact .contacts .navbar-nav {
+        align-items: center;
+    }
+
+    body .contact .contacts .nav-link {
+        text-align: center;
+    }
+
+    #map iframe {
+        height: 60vh !important;
+        min-height: 280px;
+    }
+}
+
+@media (max-width: 374px) {
+    header .navbar-brand {
+        max-width: calc(100vw - 110px);
+    }
+
+    header .navbar-brand .brand {
+        font-size: .82rem;
+    }
+
+    body .slide-content .title,
+    body h1 {
+        font-size: 2rem;
+    }
+
+    body .slide-content .buttons .btn {
+        font-size: .82rem;
+        padding: 9px 16px;
+    }
+}
