@@ -655,6 +655,6 @@ iframe {
    below the hero for the decorative TotalCounts mark. */
 @media (max-width: 767px) {
     #single.section-1 .intro {
-        padding-top: 85px !important;
+        padding-top: 130px !important;
     }
 }
