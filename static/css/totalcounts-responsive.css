@@ -488,3 +488,36 @@ iframe {
         margin-top: 0 !important;
     }
 }
+
+
+/* About mobile: the oversized TotalCounts logo is the decorative
+   section.featured1::after element from the legacy theme, not the video.
+   Keep it visible but small and inside the hero boundary. */
+@media (max-width: 767px) {
+    section.featured1 {
+        overflow: hidden !important;
+    }
+
+    section.featured1::after {
+        width: 110px !important;
+        height: 110px !important;
+        left: calc(50% - 55px) !important;
+        top: calc(100% - 55px) !important;
+        background-size: contain !important;
+        background-position: center !important;
+        opacity: 1 !important;
+        z-index: 2 !important;
+    }
+
+    #slider.hero video.full-image.to-bottom {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #single.section-1 {
+        position: relative;
+        z-index: 5;
+        background: #ffffff !important;
+        padding-top: 70px !important;
+    }
+}
