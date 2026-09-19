@@ -458,3 +458,33 @@ iframe {
         padding-top: 95px !important;
     }
 }
+
+
+/* Final mobile fix for About: remove the oversized logo embedded in the hero video
+   and give the history section enough separation below the hero. */
+@media (max-width: 767px) {
+    #slider.hero video,
+    #slider.hero .full-image {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    #slider.hero {
+        height: 320px !important;
+        min-height: 320px !important;
+        background: #21333e !important;
+    }
+
+    #single.section-1 {
+        padding-top: 120px !important;
+        margin-top: 0 !important;
+        position: relative;
+        z-index: 3;
+        background: #ffffff !important;
+    }
+
+    #single.section-1 .intro {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+}
