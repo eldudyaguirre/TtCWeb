@@ -611,3 +611,41 @@ iframe {
         opacity: 0.18 !important;
     }
 }
+
+
+/* Definitive mobile fix for the About hero decorative logo.
+   Keep the mark inside the hero so it can never overlap the next section title. */
+@media (max-width: 767px) {
+    #slider.featured1 {
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    #slider.featured1::after {
+        content: '' !important;
+        position: absolute !important;
+        z-index: 1 !important;
+        width: 80px !important;
+        height: 80px !important;
+        left: calc(50% - 40px) !important;
+        top: calc(100% - 80px) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-image: url("../../static/textures/icon.png") !important;
+        background-size: contain !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        opacity: 1 !important;
+    }
+
+    #slider.featured1 .slide-content {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+
+    #single.section-1 {
+        position: relative !important;
+        z-index: 10 !important;
+        background: #ffffff !important;
+    }
+}
