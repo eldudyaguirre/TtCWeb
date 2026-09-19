@@ -449,3 +449,12 @@ iframe {
         font-size: clamp(2.1rem, 9vw, 3rem);
     }
 }
+
+
+/* About page: move the "Una historia de éxito" block lower on mobile
+   so it stays clear of the hero/logo area. */
+@media (max-width: 767px) {
+    #single.section-1 .intro {
+        padding-top: 95px !important;
+    }
+}
