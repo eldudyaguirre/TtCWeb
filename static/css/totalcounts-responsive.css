@@ -577,3 +577,37 @@ iframe {
         visibility: visible !important;
     }
 }
+
+
+/* Keep the responsive menu consistent on every page, including the homepage. */
+@media (max-width: 767px) {
+    #menu {
+        background: rgba(33, 51, 62, 0.22) !important;
+    }
+
+    #menu .modal-dialog,
+    #menu .modal-content {
+        background: rgba(33, 51, 62, 0.55) !important;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+    }
+
+    #menu .menu .items,
+    #menu .menu .contacts,
+    #menu .menu .navbar-nav {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    #menu .menu .nav-link,
+    #menu .menu .nav-link span,
+    #menu .menu .nav-link i {
+        color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .modal-backdrop.show {
+        opacity: 0.18 !important;
+    }
+}
