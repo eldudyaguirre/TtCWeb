@@ -714,28 +714,18 @@ iframe {
 
 
 /* FINAL ABOUT MOBILE LOGO - LOWER AND CENTERED */
-.about-mobile-logo-wrap { display: none; }
+/* The decorative logo inside the hero is disabled on mobile. */
 @media (max-width: 767px) {
-    #slider.featured1::after { display: none !important; }
-    #slider.featured1 { overflow: hidden !important; }
-    .about-mobile-logo-wrap {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        height: 90px !important;
-        margin: -5px 0 0 0 !important;
-        position: relative !important;
-        z-index: 20 !important;
-        background: #21333e !important;
+    #slider.featured1::after,
+    #slider.featured1::before {
+        display: none !important;
+        content: none !important;
     }
-    .about-mobile-logo {
-        display: block !important;
-        width: 72px !important;
-        height: 72px !important;
-        object-fit: contain !important;
-        margin: 12px auto 0 auto !important;
+
+    #slider.featured1 {
+        overflow: hidden !important;
     }
+
     #single.section-1 {
         margin-top: 0 !important;
         padding-top: 55px !important;
@@ -743,6 +733,7 @@ iframe {
         z-index: 5 !important;
         background: #ffffff !important;
     }
+
     #single.section-1 .intro {
         position: static !important;
         top: auto !important;
