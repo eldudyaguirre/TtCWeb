@@ -143,29 +143,45 @@
                 <div class="container header">
 
                     <!-- Navbar Brand-->
-                    <a class="navbar-brand" href="{% url 'home' %}">
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'images/logo.svg' %}">
                         <span class="brand">
                             <span class="featured">
-                                <span class="first">TOTAL</span>
+                                <span class="first"> TOTAL</span>
                             </span>
-                            <span class="last">COUNTS</span>
+                            <span class="last"> COUNTS</span>
                         </span>
+                
                         
-                        <!-- 
-                            Custom Logo
-                            <img src="../../static/images/logo.svg" alt="NEXGEN">
-                        -->
                     </a>
 
                     <!-- Nav holder -->
                     <div class="ml-auto"></div>
 
+                    <!-- Navbar Items -->
+                    <ul class="navbar-nav items">
+                        <li class="nav-item">
+                            <a href="#header" class="smooth-anchor nav-link">INICIO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#services" class="smooth-anchor nav-link">SERVICIOS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#team" class="smooth-anchor nav-link">EQUIPO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#blog" class="smooth-anchor nav-link">BLOG</a>
+                        </li>
+                    </ul>
 
                     <!-- Navbar Icons -->
                     <ul class="navbar-nav icons">
                         <li class="nav-item">
-                            <a href="{% url 'home' %}" class="nav-link">
-                                <i class="icon-home"></i>
+                            <a href="{% url 'signin' %}" class="nav-link" aria-label="Iniciar sesión">
+                                <i class="icon-user"></i>
                             </a>
                         </li>
                     </ul>
@@ -179,6 +195,12 @@
                         </li>
                     </ul>
 
+                    <!-- Navbar Action -->
+                    <ul class="navbar-nav action">
+                        <li class="nav-item ml-3">
+                            <a href="#contact" class="smooth-anchor btn ml-lg-auto primary-button">CONTACTANOS</a>
+                        </li>
+                    </ul>
                 </div>
             </nav>
 
