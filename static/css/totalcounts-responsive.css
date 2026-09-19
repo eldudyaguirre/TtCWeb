@@ -372,4 +372,9 @@ iframe {
         font-size: 1.35rem;
     }
 }
-
+/* Team: keep paired members aligned across the two desktop columns. */
+@media (min-width: 768px) {
+    .team .items > .col-md-6 > .row.item {
+        min-height: 151px;
+    }
+}
