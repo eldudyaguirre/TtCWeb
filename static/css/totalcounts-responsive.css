@@ -885,3 +885,38 @@ iframe {
         top: auto !important;
     }
 }
+
+/* FINAL: usar únicamente el logo original del Hero. */
+@media (max-width: 767px) {
+    .about-mobile-logo-wrap {
+        display: none !important;
+    }
+    #slider.featured1 video.full-image {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    #slider.featured1 {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        background: transparent !important;
+    }
+    #slider.featured1 .swiper-container,
+    #slider.featured1 .swiper-wrapper,
+    #slider.featured1 .swiper-slide {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        background: transparent !important;
+    }
+    #slider.featured1 .slide-content {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    #slider.featured1::after {
+        display: block !important;
+        content: '' !important;
+    }
+}
