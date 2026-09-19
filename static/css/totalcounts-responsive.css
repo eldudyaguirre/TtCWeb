@@ -378,3 +378,32 @@ iframe {
         min-height: 151px;
     }
 }
+
+/* Team: on mobile, show all members in the intended reading order.
+ * Adrián Nieto stays in the first desktop column but moves to the end on phones.
+ */
+@media (max-width: 767px) {
+    .team .items > .col-12.col-md-6 {
+        display: contents;
+    }
+
+    .team .items > .col-12.col-md-6:first-child > .row.item:nth-child(1) {
+        order: 1;
+    }
+
+    .team .items > .col-12.col-md-6:first-child > .row.item:nth-child(2) {
+        order: 2;
+    }
+
+    .team .items > .col-12.col-md-6:nth-child(2) > .row.item:nth-child(1) {
+        order: 3;
+    }
+
+    .team .items > .col-12.col-md-6:nth-child(2) > .row.item:nth-child(2) {
+        order: 4;
+    }
+
+    .team .items > .col-12.col-md-6:first-child > .row.item:nth-child(3) {
+        order: 5;
+    }
+}
