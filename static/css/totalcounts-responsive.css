@@ -773,3 +773,54 @@ iframe {
         margin-top: 0 !important;
     }
 }
+
+/* Corrección final About móvil: el logo gigante pertenece al video about2.mp4.
+   En móvil mostramos solo la parte superior del video y dejamos el logo controlado fuera. */
+@media (max-width: 767px) {
+    #slider.featured1 {
+        height: 650px !important;
+        min-height: 650px !important;
+        max-height: 650px !important;
+        overflow: hidden !important;
+        background: #21333e !important;
+    }
+
+    #slider.featured1 .swiper-container,
+    #slider.featured1 .swiper-wrapper,
+    #slider.featured1 .swiper-slide {
+        height: 650px !important;
+        min-height: 650px !important;
+    }
+
+    #slider.featured1 video.full-image {
+        height: 650px !important;
+        max-height: 650px !important;
+        object-fit: cover !important;
+        object-position: center top !important;
+        clip-path: inset(0 0 23% 0) !important;
+    }
+
+    #slider.featured1 .slide-content {
+        height: 650px !important;
+        align-items: center !important;
+    }
+
+    .about-mobile-logo-wrap {
+        height: 64px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .about-mobile-logo-wrap .about-mobile-logo {
+        position: static !important;
+        width: 58px !important;
+        height: 58px !important;
+        margin: 0 auto !important;
+        transform: none !important;
+    }
+
+    #single.section-1 {
+        padding-top: 0 !important;
+    }
+}
