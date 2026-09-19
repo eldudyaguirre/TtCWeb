@@ -413,17 +413,39 @@ iframe {
  * centering the crop prevents that logo from overflowing into the next section.
  */
 @media (max-width: 767px) {
+    /* About hero: the desktop video contains a large embedded logo.
+       On mobile it is hidden so it cannot overflow into the next section. */
     #slider.hero {
         overflow: hidden;
+        min-height: 0 !important;
+        height: 320px !important;
+        background: #21333e !important;
     }
 
     #slider.hero .swiper-container,
     #slider.hero .swiper-wrapper,
     #slider.hero .swiper-slide {
+        min-height: 320px !important;
+        height: 320px !important;
         overflow: hidden;
     }
 
     #slider.hero video.full-image.to-bottom {
-        object-position: center 24% !important;
+        display: none !important;
+    }
+
+    #slider.hero .slide-content {
+        min-height: 320px;
+        position: relative;
+        z-index: 2;
+    }
+
+    #slider.hero .slide-content .inner {
+        padding-top: 45px;
+        padding-bottom: 35px;
+    }
+
+    #slider.hero .slide-content .title {
+        font-size: clamp(2.1rem, 9vw, 3rem);
     }
 }
