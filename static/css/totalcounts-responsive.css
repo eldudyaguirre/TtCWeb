@@ -682,3 +682,32 @@ iframe {
         transform: none !important;
     }
 }
+
+
+/* Definitive fix: the legacy featured1 pseudo-element is 250px tall and
+   intentionally extends below the hero. On mobile keep it entirely inside
+   the hero instead of trying to push the next section around it. */
+@media (max-width: 767px) {
+    #slider.featured1:after {
+        top: auto !important;
+        bottom: 0 !important;
+        left: 50% !important;
+        width: 60px !important;
+        height: 60px !important;
+        margin-left: -30px !important;
+        background-size: contain !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        opacity: 1 !important;
+        z-index: 1 !important;
+    }
+
+    #slider.featured1 {
+        overflow: hidden !important;
+    }
+
+    #slider.featured1 + #single.section-1 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+}
