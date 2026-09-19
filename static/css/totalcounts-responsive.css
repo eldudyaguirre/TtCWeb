@@ -765,3 +765,34 @@ iframe {
         padding-top: 25px !important;
     }
 }
+
+/* Ajuste preciso About móvil */
+@media (max-width: 767px) {
+    .about-mobile-logo-wrap {
+        height: 70px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+    .about-mobile-logo-wrap .about-mobile-logo {
+        width: 62px !important;
+        height: 62px !important;
+        display: block !important;
+        margin: 0 auto !important;
+        position: static !important;
+        transform: none !important;
+    }
+    #single.section-1 {
+        padding-top: 5px !important;
+        margin-top: 0 !important;
+    }
+    #single.section-1 .intro {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    #single.section-1 .pre-title {
+        margin-top: 0 !important;
+    }
+}
