@@ -713,27 +713,34 @@ iframe {
 }
 
 
-/* FINAL ABOUT MOBILE LOGO - LOWER AND CENTERED */
-/* The decorative logo inside the hero is disabled on mobile. */
+/* FINAL ABOUT MOBILE LOGO - OUTSIDE HERO */
+.about-mobile-logo-wrap { display: none; }
 @media (max-width: 767px) {
-    #slider.featured1::after,
-    #slider.featured1::before {
-        display: none !important;
-        content: none !important;
+    .about-mobile-logo-wrap {
+        display: flex !important;
+        width: 100% !important;
+        height: 100px !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        background: #ffffff !important;
+        position: relative !important;
+        z-index: 20 !important;
+        padding-bottom: 8px !important;
     }
-
-    #slider.featured1 {
-        overflow: hidden !important;
+    .about-mobile-logo-wrap .about-mobile-logo {
+        display: block !important;
+        width: 72px !important;
+        height: 72px !important;
+        object-fit: contain !important;
+        margin: 0 !important;
     }
-
     #single.section-1 {
         margin-top: 0 !important;
-        padding-top: 55px !important;
+        padding-top: 45px !important;
         position: relative !important;
         z-index: 5 !important;
         background: #ffffff !important;
     }
-
     #single.section-1 .intro {
         position: static !important;
         top: auto !important;
