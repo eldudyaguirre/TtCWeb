@@ -649,24 +649,8 @@ jQuery(function ($) {
 10. Recaptcha
 ----------------------------------------------*/
 
-jQuery(function ($) {
-
-    'use strict';
-
-    if ($('input[name="reCAPTCHA"]').length) {
-
-     let siteKey = "6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"; // Put your site key here
-     
-     if(siteKey) { 
-         $('input[name="reCAPTCHA"]').attr("data-key", siteKey); 
-         grecaptcha.ready(function() { 
-             grecaptcha.execute(siteKey, { action: "create_comment" }).then(function(token) { 
-                 $('input[name="reCAPTCHA"]').val(token); 
-                }) 
-            }) 
-        } 
-    }
-})
+// reCAPTCHA desactivado temporalmente mientras se registra la nueva clave
+// para totalcounts.com.ec.
 
 /*----------------------------------------------
 11. Cookie Notice
