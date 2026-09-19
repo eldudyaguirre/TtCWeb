@@ -713,85 +713,62 @@ iframe {
 }
 
 
-/* FINAL ABOUT MOBILE LOGO - OUTSIDE HERO */
-.about-mobile-logo-wrap { display: none; }
+/* FINAL ABOUT MOBILE LAYOUT
+   Desktop: keep the original theme logo in the hero.
+   Mobile: hide the decorative hero logo and use one controlled logo below it.
+*/
+.about-mobile-logo-wrap {
+    display: none;
+}
+
 @media (max-width: 767px) {
-    .about-mobile-logo-wrap {
-        display: flex !important;
-        width: 100% !important;
-        height: 100px !important;
-        align-items: flex-end !important;
-        justify-content: center !important;
-        background: #ffffff !important;
-        position: relative !important;
-        z-index: 20 !important;
-        padding-bottom: 8px !important;
+    #slider.featured1::after,
+    #slider.featured1::before {
+        display: none !important;
+        content: none !important;
     }
+
+    .about-mobile-logo-wrap {
+        display: block !important;
+        position: relative !important;
+        width: 100% !important;
+        height: 70px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        z-index: 20 !important;
+        overflow: visible !important;
+    }
+
     .about-mobile-logo-wrap .about-mobile-logo {
         display: block !important;
-        width: 72px !important;
-        height: 72px !important;
-        object-fit: contain !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        width: 62px !important;
+        height: 62px !important;
         margin: 0 !important;
+        padding: 0 !important;
+        object-fit: contain !important;
+        transform: translate(-50%, -50%) !important;
     }
+
     #single.section-1 {
         margin-top: 0 !important;
-        padding-top: 45px !important;
+        padding-top: 0 !important;
         position: relative !important;
         z-index: 5 !important;
         background: #ffffff !important;
     }
+
     #single.section-1 .intro {
         position: static !important;
         top: auto !important;
         margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-}
-
-/* Ajuste final: logo y texto de About en móvil */
-@media (max-width: 767px) {
-    .about-mobile-logo-wrap {
-        height: 82px !important;
-        padding-bottom: 4px !important;
-        align-items: center !important;
-    }
-    .about-mobile-logo-wrap .about-mobile-logo {
-        width: 68px !important;
-        height: 68px !important;
-        margin: 0 auto !important;
-    }
-    #single.section-1 {
-        padding-top: 25px !important;
-    }
-}
-
-/* Ajuste preciso About móvil */
-@media (max-width: 767px) {
-    .about-mobile-logo-wrap {
-        height: 70px !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-    }
-    .about-mobile-logo-wrap .about-mobile-logo {
-        width: 62px !important;
-        height: 62px !important;
-        display: block !important;
-        margin: 0 auto !important;
-        position: static !important;
-        transform: none !important;
-    }
-    #single.section-1 {
+        margin-bottom: 0 !important;
         padding-top: 5px !important;
-        margin-top: 0 !important;
     }
-    #single.section-1 .intro {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+
     #single.section-1 .pre-title {
         margin-top: 0 !important;
     }
