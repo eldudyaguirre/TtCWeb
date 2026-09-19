@@ -748,3 +748,20 @@ iframe {
         padding-top: 0 !important;
     }
 }
+
+/* Ajuste final: logo y texto de About en móvil */
+@media (max-width: 767px) {
+    .about-mobile-logo-wrap {
+        height: 82px !important;
+        padding-bottom: 4px !important;
+        align-items: center !important;
+    }
+    .about-mobile-logo-wrap .about-mobile-logo {
+        width: 68px !important;
+        height: 68px !important;
+        margin: 0 auto !important;
+    }
+    #single.section-1 {
+        padding-top: 25px !important;
+    }
+}
