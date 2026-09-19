@@ -824,3 +824,64 @@ iframe {
         padding-top: 0 !important;
     }
 }
+
+/* SOLUCIÓN DEFINITIVA MOBILE ABOUT: el video contiene gráficos/logos propios.
+   En móvil se desactiva el video para evitar que esos gráficos aparezcan.
+   El diseño de escritorio permanece intacto. */
+@media (max-width: 767px) {
+    #slider.featured1 {
+        height: 500px !important;
+        min-height: 500px !important;
+        max-height: 500px !important;
+        overflow: hidden !important;
+        background: #21333e !important;
+    }
+    #slider.featured1 .swiper-container,
+    #slider.featured1 .swiper-wrapper,
+    #slider.featured1 .swiper-slide {
+        height: 500px !important;
+        min-height: 500px !important;
+        max-height: 500px !important;
+        background: #21333e !important;
+    }
+    #slider.featured1 video.full-image {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    #slider.featured1 .slide-content {
+        height: 500px !important;
+        min-height: 500px !important;
+        position: relative !important;
+        z-index: 10 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    #slider.featured1 .slide-content .inner {
+        width: 100% !important;
+    }
+    .about-mobile-logo-wrap {
+        height: 64px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+    .about-mobile-logo-wrap .about-mobile-logo {
+        position: static !important;
+        display: block !important;
+        width: 58px !important;
+        height: 58px !important;
+        margin: 0 auto !important;
+        transform: none !important;
+    }
+    #single.section-1 {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    #single.section-1 .intro {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+        top: auto !important;
+    }
+}
