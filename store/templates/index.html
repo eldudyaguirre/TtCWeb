@@ -94,6 +94,7 @@
         Custom Stylesheet
         =============================================== -->
         <link rel="stylesheet" href="{% static 'css/default.css' %}">
+        <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}?v=20260920">
 
         <!-- ==============================================
         Theme Color
@@ -1292,7 +1293,8 @@
                                 <!-- Append [navbar] -->
                             </div>
                             <div class="contacts p-0 col-12 text-center">
-                                <!-- Append [navbar] -->
+                                <a href="{% url 'contactanos' %}" class="nav-link menu-extra-link">CONTACTANOS</a>
+                                <a href="{% url 'signin' %}" class="nav-link menu-extra-link">INICIAR SESIÓN</a>
                             </div>
                         </div>
                     </div>
