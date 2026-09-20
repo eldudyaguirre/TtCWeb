@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quienes Somos</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/icon.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">    
+</head>
+<body>
+    <header>
+        <h1>¿ Quienes Somos ?</h1>
+    </header>
+    <section class="banner">
+        <img src="{% static 'img/python-banner.jpg' %}" alt="Banner de Programación">
+        <div class="welcome">
+            <h2>
+                Bienvenido a<br><span>E-minka project</span>
+            </h2>
+        </div>
+    </section>
+    <main class="main-section">
+        <article>
+            <h2>E-minka Project</h2>
+            <p>E-minka es un proyecto que nació de las cunas de Eela para la ayuda comunitaria de proyectos locales en nuestro
+                querido Ecuador de manera gratuita, para que los pequeños negocios puedan recuperar fondos para proyectos de interes
+                social y de esta manera poder incentivar la economía local.
+                E-minka es un proyecto realizado por Adrián Aguirre, Carlos García y Bryan Agreda.
+            </p>
+        </article>
+        <div class="galeria-imagenes">
+            <img src="{% static 'img/eminkaimg.jpg' %}" alt="foto del club">
+        </div>
+        <div class="galeria-imagenes">
+        </div>
+        <form class="row g-3">
+            <div class="col-12">
+                <a href="{% url 'home' %}" class="btn btn-outline-primary me-2">Volver</a>
+            </div>
+          </form>
+    </main>
+    <footer>
+        <p>&copy; 2023 - Grupo 5 G2/2023</p>
+    </footer>
+</body>
+</html>

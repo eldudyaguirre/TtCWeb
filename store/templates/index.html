@@ -1,0 +1,1140 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="es">
+
+    <head>
+
+        <!-- ==============================================
+        Basic Page Needs
+        =============================================== -->
+        <meta charset="UTF-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
+
+        <title>TotalCounts | Contabilidad, Tributario, Laboral y Sistemas</title>
+
+        <meta name="description" content="TotalCounts - C.A.S. ofrece soluciones de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
+        <meta name="author" content="Adrián Aguirre Larriva">
+        <meta name="robots" content="index, follow">
+        <meta name="googlebot" content="index, follow">
+        <meta name="keywords" content="TotalCounts, C.A.S., Complete Accounting System, contabilidad Ecuador, asesoría tributaria, asesoría laboral, facturación electrónica, desarrollo de software, sistemas contables, auditoría">
+        <meta name="language" content="Spanish">
+        <meta name="geo.region" content="EC">
+        <meta name="theme-color" content="#21333e">
+
+        <link rel="canonical" href="https://www.totalcounts.com.ec/">
+        <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+        <!-- Open Graph: vista previa al compartir -->
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="TotalCounts">
+        <meta property="og:title" content="TotalCounts | C.A.S. - Soluciones Contables e Informáticas">
+        <meta property="og:description" content="Contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
+        <meta property="og:url" content="https://www.totalcounts.com.ec/">
+        <meta property="og:locale" content="es_EC">
+        <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta property="og:image:alt" content="TotalCounts - C.A.S.">
+        <meta property="og:image:type" content="image/png">
+
+        <!-- Twitter / X -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="TotalCounts | C.A.S.">
+        <meta name="twitter:description" content="Soluciones contables, tributarias, laborales, legales e informáticas en Ecuador.">
+        <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta name="twitter:image:alt" content="TotalCounts - C.A.S.">
+
+        <!-- Datos estructurados para buscadores -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "TotalCounts",
+            "alternateName": "C.A.S. (Complete Accounting System)",
+            "url": "https://www.totalcounts.com.ec/",
+            "logo": "https://www.totalcounts.com.ec/static/images/logo-1.png",
+            "description": "Servicios de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.",
+            "email": "totalcounts@hotmail.com",
+            "telephone": "+593964208139",
+            "areaServed": {
+                "@type": "Country",
+                "name": "Ecuador"
+            },
+            "sameAs": [
+                "https://www.facebook.com/TotalCounts/"
+            ]
+        }
+        </script>
+
+        <!-- ==============================================
+        Favicons
+        =============================================== -->
+        <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
+
+        <!-- ==============================================
+        Vendor Stylesheet
+        =============================================== -->
+        
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/slider.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons-fa.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/animation.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/gallery.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cookie-notice.min.css' %}">
+
+        <!-- ==============================================
+        Custom Stylesheet
+        =============================================== -->
+        <link rel="stylesheet" href="{% static 'css/default.css' %}">
+
+        <!-- ==============================================
+        Theme Color
+        =============================================== -->
+        <meta name="theme-color" content="#21333e">
+
+        <!-- ==============================================
+        Theme Settings
+        =============================================== -->
+        <style>
+            :root {
+                --hero-bg-color: #080d10;
+                
+                --section-1-bg-color: #ffffff;
+                --section-2-bg-color: #111117;
+                --section-3-bg-color: #111117;
+                --section-4-bg-color: #ffffff;
+                --section-5-bg-color: #eef4ed;
+                --section-6-bg-color: #111117;
+                --section-7-bg-color: #ffffff;
+
+                --footer-bg-color: #080d10; --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
+            }
+        </style>
+        
+    </head>
+
+    <body class="home">
+        
+        <!-- Preloader -->
+        <div id="preloader" data-timeout="2000" class="odd preloader counter">
+            <div data-aos="fade-up" data-aos-delay="500" class="row justify-content-center text-center items">
+                <div data-percent="100" class="radial">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header id="header">
+
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand top">
+                <div class="container header">
+
+                    <!-- Navbar Items [left] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
+                        </li>
+                    </ul>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items [right] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item social">
+                            <a href="https://www.facebook.com/TotalCounts/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="far fa-envelope"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="https://wa.me/593964208139" class="nav-link pr-0"><i class="fab fa-whatsapp"></i></a>
+                        </li>
+                    </ul>
+
+                </div>
+            </nav>
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand navbar-fixed sub">
+                <div class="container header">
+
+                    <!-- Navbar Brand-->
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'images/logo.svg' %}">
+                        <span class="brand">
+                            <span class="featured">
+                                <span class="first"> TOTAL</span>
+                            </span>
+                            <span class="last"> COUNTS</span>
+                        </span>
+                
+                        
+                    </a>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items -->
+                    <ul class="navbar-nav items">
+                        <li class="nav-item">
+                            <a href="#header" class="smooth-anchor nav-link">INICIO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'servicios' %}" class="nav-link">SERVICIOS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#team" class="smooth-anchor nav-link">EQUIPO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'blog' %}" class="nav-link">BLOG</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item">
+                            <a href="{% url 'signin' %}" class="nav-link" aria-label="Iniciar sesión">
+                                <i class="icon-user"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Toggle -->
+                    <ul class="navbar-nav toggle">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#menu">
+                                <i class="icon-menu m-0"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Action -->
+                    <ul class="navbar-nav action">
+                        <li class="nav-item ml-3">
+                            <a href="{% url 'contactanos' %}" class="btn ml-lg-auto primary-button">CONTACTANOS</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+        </header>
+
+        <!-- Hero -->
+        <section id="slider" class="hero p-0 odd">
+            <div class="swiper-container full-slider animation slider-h-100 slider-h-auto">
+                <div class="swiper-wrapper">
+
+                    <!-- Item 1 -->
+                    <div class="swiper-slide slide-center">
+
+                        <!-- Media -->
+                        <img src="{% static 'images/bg-1.jpg' %}" alt="Full Image" class="full-image" data-mask="40">
+
+                        <div class="slide-content row">
+                            <div class="col-12 d-flex justify-content-start inner">
+                                <div class="left text-left">
+
+                                    <!-- Content -->
+                                    <h1 data-aos="zoom-in" data-aos-delay="2000" class="title effect-static-text">Consultoría Tributaria</h1>
+                                    <p data-aos="zoom-in" data-aos-delay="2400" class="description">Analizamos e Innovamos tus Operaciones Efectuadas con formas de aplicación efectiva definiendo estrategias en procesos ante las autoridades tributarias.</p>
+
+                                    <!-- Action -->
+                                    <div data-aos="fade-up" data-aos-delay="2800" class="buttons">
+                                        <div class="d-sm-inline-flex">
+                                            <a href="{% url 'contactanos' %}" class="mt-4 btn primary-button">CONTACTANOS</a>
+                                            <a href="#video" class="smooth-anchor ml-sm-4 mt-4 btn outline-button">LEER MÁS</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="swiper-slide slide-center">
+
+                        <!-- Media -->
+                        <img src="{% static 'images/bg-2-1.jpg' %}" alt="Full Image" class="full-image" data-mask="40">  
+
+                        <div class="slide-content row">
+                            <div class="col-12 d-flex justify-content-start justify-content-md-center inner">
+                                <div class="center text-left text-md-center">
+
+                                    <!-- Content -->
+                                    <h2 data-aos="zoom-in" data-aos-delay="400" class="title effect-static-text">Recursos Humanos</h2>
+                                    <p data-aos="zoom-in" data-aos-delay="800" class="description mr-auto ml-auto">Los resultados correctos dependen de procesos y modelos adecuados para su normal desarrollo en temas laborales, Estamos prestos a capacitarte en la correcta aplicación de la ley para tu desarrollo empresarial.</p>
+                                   
+                                    <!-- Action -->
+                                    <div data-aos="fade-up" data-aos-delay="1200" class="buttons">
+                                        <div class="d-sm-inline-flex">
+                                            <a href="{% url 'contactanos' %}" class="smooth-anchor mt-4 btn primary-button">CONTACTANOS</a>
+                                            <a href="#video" class="smooth-anchor ml-sm-4 mt-4 btn outline-button">LEER MÁS</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="swiper-slide slide-center">
+
+                        <!-- Media -->
+                        <img src="{% static 'images/bg-3.jpg' %}" alt="Full Image" class="full-image" data-mask="40">     
+
+                        <div class="slide-content row">
+                            <div class="col-12 d-flex justify-content-start justify-content-md-end inner">
+                                <div class="right text-left">
+
+                                    <!-- Content -->
+                                    <h2 data-aos="zoom-in" data-aos-delay="400" class="title effect-static-text">Compañías y Auditorías</h2>
+                                    <p data-aos="zoom-in" data-aos-delay="800" class="description">El cumplimiento de reglamentos convierten a las empresas en grandes empresas, estamos capacitados para ayudarte a establecer reglamentos y procesos para el crecimiento de tu compañía.</p>
+
+                                    <!-- Action -->
+                                    <div data-aos="fade-up" data-aos-delay="1200" class="buttons">
+                                        <div class="d-sm-inline-flex">
+                                            <a href="{% url 'contactanos' %}" class="smooth-anchor mt-4 btn primary-button">CONTACTANOS</a>
+                                            <a href="#video" class="smooth-anchor ml-sm-4 mt-4 btn outline-button">LEER MÁS</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Video -->
+        <section id="video" class="section-1 highlights image-center">
+            <div class="container smaller">
+                <div class="row text-center intro">
+                    <div class="col-12">
+                        <span class="pre-title">Video de Introducción</span>
+                        <h2>Asesoramiento <span class="featured"><span>Integral</span></span></h2>
+                        <p class="text-max-800">Los ejecutivos financieros necesitan revisar sus estrategias, modelos operativos y capacidades para que sus áreas puedan generar información sólida para una mejor toma de decisiones.</p>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-12 gallery">
+                        <a href="https://vimeo.com/222990241" class="square-image d-flex justify-content-center align-items-center">
+                            <i class="icon bigger fas fa-play clone"></i>
+                            <i class="icon bigger fas fa-play"></i>
+                            <img src="{% static 'images/video-1.jpg' %}" class="fit-image" alt="Introduction Video">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fun Facts -->
+        <section id="funfacts" class="section-2 odd counter funfacts">
+            <video class="full-image to-bottom grayscale" data-mask="70" playsinline autoplay muted loop>
+                <source src="{% static 'videos/city.mp4' %}" type="video/mp4" />
+            </video>
+            <div class="container">
+                <div class="row mb-md-5 text-center">
+                    <div class="col-12">
+                        <span class="pre-title">¿Que estamos haciendo?</span>
+                        <h2><span class="featured"><span>Resultados</span></span> en Números</h2>
+                    </div>
+                </div>
+                <div class="row justify-content-center text-center items">
+                    <div class="col-12 col-md-6 col-lg-3 item">
+                        <div data-percent="528000" class="radial">
+                            <span></span>
+                        </div>
+                        <h4>En impuestos recuperados</h4>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3 item">
+                        <div data-percent="2230" class="radial">
+                            <span></span>
+                        </div>
+                        <h4>Reglamentos Aprobados</h4>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3 item">
+                        <div data-percent="517" class="radial">
+                            <span></span>
+                        </div>
+                        <h4>Empresas Administradas</h4>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3 item">
+                        <div data-percent="594" class="radial">
+                            <span></span>
+                        </div>
+                        <h4>Auditorías Nacionales</h4>
+                    </div>
+                </div>
+        </div>
+        </section>
+
+        <!-- Services -->
+        <section id="services" class="section-3 odd offers">
+            <div class="container">
+                <div class="row intro">
+                    <div class="col-12 col-md-9 align-self-center text-center text-md-left">
+                        <span class="pre-title m-auto ml-md-0">Nuestras Áreas de Trabajo</span>
+                        <h2>Excelencia en <span class="featured"><span>Servicio</span></span></h2>
+                        <p>Somos líderes en la prestación de servicios de consultoría con un conjunto de tecnologías de vanguardia y un equipo de profesionales experimentados y reconocidos. Estas son algunas opciones que puedes contratar.</p>
+                    </div>
+                    <div class="col-12 col-md-3 align-self-end">
+                        <a href="#" class="btn mx-auto mr-md-0 ml-md-auto outline-button">VER TODO</a>
+                    </div>
+                </div>
+                <div class="row justify-content-center items">
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-organization"></i>
+                            <h4>Control Tributario</h4>
+                            <p>Declaraciónes y Carga de Anexos y afines.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-user"></i>
+                            <h4>Recursos Humanos</h4>
+                            <p>Roles de Pago, Contratos, Finiquitos y Afines.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-chart"></i>
+                            <h4>Societario</h4>
+                            <p>SuperCias, Registro Mercantil y Afines.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-briefcase"></i>
+                            <h4>Seguridad Ocupacional</h4>
+                            <p>Reglamentos, Consultorías y Afines.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-globe-alt"></i>
+                            <h4>Consultoría Legal</h4>
+                            <p>Servicios afines a todo tema legal.</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 item">
+                        <div class="card">
+                            <i class="icon icon-drawer"></i>
+                            <h4>Tramites Varios</h4>
+                            <p>Municipio, ARCSA, Permisos en General y Afines.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team -->
+        <section id="team" class="section-4 highlights team image-right">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-lg-8 align-self-top text-center text-md-left text">
+                        <div class="row intro">
+                            <div class="col-12 p-0">
+                                <span class="pre-title m-auto m-md-0">NOS GUSTA LO QUE HACEMOS</span>
+                                <h2><span class="featured"><span>Equipo</span></span> de Expertos</h2>
+                                <p>La ética, experiencia y la integridad son las bases sobre las que nuestros profesionales construyen sus carreras. Son fundamentos que se convierten en actitudes diarias.</p>
+                            </div>
+                        </div>
+                        <div class="row items text-left">
+                            <div class="col-12 col-md-6 p-0">
+                                <div class="row item">
+                                    <div class="col-4 p-0 pr-3 align-self-center">
+                                        <img src="{% static 'images/team-catalina-larriva.png' %}" alt="Catalina Larriva" class="person">
+                                    </div>
+                                    <div class="col-8 align-self-center text-left">
+                                        <h4>Catalina Larriva</h4>
+                                        <p>GERENTE Y CONTADORA</p>
+                                        <ul class="navbar-nav social share-list ml-auto">
+                                            <li class="nav-item">
+                                                <a href="https://facebook.com/catylarriva/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="mailto:catylarriva@totalcounts.net" class="nav-link"><i class="far fa-envelope"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="https://wa.me/593984230099" class="nav-link"><i class="fab fa-whatsapp"></i></a>
+                                            </li>
+                                        </ul>
+                                    </div>  
+                                </div>
+                                <div class="row item">
+                                    <div class="col-4 p-0 pr-3 align-self-center">
+                                        <img src="{% static 'images/team-adrian-aguirre.png' %}" alt="Adrián Aguirre" class="person">
+                                    </div>
+                                    <div class="col-8 align-self-center text-left">
+                                        <h4>Adrián Aguirre</h4>
+                                        <p>SISTEMAS Y TRAMITES</p>
+                                        <ul class="navbar-nav social share-list ml-auto">
+                                            <li class="nav-item">
+                                                <a href="https://instagram.com/eldudyaguirre" class="nav-link"><i class="fab fa-instagram"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="mailto:dudyaguirre@totalcounts.net" class="nav-link"><i class="far fa-envelope"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="https://wa.me/593986514121" class="nav-link"><i class="fab fa-whatsapp"></i></a>
+                                            </li>
+                                        </ul>
+                                    </div>  
+                                </div>
+                            </div>                        
+                            <div class="col-12 col-md-6 p-0">
+                                <div class="row item">
+                                    <div class="col-4 p-0 pr-3 align-self-center">
+                                        <img src="{% static 'images/team-aracely-aguirre.png' %}" alt="Aracely Aguirre" class="person">
+                                    </div>
+                                    <div class="col-8 align-self-center text-left">
+                                        <h4>Aracely Aguirre</h4>
+                                        <p>CONTADORA Y DEVOLUCIONES</p>
+                                        <ul class="navbar-nav social share-list ml-auto">
+                                            <li class="nav-item">
+                                                <a href="https://facebook.com/aryaguirre/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="mailto:aryaguirre@totalcounts.net" class="nav-link"><i class="far fa-envelope"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="https://wa.me/593984347740" class="nav-link"><i class="fab fa-whatsapp"></i></a>
+                                            </li>
+                                        </ul>
+                                    </div>  
+                                </div>
+                                <div class="row item">
+                                    <div class="col-4 p-0 pr-3 align-self-center">
+                                        <img src="{% static 'images/team-nicolas-aguirre.png' %}" alt="Person" class="person">
+                                    </div>
+                                    <div class="col-8 align-self-center text-left">
+                                        <h4>Nicolás Aguirre</h4>
+                                        <p>SEGURIDAD OCUPACIONAL</p>
+                                        <ul class="navbar-nav social share-list ml-auto">
+                                            <li class="nav-item">
+                                                <a href="https://instagram.com/nicolasaguirre" class="nav-link"><i class="fab fa-instagram"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="mailto:nicoaguirre@totalcounts.net" class="nav-link"><i class="far fa-envelope"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="https://wa.me/593992766611" class="nav-link"><i class="fab fa-whatsapp"></i></a>
+                                            </li>
+                                        </ul>
+                                    </div>  
+                                </div>
+                                <div class="row item">
+                                    <div class="col-4 p-0 pr-3 align-self-center">
+                                        <img src="{% static 'images/team-adrian-nieto.png' %}" alt="Adrián Nieto" class="person">
+                                    </div>
+                                    <div class="col-8 align-self-center text-left">
+                                        <h4>Adrián Nieto</h4>
+                                        <p>RH Y COBRANZA</p>
+                                        <ul class="navbar-nav social share-list ml-auto">
+                                            <li class="nav-item">
+                                                <a href="#" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="#" class="nav-link"><i class="far fa-envelope"></i></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="#" class="nav-link"><i class="fab fa-whatsapp"></i></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-aos="zoom-in" class="col-12 col-lg-4 align-self-end">
+                        <div class="quote">
+                            <div class="quote-content">
+                                <h4>Gerencia Habla</h4>
+                                <p>Nuestro equipo de expertos combina experiencia, ética e integridad para brindar un acompañamiento cercano y profesional a cada cliente.</p>
+                                <p>Trabajamos de manera coordinada en las áreas contable, tributaria, laboral, de sistemas y cobranza, buscando soluciones prácticas que aporten al crecimiento y fortalecimiento de cada empresa.</p>
+                                <p>Más que un equipo, somos profesionales comprometidos con hacer las cosas bien y construir relaciones de confianza.</p>
+                                <h5>Gerencia TotalCounts</h5>
+                            </div>
+                            <i class="quote-right fas fa-quote-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog -->
+        <section id="blog" class="section-5 carousel showcase">
+            <div class="overflow-holder">
+                <div class="container">
+                    <div class="row intro">
+                        <div class="col-12 col-md-9 align-self-center text-center text-md-left">
+                            <span class="pre-title m-auto m-md-0">Nuestro Contenido Editorial</span>
+                            <h2>Últimas <span class="featured"><span>Noticias</span></span></h2>
+                            <p>Todas las semanas publicamos contenido acerca de las últimas novedades tributarias.</p>
+                        </div>
+                        <div class="col-12 col-md-3 align-self-end">
+                            <a href="#" class="btn mx-auto mr-md-0 ml-md-auto primary-button">VER TODO</a>
+                        </div>
+                    </div>
+                    <div class="swiper-container mid-slider items" data-perview="3"> 
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/News/001.jpg' %}" alt="News1">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Ley de Bancarización Vigente</h4>
+                                                <p>Entérate de la nueva disposición desde el 02/01/2024.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/News/002.jpg' %}" alt="News2">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Registro de Indices de Gestión</h4>
+                                                <p>Entérate de los plazos de Registro de Indices de Gestión al IESS 2024.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/News/003.jpg' %}" alt="News3">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>¿Porqué es importante su plan de Prevención de Riesgos Laborales?</h4>
+                                                <p>Empapate de la ley, obligatoriedad y evita multas por la no realización de tus reglamentos.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-4.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>23 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Tips for having a good relationship at work</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-5.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>David Cooper</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>30 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>David Cooper tells about the opening of the new office in Baltimore</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src= "{% static 'images/news-1.jpg' %}"  alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>Andrea Miller</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>2 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Increasing creativity is possible for everyone</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-2.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>9 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Because market research is part of the business plan</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-3.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>Andrea Miller</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>16 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Working from home is now a trend</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-4.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>23 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>Tips for having a good relationship at work</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide slide-center item">
+                                <div class="row card p-0 text-center">
+                                    <div class="image-over">
+                                        <img src="{% static 'images/news-5.jpg' %}" alt="Lorem ipsum">
+                                    </div>
+                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-user"></i>David Cooper</a>
+                                        <a href="#" class="d-lg-flex align-items-center"><i class="icon-clock"></i>30 Days Ago</a>
+                                    </div>
+                                    <div class="card-caption col-12 p-0">
+                                        <div class="card-body">
+                                            <a href="#">
+                                                <h4>David Cooper tells about the opening of the new office in Baltimore</h4>
+                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Subscribe -->
+        <section id="subscribe" class="section-6 odd subscribe">
+            <div class="container smaller">
+                <div class="row">
+                    <div class="col-12 col-md-6 m-md-0 intro">
+                        <span class="pre-title m-0">Noticias</span>
+                        <h2><span class="featured"><span>Entérate</span></span> Primero</h2>
+                        <p>Siga de cerca y reciba contenido sobre nuestra empresa y las novedades de las leyes actuales.</p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <form action="#" id="nexgen-subscribe" class="row m-auto items">
+                            <input type="hidden" name="section" value="nexgen_subscribe">
+
+                            <input type="hidden" name="reCAPTCHA">
+                            <!-- Remove this field if you want to disable recaptcha -->
+
+                            <div class="col-12 mt-0 input-group align-self-center item">
+                                <input type="text" name="name" class="form-control field-name" placeholder="Nombre">
+                            </div>
+                            <div class="col-12 input-group align-self-center item">
+                                <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                            </div>
+                            <div class="col-12 input-group align-self-center item">
+                                <a data-aos="zoom-in" class="btn primary-button">SUSCRIBIRME</a>
+                            </div>
+                            <div class="col-12 item">
+                                <span class="form-alert mt-3 mb-0"></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="section-7 form contact">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-8 pr-md-5 align-self-center text">
+                        <div class="row intro">
+                            <div class="col-12 p-0">
+                                <span class="pre-title m-0">Envíanos un mensaje</span>
+                                <h2>Ponte en <span class="featured"><span>Contacto</span></span></h2>
+                                <p>Responderemos tu mensaje lo más pronto posible.</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 p-0">
+                                <form action="{% static 'php/form.php' %}" id="nexgen-simple-form" class="nexgen-simple-form">
+                                    <input type="hidden" name="section" value="nexgen_form">
+
+
+                                    <div class="row form-group-margin">
+                                        <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                            <input type="text" name="name" class="form-control field-name" placeholder="Nombrte">
+                                        </div>
+                                        <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                            <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                                        </div>
+                                        <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                            <input type="text" name="phone" class="form-control field-phone" placeholder="Celular">
+                                        </div>
+                                        <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                            <i class="icon-arrow-down mr-3"></i>
+                                            <select name="info" class="form-control field-info">
+                                                <option value="" selected disabled>Más Info</option>
+                                                <option>Control Tributario</option>
+                                                <option>Recursos Humanos</option>
+                                                <option>Auditorías</option>
+                                                <option>Consultoría Legal</option>
+                                                <option>Devoluciones</option>
+                                                <option>Reglamentos y Seg. Ocupacional</option>
+                                                <option>Otros</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 m-0 p-2 input-group">
+                                            <textarea name="message" class="form-control field-message" placeholder="Mensaje"></textarea>
+                                        </div>
+                                        <div class="col-12 col-12 m-0 p-2 input-group">
+                                            <span class="form-alert"></span>
+                                        </div>
+                                        <div class="col-12 input-group m-0 p-2">
+                                            <a class="btn primary-button">ENVIAR</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="contacts">
+                            <h4>Total Counts</h4>
+                            <p>Técnicos en Operaciones Tributarias Aguirre Larriva</p>
+                            <p>CUENTAS CON NOSOTROS</p>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="fas fa-phone-alt mr-2"></i>
+                                        +593 96 420 8139
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        totalcounts@hotmail.com
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Av. Isabel la Católica y José Zorrilla, Cuenca, Ecuador
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER UBICACION</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer>
+
+            <!-- Footer [content] -->
+            <section id="footer" class="odd footer offers">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-lg-3 footer-left">
+
+                            <!-- Navbar Brand-->
+                            <a class="navbar-brand" href="/">
+                                <span class="brand">
+                                    <span class="featured">
+                                        <span class="first">TOTAL</span>
+                                    </span>
+                                    <span class="last">COUNTS</span>
+                                </span>
+                                
+                            </a>
+                            <p>CUENTAS CON NOSOTROS.</p>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a href="tel:+593984230099" class="nav-link">
+                                        <i class="fas fa-phone-alt mr-2"></i>
+                                        +593 984-230-099
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        totalcounts@hotmail.com
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Av. Isabel la Católica y José Zorrilla esq.
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'contactanos' %}" class="mt-4 btn outline-button">CONTACTANOS</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-12 col-lg-9 p-0 footer-right">
+                            <div class="row items">
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Acerca</h4>
+                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Tecnología</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Servicios</h4>
+                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Soporte</h4>
+                                        <a href="#"><i class="icon-arrow-right"></i>Responsibility</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Terminos de Uso</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Información</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Copyright -->
+            <section id="copyright" class="p-3 odd copyright">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-left">
+                            <p>Técnicos en Operaciones Tributarias Aguirre Larriva</p>
+                            <!--
+                                Suggestion: Replace the text above with a description of your website.
+                             -->
+                        </div>
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-right">
+                            <p>© 2026 TotalWeb by C.A.S. está desarrollado por <a href="https://www.totalcounts.com.ec/" target="_blank">Adrián Aguirre Larriva</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </footer>
+
+        <!-- Modal [search] -->
+        <div id="search" class="p-0 modal fade" role="dialog" aria-labelledby="search" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0">
+                                        <h2>What are you looking for?</h2>
+                                        <div class="badges">
+                                            <span class="badge"><a href="#">Consulting</a></span>
+                                            <span class="badge"><a href="#">Audit</a></span>
+                                            <span class="badge"><a href="#">Assurance</a></span>
+                                            <span class="badge"><a href="#">Advisory</a></span>
+                                            <span class="badge"><a href="#">Financial</a></span>
+                                            <span class="badge"><a href="#">Capital Markets</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="text" class="form-control" placeholder="Enter Keywords">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">SEARCH</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [map] -->
+        <div id="map" class="p-0 modal fade" role="dialog" aria-labelledby="map" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header absolute" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body p-0">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d249.0419196643243!2d-79.0186553!3d-2.9107869!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sec!4v1704979894350!5m2!1ses!2sec" width="100%" height="450" style="border:0; max-width:100%;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                         <!--
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2970.123073808986!2d12.490042215441486!3d41.89021017922119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b6532013ad%3A0x28f1c82e908503c4!2sColiseu!5e0!3m2!1spt-BR!2sbr!4v1594148229878!5m2!1spt-BR!2sbr" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [responsive menu] -->
+        <div id="menu" class="p-0 modal fade" role="dialog" aria-labelledby="menu" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="menu modal-body">
+                        <div class="row w-100">
+                            <div class="items p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                            <div class="contacts p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll [to top] -->
+        <div id="scroll-to-top" class="scroll-to-top">
+            <a href="#header" class="smooth-anchor">
+                <i class="fas fa-arrow-up"></i>
+            </a>
+        </div>        
+        
+        <!-- ==============================================
+        Google reCAPTCHA // Put your site key here
+        =============================================== -->
+        <script src="https://www.google.com/recaptcha/api.js?render=6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"></script>
+
+        <!-- ==============================================
+        Vendor Scripts
+        =============================================== -->
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/slider.min.js' %}"></script>
+        <script src="{% static 'js/animation.min.js' %}"></script>
+        <script src="{% static 'js/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/gallery.min.js' %}"></script>
+        <script src="{% static 'js/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/particles.min.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
+    </body>
+</html>

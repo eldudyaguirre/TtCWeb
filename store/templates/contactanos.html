@@ -1,0 +1,694 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="es">
+
+    <head>
+
+        <!-- ==============================================
+        Basic Page Needs
+        =============================================== -->
+        <meta charset="UTF-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
+
+        <title>TotalCounts | Contabilidad, Tributario, Laboral y Sistemas</title>
+
+        <meta name="description" content="TotalCounts - C.A.S. ofrece soluciones de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
+        <meta name="author" content="Adrián Aguirre Larriva">
+        <meta name="robots" content="index, follow">
+        <meta name="googlebot" content="index, follow">
+        <meta name="keywords" content="TotalCounts, C.A.S., Complete Accounting System, contabilidad Ecuador, asesoría tributaria, asesoría laboral, facturación electrónica, desarrollo de software, sistemas contables, auditoría">
+        <meta name="language" content="Spanish">
+        <meta name="geo.region" content="EC">
+        <meta name="theme-color" content="#21333e">
+
+        <link rel="canonical" href="https://www.totalcounts.com.ec/">
+        <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+        <!-- Open Graph: vista previa al compartir -->
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="TotalCounts">
+        <meta property="og:title" content="TotalCounts | C.A.S. - Soluciones Contables e Informáticas">
+        <meta property="og:description" content="Contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
+        <meta property="og:url" content="https://www.totalcounts.com.ec/">
+        <meta property="og:locale" content="es_EC">
+        <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta property="og:image:alt" content="TotalCounts - C.A.S.">
+        <meta property="og:image:type" content="image/png">
+
+        <!-- Twitter / X -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="TotalCounts | C.A.S.">
+        <meta name="twitter:description" content="Soluciones contables, tributarias, laborales, legales e informáticas en Ecuador.">
+        <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta name="twitter:image:alt" content="TotalCounts - C.A.S.">
+
+        <!-- Datos estructurados para buscadores -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "TotalCounts",
+            "alternateName": "C.A.S. (Complete Accounting System)",
+            "url": "https://www.totalcounts.com.ec/",
+            "logo": "https://www.totalcounts.com.ec/static/images/logo-1.png",
+            "description": "Servicios de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.",
+            "email": "totalcounts@hotmail.com",
+            "telephone": "+593964208139",
+            "areaServed": {
+                "@type": "Country",
+                "name": "Ecuador"
+            },
+            "sameAs": [
+                "https://www.facebook.com/TotalCounts/"
+            ]
+        }
+        </script>
+
+        <!-- ==============================================
+        Favicons
+        =============================================== -->
+        <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
+
+        <!-- ==============================================
+        Vendor Stylesheet
+        =============================================== -->
+        
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/slider.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons-fa.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/animation.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/gallery.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cookie-notice.min.css' %}">
+
+        <!-- ==============================================
+        Custom Stylesheet
+        =============================================== -->
+        <link rel="stylesheet" href="{% static 'css/default.css' %}">
+
+        <!-- ==============================================
+        Theme Color
+        =============================================== -->
+        <meta name="theme-color" content="#21333e">
+
+        <!-- ==============================================
+        Theme Settings
+        =============================================== -->
+        <style>
+            :root {
+                --hero-bg-color: #080d10;
+                
+                --section-1-bg-color: #ffffff;
+                --section-2-bg-color: #111117;
+                --section-3-bg-color: #111117;
+                --section-4-bg-color: #ffffff;
+                --section-5-bg-color: #eef4ed;
+                --section-6-bg-color: #111117;
+                --section-7-bg-color: #ffffff;
+
+                --footer-bg-color: #080d10; --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
+            }
+        </style>
+        
+    </head>
+
+    <body>
+        
+        <!-- Preloader -->
+
+        <!-- Header -->
+        <header id="header">
+
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand top">
+                <div class="container header">
+
+                    <!-- Navbar Items [left] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="{% url 'home' %}" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
+                        </li>
+                    </ul>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items [right] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item social">
+                            <a href="https://www.facebook.com/TotalCounts/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="far fa-envelope"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="https://wa.me/593964208139" class="nav-link pr-0"><i class="fab fa-whatsapp"></i></a>
+                        </li>
+                    </ul>
+
+                </div>
+            </nav>
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand navbar-fixed sub">
+                <div class="container header">
+
+                    <!-- Navbar Brand-->
+                    <a class="navbar-brand" href="{% url 'home' %}">
+                        <span class="brand">
+                            <span class="featured">
+                                <span class="first">TOTAL</span>
+                            </span>
+                            <span class="last">COUNTS</span>
+                        </span>
+                        
+                        <!-- 
+                            Custom Logo
+                            <img src="assets/images/logo.svg" alt="NEXGEN">
+                        -->
+                    </a>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items -->
+                    <ul class="navbar-nav items">
+                        <li class="nav-item dropdown">
+                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
+                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS</a>
+                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                     <!--
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#search">
+                                <i class="icon-user"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    -->
+
+                    <!-- Navbar Toggle -->
+                    <ul class="navbar-nav toggle">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#menu">
+                                <i class="icon-menu m-0"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Action -->
+                    <ul class="navbar-nav action">
+                        <li class="nav-item ml-3">
+                            <a href="{% url 'signin' %}" class="btn ml-lg-auto primary-button">INICIA SESION</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+        </header>
+
+        <!-- Hero -->
+        <section id="slider" class="hero p-0 odd">
+            <div class="swiper-container no-slider animation slider-h-100 slider-h-auto alt">
+
+                <div class="swiper-wrapper">
+
+                    <!-- Item 1 -->
+                    <div class="swiper-slide slide-center">
+
+                        <!-- Media -->
+                        <div class="parallax-y-bg" style="background-image:url({% static 'images/bg-8.jpg' %})"></div>
+
+                        <div class="slide-content row">
+                            <div class="col-12 d-flex justify-content-start justify-content-md-end inner">
+                                <div class="right alt pb-0 text-left">
+
+                                    <!-- Content -->
+                                     
+                                    <h1 class="title effect-static-text">
+                                        <span class="pre-title m-0"> </span>
+                                        ¿Necesitas Información?
+                                    </h1>
+                                    
+                                    <!-- Action -->
+                                    <form action="php/form.php" id="nexgen-simple-form" class="nexgen-simple-form">
+                                        <input type="hidden" name="section" value="nexgen_form">
+    
+                                        <input type="hidden" name="reCAPTCHA">
+                                        <!-- Remove this field if you want to disable recaptcha -->
+    
+                                        <div class="row form-group-margin">
+                                            <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                                <input type="text" name="name" class="form-control field-name" placeholder="Nombres">
+                                            </div>
+                                            <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                                <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                                            </div>
+                                            <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                                <input type="text" name="phone" class="form-control field-phone" placeholder="Celular">
+                                            </div>
+                                            <div class="col-12 col-md-6 m-0 p-2 input-group">
+                                                <i class="icon-arrow-down mr-3"></i>
+                                                <select name="info" class="form-control field-info">
+                                                    <option value="" selected disabled>Temas frecuentes</option>
+                                                    <option>Consulta Tributaria</option>
+                                                    <option>Consulta Contable</option>
+                                                    <option>Consulta Laboral</option>
+                                                    <option>Consulta Seguridad Laboral</option>
+                                                    <option>Consulta Legal</option>
+                                                    <option>Tramites y Requerimientos</option>
+                                                    <option>Otros</option>
+                                                </select>
+                                            </div>
+                                            <!--<div class="col-12 m-0 p-2 input-group" >
+                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" ></textarea>
+                                            </div>-->
+                                            <div class="col-12 col-12 m-0 pl-md-2">
+                                                <span class="form-alert"></span>
+                                            </div>
+                                            
+                                            <!-- Action -->
+                                            <div class="col-12 input-group m-0 p-2 buttons">
+                                                <div class="d-sm-inline-flex">
+                                                    <a class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</a>
+                                                    <!--<a href="#single" class="smooth-anchor mt-4 mt-sm-0 ml-sm-3 btn outline-button">READ MORE</a>-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section id="about" class="section-2 highlights image-right" style="background-color: #ffffff !important; background-image: none !important;">
+            <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div data-aos="fade-up"  class="row intro">
+                        <div class="col-12 p-0">
+                            <span class="pre-title m-0">Visitanos pronto</span>
+                            <h2>Estamos<br>Cerca<br>de TI</h2>
+                            <p>Vamos a estar gustosos de recibirte en nuestras oficinas y darte una atención personalizada.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div class="row items">                             
+                        <div data-aos="fade-up" class="col-12 p-0 pr-md-4 item">
+                            <div class="contacts">
+                                <h4>Oficina Matriz</h4>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item">
+                                        <a href="tel:+593964208139" class="nav-link">
+                                            <i class="fas fa-phone-alt mr-2"></i>
+                                            (+593) 96 420 8139
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="mailto:totalcounts@hotmail.com" class="nav-link" style="font-size:15px;">
+                                            <i class="fas fa-envelope mr-2"></i>
+                                            totalcounts@hotmail.com
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            Av. Isabel la Católica y José Zorrilla esq.
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>     
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div class="row items">                             
+                        <div data-aos="fade-up" class="col-12 p-0 pr-md-4 item">
+                            <div class="contacts">
+                                <h4>Sucursal</h4>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item">
+                                        <a href="tel:+593984230099" class="nav-link">
+                                            <i class="fas fa-phone-alt mr-2"></i>
+                                            (+593) 98 423 0099
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="mailto:totalcounts@hotmail.com" class="nav-link" style="font-size:15px;">
+                                            <i class="fas fa-envelope mr-2"></i>
+                                            totalcounts@hotmail.com
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            Via a Oña Km. 79
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>     
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+
+            <!-- Footer [content] -->
+            <section id="footer" class="odd footer offers">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-lg-3 footer-left">
+
+                            <!-- Navbar Brand-->
+                            <a class="navbar-brand" href="/">
+                                <span class="brand">
+                                    <span class="featured">
+                                        <span class="first">TOTAL</span>
+                                    </span>
+                                    <span class="last">COUNTS</span>
+                                </span>
+                                
+                            </a>
+                            <p>CUENTAS CON NOSOTROS.</p>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a href="tel:+593984230099" class="nav-link">
+                                        <i class="fas fa-phone-alt mr-2"></i>
+                                        +593 984-230-099
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        totalcounts@hotmail.com
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Av. Isabel la Católica y José Zorrilla esq.
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'contactanos' %}" class="mt-4 btn outline-button">CONTACTANOS</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-12 col-lg-9 p-0 footer-right">
+                            <div class="row items">
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Acerca</h4>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañia</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>Institucional</a>
+                                        <a href="{% url 'home' %}#team"><i class="icon-arrow-right"></i>Social & Eventos</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Innovación</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Ambiente</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Tecnología</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Servicios</h4>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Auditorías</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Soporte</h4>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Responsibility</a>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Terminos de Uso</a>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Información</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Copyright -->
+            <section id="copyright" class="p-3 odd copyright">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-left">
+                            <p>Técnicos en Operaciones Tributarias Aguirre Larriva</p>
+                            <!--
+                                Suggestion: Replace the text above with a description of your website.
+                             -->
+                        </div>
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-right">
+                            <p>© 2026 TotalWeb by C.A.S. está desarrollado por <a href="https://www.totalcounts.com.ec/" target="_blank">Adrián Aguirre Larriva</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </footer>
+
+        <!-- Modal [search] -->
+        <div id="search" class="p-0 modal fade" role="dialog" aria-labelledby="search" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0">
+                                        <h2>What are you looking for?</h2>
+                                        <div class="badges">
+                                            <span class="badge"><a href="#">Consulting</a></span>
+                                            <span class="badge"><a href="#">Audit</a></span>
+                                            <span class="badge"><a href="#">Assurance</a></span>
+                                            <span class="badge"><a href="#">Advisory</a></span>
+                                            <span class="badge"><a href="#">Financial</a></span>
+                                            <span class="badge"><a href="#">Capital Markets</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="text" class="form-control" placeholder="Enter Keywords">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">SEARCH</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [sign] -->
+        <div id="sign" class="p-0 modal fade" role="dialog" aria-labelledby="sign" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0 pb-3">
+                                        <h2>Sign In</h2>
+                                        <p>Don't have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#register">Register now</a>.</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="email" class="form-control" placeholder="Email" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Password" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">SIGN IN</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [register] -->
+        <div id="register" class="p-0 modal fade" role="dialog" aria-labelledby="register" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0 pb-3">
+                                        <h2>Register</h2>
+                                        <p>Have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#sign">Sign In</a>.</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="text" class="form-control" placeholder="Name" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="email" class="form-control" placeholder="Email" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Password" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Confirm Password" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">REGISTER</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [map] -->
+        <div id="map" class="p-0 modal fade" role="dialog" aria-labelledby="map" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content" style="background:#ffffff; border:0; border-radius:8px; overflow:hidden;">
+                    <div class="modal-header" style="border:0; padding:10px 15px; justify-content:flex-end;">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div style="width:100%; aspect-ratio:16 / 9; min-height:320px;">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d249.0419196643243!2d-79.0186553!3d-2.9107869!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sec!4v1704979894350!5m2!1ses!2sec"
+                                width="100%"
+                                height="100%"
+                                style="border:0; display:block;"
+                                aria-hidden="false"
+                                tabindex="0"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [responsive menu] -->
+        <div id="menu" class="p-0 modal fade" role="dialog" aria-labelledby="menu" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="menu modal-body">
+                        <div class="row w-100">
+                            <div class="items p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                            <div class="contacts p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll [to top] -->
+        <div id="scroll-to-top" class="scroll-to-top">
+            <a href="#header" class="smooth-anchor">
+                <i class="fas fa-arrow-up"></i>
+            </a>
+        </div>        
+        
+        <!-- ==============================================
+        Google reCAPTCHA // Put your site key here
+        =============================================== -->
+        <script src="https://www.google.com/recaptcha/api.js?render=6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"></script>
+
+        <!-- ==============================================
+        Vendor Scripts
+        =============================================== -->
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/slider.min.js' %}"></script>
+        <script src="{% static 'js/animation.min.js' %}"></script>
+        <script src="{% static 'js/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/gallery.min.js' %}"></script>
+        <script src="{% static 'js/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/particles.min.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
+    </body>
+</html>
