@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
 
@@ -26,7 +27,6 @@ TEMPLATE_PREVIEWS = {
     'page-single-service-2': 'page-single-service-2.html',
     'page-testimonials-1': 'page-testimonials-1.html',
     'quienes': 'quienes.html',
-    'signup': 'signup.html',
 }
 
 
@@ -64,11 +64,13 @@ def about(request):
     return render(request, 'about.html')
 
 
+@staff_member_required
 def template_catalog(request):
     """Catálogo interno para revisar las plantillas del tema antes de reutilizarlas."""
     return render(request, 'template-catalog.html', {'templates': TEMPLATE_PREVIEWS})
 
 
+@staff_member_required
 def template_preview(request, slug):
     """Renderiza una plantilla del catálogo usando el mismo sistema de templates de Django."""
     template_name = TEMPLATE_PREVIEWS.get(slug)
