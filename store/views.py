@@ -24,7 +24,6 @@ TEMPLATE_PREVIEWS = {
     'page-single-post-1': 'page-single-post-1.html',
     'page-single-project-1': 'page-single-project-1.html',
     'page-single-service-1': 'page-single-service-1.html',
-    'page-single-service-2': 'page-single-service-2.html',
     'page-testimonials-1': 'page-testimonials-1.html',
     'quienes': 'quienes.html',
 }
@@ -62,6 +61,10 @@ def do_logout(request):
 
 def about(request):
     return render(request, 'about.html')
+
+
+def contactanos(request):
+    return render(request, 'contactanos.html')
 
 
 @staff_member_required
