@@ -285,6 +285,64 @@ iframe {
     }
 }
 
+/* Mobile menu: force the custom dark panel above the legacy theme. */
+#menu.modal {
+    background: rgba(8, 13, 16, 0.72) !important;
+}
+
+#menu .modal-dialog,
+#menu .modal-content,
+#menu .modal-body.menu {
+    background-color: #21333e !important;
+    background-image: linear-gradient(
+        145deg,
+        #21333e 0%,
+        #182832 55%,
+        #101b22 100%
+    ) !important;
+}
+
+#menu .modal-content {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    border: 0 !important;
+}
+
+#menu .modal-body.menu {
+    min-height: calc(100vh - 82px);
+}
+
+#menu .menu .items,
+#menu .menu .contacts {
+    background: transparent !important;
+}
+
+#menu .menu .nav-link,
+#menu .menu .nav-link:visited,
+#menu .menu .nav-link i {
+    color: #ffffff !important;
+}
+
+#menu .menu .nav-link:hover,
+#menu .menu .nav-link:focus {
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.06) !important;
+}
+
+@media (max-width: 767px) {
+    #menu .modal-dialog,
+    #menu .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh;
+        margin: 0 !important;
+    }
+
+    #menu .modal-content {
+        border-radius: 0 !important;
+    }
+}
+
 /* Mobile menu: dark glassmorphism */
 #menu .modal-dialog {
     width: 100%;
