@@ -75,21 +75,27 @@ jQuery(function ($) {
 
     
     $('.menu .nav-item.dropdown').each(function() {
-        var children = $(this).children('.nav-link');
-        children.addClass('prevent');
+        var dropdown = $(this).children('.dropdown-menu');
+
+        // Only prevent the parent link when this item actually has a dropdown.
+        // Normal links such as ACERCA, CONTACTANOS and INICIAR SESIÓN must navigate.
+        if (dropdown.length > 0) {
+            $(this).children('.nav-link').first().addClass('prevent');
+        }
     })
 
     $(document).on('click', '#menu .nav-item .nav-link', function (e) {
 
-        if($(this).hasClass('prevent')) {
+        var nav_link = $(this);
+        var dropdown = nav_link.next('.dropdown-menu');
+
+        if (nav_link.hasClass('prevent')) {
             e.preventDefault();
+            dropdown.toggleClass('show');
+            return;
         }
 
-        var nav_link = $(this);
-
-        nav_link.next().toggleClass('show');
-
-        if(nav_link.hasClass('smooth-anchor')) {
+        if (nav_link.hasClass('smooth-anchor')) {
             $('#menu').modal('hide');
         }
     })
