@@ -2,11 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.http import Http404
 from django.shortcuts import redirect, render
 
 
-
-# Plantillas de demostración reutilizables.
 TEMPLATE_PREVIEWS = {
     'page-404-1': 'page-404-1.html',
     'page-about-1': 'page-about-1.html',
@@ -67,6 +66,18 @@ def contactanos(request):
     return render(request, 'contactanos.html')
 
 
+def servicios(request):
+    raise Http404
+
+
+def blog(request):
+    raise Http404
+
+
+def error_404(request, exception):
+    return render(request, '404.html', status=404)
+
+
 @staff_member_required
 def template_catalog(request):
     """Catálogo interno para revisar las plantillas del tema antes de reutilizarlas."""
@@ -78,6 +89,5 @@ def template_preview(request, slug):
     """Renderiza una plantilla del catálogo usando el mismo sistema de templates de Django."""
     template_name = TEMPLATE_PREVIEWS.get(slug)
     if template_name is None:
-        from django.http import Http404
         raise Http404
     return render(request, template_name, {'preview_mode': True, 'preview_slug': slug})
