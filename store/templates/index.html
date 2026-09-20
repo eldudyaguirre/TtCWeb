@@ -984,12 +984,12 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="#" class="footer-service-link" data-service="tributario"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#" class="footer-service-link" data-service="rrhh"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#" class="footer-service-link" data-service="reglamentos"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#" class="footer-service-link" data-service="societario"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="legal"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#" class="footer-service-link" data-service="auditorias"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
@@ -1000,8 +1000,7 @@
                                         <a href="#" class="footer-info-link" data-info="cookies"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
                                         <a href="#" class="footer-info-link" data-info="privacidad"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
                                         <a href="#" class="footer-info-link" data-info="accesibilidad"><i class="icon-arrow-right"></i>Accesibilidad</a>
-                                        <a href="#" class="footer-info-link" data-info="informacion"><i class="icon-arrow-right"></i>Información</a>
-                                    </div>
+                                                                            </div>
                                 </div>
                             </div>
                         </div>
@@ -1169,10 +1168,6 @@
                 accesibilidad: {
                     title: 'Accesibilidad',
                     body: '<p>Trabajamos para que nuestro sitio pueda ser utilizado por el mayor número posible de personas, procurando mantener una navegación clara, contenidos legibles y elementos interactivos identificables.</p><p>Si encuentras alguna dificultad de acceso o navegación, puedes comunicarla mediante nuestros canales de contacto para ayudarnos a mejorar.</p>'
-                },
-                informacion: {
-                    title: 'Información',
-                    body: '<p>TotalCounts es una marca de C.A.S. (Complete Accounting System), orientada a soluciones contables, tributarias, laborales, legales, de auditoría y tecnología.</p><p>Para consultas, servicios o información adicional puedes comunicarte con nosotros a través de los medios publicados en este sitio.</p>'
                 }
             };
 
@@ -1197,6 +1192,47 @@
                 link.addEventListener('click', function (event) {
                     event.preventDefault();
                     openInfo(this.dataset.info);
+                });
+            });
+
+            const services = {
+                tributario: {
+                    title: 'Control Tributario',
+                    body: '<p>Brindamos acompañamiento en el cumplimiento de las obligaciones tributarias y en la revisión de procesos relacionados con impuestos.</p><p>Analizamos la información disponible para identificar obligaciones, oportunidades de mejora y procedimientos adecuados ante la administración tributaria.</p>'
+                },
+                rrhh: {
+                    title: 'Recursos Humanos',
+                    body: '<p>Apoyamos a las empresas en la gestión de sus procesos laborales y de recursos humanos.</p><p>Incluye orientación sobre documentación, procedimientos internos, obligaciones laborales y aplicación adecuada de la normativa correspondiente.</p>'
+                },
+                reglamentos: {
+                    title: 'Reglamentos',
+                    body: '<p>Ayudamos a establecer y actualizar reglamentos y procedimientos internos necesarios para una adecuada organización empresarial.</p><p>El objetivo es contar con reglas claras que faciliten la gestión y el cumplimiento de las obligaciones aplicables.</p>'
+                },
+                societario: {
+                    title: 'Societario',
+                    body: '<p>Ofrecemos asesoramiento en asuntos relacionados con la organización y cumplimiento societario de las empresas.</p><p>Apoyamos en la revisión de documentación y procesos necesarios para mantener una adecuada gestión corporativa.</p>'
+                },
+                legal: {
+                    title: 'Consultoría Legal',
+                    body: '<p>Brindamos orientación legal relacionada con las necesidades de la empresa y sus operaciones.</p><p>Analizamos cada situación de acuerdo con la documentación y circunstancias particulares para orientar los pasos correspondientes.</p>'
+                },
+                auditorias: {
+                    title: 'Auditorías',
+                    body: '<p>Realizamos servicios de auditoría y revisión orientados a evaluar información, procesos y controles de la organización.</p><p>El análisis permite identificar aspectos que pueden ser fortalecidos y generar información útil para la administración.</p>'
+                }
+            };
+
+            document.querySelectorAll('.footer-service-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const item = services[this.dataset.service];
+                    if (!item) return;
+                    title.textContent = item.title;
+                    body.innerHTML = item.body;
+                    modal.classList.add('active');
+                    modal.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                    close.focus();
                 });
             });
 
