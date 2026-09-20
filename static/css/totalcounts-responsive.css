@@ -537,10 +537,10 @@ iframe {
     }
 
     body.about-page #slider.featured1::after {
-        width: 90px !important;
-        height: 90px !important;
-        left: calc(50% - 45px) !important;
-        top: calc(100% - 45px) !important;
+        width: 80px !important;
+        height: 80px !important;
+        left: calc(50% - 40px) !important;
+        top: calc(100% - 40px) !important;
         background-size: contain !important;
         background-position: center !important;
         background-repeat: no-repeat !important;
