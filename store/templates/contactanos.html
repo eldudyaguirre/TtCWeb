@@ -54,10 +54,10 @@
                     <!-- Navbar Items [right] -->
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a href="#" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
+                            <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
                         </li>
                     </ul>
 
@@ -100,19 +100,19 @@
                     <!-- Navbar Items -->
                     <ul class="navbar-nav items">
                         <li class="nav-item">
-                            <a href="#header" class="smooth-anchor nav-link">INICIO</a>
+                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#services" class="smooth-anchor nav-link">SERVICIOS</a>
+                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#team" class="smooth-anchor nav-link">EQUIPO</a>
+                            <a href="{% url 'home' %}#team" class="nav-link">EQUIPO</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#blog" class="smooth-anchor nav-link">BLOG</a>
+                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG</a>
                         </li>
                     </ul>
 
@@ -137,7 +137,7 @@
                     <!-- Navbar Action -->
                     <ul class="navbar-nav action">
                         <li class="nav-item ml-3">
-                            <a href="#contact" class="smooth-anchor btn ml-lg-auto primary-button">CONTACTANOS</a>
+                            <a href="{% url 'contactanos' %}" class="btn ml-lg-auto primary-button">CONTACTANOS</a>
                         </li>
                     </ul>
                 </div>
@@ -253,8 +253,8 @@
                         <div class="row item widget-gallery mb-0">
                             <div class="col-12 align-self-center">
                                 <h4 class="title">Ubicación</h4>
-                                <a href="#" data-toggle="modal" data-target="#map">
-                                    <img src="{% static 'images/map.jpg' %}" alt="Ubicación de TotalCounts" class="w-100">
+                                <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" data-toggle="modal" data-target="#map">
+                                    <div class="card p-4 text-center"><i class="fas fa-map-marker-alt mb-3"></i><h4>Cuenca, Ecuador</h4><p>Av. Isabel la Católica y José Zorrilla esq.</p><a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="btn outline-button">ABRIR MAPA</a></div>
                                 </a>
                             </div>
                         </div>
@@ -311,13 +311,13 @@
                             <p>CUENTAS CON NOSOTROS.</p>
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="tel:+593984230099" class="nav-link">
                                         <i class="fas fa-phone-alt mr-2"></i>
                                         +593 984-230-099
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
                                         <i class="fas fa-envelope mr-2"></i>
                                         totalcounts@hotmail.com
                                     </a>
@@ -338,8 +338,8 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañia</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>Institucional</a>
                                         <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
                                         <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
                                         <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
@@ -349,12 +349,12 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
