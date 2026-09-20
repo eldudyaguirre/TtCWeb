@@ -4810,3 +4810,15 @@ footer .copyright p {
         opacity: .72 !important;
     }
 }
+
+
+/* TotalCounts responsive menu typography */
+@media (max-width: 767px) {
+    #menu .menu .nav-link.menu-extra-link {
+        font-weight: 400 !important;
+    }
+
+    #menu .menu .contacts .menu-extra-link {
+        font-weight: 400 !important;
+    }
+}
