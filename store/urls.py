@@ -8,6 +8,7 @@ urlpatterns = [
     path('signin/', views.do_signin, name='signin'),
     path('logout/', views.do_logout, name='logout'),
     path('about/', views.about, name='about'),
+    path('contactanos/', views.contactanos, name='contactanos'),
     path('plantillas/', views.template_catalog, name='template_catalog'),
     path('plantillas/<slug:slug>/', views.template_preview, name='template_preview'),
 ]
