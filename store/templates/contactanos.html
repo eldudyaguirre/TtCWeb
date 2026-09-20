@@ -8,13 +8,13 @@
         <!-- ==============================================
         Basic Page Needs
         =============================================== -->
-        <meta charset="utf-8">
+        <meta charset="UTF-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
 
-        <title>Contáctanos | TotalCounts</title>
+        <title>TotalCounts | Contabilidad, Tributario, Laboral y Sistemas</title>
 
         <meta name="description" content="TotalCounts - C.A.S. ofrece soluciones de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
         <meta name="author" content="Adrián Aguirre Larriva">
@@ -25,10 +25,53 @@
         <meta name="geo.region" content="EC">
         <meta name="theme-color" content="#21333e">
 
+        <link rel="canonical" href="https://www.totalcounts.com.ec/">
+        <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+        <!-- Open Graph: vista previa al compartir -->
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="TotalCounts">
+        <meta property="og:title" content="TotalCounts | C.A.S. - Soluciones Contables e Informáticas">
+        <meta property="og:description" content="Contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
+        <meta property="og:url" content="https://www.totalcounts.com.ec/">
+        <meta property="og:locale" content="es_EC">
+        <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta property="og:image:alt" content="TotalCounts - C.A.S.">
+        <meta property="og:image:type" content="image/png">
+
+        <!-- Twitter / X -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="TotalCounts | C.A.S.">
+        <meta name="twitter:description" content="Soluciones contables, tributarias, laborales, legales e informáticas en Ecuador.">
+        <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/logo-1.png">
+        <meta name="twitter:image:alt" content="TotalCounts - C.A.S.">
+
+        <!-- Datos estructurados para buscadores -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "TotalCounts",
+            "alternateName": "C.A.S. (Complete Accounting System)",
+            "url": "https://www.totalcounts.com.ec/",
+            "logo": "https://www.totalcounts.com.ec/static/images/logo-1.png",
+            "description": "Servicios de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.",
+            "email": "totalcounts@hotmail.com",
+            "telephone": "+593964208139",
+            "areaServed": {
+                "@type": "Country",
+                "name": "Ecuador"
+            },
+            "sameAs": [
+                "https://www.facebook.com/TotalCounts/"
+            ]
+        }
+        </script>
+
         <!-- ==============================================
         Favicons
         =============================================== -->
-        <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+        <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
         <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
         <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
         <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
@@ -36,20 +79,20 @@
         <!-- ==============================================
         Vendor Stylesheet
         =============================================== -->
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/bootstrap.min.css">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/slider.min.css">
+        
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/slider.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/icons.min.css">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/icons-fa.min.css">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/animation.min.css">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/gallery.min.css">
-        <link rel="stylesheet" href="{% static 'css/vendor' %}/cookie-notice.min.css">
+        <link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons-fa.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/animation.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/gallery.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cookie-notice.min.css' %}">
 
         <!-- ==============================================
         Custom Stylesheet
         =============================================== -->
         <link rel="stylesheet" href="{% static 'css/default.css' %}">
-        <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}">
 
         <!-- ==============================================
         Theme Color
@@ -62,16 +105,22 @@
         <style>
             :root {
                 --hero-bg-color: #080d10;
-
+                
                 --section-1-bg-color: #ffffff;
-                --section-2-bg-color: #eef4ed;
-                --section-3-bg-color: #111117; --section-3-bg-image: url('{% static 'images/bg-1.jpg' %}');
+                --section-2-bg-color: #111117;
+                --section-3-bg-color: #111117;
+                --section-4-bg-color: #ffffff;
+                --section-5-bg-color: #eef4ed;
+                --section-6-bg-color: #111117;
+                --section-7-bg-color: #ffffff;
+
+                --footer-bg-color: #080d10; --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
             }
         </style>
         
     </head>
 
-    <body class="contactanos">
+    <body>
         
         <!-- Preloader -->
 
@@ -95,7 +144,7 @@
                     <!-- Navbar Items [right] -->
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
+                            <a href="#" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
@@ -123,7 +172,7 @@
                 <div class="container header">
 
                     <!-- Navbar Brand-->
-                    <a class="navbar-brand" href="{% url 'home' %}">
+                    <a class="navbar-brand" href="/">
                         <span class="brand">
                             <span class="featured">
                                 <span class="first">TOTAL</span>
@@ -133,7 +182,7 @@
                         
                         <!-- 
                             Custom Logo
-                            <img src="{% static 'images/logo.svg' %}" alt="NEXGEN">
+                            <img src="assets/images/logo.svg" alt="NEXGEN">
                         -->
                     </a>
 
@@ -143,10 +192,10 @@
                     <!-- Navbar Items -->
                     <ul class="navbar-nav items">
                         <li class="nav-item dropdown">
-                            <a href="{% url 'home' %}" class="nav-link">INICIO </i></a>
-                            <a href="{% url 'about' %}" class="nav-link">ACERCA </i></a>
-                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS </i></a>
-                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG </i></a>
+                            <a href="#" class="nav-link">INICIO </i></a>
+                            <a href="#" class="nav-link">ACERCA </i></a>
+                            <a href="#" class="nav-link">SERVICIOS </i></a>
+                            <a href="#" class="nav-link">BLOG </i></a>
                         </li>
                     </ul>
 
@@ -173,7 +222,7 @@
                     <!-- Navbar Action -->
                     <ul class="navbar-nav action">
                         <li class="nav-item ml-3">
-                            <a href="{% url 'signin' %}" class="btn ml-lg-auto primary-button">INICIA SESION</a>
+                            <a href="#" target="_blank" class="btn ml-lg-auto primary-button">INICIA SESION</a>
                         </li>
                     </ul>
                 </div>
@@ -191,7 +240,7 @@
                     <div class="swiper-slide slide-center">
 
                         <!-- Media -->
-                        <div class="parallax-y-bg" style="background-image:url({% static 'images/bg-8.jpg' %})"></div>
+                        <div class="parallax-y-bg" style="background-image:url(assets/images/bg-8.jpg)"></div>
 
                         <div class="slide-content row">
                             <div class="col-12 d-flex justify-content-start justify-content-md-end inner">
@@ -244,7 +293,7 @@
                                             <!-- Action -->
                                             <div class="col-12 input-group m-0 p-2 buttons">
                                                 <div class="d-sm-inline-flex">
-                                                    <a href="{% url 'contactanos' %}" class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</a>
+                                                    <a class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</a>
                                                     <!--<a href="#single" class="smooth-anchor mt-4 mt-sm-0 ml-sm-3 btn outline-button">READ MORE</a>-->
                                                 </div>
                                             </div>
@@ -350,7 +399,7 @@
                         <div class="col-12 col-lg-3 footer-left">
 
                             <!-- Navbar Brand-->
-                            <a class="navbar-brand" href="{% url 'home' %}">
+                            <a class="navbar-brand" href="/">
                                 <span class="brand">
                                     <span class="featured">
                                         <span class="first">TOTAL</span>
@@ -389,23 +438,23 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>Institucional</a>
-                                        <a href="{% url 'home' %}#team"><i class="icon-arrow-right"></i>Social & Eventos</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Innovación</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Ambiente</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Tecnología</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Tecnología</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
@@ -612,21 +661,20 @@
         <!-- ==============================================
         Vendor Scripts
         =============================================== -->
-        <script src="{% static 'js/vendor' %}/jquery.min.js"></script>
-        <script src="{% static 'js/vendor' %}/jquery.easing.min.js"></script>
-        <script src="{% static 'js/vendor' %}/jquery.inview.min.js"></script>
-        <script src="{% static 'js/vendor' %}/popper.min.js"></script>
-        <script src="{% static 'js/vendor' %}/bootstrap.min.js"></script>
-        <script src="{% static 'js/vendor' %}/ponyfill.min.js"></script>
-        <script src="{% static 'js/vendor' %}/slider.min.js"></script>
-        <script src="{% static 'js/vendor' %}/animation.min.js"></script>
-        <script src="{% static 'js/vendor' %}/progress-radial.min.js"></script>
-        <script src="{% static 'js/vendor' %}/bricklayer.min.js"></script>
-        <script src="{% static 'js/vendor' %}/gallery.min.js"></script>
-        <script src="{% static 'js/vendor' %}/shuffle.min.js"></script>
-        <script src="{% static 'js/vendor' %}/cookie-notice.min.js"></script>
-        <script src="{% static 'js/vendor' %}/particles.min.js"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/slider.min.js' %}"></script>
+        <script src="{% static 'js/animation.min.js' %}"></script>
+        <script src="{% static 'js/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/gallery.min.js' %}"></script>
+        <script src="{% static 'js/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/particles.min.js' %}"></script>
         <script src="{% static 'js/main.js' %}"></script>
-
     </body>
 </html>
