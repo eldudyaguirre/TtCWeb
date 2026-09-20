@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página no encontrada | TotalCounts</title>
+    <meta name="description" content="La página que buscas no está disponible en TotalCounts.">
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: #fff;
+        }
+        .error-page {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .error-page img {
+            display: block;
+            width: min(100%, 1450px);
+            height: auto;
+            max-height: calc(100vh - 48px);
+            object-fit: contain;
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .error-page img {
+                width: 100%;
+                max-height: calc(100vh - 24px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="error-page" role="main">
+        <img src="{% static 'images/404-ufo.jpg' %}" alt="404 - Página no encontrada">
+    </main>
+</body>
+</html>
