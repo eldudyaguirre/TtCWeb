@@ -4746,3 +4746,67 @@ footer .copyright p {
     width: 50%;
   }
 /* #endregion All Media Queries */
+
+/* TotalCounts - Responsive menu final override */
+@media (max-width: 767px) {
+    #menu,
+    #menu.modal,
+    #menu.show {
+        background: rgba(8, 13, 16, 0.82) !important;
+    }
+
+    #menu .modal-dialog,
+    #menu .modal-dialog.modal-dialog-slideout,
+    #menu .modal-dialog .modal-content,
+    #menu .modal-content,
+    #menu .modal-content.full,
+    #menu .modal-body,
+    #menu .modal-body.menu {
+        background: #182832 !important;
+        background-image: linear-gradient(145deg, #21333e 0%, #182832 55%, #0d171d 100%) !important;
+        opacity: 1 !important;
+    }
+
+    #menu .modal-dialog,
+    #menu .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    #menu .modal-header {
+        background: transparent !important;
+        color: #fff !important;
+        border: 0 !important;
+    }
+
+    #menu .modal-header .icon-close,
+    #menu .menu .nav-link,
+    #menu .menu .nav-link:visited,
+    #menu .menu .nav-link i {
+        color: #fff !important;
+    }
+
+    #menu .menu .items,
+    #menu .menu .contacts {
+        background: transparent !important;
+    }
+
+    #menu .menu .contacts {
+        border-top: 1px solid rgba(255,255,255,.12);
+        margin-top: 24px;
+        padding-top: 18px !important;
+    }
+
+    #menu .menu .nav-link {
+        text-shadow: 0 1px 8px rgba(0,0,0,.35);
+    }
+
+    body:has(#menu.show) .modal-backdrop,
+    .modal-backdrop.show {
+        background-color: #081015 !important;
+        opacity: .72 !important;
+    }
+}
