@@ -142,10 +142,10 @@
                     <!-- Navbar Items -->
                     <ul class="navbar-nav items">
                         <li class="nav-item dropdown">
-                            <a href="#" class="nav-link">INICIO </i></a>
-                            <a href="#" class="nav-link">ACERCA </i></a>
-                            <a href="#" class="nav-link">SERVICIOS </i></a>
-                            <a href="#" class="nav-link">BLOG </i></a>
+                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
+                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS</a>
+                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG</a>
                         </li>
                     </ul>
 
@@ -204,12 +204,10 @@
                                     </h1>
                                     
                                     <!-- Action -->
-                                    <form action="php/form.php" id="nexgen-simple-form" class="nexgen-simple-form">
+                                    <form action="#" id="nexgen-simple-form" class="nexgen-simple-form">
                                         <input type="hidden" name="section" value="nexgen_form">
     
-                                        <input type="hidden" name="reCAPTCHA">
-                                        <!-- Remove this field if you want to disable recaptcha -->
-    
+                                        
                                         <div class="row form-group-margin">
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
                                                 <input type="text" name="name" class="form-control field-name" placeholder="Nombres">
@@ -277,13 +275,13 @@
                                 <h4>Oficina Matriz</h4>
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a href="#" class="nav-link">
+                                        <a href="tel:+593964208139" class="nav-link">
                                             <i class="fas fa-phone-alt mr-2"></i>
                                             (+593) 96 420 8139
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="#" class="nav-link" style="font-size:15px;">
+                                        <a href="mailto:totalcounts@hotmail.com" class="nav-link" style="font-size:15px;">
                                             <i class="fas fa-envelope mr-2"></i>
                                             totalcounts@hotmail.com
                                         </a>
@@ -310,7 +308,7 @@
                                 <h4>Sucursal</h4>
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a href="#" class="nav-link">
+                                        <a href="tel:+593984230099" class="nav-link">
                                             <i class="fas fa-phone-alt mr-2"></i>
                                             (+593) 98 423 0099
                                         </a>
