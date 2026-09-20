@@ -423,7 +423,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                    <a href="#" class="nav-link">
                                         <i class="fas fa-map-marker-alt mr-2"></i>
                                         Av. Isabel la Católica y José Zorrilla esq.
                                     </a>
@@ -438,35 +438,33 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>Institucional</a>
-                                        <a href="{% url 'home' %}#team"><i class="icon-arrow-right"></i>Social & Eventos</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Innovación</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Ambiente</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Tecnología</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañía</a>
+                                        <a href="#" class="footer-info-link" data-info="mision"><i class="icon-arrow-right"></i>Misión</a>
+                                        <a href="#" class="footer-info-link" data-info="vision"><i class="icon-arrow-right"></i>Visión</a>
+                                        <a href="#" class="footer-info-link" data-info="objetivos"><i class="icon-arrow-right"></i>Objetivos</a>
+                                        <a href="#" class="footer-info-link" data-info="acerca"><i class="icon-arrow-right"></i>Acerca de</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="{% url 'servicios' %}"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="#" class="footer-service-link" data-service="tributario"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#" class="footer-service-link" data-service="rrhh"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#" class="footer-service-link" data-service="reglamentos"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#" class="footer-service-link" data-service="societario"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="legal"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#" class="footer-service-link" data-service="auditorias"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Soporte</h4>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Responsibility</a>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Terminos de Uso</a>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Accesibilidad</a>
-                                        <a href="{% url 'contactanos' %}"><i class="icon-arrow-right"></i>Información</a>
-                                    </div>
+                                        <a href="#" class="footer-info-link" data-info="responsabilidad"><i class="icon-arrow-right"></i>Responsabilidad</a>
+                                        <a href="#" class="footer-info-link" data-info="terminos"><i class="icon-arrow-right"></i>Términos de Uso</a>
+                                        <a href="#" class="footer-info-link" data-info="cookies"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="#" class="footer-info-link" data-info="privacidad"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="#" class="footer-info-link" data-info="accesibilidad"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                                                            </div>
                                 </div>
                             </div>
                         </div>
@@ -690,5 +688,202 @@
         <script src="{% static 'js/cookie-notice.min.js' %}"></script>
         <script src="{% static 'js/particles.min.js' %}"></script>
         <script src="{% static 'js/main.js' %}"></script>
+            <!-- Modal [información del sitio] -->
+        <div id="footer-info-modal" class="footer-info-modal" aria-hidden="true">
+            <div class="footer-info-overlay"></div>
+            <div class="footer-info-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-info-title">
+                <button type="button" class="footer-info-close" aria-label="Cerrar">&times;</button>
+                <div class="footer-info-content">
+                    <span class="pre-title">TotalCounts</span>
+                    <h3 id="footer-info-title"></h3>
+                    <div id="footer-info-body"></div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .footer-info-modal {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 99999;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .footer-info-modal.active { display: flex; }
+            .footer-info-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(3, 10, 14, .78);
+                backdrop-filter: blur(6px);
+            }
+            .footer-info-dialog {
+                position: relative;
+                z-index: 1;
+                width: min(680px, 100%);
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 38px;
+                border-radius: 16px;
+                background: rgba(17, 25, 29, .97);
+                border: 1px solid rgba(255,255,255,.10);
+                box-shadow: 0 25px 80px rgba(0,0,0,.45);
+                color: #fff;
+            }
+            .footer-info-content h3 {
+                margin: 8px 0 20px;
+                font-size: 30px;
+            }
+            .footer-info-content p {
+                color: rgba(255,255,255,.78);
+                line-height: 1.75;
+                margin-bottom: 14px;
+            }
+            .footer-info-close {
+                position: absolute;
+                top: 12px;
+                right: 16px;
+                width: 38px;
+                height: 38px;
+                border: 0;
+                border-radius: 50%;
+                background: rgba(255,255,255,.08);
+                color: #fff;
+                font-size: 28px;
+                line-height: 1;
+                cursor: pointer;
+            }
+            .footer-info-close:hover { background: rgba(255,255,255,.16); }
+            @media (max-width: 576px) {
+                .footer-info-dialog { padding: 30px 24px; }
+                .footer-info-content h3 { font-size: 24px; }
+            }
+        </style>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('footer-info-modal');
+            const title = document.getElementById('footer-info-title');
+            const body = document.getElementById('footer-info-body');
+            const close = modal.querySelector('.footer-info-close');
+            const overlay = modal.querySelector('.footer-info-overlay');
+
+            const info = {
+                responsabilidad: {
+                    title: 'Responsabilidad',
+                    body: '<p>En TotalCounts trabajamos para brindar información y servicios contables, tributarios, laborales e informáticos de manera clara y responsable.</p><p>La información publicada en este sitio tiene carácter general y no sustituye el análisis particular de cada caso. Las decisiones deben considerar la documentación y circunstancias específicas de cada cliente.</p>'
+                },
+                terminos: {
+                    title: 'Términos de Uso',
+                    body: '<p>El uso de este sitio implica la aceptación de estas condiciones. El contenido se proporciona con fines informativos sobre los servicios de TotalCounts.</p><p>No está permitido utilizar, copiar o distribuir el contenido del sitio de forma que perjudique a TotalCounts o infrinja la normativa aplicable.</p>'
+                },
+                cookies: {
+                    title: 'Acerca de Cookies',
+                    body: '<p>Este sitio puede utilizar cookies y tecnologías similares para permitir el funcionamiento de determinadas características, mejorar la experiencia de navegación y obtener información estadística.</p><p>El usuario puede administrar o bloquear las cookies desde la configuración de su navegador. Algunas funciones podrían verse afectadas al deshabilitarlas.</p>'
+                },
+                privacidad: {
+                    title: 'Políticas de Privacidad',
+                    body: '<p>TotalCounts procura tratar los datos personales de sus usuarios y clientes de forma responsable y conforme a la normativa aplicable.</p><p>Los datos proporcionados mediante formularios o canales de contacto se utilizan para atender solicitudes, prestar servicios y mantener la comunicación relacionada con la relación comercial.</p><p>No se solicitarán datos personales innecesarios para la finalidad correspondiente.</p>'
+                },
+                accesibilidad: {
+                    title: 'Accesibilidad',
+                    body: '<p>Trabajamos para que nuestro sitio pueda ser utilizado por el mayor número posible de personas, procurando mantener una navegación clara, contenidos legibles y elementos interactivos identificables.</p><p>Si encuentras alguna dificultad de acceso o navegación, puedes comunicarla mediante nuestros canales de contacto para ayudarnos a mejorar.</p>'
+                },
+                mision: {
+                    title: 'Misión',
+                    body: '<p>Brindar soluciones contables, tributarias, laborales y tecnológicas que aporten claridad, orden y herramientas útiles para la gestión de nuestros clientes.</p><p>Buscamos acompañar a cada organización con servicios orientados a sus necesidades y a la correcta gestión de sus operaciones.</p>'
+                },
+                vision: {
+                    title: 'Visión',
+                    body: '<p>Consolidarnos como una organización reconocida por integrar conocimiento contable, tributario y tecnológico para ofrecer soluciones confiables y adaptadas a las nuevas necesidades empresariales.</p>'
+                },
+                objetivos: {
+                    title: 'Objetivos',
+                    body: '<p>Fortalecer la gestión de nuestros clientes mediante servicios especializados, procesos eficientes y herramientas tecnológicas.</p><p>Promover el cumplimiento de las obligaciones aplicables, mejorar la calidad de la información y facilitar la toma de decisiones empresariales.</p>'
+                },
+                acerca: {
+                    title: 'Acerca de TotalCounts',
+                    body: '<p>TotalCounts es una marca registrada, la aplicación web está diseñada para llevar el acceso total a los datos de su empresa en todos sus campos de acción.</p><p>Comercialización, Contabilidad, Balances, Laboral y archivo de documentos de sustento administrativo. Todo de manera automática e integrada.</p>'
+                }
+            };
+
+            function openInfo(key) {
+                const item = info[key];
+                if (!item) return;
+                title.textContent = item.title;
+                body.innerHTML = item.body;
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                close.focus();
+            }
+
+            function closeInfo() {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            document.querySelectorAll('.footer-info-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    openInfo(this.dataset.info);
+                });
+            });
+
+            const services = {
+                tributario: {
+                    title: 'Control Tributario',
+                    body: '<p>Brindamos acompañamiento en el cumplimiento de las obligaciones tributarias y en la revisión de procesos relacionados con impuestos.</p><p>Analizamos la información disponible para identificar obligaciones, oportunidades de mejora y procedimientos adecuados ante la administración tributaria.</p>'
+                },
+                rrhh: {
+                    title: 'Recursos Humanos',
+                    body: '<p>Apoyamos a las empresas en la gestión de sus procesos laborales y de recursos humanos.</p><p>Incluye orientación sobre documentación, procedimientos internos, obligaciones laborales y aplicación adecuada de la normativa correspondiente.</p>'
+                },
+                reglamentos: {
+                    title: 'Reglamentos',
+                    body: '<p>Ayudamos a establecer y actualizar reglamentos y procedimientos internos necesarios para una adecuada organización empresarial.</p><p>El objetivo es contar con reglas claras que faciliten la gestión y el cumplimiento de las obligaciones aplicables.</p>'
+                },
+                societario: {
+                    title: 'Societario',
+                    body: '<p>Ofrecemos asesoramiento en asuntos relacionados con la organización y cumplimiento societario de las empresas.</p><p>Apoyamos en la revisión de documentación y procesos necesarios para mantener una adecuada gestión corporativa.</p>'
+                },
+                legal: {
+                    title: 'Consultoría Legal',
+                    body: '<p>Brindamos orientación legal relacionada con las necesidades de la empresa y sus operaciones.</p><p>Analizamos cada situación de acuerdo con la documentación y circunstancias particulares para orientar los pasos correspondientes.</p>'
+                },
+                auditorias: {
+                    title: 'Auditorías',
+                    body: '<p>Realizamos servicios de auditoría y revisión orientados a evaluar información, procesos y controles de la organización.</p><p>El análisis permite identificar aspectos que pueden ser fortalecidos y generar información útil para la administración.</p>'
+                }
+            };
+
+            document.querySelectorAll('.footer-service-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const item = services[this.dataset.service];
+                    if (!item) return;
+                    title.textContent = item.title;
+                    body.innerHTML = item.body;
+                    modal.classList.add('active');
+                    modal.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                    close.focus();
+                });
+            });
+
+            close.addEventListener('click', closeInfo);
+            overlay.addEventListener('click', closeInfo);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && modal.classList.contains('active')) {
+                    closeInfo();
+                }
+            });
+        });
+        </script>
+
+
     </body>
 </html>
