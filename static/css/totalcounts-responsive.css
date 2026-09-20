@@ -402,6 +402,102 @@ iframe {
     }
 }
 
+/* Homepage mobile: preserve the original hero images and keep the header
+ * clear of the slide content. Desktop is intentionally untouched.
+ */
+@media (max-width: 767px) {
+    body.home #slider.hero {
+        position: relative;
+        overflow: hidden !important;
+        min-height: 620px !important;
+        height: 620px !important;
+        padding: 0 !important;
+        background: #21333e;
+    }
+
+    body.home #slider.hero .swiper-container,
+    body.home #slider.hero .swiper-wrapper,
+    body.home #slider.hero .swiper-slide {
+        position: relative;
+        width: 100%;
+        min-height: 620px !important;
+        height: 620px !important;
+    }
+
+    body.home #slider.hero .swiper-slide {
+        overflow: hidden;
+    }
+
+    body.home #slider.hero .swiper-slide > img.full-image {
+        display: block !important;
+        visibility: visible !important;
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        z-index: 0 !important;
+    }
+
+    body.home #slider.hero .slide-content {
+        position: relative;
+        z-index: 2 !important;
+        min-height: 620px;
+        height: 620px;
+    }
+
+    body.home #slider.hero .slide-content .inner {
+        position: relative;
+        z-index: 2 !important;
+        width: 100%;
+        min-height: 620px;
+        padding: 105px 16px 45px !important;
+        align-items: flex-start;
+    }
+
+    body.home #slider.hero .slide-content .inner .left,
+    body.home #slider.hero .slide-content .inner .center,
+    body.home #slider.hero .slide-content .inner .right {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    body.home #slider.hero .slide-content .title {
+        font-size: clamp(2.05rem, 9vw, 2.7rem) !important;
+        line-height: 1.08 !important;
+        margin-top: 0 !important;
+        margin-bottom: 1rem !important;
+        max-width: 100% !important;
+    }
+
+    body.home #slider.hero .slide-content .description {
+        max-width: 100% !important;
+        margin-bottom: 1rem !important;
+        font-size: .95rem !important;
+        line-height: 1.5 !important;
+    }
+
+    body.home #slider.hero .slide-content .buttons .d-sm-inline-flex {
+        width: 100%;
+        align-items: stretch !important;
+    }
+
+    body.home #slider.hero .slide-content .buttons .btn {
+        width: 100% !important;
+        max-width: 100% !important;
+        justify-content: center;
+    }
+
+    body.home #slider.hero .swiper-pagination {
+        z-index: 5;
+        bottom: 16px !important;
+    }
+}
+
+
 /* About page only: mobile adjustments.
  * Scoped with .about-page so the homepage hero is never affected.
  */
