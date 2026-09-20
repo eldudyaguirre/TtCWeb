@@ -64,7 +64,7 @@
 
                 --section-1-bg-color: #ffffff;
                 --section-2-bg-color: #eef4ed;
-                --section-3-bg-color: #111117; --section-3-bg-image: url('{% static 'images/bg-1.jpg' %}');
+                --section-3-bg-color: #111117; --section-3-bg-image: url('../../{% static 'images/bg-1.jpg' %}');
             }
         </style>
         
@@ -84,7 +84,7 @@
                     <!-- Navbar Items [left] -->
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a href="{% url 'home' %}" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
+                            <a href="#" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
                         </li>
                     </ul>
 
@@ -97,7 +97,7 @@
                             <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
                         </li>
                         <li class="nav-item">
-                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
+                            <a href="#" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
                         </li>
                     </ul>
 
@@ -142,10 +142,10 @@
                     <!-- Navbar Items -->
                     <ul class="navbar-nav items">
                         <li class="nav-item dropdown">
-                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
-                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
-                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS</a>
-                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG</a>
+                            <a href="{% url 'home' %}" class="nav-link">INICIO </i></a>
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA </i></a>
+                            <a href="{% url 'home' %}#services" class="nav-link">SERVICIOS </i></a>
+                            <a href="{% url 'home' %}#blog" class="nav-link">BLOG </i></a
                         </li>
                     </ul>
 
@@ -204,10 +204,12 @@
                                     </h1>
                                     
                                     <!-- Action -->
-                                    <form action="#" id="nexgen-simple-form" class="nexgen-simple-form">
+                                    <form action="php/form.php" id="nexgen-simple-form" class="nexgen-simple-form">
                                         <input type="hidden" name="section" value="nexgen_form">
     
-                                        
+                                        <input type="hidden" name="reCAPTCHA">
+                                        <!-- Remove this field if you want to disable recaptcha -->
+    
                                         <div class="row form-group-margin">
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
                                                 <input type="text" name="name" class="form-control field-name" placeholder="Nombres">
@@ -275,25 +277,25 @@
                                 <h4>Oficina Matriz</h4>
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a href="tel:+593964208139" class="nav-link">
+                                        <a href="#" class="nav-link">
                                             <i class="fas fa-phone-alt mr-2"></i>
                                             (+593) 96 420 8139
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="mailto:totalcounts@hotmail.com" class="nav-link" style="font-size:15px;">
+                                        <a href="#" class="nav-link" style="font-size:15px;">
                                             <i class="fas fa-envelope mr-2"></i>
                                             totalcounts@hotmail.com
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                        <a href="#" class="nav-link">
                                             <i class="fas fa-map-marker-alt mr-2"></i>
                                             Av. Isabel la Católica y José Zorrilla esq.
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
                                     </li>
                                 </ul>
                             </div>
@@ -308,7 +310,7 @@
                                 <h4>Sucursal</h4>
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a href="tel:+593984230099" class="nav-link">
+                                        <a href="#" class="nav-link">
                                             <i class="fas fa-phone-alt mr-2"></i>
                                             (+593) 98 423 0099
                                         </a>
@@ -320,13 +322,13 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                        <a href="#" class="nav-link">
                                             <i class="fas fa-map-marker-alt mr-2"></i>
                                             Via a Oña Km. 79
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
                                     </li>
                                 </ul>
                             </div>
@@ -371,8 +373,8 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
-                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <a href="#" class="nav-link">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
                                         Av. Isabel la Católica y José Zorrilla esq.
                                     </a>
                                 </li>
@@ -567,7 +569,7 @@
                         <i class="icon-close fas fa-arrow-right"></i>
                     </div>
                     <div class="modal-body p-0">
-                        <iframe src="https://www.google.com/maps?q=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador&output=embed" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2970.123073808986!2d12.490042215441486!3d41.89021017922119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b6532013ad%3A0x28f1c82e908503c4!2sColiseu!5e0!3m2!1spt-BR!2sbr!4v1594148229878!5m2!1spt-BR!2sbr" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
                     </div>
                 </div>
             </div>
@@ -599,8 +601,14 @@
             <a href="#header" class="smooth-anchor">
                 <i class="fas fa-arrow-up"></i>
             </a>
-        </div>
-<!-- ==============================================
+        </div>        
+        
+        <!-- ==============================================
+        Google reCAPTCHA // Put your site key here
+        =============================================== -->
+        <script src="https://www.google.com/recaptcha/api.js?render=6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"></script>
+
+        <!-- ==============================================
         Vendor Scripts
         =============================================== -->
         <script src="{% static 'js/vendor/jquery.min.js' %}"></script>
@@ -608,7 +616,8 @@
         <script src="{% static 'js/vendor/jquery.inview.min.js' %}"></script>
         <script src="{% static 'js/vendor/popper.min.js' %}"></script>
         <script src="{% static 'js/vendor/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/vendor/slider.min.js' %}"></script>
+        <script src="{% static 'js/vendor/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/vendor/slider.min.js' %}"></script>
         <script src="{% static 'js/vendor/animation.min.js' %}"></script>
         <script src="{% static 'js/vendor/progress-radial.min.js' %}"></script>
         <script src="{% static 'js/vendor/bricklayer.min.js' %}"></script>
