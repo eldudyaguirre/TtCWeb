@@ -555,31 +555,39 @@ iframe {
     }
 }
 
-/* About mobile: complete logo overlapping the Hero/content boundary.
-   The logo is a sibling of the Hero, not part of its internal layout. */
+/* About mobile: complete logo centered exactly over the Hero/content boundary. */
 @media (max-width: 767px) {
     body.about-page #slider.featured1::after {
         display: none !important;
+        content: none !important;
     }
 
     body.about-page .about-hero-logo-mobile {
         position: relative !important;
+        display: block !important;
+        width: 100% !important;
         height: 0 !important;
         margin: 0 !important;
+        padding: 0 !important;
         z-index: 100 !important;
         pointer-events: none !important;
     }
 
     body.about-page .about-hero-logo-mobile img {
         position: absolute !important;
-        left: 50% !important;
-        top: -42px !important;
-        transform: translateX(-50%) !important;
-        width: 105px !important;
-        height: 105px !important;
-        max-width: none !important;
-        object-fit: contain !important;
         display: block !important;
+        left: 50% !important;
+        top: -55px !important;
+        transform: translateX(-50%) !important;
+        width: 110px !important;
+        height: 110px !important;
+        min-width: 110px !important;
+        max-width: 110px !important;
+        min-height: 110px !important;
+        max-height: 110px !important;
+        object-fit: contain !important;
+        margin: 0 !important;
+        padding: 0 !important;
         z-index: 101 !important;
     }
 }
