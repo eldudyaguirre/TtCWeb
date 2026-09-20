@@ -14,11 +14,16 @@
 
         <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
 
-        <title>Contáctanos | TotalCounts - C.A.S.</title>
+        <title>Contáctanos | TotalCounts</title>
 
-        <meta name="description" content="Contáctanos con TotalCounts - C.A.S. en Cuenca, Ecuador.">
-        <meta name="subject" content="Contacto TotalCounts - C.A.S.">
+        <meta name="description" content="TotalCounts - C.A.S. ofrece soluciones de contabilidad, tributario, laboral, legal, auditoría, sistemas, facturación electrónica y desarrollo de software en Ecuador.">
         <meta name="author" content="Adrián Aguirre Larriva">
+        <meta name="robots" content="index, follow">
+        <meta name="googlebot" content="index, follow">
+        <meta name="keywords" content="TotalCounts, C.A.S., Complete Accounting System, contabilidad Ecuador, asesoría tributaria, asesoría laboral, facturación electrónica, desarrollo de software, sistemas contables, auditoría">
+        <meta name="language" content="Spanish">
+        <meta name="geo.region" content="EC">
+        <meta name="theme-color" content="#21333e">
 
         <!-- ==============================================
         Favicons
@@ -31,14 +36,14 @@
         <!-- ==============================================
         Vendor Stylesheet
         =============================================== -->
-        <link rel="stylesheet" href="{% static 'css/vendor/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/slider.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/bootstrap.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/slider.min.css">
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/icons.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/icons-fa.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/animation.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/gallery.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/cookie-notice.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/icons.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/icons-fa.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/animation.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/gallery.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor' %}/cookie-notice.min.css">
 
         <!-- ==============================================
         Custom Stylesheet
@@ -49,7 +54,6 @@
         Theme Color
         =============================================== -->
         <meta name="theme-color" content="#21333e">
-        <link rel="canonical" href="https://www.totalcounts.com.ec/contactanos/">
 
         <!-- ==============================================
         Theme Settings
@@ -60,7 +64,7 @@
 
                 --section-1-bg-color: #ffffff;
                 --section-2-bg-color: #eef4ed;
-                --section-3-bg-color: #111117; --section-3-bg-image: url('../../{% static 'images/bg-1.jpg' %}');
+                --section-3-bg-color: #111117; --section-3-bg-image: url('{% static 'images/bg-1.jpg' %}');
             }
         </style>
         
@@ -69,13 +73,6 @@
     <body>
         
         <!-- Preloader -->
-        <div id="preloader" data-timeout="2000" class="odd preloader counter">
-            <div data-aos="fade-up" data-aos-delay="500" class="row justify-content-center text-center items">
-                <div data-percent="100" class="radial">
-                    <span></span>
-                </div>
-            </div>
-        </div>
 
         <!-- Header -->
         <header id="header">
@@ -87,7 +84,7 @@
                     <!-- Navbar Items [left] -->
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a href="#" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
+                            <a href="{% url 'home' %}" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
                         </li>
                     </ul>
 
@@ -125,16 +122,18 @@
                 <div class="container header">
 
                     <!-- Navbar Brand-->
-                    <a class="navbar-brand" href="/">
-                        <img src="{% static 'images/logo.svg' %}">
+                    <a class="navbar-brand" href="{% url 'home' %}">
                         <span class="brand">
                             <span class="featured">
-                                <span class="first"> TOTAL</span>
+                                <span class="first">TOTAL</span>
                             </span>
-                            <span class="last"> COUNTS</span>
+                            <span class="last">COUNTS</span>
                         </span>
-                
                         
+                        <!-- 
+                            Custom Logo
+                            <img src="{% static 'images/logo.svg' %}" alt="NEXGEN">
+                        -->
                     </a>
 
                     <!-- Nav holder -->
@@ -142,31 +141,24 @@
 
                     <!-- Navbar Items -->
                     <ul class="navbar-nav items">
-                        <li class="nav-item">
-                            <a href="#header" class="smooth-anchor nav-link">INICIO</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#services" class="smooth-anchor nav-link">SERVICIOS</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#team" class="smooth-anchor nav-link">EQUIPO</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#blog" class="smooth-anchor nav-link">BLOG</a>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link">INICIO </i></a>
+                            <a href="#" class="nav-link">ACERCA </i></a>
+                            <a href="#" class="nav-link">SERVICIOS </i></a>
+                            <a href="#" class="nav-link">BLOG </i></a>
                         </li>
                     </ul>
 
                     <!-- Navbar Icons -->
+                     <!--
                     <ul class="navbar-nav icons">
                         <li class="nav-item">
-                            <a href="{% url 'signin' %}" class="nav-link" aria-label="Iniciar sesión">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#search">
                                 <i class="icon-user"></i>
                             </a>
                         </li>
                     </ul>
+                    -->
 
                     <!-- Navbar Toggle -->
                     <ul class="navbar-nav toggle">
@@ -180,14 +172,13 @@
                     <!-- Navbar Action -->
                     <ul class="navbar-nav action">
                         <li class="nav-item ml-3">
-                            <a href="{% url 'contactanos' %}" class="btn ml-lg-auto primary-button">CONTACTANOS</a>
+                            <a href="{% url 'signin' %}" class="btn ml-lg-auto primary-button">INICIA SESION</a>
                         </li>
                     </ul>
                 </div>
             </nav>
 
         </header>
-
 
         <!-- Hero -->
         <section id="slider" class="hero p-0 odd">
@@ -206,9 +197,10 @@
                                 <div class="right alt pb-0 text-left">
 
                                     <!-- Content -->
+                                     
                                     <h1 class="title effect-static-text">
-                                        <span class="pre-title m-0">Estamos para ayudarte</span>
-                                        Contáctanos
+                                        <span class="pre-title m-0"> </span>
+                                        ¿Necesitas Información?
                                     </h1>
                                     
                                     <!-- Action -->
@@ -220,27 +212,30 @@
     
                                         <div class="row form-group-margin">
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="text" name="name" class="form-control field-name" placeholder="Nombre">
+                                                <input type="text" name="name" class="form-control field-name" placeholder="Nombres">
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="email" name="email" class="form-control field-email" placeholder="Correo electrónico">
+                                                <input type="email" name="email" class="form-control field-email" placeholder="Email">
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="text" name="phone" class="form-control field-phone" placeholder="Teléfono">
+                                                <input type="text" name="phone" class="form-control field-phone" placeholder="Celular">
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
                                                 <i class="icon-arrow-down mr-3"></i>
                                                 <select name="info" class="form-control field-info">
-                                                    <option value="" selected disabled>Motivo de contacto</option>
-                                                    <option>Audit & Assurance</option>
-                                                    <option>Financial Advisory</option>
-                                                    <option>Analytics and M&A</option>
-                                                    <option>Middle Marketing</option>
-                                                    <option>Legal Consulting</option>
-                                                    <option>Regulatory Risk</option>
-                                                    <option>Other</option>
+                                                    <option value="" selected disabled>Temas frecuentes</option>
+                                                    <option>Consulta Tributaria</option>
+                                                    <option>Consulta Contable</option>
+                                                    <option>Consulta Laboral</option>
+                                                    <option>Consulta Seguridad Laboral</option>
+                                                    <option>Consulta Legal</option>
+                                                    <option>Tramites y Requerimientos</option>
+                                                    <option>Otros</option>
                                                 </select>
                                             </div>
+                                            <!--<div class="col-12 m-0 p-2 input-group" >
+                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" ></textarea>
+                                            </div>-->
                                             <div class="col-12 col-12 m-0 pl-md-2">
                                                 <span class="form-alert"></span>
                                             </div>
@@ -248,8 +243,8 @@
                                             <!-- Action -->
                                             <div class="col-12 input-group m-0 p-2 buttons">
                                                 <div class="d-sm-inline-flex">
-                                                    <a class="mt-4 mt-sm-0 btn primary-button">CONTÁCTANOS</a>
-                                                    <a href="#single" class="smooth-anchor mt-4 mt-sm-0 ml-sm-3 btn outline-button">CONOCER MÁS</a>
+                                                    <a href="{% url 'contactanos' %}" class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</a>
+                                                    <!--<a href="#single" class="smooth-anchor mt-4 mt-sm-0 ml-sm-3 btn outline-button">READ MORE</a>-->
                                                 </div>
                                             </div>
                                         </div>
@@ -262,179 +257,85 @@
             </div>
         </section>
 
-        <!-- Single -->
-        <section id="single" class="section-1 single">
-            <div class="container">
-                <div class="row">
-
-                    <!-- Main -->
-                    <div class="col-12 col-lg-8 p-0 text">
-                        <div class="row intro m-0">
-                            <div class="col-12">
-                                <span class="pre-title m-0">Atención personalizada</span>
-                                <div class="title-icon">
-                                    
-                                    <h2><span class="featured"><span><i class="icon icon-notebook"></i>Insurance </span></span> Consulting</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 align-self-center">
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum velit tortor, interdum sed cursus eu, sagittis ut nunc. Sed vitae tellus et arcu aliquet faucibus fermentum non lacus.</p>
-                                <p>Praesent fringilla quis massa et placerat. Mauris eu dui eget urna pellentesque gravida vitae quis nibh. Ut at augue tortor. Pellentesque quis suscipit magna.</p>
-                                <blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quam tortor, ultrices accumsan mauris eget, pulvinar tincidunt erat. Sed nisi nisi, rutrum sit amet elit.</blockquote>
-                                <p>Sed mauris nulla, tempor eu est vel, dapibus hendrerit mauris curabitur dictum pharetra.</p>
-                                <ul>
-                                    <li>Lorem ipsum dolor sit amet</li>
-                                    <li>Consectetur adipiscing elit</li>
-                                    <li>Integer molestie lorem at massa</li>
-                                    <li>Facilisis in pretium nisl aliquet</li>
-                                    <li>Dapibus hendrerit mauris curabitur</li>
-                                </ul>
-                                <p>Etiam mollis sem sed bibendum blandit. Aenean quis luctus ligula, vitae suscipit dui.</p>
-                            </div>
-                        </div>        
-                    </div>
-
-                    <!-- Sidebar -->
-                    <aside class="col-12 col-lg-4 pl-lg-5 p-0 float-right sidebar">
-                            
-                        <!-- Services -->
-                        <div class="row item widget-services">
-                            <div class="col-12 align-self-center">
-                                <h4 class="title">Our Services</h4>
-                                <div class="quote">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item d-flex justify-content-start align-items-center">
-                                            <a href="#"><i class="icon icon-organization"></i></a>
-                                            <div class="list-group-content">
-                                                <h4>Audit & Assurance</h4>
-                                                <p>$ 1.290 / mo</p>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-start align-items-center">
-                                            <a href="#"><i class="icon icon-briefcase"></i></a>
-                                            <div class="list-group-content">
-                                                <h4>Financial Advisory</h4>
-                                                <p>$ 2.490 / mo</p>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-start align-items-center">
-                                            <a href="#"><i class="icon icon-chart"></i></a>
-                                            <div class="list-group-content">
-                                                <h4>Analytics<br>and M&A</h4>
-                                                <p>$ 2.990 / mo</p>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>   
-
-                        <!-- Gallery -->
-                        <div class="row item widget-gallery mb-0">
-                            <div class="col-12 align-self-center">
-                                <h4 class="title">Certifications</h4>
-                                <div class="gallery row justify-content-center">
-                                    <a class="col-6 pl-0 item" href="{% static 'images/certificate.png' %}">
-                                        <img src="{% static 'images/certificate.png' %}" alt="Certificate" class="w-100">
-                                    </a>
-                                    <a class="col-6 pr-0 item" href="{% static 'images/certificate.png' %}">
-                                        <img src="{% static 'images/certificate.png' %}" alt="Certificate" class="w-100">
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </section>
-
         <!-- About -->
-        <section id="about-2" class="section-2 highlights image-right counter funfacts">
+        <section id="about" class="section-2 highlights image-right">
             <div class="container">
             <div class="row">
-                <div class="col-12 col-md-6 pr-md-5 align-self-top text">
-                    <div data-aos="fade-up"  class="row intro mb-0">
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div data-aos="fade-up"  class="row intro">
                         <div class="col-12 p-0">
-                            <span class="pre-title m-0">Sharing knowledge</span>
-                            <h2><span class="featured"><span>Our</span></span> Results</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras iaculis diam varius diam ultricies lacinia.</p>
-                            <p>Mauris lacus tellus, ultrices eu volutpat sit amet, finibus a ipsum.</p>
-                            <p>Curabitur convallis, diam a egestas iaculis, neque lorem interdum felis, in viverra lacus tortor in leo.</p>
-                            <blockquote>Donec tristique diam id mi venenatis facilisis eget sed mi. Phasellus malesuada nulla diam, a dignissim quam.</blockquote>
+                            <span class="pre-title m-0">Visitanos pronto</span>
+                            <h2>Estamos<br>Cerca<br>de TI</h2>
+                            <p>Vamos a estar gustosos de recibirte en nuestras oficinas y darte una atención personalizada.</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6 pr-md-5 align-self-top text">
-                    <div class="row items">
-                        <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 mb-2 item">
-                            <div data-percent="128" class="radial left">
-                                <span></span>
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div class="row items">                             
+                        <div data-aos="fade-up" class="col-12 p-0 pr-md-4 item">
+                            <div class="contacts">
+                                <h4>Oficina Matriz</h4>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fas fa-phone-alt mr-2"></i>
+                                            (+593) 96 420 8139
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link" style="font-size:15px;">
+                                            <i class="fas fa-envelope mr-2"></i>
+                                            totalcounts@hotmail.com
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            Av. Isabel la Católica y José Zorrilla esq.
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                    </li>
+                                </ul>
                             </div>
-                            <h4>Certifications</h4>
-                            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit.</p>
-                        </div>
-                        <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 mb-2 item">
-                            <div data-percent="230" class="radial left">
-                                <span></span>
-                            </div>
-                            <h4>Employees</h4>
-                            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit.</p>
-                        </div>
+                        </div>     
                     </div>
-                    <div class="row items"> 
-                        <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 mb-2 item">
-                            <div data-percent="517" class="radial left">
-                                <span></span>
+                </div>
+                
+                <div class="col-12 col-md-4 pr-md-5 align-self-top text">
+                    <div class="row items">                             
+                        <div data-aos="fade-up" class="col-12 p-0 pr-md-4 item">
+                            <div class="contacts">
+                                <h4>Sucursal</h4>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fas fa-phone-alt mr-2"></i>
+                                            (+593) 98 423 0099
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link" style="font-size:15px;">
+                                            <i class="fas fa-envelope mr-2"></i>
+                                            totalcounts@hotmail.com
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            Via a Oña Km. 79
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                    </li>
+                                </ul>
                             </div>
-                            <h4>Customers</h4>
-                            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit.</p>
-                        </div>
-                        <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 mb-2 item">
-                            <div data-percent="94" class="radial left">
-                                <span></span>
-                            </div>
-                            <h4>Countries Served</h4>
-                            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit.</p>
-                        </div>
+                        </div>     
                     </div>
                 </div>
             </div>
-            </div>
-        </section>
-
-        <!-- Subscribe -->
-        <section id="subscribe" class="section-3 odd subscribe">
-            <div class="container smaller">
-                <div class="row">
-                    <div class="col-12 col-md-6 m-md-0 intro">
-                        <span class="pre-title m-0">Newsletter</span>
-                        <h2><span class="featured"><span>Know</span></span> First</h2>
-                        <p>Follow closely and receive content about our company and the news of the current market.</p>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <form action="php/form.php" id="nexgen-subscribe" class="row m-auto items">
-                            <input type="hidden" name="section" value="nexgen_subscribe">
-
-                            <input type="hidden" name="reCAPTCHA">
-                            <!-- Remove this field if you want to disable recaptcha -->
-
-                            <div class="col-12 mt-0 input-group align-self-center item">
-                                <input type="text" name="name" class="form-control less-opacity field-name" placeholder="Name">
-                            </div>
-                            <div class="col-12 input-group align-self-center item">
-                                <input type="email" name="email" class="form-control less-opacity field-email" placeholder="Email">
-                            </div>
-                            <div class="col-12 input-group align-self-center item">
-                                <a data-aos="zoom-in" class="btn primary-button">SUBSCRIBE</a>
-                            </div>
-                            <div class="col-12 item">
-                                <span class="form-alert mt-3 mb-0"></span>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -448,7 +349,7 @@
                         <div class="col-12 col-lg-3 footer-left">
 
                             <!-- Navbar Brand-->
-                            <a class="navbar-brand" href="/">
+                            <a class="navbar-brand" href="{% url 'home' %}">
                                 <span class="brand">
                                     <span class="featured">
                                         <span class="first">TOTAL</span>
@@ -472,8 +373,8 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
-                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
                                         Av. Isabel la Católica y José Zorrilla esq.
                                     </a>
                                 </li>
@@ -487,23 +388,23 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Tecnología</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañia</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>Institucional</a>
+                                        <a href="{% url 'home' %}#team"><i class="icon-arrow-right"></i>Social & Eventos</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Innovación</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Ambiente</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Tecnología</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="{% url 'home' %}#services"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
@@ -541,7 +442,6 @@
             </section>
 
         </footer>
-
 
         <!-- Modal [search] -->
         <div id="search" class="p-0 modal fade" role="dialog" aria-labelledby="search" aria-hidden="true">
@@ -669,7 +569,7 @@
                         <i class="icon-close fas fa-arrow-right"></i>
                     </div>
                     <div class="modal-body p-0">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2970.123073808986!2d12.490042215441486!3d41.89021017922119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b6532013ad%3A0x28f1c82e908503c4!2sColiseu!5e0!3m2!1spt-BR!2sbr!4v1594148229878!5m2!1spt-BR!2sbr" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
+                        <iframe src="https://www.google.com/maps?q=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador&output=embed" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
                     </div>
                 </div>
             </div>
@@ -701,24 +601,24 @@
             <a href="#header" class="smooth-anchor">
                 <i class="fas fa-arrow-up"></i>
             </a>
-        </div>        
-        
-        <!-- ==============================================
+        </div>
+<!-- ==============================================
         Vendor Scripts
         =============================================== -->
-        <script src="{% static 'js/vendor/jquery.min.js' %}"></script>
-        <script src="{% static 'js/vendor/jquery.easing.min.js' %}"></script>
-        <script src="{% static 'js/vendor/jquery.inview.min.js' %}"></script>
-        <script src="{% static 'js/vendor/popper.min.js' %}"></script>
-        <script src="{% static 'js/vendor/bootstrap.min.js' %}"></script>
-        <script src="{% static 'js/vendor/slider.min.js' %}"></script>
-        <script src="{% static 'js/vendor/animation.min.js' %}"></script>
-        <script src="{% static 'js/vendor/progress-radial.min.js' %}"></script>
-        <script src="{% static 'js/vendor/bricklayer.min.js' %}"></script>
-        <script src="{% static 'js/vendor/gallery.min.js' %}"></script>
-        <script src="{% static 'js/vendor/shuffle.min.js' %}"></script>
-        <script src="{% static 'js/vendor/cookie-notice.min.js' %}"></script>
-        <script src="{% static 'js/vendor/particles.min.js' %}"></script>
+        <script src="{% static 'js/vendor' %}/jquery.min.js"></script>
+        <script src="{% static 'js/vendor' %}/jquery.easing.min.js"></script>
+        <script src="{% static 'js/vendor' %}/jquery.inview.min.js"></script>
+        <script src="{% static 'js/vendor' %}/popper.min.js"></script>
+        <script src="{% static 'js/vendor' %}/bootstrap.min.js"></script>
+        <script src="{% static 'js/vendor' %}/ponyfill.min.js"></script>
+        <script src="{% static 'js/vendor' %}/slider.min.js"></script>
+        <script src="{% static 'js/vendor' %}/animation.min.js"></script>
+        <script src="{% static 'js/vendor' %}/progress-radial.min.js"></script>
+        <script src="{% static 'js/vendor' %}/bricklayer.min.js"></script>
+        <script src="{% static 'js/vendor' %}/gallery.min.js"></script>
+        <script src="{% static 'js/vendor' %}/shuffle.min.js"></script>
+        <script src="{% static 'js/vendor' %}/cookie-notice.min.js"></script>
+        <script src="{% static 'js/vendor' %}/particles.min.js"></script>
         <script src="{% static 'js/main.js' %}"></script>
 
     </body>
