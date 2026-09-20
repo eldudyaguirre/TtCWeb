@@ -537,14 +537,7 @@ iframe {
     }
 
     body.about-page #slider.featured1::after {
-        width: 80px !important;
-        height: 80px !important;
-        left: calc(50% - 40px) !important;
-        top: calc(100% - 40px) !important;
-        background-size: contain !important;
-        background-position: center !important;
-        background-repeat: no-repeat !important;
-        z-index: 1 !important;
+        display: none !important;
     }
 
     body.about-page #single.section-1 {
