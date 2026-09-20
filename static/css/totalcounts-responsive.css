@@ -555,19 +555,19 @@ iframe {
     }
 }
 
-/* About page mobile: isolated logo layer in the header, above navigation items. */
+/* About page mobile: isolated logo layer over the sub-navbar only. */
 @media (max-width: 767px) {
-    body.about-page #header {
+    body.about-page #header .navbar.sub {
         position: relative;
     }
 
-    body.about-page #header .about-header-overlay-logo {
+    body.about-page #header .navbar.sub .about-header-overlay-logo {
         position: absolute !important;
-        top: 92px !important;
+        top: 50% !important;
         left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 290px !important;
-        max-width: 78vw !important;
+        transform: translate(-50%, -50%) !important;
+        width: 205px !important;
+        max-width: 58vw !important;
         height: auto !important;
         z-index: 1000 !important;
         pointer-events: none !important;
