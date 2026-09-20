@@ -379,12 +379,7 @@ iframe {
     }
 }
 
-/* Team: keep paired members aligned across the two desktop columns. */
-@media (min-width: 768px) {
-    .team .items > .col-md-6 > .row.item {
-        min-height: 151px;
-    }
-}
+
 
 /* Responsive menu: visible transparency over the page. */
 @media (max-width: 767px) {
@@ -407,130 +402,45 @@ iframe {
     }
 }
 
-
-/* About page: keep the hero video crop contained on mobile.
- * The source video places the TotalCounts logo near its lower edge;
- * centering the crop prevents that logo from overflowing into the next section.
+/* About page only: mobile adjustments.
+ * Scoped with .about-page so the homepage hero is never affected.
  */
 @media (max-width: 767px) {
-    /* About hero: the desktop video contains a large embedded logo.
-       On mobile it is hidden so it cannot overflow into the next section. */
-    #slider.hero {
-        overflow: hidden;
-        min-height: 0 !important;
-        height: 320px !important;
-        background: #21333e !important;
-    }
-
-    #slider.hero .swiper-container,
-    #slider.hero .swiper-wrapper,
-    #slider.hero .swiper-slide {
-        min-height: 320px !important;
-        height: 320px !important;
-        overflow: hidden;
-    }
-
-    #slider.hero video.full-image.to-bottom {
-        display: none !important;
-    }
-
-    #slider.hero .slide-content {
-        min-height: 320px;
-        position: relative;
-        z-index: 2;
-    }
-
-    #slider.hero .slide-content .inner {
-        padding-top: 45px;
-        padding-bottom: 35px;
-    }
-
-    #slider.hero .slide-content .title {
-        font-size: clamp(2.1rem, 9vw, 3rem);
-    }
-}
-
-
-/* About page: move the "Una historia de éxito" block lower on mobile
-   so it stays clear of the hero/logo area. */
-@media (max-width: 767px) {
-    #single.section-1 .intro {
-        padding-top: 95px !important;
-    }
-}
-
-
-/* Final mobile fix for About: remove the oversized logo embedded in the hero video
-   and give the history section enough separation below the hero. */
-@media (max-width: 767px) {
-    #slider.hero video,
-    #slider.hero .full-image {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    #slider.hero {
-        height: 320px !important;
-        min-height: 320px !important;
-        background: #21333e !important;
-    }
-
-    #single.section-1 {
-        padding-top: 120px !important;
-        margin-top: 0 !important;
-        position: relative;
-        z-index: 3;
-        background: #ffffff !important;
-    }
-
-    #single.section-1 .intro {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-}
-
-
-/* About mobile: the oversized TotalCounts logo is the decorative
-   section.featured1::after element from the legacy theme, not the video.
-   Keep it visible but small and inside the hero boundary. */
-@media (max-width: 767px) {
-    section.featured1 {
+    body.about-page #slider.featured1 {
         overflow: hidden !important;
+        min-height: 320px !important;
+        height: 320px !important;
     }
 
-    section.featured1::after {
-        width: 110px !important;
-        height: 110px !important;
-        left: calc(50% - 55px) !important;
-        top: calc(100% - 55px) !important;
-        background-size: contain !important;
-        background-position: center !important;
-        opacity: 1 !important;
-        z-index: 2 !important;
+    body.about-page #slider.featured1 .swiper-container,
+    body.about-page #slider.featured1 .swiper-wrapper,
+    body.about-page #slider.featured1 .swiper-slide {
+        min-height: 320px !important;
+        height: 320px !important;
+        overflow: hidden;
     }
 
-    #slider.hero video.full-image.to-bottom {
+    body.about-page #slider.featured1 video.full-image.to-bottom {
         display: block !important;
         visibility: visible !important;
     }
 
-    #single.section-1 {
+    body.about-page #slider.featured1 .slide-content {
         position: relative;
-        z-index: 5;
-        background: #ffffff !important;
-        padding-top: 70px !important;
-    }
-}
-
-
-/* Final mobile fix: keep the decorative TotalCounts mark small and
-   behind the hero, and keep the responsive menu readable. */
-@media (max-width: 767px) {
-    body #slider.featured1 {
-        overflow: hidden !important;
+        z-index: 2 !important;
+        min-height: 320px;
     }
 
-    body #slider.featured1::after {
+    body.about-page #slider.featured1 .slide-content .inner {
+        padding-top: 45px;
+        padding-bottom: 35px;
+    }
+
+    body.about-page #slider.featured1 .slide-content .title {
+        font-size: clamp(2.1rem, 9vw, 3rem);
+    }
+
+    body.about-page #slider.featured1::after {
         width: 90px !important;
         height: 90px !important;
         left: calc(50% - 45px) !important;
@@ -541,73 +451,10 @@ iframe {
         z-index: 1 !important;
     }
 
-    body #slider.featured1 .slide-content {
-        position: relative;
-        z-index: 2 !important;
-    }
-
-    body #single.section-1 {
+    body.about-page #single.section-1 {
         position: relative;
         z-index: 10 !important;
         background: #ffffff !important;
-    }
-
-    #menu .modal-content {
-        color: #ffffff !important;
-        background: rgba(33, 51, 62, 0.55) !important;
-    }
-
-    #menu .menu,
-    #menu .menu .items,
-    #menu .menu .navbar-nav {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-
-    #menu .menu .nav-item {
-        display: block !important;
-    }
-
-    #menu .menu .nav-link,
-    #menu .menu .nav-link span,
-    #menu .menu .nav-link i {
-        color: #ffffff !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-}
-
-
-/* Keep the responsive menu consistent on every page, including the homepage. */
-@media (max-width: 767px) {
-    #menu {
-        background: rgba(33, 51, 62, 0.22) !important;
-    }
-
-    #menu .modal-dialog,
-    #menu .modal-content {
-        background: rgba(33, 51, 62, 0.55) !important;
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-    }
-
-    #menu .menu .items,
-    #menu .menu .contacts,
-    #menu .menu .navbar-nav {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    #menu .menu .nav-link,
-    #menu .menu .nav-link span,
-    #menu .menu .nav-link i {
-        color: #ffffff !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .modal-backdrop.show {
-        opacity: 0.18 !important;
+        padding-top: 70px !important;
     }
 }
