@@ -345,7 +345,7 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
                                     </li>
                                 </ul>
                             </div>
@@ -372,13 +372,13 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Via%20a%20O%C3%B1a%20Km.%2079%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Av.%20Isabel%20la%20Cat%C3%B3lica%20y%20Jos%C3%A9%20Zorrilla%2C%20Cuenca%2C%20Ecuador" target="_blank" rel="noopener" class="nav-link">
                                             <i class="fas fa-map-marker-alt mr-2"></i>
                                             Via a Oña Km. 79
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="https://www.google.com/maps/search/?api=1&query=Via%20a%20O%C3%B1a%20Km.%2079%2C%20Ecuador" target="_blank" rel="noopener" class="mt-2 btn outline-button">VER EN MAPA</a>
+                                        <a href="#" class="mt-2 btn outline-button" data-toggle="modal" data-target="#map">VER EN MAPA</a>
                                     </li>
                                 </ul>
                             </div>
@@ -613,13 +613,27 @@
 
         <!-- Modal [map] -->
         <div id="map" class="p-0 modal fade" role="dialog" aria-labelledby="map" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-slideout" role="document">
-                <div class="modal-content full">
-                    <div class="modal-header absolute" data-dismiss="modal">
-                        <i class="icon-close fas fa-arrow-right"></i>
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content" style="background:#ffffff; border:0; border-radius:8px; overflow:hidden;">
+                    <div class="modal-header" style="border:0; padding:10px 15px; justify-content:flex-end;">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
                     <div class="modal-body p-0">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2970.123073808986!2d12.490042215441486!3d41.89021017922119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b6532013ad%3A0x28f1c82e908503c4!2sColiseu!5e0!3m2!1spt-BR!2sbr!4v1594148229878!5m2!1spt-BR!2sbr" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
+                        <div style="width:100%; aspect-ratio:16 / 9; min-height:320px;">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d249.0419196643243!2d-79.0186553!3d-2.9107869!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sec!4v1704979894350!5m2!1ses!2sec"
+                                width="100%"
+                                height="100%"
+                                style="border:0; display:block;"
+                                aria-hidden="false"
+                                tabindex="0"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
                     </div>
                 </div>
             </div>
