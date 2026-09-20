@@ -26,6 +26,7 @@ TEMPLATE_PREVIEWS = {
     'page-single-service-2': 'page-single-service-2.html',
     'page-testimonials-1': 'page-testimonials-1.html',
     'quienes': 'quienes.html',
+    'signup': 'signup.html',
 }
 
 
