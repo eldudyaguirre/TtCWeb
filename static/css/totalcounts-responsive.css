@@ -750,3 +750,42 @@ iframe {
         z-index: 3 !important;
     }
 }
+
+/* HOME MOBILE: separar el contenido del Hero del encabezado fijo */
+@media (max-width: 767px) {
+    body.home header#header {
+        position: relative !important;
+        z-index: 100 !important;
+    }
+
+    body.home #slider.hero {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    body.home #slider.hero .slide-content {
+        padding-top: 90px !important;
+        box-sizing: border-box !important;
+    }
+
+    body.home #slider.hero .slide-content .inner {
+        padding-top: 0 !important;
+        padding-bottom: 35px !important;
+    }
+
+    body.home #slider.hero .slide-content .title {
+        position: relative !important;
+        z-index: 5 !important;
+        margin-top: 0 !important;
+    }
+
+    body.home #slider.hero img.full-image {
+        opacity: 0.72 !important;
+        z-index: 0 !important;
+    }
+
+    body.home #slider.hero .slide-content .buttons {
+        position: relative !important;
+        z-index: 5 !important;
+    }
+}
