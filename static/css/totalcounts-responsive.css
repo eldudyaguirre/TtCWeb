@@ -708,3 +708,45 @@ iframe {
         opacity: 0.12 !important;
     }
 }
+
+/* HOME MOBILE: restaurar las imágenes del slider.
+   Las reglas antiguas de About usaban #slider.hero de forma global y
+   estaban ocultando también las imágenes de la página principal. */
+@media (max-width: 767px) {
+    body.home #slider.hero {
+        height: 100vh !important;
+        min-height: 620px !important;
+        background: transparent !important;
+        overflow: hidden !important;
+    }
+
+    body.home #slider.hero .swiper-container,
+    body.home #slider.hero .swiper-wrapper,
+    body.home #slider.hero .swiper-slide {
+        height: 100% !important;
+        min-height: 620px !important;
+    }
+
+    body.home #slider.hero img.full-image {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.6 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: 0 !important;
+    }
+
+    body.home #slider.hero .slide-content {
+        position: relative !important;
+        z-index: 2 !important;
+        min-height: 100% !important;
+    }
+
+    body.home #slider.hero .slide-content .inner {
+        position: relative !important;
+        z-index: 3 !important;
+    }
+}
