@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html lang="en">
@@ -22,27 +23,27 @@
         <!-- ==============================================
         Favicons
         =============================================== -->
-        <link rel="shortcut icon" href="../../static/images/favicon.ico">
-        <link rel="apple-touch-icon" href="../../static/images/apple-touch-icon.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="../../static/images/apple-touch-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="../../static/images/apple-touch-icon-114x114.png">
+        <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+        <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
 
         <!-- ==============================================
         Vendor Stylesheet
         =============================================== -->
-        <link rel="stylesheet" href="../../static/css/vendor/bootstrap.min.css">
-        <link rel="stylesheet" href="../../static/css/vendor/slider.min.css">
-        <link rel="stylesheet" href="../../static/css/main.css">
-        <link rel="stylesheet" href="../../static/css/vendor/icons.min.css">
-        <link rel="stylesheet" href="../../static/css/vendor/icons-fa.min.css">
-        <link rel="stylesheet" href="../../static/css/vendor/animation.min.css">
-        <link rel="stylesheet" href="../../static/css/vendor/gallery.min.css">
-        <link rel="stylesheet" href="../../static/css/vendor/cookie-notice.min.css">
+        <link rel="stylesheet" href="{% static 'css/vendor/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/slider.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/icons-fa.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/animation.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/gallery.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor/cookie-notice.min.css' %}">
 
         <!-- ==============================================
         Custom Stylesheet
         =============================================== -->
-        <link rel="stylesheet" href="../../static/css/default.css">
+        <link rel="stylesheet" href="{% static 'css/default.css' %}">
 
         <!-- ==============================================
         Theme Color
@@ -130,7 +131,7 @@
                         
                         <!-- 
                             Custom Logo
-                            <img src="../../static/images/logo.svg" alt="NEXGEN">
+                            <img src="{% static 'images/logo.svg' %}" alt="NEXGEN">
                         -->
                     </a>
 
@@ -281,7 +282,7 @@
                     <div class="swiper-slide slide-center">
 
                         <!-- Media -->
-                        <img src="../../static/images/bg-wide.jpg" alt="Full Image" class="full-image" data-mask="80">
+                        <img src="{% static 'images/bg-wide.jpg' %}" alt="Full Image" class="full-image" data-mask="80">
 
                         <div class="slide-content row text-center">
                             <div class="col-12 mx-auto inner">
@@ -334,7 +335,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-1.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-1.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 1</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -344,7 +345,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-2.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-2.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 2</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -354,7 +355,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-3.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-3.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 3</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -364,7 +365,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-4.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-4.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 4</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -374,7 +375,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-1.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-1.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 5</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -384,7 +385,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-2.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-2.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 6</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -394,7 +395,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-3.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-3.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 7</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -404,7 +405,7 @@
                 <div data-aos="fade-up" class="col-12 col-md-4 item">
                     <div class="card">
                         <div class="col-12">
-                            <img src="../../static/images/gallery-4.jpg" alt="Logo" class="logo">
+                            <img src="{% static 'images/gallery-4.jpg' %}" alt="Logo" class="logo">
                             <h4>Result 8</h4>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p>
                             <a href="#">Read more</a>
@@ -435,7 +436,7 @@
                                 
                                 <!-- 
                                     Custom Logo
-                                    <img src="../../static/images/logo.svg" alt="NEXGEN">
+                                    <img src="{% static 'images/logo.svg' %}" alt="NEXGEN">
                                 -->
                             </a>
                             <p>A Functional HTML Template<br>for Corporate & Business.</p>
@@ -691,21 +692,21 @@
         <!-- ==============================================
         Vendor Scripts
         =============================================== -->
-        <script src="../../static/js/vendor/jquery.min.js"></script>
-        <script src="../../static/js/vendor/jquery.easing.min.js"></script>
-        <script src="../../static/js/vendor/jquery.inview.min.js"></script>
-        <script src="../../static/js/vendor/popper.min.js"></script>
-        <script src="../../static/js/vendor/bootstrap.min.js"></script>
-        <script src="../../static/js/vendor/ponyfill.min.js"></script>
-        <script src="../../static/js/vendor/slider.min.js"></script>
-        <script src="../../static/js/vendor/animation.min.js"></script>
-        <script src="../../static/js/vendor/progress-radial.min.js"></script>
-        <script src="../../static/js/vendor/bricklayer.min.js"></script>
-        <script src="../../static/js/vendor/gallery.min.js"></script>
-        <script src="../../static/js/vendor/shuffle.min.js"></script>
-        <script src="../../static/js/vendor/cookie-notice.min.js"></script>
-        <script src="../../static/js/vendor/particles.min.js"></script>
-        <script src="../../static/js/main.js"></script>
+        <script src="{% static 'js/vendor/jquery.min.js' %}"></script>
+        <script src="{% static 'js/vendor/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/vendor/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/vendor/popper.min.js' %}"></script>
+        <script src="{% static 'js/vendor/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/vendor/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/vendor/slider.min.js' %}"></script>
+        <script src="{% static 'js/vendor/animation.min.js' %}"></script>
+        <script src="{% static 'js/vendor/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/vendor/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/vendor/gallery.min.js' %}"></script>
+        <script src="{% static 'js/vendor/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/vendor/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/vendor/particles.min.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
 
     </body>
 </html>
