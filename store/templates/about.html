@@ -397,13 +397,13 @@
                             <p>CUENTAS CON NOSOTROS.</p>
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="tel:+593984230099" class="nav-link">
                                         <i class="fas fa-phone-alt mr-2"></i>
                                         +593 984-230-099
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
                                         <i class="fas fa-envelope mr-2"></i>
                                         totalcounts@hotmail.com
                                     </a>
@@ -415,7 +415,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#contact" class="mt-4 btn outline-button smooth-anchor">CONTACTANOS</a>
+                                    <a href="{% url 'contactanos' %}" class="mt-4 btn outline-button">CONTACTANOS</a>
                                 </li>
                             </ul>
                         </div>
@@ -424,42 +424,39 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Tecnología</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañía</a>
+                                        <a href="#" class="footer-info-link" data-info="mision"><i class="icon-arrow-right"></i>Misión</a>
+                                        <a href="#" class="footer-info-link" data-info="vision"><i class="icon-arrow-right"></i>Visión</a>
+                                        <a href="#" class="footer-info-link" data-info="objetivos"><i class="icon-arrow-right"></i>Objetivos</a>
+                                        <a href="#" class="footer-info-link" data-info="acerca"><i class="icon-arrow-right"></i>Acerca de</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Servicios</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Control Tributario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Recursos Humanos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Reglamentos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Societario</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Consultoría Legal</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Auditorías</a>
+                                        <a href="#" class="footer-service-link" data-service="tributario"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#" class="footer-service-link" data-service="rrhh"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#" class="footer-service-link" data-service="reglamentos"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#" class="footer-service-link" data-service="societario"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="legal"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#" class="footer-service-link" data-service="auditorias"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Soporte</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Responsibility</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Terminos de Uso</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Accesibilidad</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Información</a>
-                                    </div>
+                                        <a href="#" class="footer-info-link" data-info="responsabilidad"><i class="icon-arrow-right"></i>Responsabilidad</a>
+                                        <a href="#" class="footer-info-link" data-info="terminos"><i class="icon-arrow-right"></i>Términos de Uso</a>
+                                        <a href="#" class="footer-info-link" data-info="cookies"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="#" class="footer-info-link" data-info="privacidad"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="#" class="footer-info-link" data-info="accesibilidad"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                                                            </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
 
             <!-- Copyright -->
             <section id="copyright" class="p-3 odd copyright">
@@ -480,72 +477,4 @@
 
         </footer>
 
-
-        <!-- Modal [map] -->
-        <div id="map" class="p-0 modal fade" role="dialog" aria-labelledby="map" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-slideout" role="document">
-                <div class="modal-content full">
-                    <div class="modal-header absolute" data-dismiss="modal">
-                        <i class="icon-close fas fa-arrow-right"></i>
-                    </div>
-                    <div class="modal-body p-0">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d249.0419196643243!2d-79.0186553!3d-2.9107869!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sec!4v1704979894350!5m2!1ses!2sec" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Modal [responsive menu] -->
-        <div id="menu" class="p-0 modal fade" role="dialog" aria-labelledby="menu" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-slideout" role="document">
-                <div class="modal-content full">
-                    <div class="modal-header" data-dismiss="modal">
-                        <i class="icon-close fas fa-arrow-right"></i>
-                    </div>
-                    <div class="menu modal-body">
-                        <div class="row w-100">
-                            <div class="items p-0 col-12 text-center">
-                                <!-- Append [navbar] -->
-                            </div>
-                            <div class="contacts p-0 col-12 text-center">
-                                <!-- Append [navbar] -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Scroll [to top] -->
-        <div id="scroll-to-top" class="scroll-to-top">
-            <a href="#header" class="smooth-anchor">
-                <i class="fas fa-arrow-up"></i>
-            </a>
-        </div>        
-        
-        <!-- ==============================================
-        Google reCAPTCHA // Put your site key here
-        =============================================== -->
-        <script src="https://www.google.com/recaptcha/api.js?render=6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"></script>
-
-        <!-- ==============================================
-        Vendor Scripts
-        =============================================== -->
-        <script src="{% static 'js/jquery.min.js' %}"></script>
-        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
-        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
-        <script src="{% static 'js/popper.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.min.js' %}"></script>
-        <script src="{% static 'js/ponyfill.min.js' %}"></script>
-        <script src="{% static 'js/slider.min.js' %}"></script>
-        <script src="{% static 'js/animation.min.js' %}"></script>
-        <script src="{% static 'js/progress-radial.min.js' %}"></script>
-        <script src="{% static 'js/bricklayer.min.js' %}"></script>
-        <script src="{% static 'js/gallery.min.js' %}"></script>
-        <script src="{% static 'js/shuffle.min.js' %}"></script>
-        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
-        <script src="{% static 'js/particles.min.js' %}"></script>
-        <script src="{% static 'js/main.js' %}"></script>
-    </body>
-</html>
+>
