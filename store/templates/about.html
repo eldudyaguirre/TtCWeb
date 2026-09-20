@@ -476,5 +476,42 @@
             </section>
 
         </footer>
+        <!-- Modal [responsive menu] -->
+        <div id="menu" class="p-0 modal fade" role="dialog" aria-labelledby="menu" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="menu modal-body">
+                        <div class="row w-100">
+                            <div class="items p-0 col-12 text-center"></div>
+                            <div class="contacts p-0 col-12 text-center">
+                                <a href="{% url 'contactanos' %}" class="nav-link menu-extra-link">CONTACTANOS</a>
+                                <a href="{% url 'signin' %}" class="nav-link menu-extra-link">INICIAR SESIÓN</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
->
+        <!-- Vendor Scripts -->
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/slider.min.js' %}"></script>
+        <script src="{% static 'js/animation.min.js' %}"></script>
+        <script src="{% static 'js/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/gallery.min.js' %}"></script>
+        <script src="{% static 'js/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/particles.min.js' %}"></script>
+        <script src="{% static 'js/main.js' %}?v=20260920"></script>
+
+    </body>
+</html>
