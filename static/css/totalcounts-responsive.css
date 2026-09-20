@@ -502,41 +502,41 @@ iframe {
  * Scoped with .about-page so the homepage hero is never affected.
  */
 @media (max-width: 767px) {
-    body.about-page #slider.featured1 {
+    body.about-page #slider.about-hero {
         overflow: hidden !important;
         min-height: 320px !important;
         height: 320px !important;
     }
 
-    body.about-page #slider.featured1 .swiper-container,
-    body.about-page #slider.featured1 .swiper-wrapper,
-    body.about-page #slider.featured1 .swiper-slide {
+    body.about-page #slider.about-hero .swiper-container,
+    body.about-page #slider.about-hero .swiper-wrapper,
+    body.about-page #slider.about-hero .swiper-slide {
         min-height: 320px !important;
         height: 320px !important;
         overflow: hidden;
     }
 
-    body.about-page #slider.featured1 video.full-image.to-bottom {
+    body.about-page #slider.about-hero video.full-image.to-bottom {
         display: block !important;
         visibility: visible !important;
     }
 
-    body.about-page #slider.featured1 .slide-content {
+    body.about-page #slider.about-hero .slide-content {
         position: relative;
         z-index: 2 !important;
         min-height: 320px;
     }
 
-    body.about-page #slider.featured1 .slide-content .inner {
+    body.about-page #slider.about-hero .slide-content .inner {
         padding-top: 45px;
         padding-bottom: 35px;
     }
 
-    body.about-page #slider.featured1 .slide-content .title {
+    body.about-page #slider.about-hero .slide-content .title {
         font-size: clamp(2.1rem, 9vw, 3rem);
     }
 
-    body.about-page #slider.featured1::after {
+    body.about-page #slider.about-hero::after {
         display: none !important;
     }
 
