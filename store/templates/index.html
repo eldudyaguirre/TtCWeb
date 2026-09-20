@@ -973,12 +973,11 @@
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
                                         <h4>Acerca</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>La compañia</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Institucional</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Social & Eventos</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Innovación</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Ambiente</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Tecnología</a>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañía</a>
+                                        <a href="#" class="footer-info-link" data-info="mision"><i class="icon-arrow-right"></i>Misión</a>
+                                        <a href="#" class="footer-info-link" data-info="vision"><i class="icon-arrow-right"></i>Visión</a>
+                                        <a href="#" class="footer-info-link" data-info="objetivos"><i class="icon-arrow-right"></i>Objetivos</a>
+                                        <a href="#" class="footer-info-link" data-info="acerca"><i class="icon-arrow-right"></i>Acerca de</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
@@ -1168,6 +1167,22 @@
                 accesibilidad: {
                     title: 'Accesibilidad',
                     body: '<p>Trabajamos para que nuestro sitio pueda ser utilizado por el mayor número posible de personas, procurando mantener una navegación clara, contenidos legibles y elementos interactivos identificables.</p><p>Si encuentras alguna dificultad de acceso o navegación, puedes comunicarla mediante nuestros canales de contacto para ayudarnos a mejorar.</p>'
+                },
+                mision: {
+                    title: 'Misión',
+                    body: '<p>Brindar soluciones contables, tributarias, laborales y tecnológicas que aporten claridad, orden y herramientas útiles para la gestión de nuestros clientes.</p><p>Buscamos acompañar a cada organización con servicios orientados a sus necesidades y a la correcta gestión de sus operaciones.</p>'
+                },
+                vision: {
+                    title: 'Visión',
+                    body: '<p>Consolidarnos como una organización reconocida por integrar conocimiento contable, tributario y tecnológico para ofrecer soluciones confiables y adaptadas a las nuevas necesidades empresariales.</p>'
+                },
+                objetivos: {
+                    title: 'Objetivos',
+                    body: '<p>Fortalecer la gestión de nuestros clientes mediante servicios especializados, procesos eficientes y herramientas tecnológicas.</p><p>Promover el cumplimiento de las obligaciones aplicables, mejorar la calidad de la información y facilitar la toma de decisiones empresariales.</p>'
+                },
+                acerca: {
+                    title: 'Acerca de TotalCounts',
+                    body: '<p>TotalCounts es una marca de C.A.S. (Complete Accounting System), dedicada al desarrollo de soluciones y servicios para empresas y profesionales.</p><p>Nuestro trabajo integra áreas contables, tributarias, laborales, legales, de auditoría y tecnología para ofrecer un acompañamiento integral.</p>'
                 }
             };
 
