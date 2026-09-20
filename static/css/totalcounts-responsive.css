@@ -682,3 +682,29 @@ iframe {
         transform: none !important;
     }
 }
+
+/* Menú responsive: efecto glass transparente */
+@media (max-width: 767px) {
+    #menu .modal-dialog,
+    #menu .modal-content,
+    #menu .modal-body {
+        background: rgba(33, 51, 62, 0.28) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+    }
+
+    #menu .modal-content {
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    #menu .navbar-nav,
+    #menu .nav-item,
+    #menu .nav-link {
+        background: transparent !important;
+    }
+
+    .modal-backdrop.show {
+        opacity: 0.12 !important;
+    }
+}
