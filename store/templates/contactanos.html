@@ -128,6 +128,53 @@
                 }
             }
         </style>
+
+        <style>
+            /* Responsive menu: dark panel and extra actions. */
+            @media (max-width: 767px) {
+                #menu.modal,
+                #menu.show {
+                    background: rgba(8, 13, 16, .78) !important;
+                }
+                #menu .modal-dialog,
+                #menu .modal-dialog .modal-content,
+                #menu .modal-content.full,
+                #menu .modal-body.menu {
+                    background: #21333e !important;
+                    background-image: linear-gradient(145deg, #21333e 0%, #182832 55%, #101b22 100%) !important;
+                    opacity: 1 !important;
+                }
+                #menu .modal-dialog,
+                #menu .modal-content.full {
+                    min-height: 100vh !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    border-radius: 0 !important;
+                }
+                #menu .modal-body.menu,
+                #menu .menu .items,
+                #menu .menu .contacts {
+                    background: transparent !important;
+                }
+                #menu .menu .nav-link,
+                #menu .menu .nav-link:visited,
+                #menu .menu .nav-link i {
+                    color: #fff !important;
+                }
+                #menu .menu .contacts {
+                    margin-top: 25px;
+                    border-top: 1px solid rgba(255,255,255,.12);
+                    padding-top: 20px !important;
+                }
+                #menu .menu .menu-extra-link {
+                    display: block;
+                    padding: 12px 0;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                }
+            }
+        </style>
         
     </head>
 
@@ -661,7 +708,8 @@
                                 <!-- Append [navbar] -->
                             </div>
                             <div class="contacts p-0 col-12 text-center">
-                                <!-- Append [navbar] -->
+                                <a href="{% url 'contactanos' %}" class="nav-link menu-extra-link">CONTACTANOS</a>
+                                <a href="{% url 'signin' %}" class="nav-link menu-extra-link">INICIAR SESIÓN</a>
                             </div>
                         </div>
                     </div>
