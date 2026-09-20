@@ -93,6 +93,7 @@
         Custom Stylesheet
         =============================================== -->
         <link rel="stylesheet" href="{% static 'css/default.css' %}">
+        <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}?v=20260920">
 
         <!-- ==============================================
         Theme Color
@@ -115,6 +116,16 @@
                 --section-7-bg-color: #ffffff;
 
                 --footer-bg-color: #080d10; --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
+            }
+        </style>
+
+        <style>
+            /* Contact page: reveal the background subject on small screens. */
+            @media (max-width: 767px) {
+                #slider.hero .parallax-y-bg {
+                    background-position: 15% center !important;
+                    background-size: cover !important;
+                }
             }
         </style>
         
