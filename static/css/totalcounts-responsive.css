@@ -554,3 +554,24 @@ iframe {
         padding-top: 70px !important;
     }
 }
+
+
+/* About page test: independent logo layer above the hero content. */
+@media (max-width: 767px) {
+    body.about-page #slider.featured1 {
+        position: relative;
+    }
+
+    body.about-page #slider.featured1 .about-hero-overlay-logo {
+        position: absolute !important;
+        top: 68px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 290px !important;
+        max-width: 78vw !important;
+        height: auto !important;
+        z-index: 50 !important;
+        pointer-events: none !important;
+        display: block !important;
+    }
+}
