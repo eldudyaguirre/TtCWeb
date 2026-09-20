@@ -789,3 +789,43 @@ iframe {
         z-index: 5 !important;
     }
 }
+
+/* INDEX MOBILE - restauración directa de las imágenes del slider */
+@media (max-width: 767px) {
+    body.home #slider .swiper-slide {
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    body.home #slider .swiper-slide > img.full-image {
+        display: block !important;
+        visibility: visible !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        object-fit: cover !important;
+        object-position: center center !important;
+        z-index: 1 !important;
+        opacity: 0.6 !important;
+    }
+
+    body.home #slider .swiper-slide::before,
+    body.home #slider .swiper-slide::after {
+        z-index: 0 !important;
+    }
+
+    body.home #slider .slide-content {
+        position: relative !important;
+        z-index: 3 !important;
+    }
+
+    body.home #slider .slide-content .inner {
+        position: relative !important;
+        z-index: 4 !important;
+    }
+}
