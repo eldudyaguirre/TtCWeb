@@ -555,29 +555,3 @@ iframe {
         bottom: 16px !important;
     }
 }
-
-/* Mobile header: compact TotalCounts logo — mobile only */
-@media (max-width: 767px) {
-    body.about-page header#header .navbar.sub .navbar-brand {
-        transform: scale(0.68) !important;
-        transform-origin: left center !important;
-        margin-right: -18% !important;
-        flex-shrink: 0 !important;
-    }
-
-    body.about-page header#header .navbar.sub .navbar-brand img {
-        height: 20px !important;
-        max-height: 20px !important;
-        width: auto !important;
-    }
-
-    body.about-page header#header .navbar.sub .navbar-brand .brand {
-        font-size: 0.78rem !important;
-        letter-spacing: 3px !important;
-        line-height: 1 !important;
-    }
-
-    body.about-page header#header .navbar.sub .navbar-brand .featured {
-        padding: 8px 2px 8px 18px !important;
-    }
-}
