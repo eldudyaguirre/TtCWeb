@@ -192,19 +192,19 @@ iframe {
 
 @media (max-width: 576px) {
     header .navbar.sub .container.header {
-        min-height: 62px;
+        min-height: 80px;
     }
 
     header .navbar-brand {
-        max-width: calc(100vw - 125px);
+        max-width: calc(100vw - 150px);
     }
 
     header .navbar-brand img {
-        max-height: 28px;
+        max-height: 44px;
     }
 
     header .navbar-brand .brand {
-        font-size: .9rem;
+        font-size: 1.35rem;
     }
 
     header .navbar.sub .navbar-nav.icons .nav-link,
@@ -553,5 +553,21 @@ iframe {
     body.home #slider.hero .swiper-pagination {
         z-index: 5;
         bottom: 16px !important;
+    }
+}
+
+
+/* Mobile header size requested for the homepage and About page.
+ * Desktop and other pages remain unchanged.
+ */
+@media (max-width: 576px) {
+    body.home header .navbar-brand img,
+    body.about-page header .navbar-brand img {
+        max-height: 44px;
+    }
+
+    body.home header .navbar-brand .brand,
+    body.about-page header .navbar-brand .brand {
+        font-size: 1.35rem;
     }
 }
