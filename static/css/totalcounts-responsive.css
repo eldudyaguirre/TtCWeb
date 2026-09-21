@@ -555,3 +555,20 @@ iframe {
         bottom: 16px !important;
     }
 }
+
+
+/* Desktop header: keep the full navigation on one line for Home and About.
+   Contactanos keeps its existing desktop spacing/layout. */
+@media (min-width: 1200px) {
+    body.home header .navbar.sub .navbar-nav.items,
+    body.about-page header .navbar.sub .navbar-nav.items {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+
+    body.home header .navbar.sub .navbar-nav.items .nav-link,
+    body.about-page header .navbar.sub .navbar-nav.items .nav-link {
+        padding-left: .72rem;
+        padding-right: .72rem;
+    }
+}
