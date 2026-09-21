@@ -582,7 +582,17 @@ iframe {
 
     body.home header .navbar.sub .navbar-brand .brand,
     body.about-page header .navbar.sub .navbar-brand .brand {
-        font-size: 1rem;
-        letter-spacing: 4px;
+        font-size: .88rem;
+        letter-spacing: 3px;
+    }
+
+    body.home header .navbar.sub .navbar-brand .featured,
+    body.about-page header .navbar.sub .navbar-brand .featured {
+        padding: 9px 2px 10px 20px;
+    }
+
+    body.home header .navbar.sub .navbar-brand .featured:before,
+    body.about-page header .navbar.sub .navbar-brand .featured:before {
+        width: calc(100% + 5px);
     }
 }
