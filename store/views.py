@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import Http404
@@ -46,7 +47,7 @@ def do_signin(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('home')
+                return redirect('portal')
 
         messages.error(request, 'Usuario o contraseña inválidos.')
 
@@ -56,6 +57,11 @@ def do_signin(request):
 def do_logout(request):
     logout(request)
     return redirect('home')
+
+
+@login_required
+def portal(request):
+    return render(request, 'portal.html')
 
 
 def about(request):
