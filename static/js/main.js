@@ -59,16 +59,6 @@ jQuery(function ($) {
         menu.html('');
         navbar.clone().appendTo(menu);
 
-        // Mantener el menú responsive de Contactanos también en Inicio y Acerca:
-        // CONTACTANOS debe quedar como opción directa, justo después de BLOG.
-        let contactLink = $('.menu .contacts a[href*="contactanos"]').first();
-        if (contactLink.length && !menu.find('.nav-link[href*="contactanos"]').length) {
-            contactLink.clone()
-                .removeClass('menu-extra-link')
-                .appendTo(menu.find('.navbar-nav.items'));
-            contactLink.remove();
-        }
-
         $('.menu .icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
     }
 
