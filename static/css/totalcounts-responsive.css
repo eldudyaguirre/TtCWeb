@@ -555,29 +555,3 @@ iframe {
         bottom: 16px !important;
     }
 }
-
-
-/* Mobile header size requested for the homepage and About page.
- * Desktop and other pages remain unchanged.
- */
-@media (max-width: 576px) {
-    body.home header .navbar-brand {
-        max-width: calc(100vw - 190px);
-    }
-
-    body.about-page header .navbar-brand {
-        max-width: calc(100vw - 190px);
-    }
-
-    body.home header .navbar-brand img,
-    body.about-page header .navbar-brand img {
-        height: 38px !important;
-        max-height: 38px !important;
-        width: auto !important;
-    }
-
-    body.home header .navbar-brand .brand,
-    body.about-page header .navbar-brand .brand {
-        font-size: 1.15rem !important;
-    }
-}
