@@ -596,3 +596,12 @@ iframe {
         width: calc(100% + 5px);
     }
 }
+
+
+/* Contactanos is already provided by the desktop action button. Keep it only in the responsive menu. */
+@media (min-width: 1200px) {
+    body.home header .navbar.sub .navbar-nav.items .desktop-contact-link,
+    body.about-page header .navbar.sub .navbar-nav.items .desktop-contact-link {
+        display: none !important;
+    }
+}
