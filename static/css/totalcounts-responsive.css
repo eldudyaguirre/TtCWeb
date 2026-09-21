@@ -572,3 +572,17 @@ iframe {
         padding-right: .72rem;
     }
 }
+
+
+@media (min-width: 1200px) {
+    body.home header .navbar.sub .navbar-brand img,
+    body.about-page header .navbar.sub .navbar-brand img {
+        height: 42px;
+    }
+
+    body.home header .navbar.sub .navbar-brand .brand,
+    body.about-page header .navbar.sub .navbar-brand .brand {
+        font-size: 1rem;
+        letter-spacing: 4px;
+    }
+}
