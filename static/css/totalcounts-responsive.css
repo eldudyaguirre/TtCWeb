@@ -192,19 +192,19 @@ iframe {
 
 @media (max-width: 576px) {
     header .navbar.sub .container.header {
-        min-height: 80px;
+        min-height: 62px;
     }
 
     header .navbar-brand {
-        max-width: calc(100vw - 150px);
+        max-width: calc(100vw - 125px);
     }
 
     header .navbar-brand img {
-        max-height: 44px;
+        max-height: 28px;
     }
 
     header .navbar-brand .brand {
-        font-size: 1.35rem;
+        font-size: .9rem;
     }
 
     header .navbar.sub .navbar-nav.icons .nav-link,
