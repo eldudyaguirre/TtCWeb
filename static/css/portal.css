@@ -85,14 +85,15 @@
     transition: background .18s ease, color .18s ease;
 }
 
-.portal-menu-item:hover,
-.portal-menu-item.active {
+.portal-menu-item:hover {
     color: #fff;
-    background: #2d4754;
+    background: transparent;
     text-decoration: none;
 }
 
 .portal-menu-item.active {
+    color: #fff;
+    background: #2d4754;
     box-shadow: inset 3px 0 0 #058283;
 }
 
@@ -189,6 +190,10 @@
     padding: 0 34px 55px;
 }
 
+.portal-content > .container-fluid {
+    padding-top: 12px;
+}
+
  .portal-welcome {
     margin-bottom: 20px;
 }
@@ -219,11 +224,11 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
-    margin-bottom: 12px;
+    margin-bottom: 26px;
 }
 
-.portal-stat {
-    min-height: 112px;
+ .portal-stat {
+    min-height: 120px;
     display: flex;
     align-items: center;
     gap: 17px;
@@ -536,8 +541,8 @@
 .portal-menu-group.open > .portal-menu-toggle,
 .portal-menu-group > .portal-menu-toggle.active {
     color: #fff;
-    background: #2d4754;
-    box-shadow: inset 3px 0 0 #058283;
+    background: transparent;
+    box-shadow: none;
 }
 
 .portal-submenu {
@@ -672,4 +677,30 @@
 .portal-sidebar .portal-menu-toggle.active {
     background: #2d4754 !important;
     color: #fff !important;
+}
+
+
+/* Vista del menú principal: limpia y lineal, como el diseño aprobado */
+.portal-sidebar .portal-menu-group {
+    border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.portal-sidebar .portal-menu-group > .portal-menu-toggle {
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.portal-sidebar .portal-menu-group > .portal-menu-toggle:hover {
+    background: rgba(255,255,255,.035) !important;
+}
+
+.portal-sidebar .portal-menu-group.open > .portal-menu-toggle,
+.portal-sidebar .portal-menu-group > .portal-menu-toggle.active {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.portal-sidebar .portal-menu-group.open > .portal-menu-toggle .portal-menu-icon,
+.portal-sidebar .portal-menu-group > .portal-menu-toggle.active .portal-menu-icon {
+    color: #63c3c4;
 }
