@@ -9,21 +9,132 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
 </head>
-<body style="background-color:#21333e;">
-    <main class="min-vh-100 d-flex align-items-center justify-content-center">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-8 col-lg-6">
-                    <div class="card p-4 shadow-sm text-center">
-                        <img src="{% static 'images/logo.svg' %}" alt="TotalCounts" style="max-height:70px;" class="mb-4">
-                        <h1>Bienvenido al Portal de Clientes</h1>
-                        <p class="mb-4">Sesión iniciada correctamente como <strong>{{ request.user.get_username }}</strong>.</p>
-                        <a href="{% url 'logout' %}" class="btn primary-button">CERRAR SESIÓN</a>
+<body class="portal-shell">
+
+    <header class="portal-topbar">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <a href="{% url 'portal' %}">
+                        <img src="{% static 'images/logo.svg' %}" alt="TotalCounts" class="portal-brand">
+                    </a>
+                </div>
+
+                {% if cliente %}
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center justify-content-md-end flex-wrap portal-client">
+                        <div class="text-md-right mr-md-3">
+                            <p class="portal-client-name">{{ cliente.nomclient }}</p>
+                            <p class="portal-client-ruc">RUC / C.I. {{ cliente.ruccedcli }}</p>
+                        </div>
+                        <a href="{% url 'logout' %}" class="portal-logout">CERRAR SESIÓN</a>
                     </div>
                 </div>
+                {% else %}
+                <div class="col-md-8 text-md-right">
+                    <a href="{% url 'logout' %}" class="portal-logout">CERRAR SESIÓN</a>
+                </div>
+                {% endif %}
             </div>
         </div>
+    </header>
+
+    <main class="portal-content">
+        <div class="container">
+
+            {% if es_administrador %}
+                <div class="portal-welcome">
+                    <div class="portal-kicker">Administración</div>
+                    <h1>Portal de TotalCounts</h1>
+                    <p>Sesión administrativa iniciada como <strong>{{ request.user.get_username }}</strong>.</p>
+                </div>
+            {% else %}
+                <div class="portal-welcome">
+                    <div class="portal-kicker">Portal de clientes</div>
+                    <h1>Bienvenido, {{ cliente.nomclient }}</h1>
+                    <p>Consulta la información y los documentos relacionados con tu empresa.</p>
+                </div>
+
+                <div class="row portal-summary">
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="portal-stat">
+                            <div class="portal-stat-label">Saldo pendiente</div>
+                            <div class="portal-stat-value">
+                                $ {{ resumen.salcuenta|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="portal-stat">
+                            <div class="portal-stat-label">Servicios pendientes de facturación</div>
+                            <div class="portal-stat-value">
+                                {{ resumen.prefacturas_pendientes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="portal-card">
+                            <div class="portal-card-icon">⌁</div>
+                            <h3>Facturas</h3>
+                            <p>Consulta tus facturas emitidas y accede a sus documentos.</p>
+                            <a href="#" class="portal-card-link">CONSULTAR →</a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="portal-card">
+                            <div class="portal-card-icon">▤</div>
+                            <h3>Retenciones</h3>
+                            <p>Consulta y revisa las retenciones relacionadas con tu empresa.</p>
+                            <a href="#" class="portal-card-link">CONSULTAR →</a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="portal-card">
+                            <div class="portal-card-icon">▥</div>
+                            <h3>Reportes</h3>
+                            <p>Consulta información de tus documentos por períodos.</p>
+                            <a href="#" class="portal-card-link">VER REPORTES →</a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="portal-card">
+                            <div class="portal-card-icon">⌂</div>
+                            <h3>Mi empresa</h3>
+                            <p>Consulta los datos registrados de tu empresa en TotalCounts.</p>
+                            <a href="#" class="portal-card-link">VER INFORMACIÓN →</a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="portal-card">
+                            <div class="portal-card-icon">◎</div>
+                            <h3>Mi cuenta</h3>
+                            <p>Administra tu usuario y las opciones de acceso al portal.</p>
+                            <a href="#" class="portal-card-link">ADMINISTRAR →</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
     </main>
+
+    <footer class="portal-footer">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap">
+            <span>© {% now "Y" %} TotalCounts. Todos los derechos reservados.</span>
+            {% if cliente %}
+                <span>Portal de clientes</span>
+            {% endif %}
+        </div>
+    </footer>
+
 </body>
 </html>
