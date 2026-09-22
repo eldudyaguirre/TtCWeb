@@ -608,7 +608,10 @@ iframe {
 
 /* About mobile: remove the decorative TotalCounts logo that overlaps the hero content. */
 @media (max-width: 767px) {
-    body.about-page section.featured1:after {
+    body.about-page #slider.hero.featured1::after,
+    body.about-page section.featured1::after {
+        content: none !important;
         display: none !important;
+        background-image: none !important;
     }
 }
