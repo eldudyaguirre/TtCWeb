@@ -60,11 +60,8 @@ jQuery(function ($) {
         navbar.clone().appendTo(menu);
 
         // Menú responsive unificado:
-        // INICIO, SERVICIOS, EQUIPO, BLOG, CONTACTANOS
+        // INICIO, ACERCA, SERVICIOS, EQUIPO, BLOG, CONTACTANOS
         // y debajo, separado, INICIAR SESIÓN.
-        menu.find('.navbar-nav.items .nav-link').filter(function () {
-            return $.trim($(this).text()).toUpperCase() === 'ACERCA';
-        }).closest('.nav-item').remove();
 
         var contact = menu.find('.contacts a[href*="contactanos"]').first();
         var contactInItems = menu.find('.navbar-nav.items .nav-link[href*="contactanos"]').first();
