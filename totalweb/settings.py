@@ -152,6 +152,9 @@ LOGIN_URL = '/signin/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Almacenamiento privado de archivos de clientes. En producción se configura en .env.
+TOTALCOUNTS_DATA_ROOT = Path(os.getenv('TOTALCOUNTS_DATA_ROOT', str(BASE_DIR / 'data')))
+
 # Producción detrás de Cloudflare Tunnel.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = not DEBUG
