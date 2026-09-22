@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    Archivo,
     Cliente,
     Establecimiento,
     ParametrosCliente,
@@ -30,6 +31,21 @@ class UsuarioClienteAdmin(admin.ModelAdmin):
     list_filter = ('rol', 'activo')
 
 
+
+
+
+@admin.register(Archivo)
+class ArchivoAdmin(admin.ModelAdmin):
+    list_display = (
+        'cliente',
+        'tipo',
+        'nombre_original',
+        'tamano',
+        'creado_en',
+        'activo',
+    )
+    search_fields = ('cliente__ruccedcli', 'cliente__nomclient', 'nombre_original', 'ruta_relativa')
+    list_filter = ('tipo', 'activo')
 
 @admin.register(ParametrosCliente)
 class ParametrosClienteAdmin(admin.ModelAdmin):
