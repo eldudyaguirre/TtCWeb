@@ -15,6 +15,8 @@ class AceptacionLegal(models.Model):
     tipo = models.CharField(max_length=30, choices=Tipo.choices)
     version = models.CharField(max_length=20)
     aceptado_en = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
 
     class Meta:
         db_table = 'aceptaciones_legales'
