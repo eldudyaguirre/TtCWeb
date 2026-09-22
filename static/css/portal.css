@@ -1357,3 +1357,90 @@
     }
 }
 
+
+
+/* Secciones del módulo Mi empresa */
+.portal-company-section {
+    margin-top: 32px;
+}
+
+.portal-company-section h2 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #21333e;
+}
+
+.portal-company-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 0;
+}
+
+.portal-company-field {
+    padding: 17px 19px;
+    border: 1px solid rgba(33, 51, 62, 0.10);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.portal-company-field span {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .65;
+}
+
+.portal-company-field strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #21333e;
+    word-break: break-word;
+}
+
+.portal-secret-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.portal-secret-value strong {
+    overflow-wrap: anywhere;
+}
+
+.portal-secret-toggle {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: #21333e;
+    cursor: pointer;
+    padding: 3px 5px;
+    font-size: 16px;
+}
+
+.portal-secret-toggle:disabled {
+    cursor: default;
+    opacity: .45;
+}
+
+@media (max-width: 767px) {
+    .portal-company-section {
+        margin-top: 26px;
+    }
+
+    .portal-company-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .portal-company-field {
+        padding: 15px 16px;
+    }
+}
+
