@@ -1898,3 +1898,162 @@
         width: 100%;
     }
 }
+
+
+/* Aceptaciones legales */
+.portal-legal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(18, 29, 36, .76);
+    backdrop-filter: blur(3px);
+}
+
+.portal-legal-modal {
+    width: min(720px, 100%);
+    max-height: min(88vh, 820px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 24px 70px rgba(0,0,0,.28);
+}
+
+.portal-legal-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 26px 20px;
+    border-bottom: 1px solid #e7ecee;
+}
+
+.portal-legal-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(5,130,131,.10);
+    color: #058283;
+    font-size: 1.2rem;
+}
+
+.portal-legal-header h2 {
+    margin: 4px 0 2px;
+    color: #21333e;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.portal-legal-header span {
+    color: #89949b;
+    font-size: .72rem;
+}
+
+.portal-legal-body {
+    overflow-y: auto;
+    padding: 22px 26px;
+    color: #5f6c73;
+    font-size: .86rem;
+    line-height: 1.65;
+}
+
+.portal-legal-body p {
+    margin: 0 0 13px;
+}
+
+.portal-legal-body h3 {
+    margin: 18px 0 5px;
+    color: #26343d;
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.portal-legal-note {
+    margin-top: 20px !important;
+    padding: 12px 14px;
+    border-left: 3px solid #058283;
+    background: #f4f8f8;
+    color: #68777e;
+    font-size: .77rem;
+}
+
+.portal-legal-footer {
+    padding: 18px 26px 22px;
+    border-top: 1px solid #e7ecee;
+    background: #fafcfc;
+}
+
+.portal-legal-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 15px;
+    color: #4e5c64;
+    font-size: .82rem;
+    line-height: 1.45;
+    cursor: pointer;
+}
+
+.portal-legal-check input {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    margin: 1px 0 0;
+    accent-color: #058283;
+}
+
+.portal-legal-button {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 7px;
+    background: #058283;
+    color: #fff;
+    font-family: inherit;
+    font-size: .84rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.portal-legal-button:hover {
+    background: #046e6f;
+}
+
+@media (max-width: 767px) {
+    .portal-legal-overlay {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .portal-legal-modal {
+        max-height: calc(100vh - 24px);
+        margin: auto 0;
+        border-radius: 10px;
+    }
+
+    .portal-legal-header {
+        padding: 18px 18px 15px;
+    }
+
+    .portal-legal-header h2 {
+        font-size: 1.05rem;
+    }
+
+    .portal-legal-body {
+        padding: 17px 18px;
+        font-size: .82rem;
+    }
+
+    .portal-legal-footer {
+        padding: 15px 18px 18px;
+    }
+}
