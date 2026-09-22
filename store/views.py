@@ -412,6 +412,17 @@ def aceptar_documento_legal(request):
         messages.error(request, 'El documento legal solicitado no es válido.')
         return redirect('portal')
 
+    if tipo == AceptacionLegal.Tipo.POLITICA_DATOS:
+        confirmado = request.POST.get('informado') == '1'
+        if not confirmado:
+            messages.error(request, 'Debes confirmar que has sido informado sobre la Política de Protección de Datos.')
+            return redirect('portal')
+    elif tipo == AceptacionLegal.Tipo.TERMINOS_USO:
+        confirmado = request.POST.get('acepto') == '1'
+        if not confirmado:
+            messages.error(request, 'Debes aceptar los Términos y Condiciones de Uso para continuar.')
+            return redirect('portal')
+
     version = versiones[tipo]
     AceptacionLegal.objects.get_or_create(
         usuario=request.user,
