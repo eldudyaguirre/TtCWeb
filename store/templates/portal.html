@@ -228,7 +228,7 @@
             <footer class="portal-footer">
                 <div class="container-fluid">
                     <span>© {% now "Y" %} TotalCounts. Todos los derechos reservados.</span>
-                    <span>Portal de clientes</span>
+                    <span><a href="{% url 'avisos_legales' %}" style="color:inherit;text-decoration:none;">Avisos legales</a> · Portal de clientes</span>
                 </div>
             </footer>
         </div>
@@ -350,7 +350,7 @@
                     </label>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <button type="submit" class="portal-legal-button">Registrar que fui informado</button>
-                        <button type="button" class="portal-legal-button" style="background:#eef1f3;color:#21333e;" onclick="this.closest('.portal-legal-overlay').style.display='none';">Continuar sin registrar</button>
+                        <button type="button" class="portal-legal-button" style="background:#eef1f3;color:#21333e;" onclick="this.closest('.portal-legal-overlay').style.display='none'; var t=document.getElementById('portal-terms-overlay'); if(t){t.style.display='flex';}">Continuar al siguiente paso</button>
                     </div>
                 </form>
             </div>
@@ -403,7 +403,7 @@
                 <strong>Teléfono:</strong> 072813120<br>
                 <strong>Domicilio:</strong> José Zorrilla e Isabel la Católica, Cuenca, Ecuador</p>
 
-                <p class="portal-legal-note"><strong>Importante:</strong> estos términos deben revisarse y completarse con las condiciones contractuales reales de TotalCounts antes de considerarlos una versión jurídica definitiva.</p>
+                <p class="portal-legal-note"><strong>Importante:</strong> estos términos constituyen las condiciones generales de uso del Portal de Clientes TotalCounts y podrán actualizarse cuando cambien los servicios, condiciones operativas o requisitos legales. La versión vigente permanecerá disponible para consulta.</p>
             </div>
 
             <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
@@ -416,6 +416,55 @@
                 <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
             </form>
             {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if pendientes_legales and pendientes_legales.0 == 'POLITICA_DATOS' and 'TERMINOS_USO' in pendientes_legales %}
+    <div id="portal-terms-overlay" class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-terms-title" style="display:none!important;position:fixed!important;inset:0!important;z-index:100000!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(18,29,36,.76)!important;backdrop-filter:blur(3px)!important;">
+        <div class="portal-legal-modal" style="position:relative!important;width:min(760px,100%)!important;max-height:min(90vh,860px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-radius:12px!important;box-shadow:0 24px 70px rgba(0,0,0,.28)!important;">
+            <div class="portal-legal-header">
+                <div class="portal-legal-icon"><i class="fi fi-rr-document"></i></div>
+                <div>
+                    <div class="portal-kicker">Aceptación requerida</div>
+                    <h2 id="portal-terms-title">Términos y Condiciones de Uso</h2>
+                    <span>Versión {{ versiones_legales.TERMINOS_USO }}</span>
+                </div>
+            </div>
+            <div class="portal-legal-body">
+                <p>Estos Términos y Condiciones regulan el acceso y uso del Portal de Clientes TotalCounts.</p>
+                <h3>1. Acceso y cuenta</h3>
+                <p>El usuario debe mantener la confidencialidad de sus credenciales, utilizar únicamente su cuenta y comunicar cualquier acceso no autorizado.</p>
+                <h3>2. Uso autorizado</h3>
+                <p>El portal debe utilizarse para las finalidades relacionadas con los servicios contratados. Está prohibido acceder, modificar, extraer o interferir con información, cuentas o sistemas sin autorización.</p>
+                <h3>3. Información proporcionada</h3>
+                <p>El usuario debe proporcionar información correcta y actualizada cuando sea necesaria para la prestación de los servicios.</p>
+                <h3>4. Documentos y comprobantes</h3>
+                <p>La información y documentos disponibles dependen de los servicios contratados, de los registros existentes y de las obligaciones legales aplicables. La información del portal no sustituye una fuente oficial cuando la ley exija consultarla.</p>
+                <h3>5. Seguridad</h3>
+                <p>No está permitido realizar acciones destinadas a vulnerar la seguridad, alterar el funcionamiento, introducir código malicioso, obtener acceso no autorizado o afectar la disponibilidad del portal.</p>
+                <h3>6. Disponibilidad</h3>
+                <p>El servicio puede presentar interrupciones por mantenimiento, actualizaciones, infraestructura, conectividad, proveedores externos, incidentes de seguridad o causas fuera del control razonable de TotalCounts.</p>
+                <h3>7. Propiedad intelectual</h3>
+                <p>El software, diseño, estructura, marcas, contenidos y demás elementos del portal pertenecen a sus respectivos titulares y no podrán explotarse fuera de las autorizaciones aplicables.</p>
+                <h3>8. Suspensión</h3>
+                <p>TotalCounts podrá suspender el acceso cuando exista una causa contractual, legal, de seguridad o de protección de la información que lo justifique.</p>
+                <h3>9. Cambios</h3>
+                <p>Los términos podrán actualizarse. Cuando una nueva versión requiera aceptación, el usuario deberá aceptarla antes de continuar utilizando las funcionalidades sujetas a estos términos.</p>
+                <h3>10. Legislación aplicable</h3>
+                <p>La relación se regirá por la legislación ecuatoriana en lo que resulte aplicable, sin perjuicio de las condiciones particulares pactadas con cada cliente.</p>
+                <h3>11. Contacto</h3>
+                <p><strong>Correo:</strong> totalcounts@hotmail.com<br><strong>Teléfono:</strong> 072813120<br><strong>Domicilio:</strong> José Zorrilla e Isabel la Católica, Cuenca, Ecuador</p>
+            </div>
+            <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="TERMINOS_USO">
+                <label class="portal-legal-check">
+                    <input type="checkbox" name="acepto" value="1" required>
+                    <span>He leído y acepto los Términos y Condiciones de Uso.</span>
+                </label>
+                <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
+            </form>
         </div>
     </div>
     {% endif %}
