@@ -968,3 +968,34 @@
         padding-right: 22px !important;
     }
 }
+
+
+@media (max-width: 767px) {
+    /* En móvil los datos del usuario sí deben permanecer visibles en la barra. */
+    .portal-topbar .portal-user-data {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        line-height: 1.25 !important;
+    }
+
+    .portal-topbar .portal-user-name {
+        color: #fff !important;
+        font-size: .82rem !important;
+        font-weight: 600 !important;
+    }
+
+    .portal-topbar .portal-user-ruc {
+        display: block !important;
+        margin-top: 2px !important;
+        color: rgba(255,255,255,.72) !important;
+        font-size: .68rem !important;
+    }
+
+    .portal-topbar .portal-user {
+        display: flex !important;
+        align-items: center !important;
+        gap: 9px !important;
+        margin-left: auto !important;
+    }
+}
