@@ -81,7 +81,7 @@
                         <h2>Datos generales</h2>
                         <div class="portal-company-grid">
                             <div class="portal-company-field"><span>RUC / C.I.</span><strong>{{ cliente.ruccedcli }}</strong></div>
-                            <div class="portal-company-field "><span>Razón social / nombre</span><input type="text" name="nomclient" value="{{ cliente.nomclient|default:'' }}" readonly></div>
+                            <div class="portal-company-field"><span>Razón social / nombre</span><strong>{{ cliente.nomclient|default:"No registrado" }}</strong></div>
                             <div class="portal-company-field "><span>Actividad económica</span><input type="text" name="ocuclient" value="{{ cliente.ocuclient|default:'' }}" readonly></div>
                             <div class="portal-company-field "><span>Dirección</span><input type="text" name="dirclient" value="{{ cliente.dirclient|default:'' }}" readonly></div>
                             <div class="portal-company-field "><span>Correo electrónico</span><input type="text" name="corelectr" value="{{ cliente.corelectr|default:'' }}" readonly></div>
@@ -101,7 +101,7 @@
                         <h2>Información adicional</h2>
                         <div class="portal-company-grid">
                             <div class="portal-company-field "><span>Estado civil</span><input type="text" name="estcivcli" value="{{ cliente.estcivcli|default:'' }}" readonly></div>
-                            <div class="portal-company-field "><span>Fecha de nacimiento</span><input type="text" name="fecnacimi" value="{{ cliente.fecnacimi|default:'' }}" readonly></div>
+                            <div class="portal-company-field"><span>Fecha de nacimiento</span><input type="date" name="fecnacimi" value="{{ cliente.fecnacimi|default:'' }}" readonly></div>
                             <div class="portal-company-field "><span>Edad</span><input type="text" name="edaclient" value="{{ cliente.edaclient|default:'' }}" readonly></div>
                         </div>
                     </div>
