@@ -234,6 +234,93 @@
         </div>
     </div>
 
-    <script src="{% static 'js/portal.js' %}?v=20260922j"></script>
+
+    {% if pendientes_legales %}
+    <div class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-legal-title">
+        <div class="portal-legal-modal">
+            {% if pendientes_legales.0 == 'POLITICA_DATOS' %}
+            <div class="portal-legal-header">
+                <div class="portal-legal-icon"><i class="fi fi-rr-shield-check"></i></div>
+                <div>
+                    <div class="portal-kicker">Documento obligatorio</div>
+                    <h2 id="portal-legal-title">Política de Protección de Datos</h2>
+                    <span>Versión {{ versiones_legales.POLITICA_DATOS }}</span>
+                </div>
+            </div>
+
+            <div class="portal-legal-body">
+                <p>Antes de utilizar el Portal de Clientes TotalCounts debes leer y aceptar nuestra Política de Protección de Datos.</p>
+
+                <h3>1. Finalidad</h3>
+                <p>La información proporcionada por el usuario se utiliza para gestionar su acceso al portal, prestar los servicios contratados, mantener la seguridad de la cuenta y atender las solicitudes relacionadas con los servicios de TotalCounts.</p>
+
+                <h3>2. Información tratada</h3>
+                <p>Dependiendo de los servicios utilizados, el portal puede tratar datos de identificación, información de contacto, información tributaria, información de comprobantes y datos necesarios para la operación de los servicios contratados.</p>
+
+                <h3>3. Seguridad y confidencialidad</h3>
+                <p>TotalCounts aplica medidas técnicas y organizativas destinadas a proteger la información contra acceso, modificación, pérdida o divulgación no autorizada.</p>
+
+                <h3>4. Derechos del titular</h3>
+                <p>El titular podrá solicitar información sobre sus datos y ejercer los derechos que le correspondan conforme a la normativa aplicable, mediante los canales de atención habilitados por TotalCounts.</p>
+
+                <p class="portal-legal-note"><strong>Importante:</strong> este documento debe mantenerse actualizado conforme a la normativa aplicable y a las condiciones reales de operación de TotalCounts.</p>
+            </div>
+
+            <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="POLITICA_DATOS">
+                <label class="portal-legal-check">
+                    <input type="checkbox" required>
+                    <span>He leído y acepto la Política de Protección de Datos.</span>
+                </label>
+                <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
+            </form>
+
+            {% else %}
+            <div class="portal-legal-header">
+                <div class="portal-legal-icon"><i class="fi fi-rr-document"></i></div>
+                <div>
+                    <div class="portal-kicker">Documento obligatorio</div>
+                    <h2 id="portal-legal-title">Términos y Condiciones de Uso</h2>
+                    <span>Versión {{ versiones_legales.TERMINOS_USO }}</span>
+                </div>
+            </div>
+
+            <div class="portal-legal-body">
+                <p>Para utilizar el Portal de Clientes TotalCounts debes leer y aceptar los siguientes términos y condiciones.</p>
+
+                <h3>1. Uso de la cuenta</h3>
+                <p>El usuario es responsable de mantener la confidencialidad de sus credenciales y de informar oportunamente cualquier uso no autorizado de su cuenta.</p>
+
+                <h3>2. Uso del portal</h3>
+                <p>El portal debe utilizarse únicamente para las finalidades relacionadas con los servicios contratados. No está permitido intentar acceder a información, cuentas o recursos que no correspondan al usuario autorizado.</p>
+
+                <h3>3. Información proporcionada</h3>
+                <p>El usuario debe procurar que la información entregada para la prestación de los servicios sea correcta, suficiente y actualizada cuando corresponda.</p>
+
+                <h3>4. Disponibilidad y seguridad</h3>
+                <p>TotalCounts podrá realizar mantenimiento, actualizaciones o mejoras que temporalmente afecten la disponibilidad del portal. Se aplicarán medidas razonables para preservar la seguridad y continuidad del servicio.</p>
+
+                <h3>5. Cambios</h3>
+                <p>Cuando estos términos sean modificados, se podrá solicitar al usuario una nueva aceptación de la versión vigente antes de continuar utilizando el portal.</p>
+
+                <p class="portal-legal-note"><strong>Importante:</strong> estos términos deben mantenerse actualizados conforme a los servicios efectivamente ofrecidos por TotalCounts y a la normativa aplicable.</p>
+            </div>
+
+            <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="TERMINOS_USO">
+                <label class="portal-legal-check">
+                    <input type="checkbox" required>
+                    <span>He leído y acepto los Términos y Condiciones de Uso.</span>
+                </label>
+                <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{% static 'js/portal.js' %}?v=20260922k"></script>
 </body>
 </html>
