@@ -93,17 +93,18 @@
                     </div>
                 </div>
 
-                <div class="portal-menu-title portal-menu-title-space">MI INFORMACIÓN</div>
-
-                <a href="#" class="portal-menu-item" data-menu-link>
-                    <i class="fi fi-rr-building portal-menu-icon"></i>
-                    <span>Mi empresa</span>
-                </a>
-
-                <a href="{% url 'cambiar_contrasena' %}" class="portal-menu-item" data-menu-link>
-                    <i class="fi fi-rr-user portal-menu-icon"></i>
-                    <span>Mi cuenta</span>
-                </a>
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-settings portal-menu-icon"></i>
+                        <span>Configuración</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Mi empresa</a>
+                        <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item">Cambiar contraseña</a>
+                        <a href="#" class="portal-submenu-item">Parámetros</a>
+                    </div>
+                </div>
             </nav>
 
             <div class="portal-sidebar-bottom">
