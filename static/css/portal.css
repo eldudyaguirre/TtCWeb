@@ -1015,3 +1015,25 @@
         padding-bottom: 18px !important;
     }
 }
+
+
+@media (max-width: 767px) {
+    /* El logout estaba siendo ocultado por una regla responsive anterior. */
+    .portal-sidebar .portal-sidebar-bottom {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex: 0 0 auto !important;
+        margin-top: 0 !important;
+        padding: 12px 22px 22px !important;
+        border-top: 1px solid rgba(255,255,255,.08) !important;
+    }
+
+    .portal-sidebar .portal-menu-logout {
+        display: flex !important;
+        visibility: visible !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        color: rgba(255,255,255,.78) !important;
+    }
+}
