@@ -10,6 +10,7 @@ urlpatterns = [
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
     path('portal/parametros/', views.parametros, name='parametros'),
     path('portal/cambiar-contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
+    path('portal/aceptar-documento-legal/', views.aceptar_documento_legal, name='aceptar_documento_legal'),
     path('portal/', views.portal, name='portal'),
     path('about/', views.about, name='about'),
     path('contactanos/', views.contactanos, name='contactanos'),
