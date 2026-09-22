@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922s">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922t">
 </head>
 <body class="portal-shell">
 
@@ -236,8 +236,8 @@
 
 
     {% if pendientes_legales %}
-    <div class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-legal-title">
-        <div class="portal-legal-modal">
+    <div class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-legal-title" style="position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(18,29,36,.76)!important;backdrop-filter:blur(3px)!important;">
+        <div class="portal-legal-modal" style="position:relative!important;width:min(720px,100%)!important;max-height:min(88vh,820px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-radius:12px!important;box-shadow:0 24px 70px rgba(0,0,0,.28)!important;">
             {% if pendientes_legales.0 == 'POLITICA_DATOS' %}
             <div class="portal-legal-header">
                 <div class="portal-legal-icon"><i class="fi fi-rr-shield-check"></i></div>
