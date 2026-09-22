@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     item.classList.add('active');
                     toggle.classList.add('active');
                     if (window.innerWidth <= 767) closeMobileMenu();
+                    window.location.href = href;
                     return;
                 }
 
