@@ -319,6 +319,7 @@ def parametros(request):
             'establecimientos': establecimientos,
             'puede_editar': puede_editar,
             'tipos_documento': SecuencialDocumento.TipoDocumento.choices,
+            'ambientes': ParametrosCliente.Ambiente.choices,
         },
     )
 
