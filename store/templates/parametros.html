@@ -157,7 +157,7 @@
                                 <div class="portal-parameter-field">
                                     <label for="ambiente">Ambiente de emisión</label>
                                     <select name="ambiente" id="ambiente">
-                                        {% for value, label in parametros_cliente.Ambiente.choices %}
+                                        {% for value, label in ambientes %}
                                             <option value="{{ value }}" {% if parametros_cliente.ambiente == value %}selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
