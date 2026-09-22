@@ -31,9 +31,6 @@ class UsuarioClienteAdmin(admin.ModelAdmin):
     list_filter = ('rol', 'activo')
 
 
-
-
-
 @admin.register(Archivo)
 class ArchivoAdmin(admin.ModelAdmin):
     list_display = (
@@ -47,11 +44,17 @@ class ArchivoAdmin(admin.ModelAdmin):
     search_fields = ('cliente__ruccedcli', 'cliente__nomclient', 'nombre_original', 'ruta_relativa')
     list_filter = ('tipo', 'activo')
 
+
 @admin.register(ParametrosCliente)
 class ParametrosClienteAdmin(admin.ModelAdmin):
     list_display = ('cliente', 'ambiente', 'certificado_nombre', 'activo', 'actualizado_en')
     search_fields = ('cliente__ruccedcli', 'cliente__nomclient')
     list_filter = ('ambiente', 'activo')
+
+    @admin.display(description='Certificado')
+    def certificado_nombre(self, obj):
+        archivo = obj.certificado_archivo
+        return archivo.nombre_original if archivo else 'Sin certificado'
 
 
 @admin.register(Establecimiento)
