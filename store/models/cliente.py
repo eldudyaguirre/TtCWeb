@@ -10,6 +10,8 @@ class Cliente(models.Model):
     ruccedcli = models.CharField(max_length=255, primary_key=True, db_column='ruccedcli')
     nomclient = models.CharField(max_length=255, blank=True, db_column='nomclient')
     acceso_ttcweb = models.BooleanField(default=False, db_column='acceso_ttcweb')
+    activo = models.BooleanField(default=False, db_column='activo')
+    salcuenta = models.FloatField(default=0, db_column='salcuenta')
 
     class Meta:
         managed = False
