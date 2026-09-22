@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.http import Http404
 from django.shortcuts import redirect, render
 
@@ -90,6 +90,25 @@ def do_signin(request):
             messages.error(request, 'Usuario o contraseña inválidos.')
 
     return render(request, 'sign-in.html', {'signin_form': form})
+
+
+@login_required
+def cambiar_contrasena(request):
+    form = PasswordChangeForm(request.user, request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(
+            request,
+            'Tu contraseña fue actualizada correctamente.',
+        )
+        return redirect('cambiar_contrasena')
+
+    return render(
+        request,
+        'cambiar-contrasena.html',
+        {'form': form},
+    )
 
 
 def do_logout(request):
