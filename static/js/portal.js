@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         submenuItems.forEach(function (item) {
             item.addEventListener('click', function (event) {
+                const href = item.getAttribute('href');
+
+                if (href && href !== '#') {
+                    clearSelection();
+                    item.classList.add('active');
+                    toggle.classList.add('active');
+                    if (window.innerWidth <= 767) closeMobileMenu();
+                    return;
+                }
+
                 event.preventDefault();
                 clearSelection();
                 item.classList.add('active');
