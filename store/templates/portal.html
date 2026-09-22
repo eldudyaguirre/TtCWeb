@@ -100,7 +100,7 @@
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
-                        <a href="#" class="portal-submenu-item">Mi empresa</a>
+                        <a href="{% url 'mi_empresa' %}" class="portal-submenu-item" onclick="window.location.href=this.href; return false;">Mi empresa</a>
                         <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item" onclick="window.location.href=this.href; return false;">Cambiar contraseña</a>
                         <a href="#" class="portal-submenu-item">Parámetros</a>
                     </div>
