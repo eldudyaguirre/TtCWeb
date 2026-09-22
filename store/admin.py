@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    AceptacionLegal,
     Archivo,
     Cliente,
     Establecimiento,
@@ -75,3 +76,11 @@ class PuntoEmisionAdmin(admin.ModelAdmin):
 class SecuencialDocumentoAdmin(admin.ModelAdmin):
     list_display = ('punto_emision', 'tipo_documento', 'secuencial_actual', 'activo')
     list_filter = ('tipo_documento', 'activo')
+
+
+@admin.register(AceptacionLegal)
+class AceptacionLegalAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'tipo', 'version', 'aceptado_en')
+    search_fields = ('usuario__username',)
+    list_filter = ('tipo', 'version')
+    readonly_fields = ('usuario', 'tipo', 'version', 'aceptado_en')
