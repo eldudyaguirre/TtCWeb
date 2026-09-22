@@ -133,9 +133,9 @@ def mi_empresa(request):
             messages.error(request, 'Tu usuario tiene permisos de consulta y no puede modificar los datos.')
         else:
             campos_editables = [
-                'nomclient', 'dirclient', 'ocuclient', 'corelectr',
+                'dirclient', 'ocuclient', 'corelectr',
                 'teldomcli', 'teloficli', 'telcelcli',
-                'estcivcli', 'fecnacimi', 'edaclient',
+                'estcivcli', 'fecnacimi',
                 'clavesri', 'cediess', 'claveiess',
                 'mrlcon', 'mrlsal', 'clavesuper',
                 'iessdomestica', 'datiess',
