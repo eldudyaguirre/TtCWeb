@@ -102,7 +102,7 @@
                         <div class="portal-company-grid">
                             <div class="portal-company-field "><span>Estado civil</span><input type="text" name="estcivcli" value="{{ cliente.estcivcli|default:'' }}" readonly></div>
                             <div class="portal-company-field"><span>Fecha de nacimiento</span><input type="date" name="fecnacimi" value="{{ cliente.fecnacimi|default:'' }}" readonly></div>
-                            <div class="portal-company-field "><span>Edad</span><input type="text" name="edaclient" value="{{ cliente.edaclient|default:'' }}" readonly></div>
+                            <div class="portal-company-field"><span>Edad</span><strong id="edadCalculada">—</strong></div>
                         </div>
                     </div>
 
@@ -135,6 +135,24 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('miEmpresaForm');
     const editButton = document.getElementById('editarEmpresaBtn');
+    const fechaNacimiento = document.querySelector('input[name="fecnacimi"]');
+    const edadCalculada = document.getElementById('edadCalculada');
+
+    function calcularEdad() {
+        if (!fechaNacimiento || !fechaNacimiento.value) {
+            edadCalculada.textContent = 'No registrada';
+            return;
+        }
+        const nacimiento = new Date(fechaNacimiento.value + 'T00:00:00');
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+        edadCalculada.textContent = edad >= 0 ? edad + ' años' : 'Fecha no válida';
+    }
+
+    if (fechaNacimiento) fechaNacimiento.addEventListener('change', calcularEdad);
+    calcularEdad();
     const saveBottom = document.getElementById('guardarEmpresaBtnBottom');
 
     if (editButton) {
