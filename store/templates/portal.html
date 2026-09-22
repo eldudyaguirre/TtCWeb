@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <link rel="stylesheet" href="{% static 'css/portal.css' %}">
 </head>
 <body class="portal-shell">
@@ -17,49 +18,97 @@
         <aside class="portal-sidebar">
             <div class="portal-sidebar-brand">
                 <a href="{% url 'portal' %}" class="portal-brand-link">
-                    <img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts" class="portal-brand">
+                    <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
                 </a>
             </div>
 
             <nav class="portal-menu" aria-label="Menú principal">
                 <div class="portal-menu-title">MENÚ PRINCIPAL</div>
 
-                <a href="#" class="portal-menu-item active">
-                    <span class="portal-menu-icon">⌂</span>
+                <a href="#" class="portal-menu-item active" data-menu-link>
+                    <i class="fi fi-rr-home portal-menu-icon"></i>
                     <span>Inicio</span>
                 </a>
 
-                <a href="#" class="portal-menu-item">
-                    <span class="portal-menu-icon">▤</span>
-                    <span>Facturas</span>
-                </a>
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-shopping-cart portal-menu-icon"></i>
+                        <span>Gastos</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Compras</a>
+                        <a href="#" class="portal-submenu-item">Notas de Crédito</a>
+                    </div>
+                </div>
 
-                <a href="#" class="portal-menu-item">
-                    <span class="portal-menu-icon">▥</span>
-                    <span>Retenciones</span>
-                </a>
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-money-bill-wave portal-menu-icon"></i>
+                        <span>Ingresos</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Facturador</a>
+                        <a href="#" class="portal-submenu-item">Facturas</a>
+                        <a href="#" class="portal-submenu-item">Notas de Crédito</a>
+                        <a href="#" class="portal-submenu-item">Retenciones</a>
+                    </div>
+                </div>
 
-                <a href="#" class="portal-menu-item">
-                    <span class="portal-menu-icon">▦</span>
-                    <span>Reportes</span>
-                </a>
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-building portal-menu-icon"></i>
+                        <span>SRI</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Declaraciones</a>
+                        <a href="#" class="portal-submenu-item">ATS</a>
+                        <a href="#" class="portal-submenu-item">ICE</a>
+                    </div>
+                </div>
+
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-chart-histogram portal-menu-icon"></i>
+                        <span>Reportes</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Compras</a>
+                        <a href="#" class="portal-submenu-item">Ventas</a>
+                    </div>
+                </div>
+
+                <div class="portal-menu-group">
+                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                        <i class="fi fi-rr-users portal-menu-icon"></i>
+                        <span>Laboral</span>
+                        <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                    </button>
+                    <div class="portal-submenu">
+                        <a href="#" class="portal-submenu-item">Trabajadores</a>
+                        <a href="#" class="portal-submenu-item">Roles de Pago</a>
+                    </div>
+                </div>
 
                 <div class="portal-menu-title portal-menu-title-space">MI INFORMACIÓN</div>
 
-                <a href="#" class="portal-menu-item">
-                    <span class="portal-menu-icon">◉</span>
+                <a href="#" class="portal-menu-item" data-menu-link>
+                    <i class="fi fi-rr-building portal-menu-icon"></i>
                     <span>Mi empresa</span>
                 </a>
 
-                <a href="#" class="portal-menu-item">
-                    <span class="portal-menu-icon">◎</span>
+                <a href="#" class="portal-menu-item" data-menu-link>
+                    <i class="fi fi-rr-user portal-menu-icon"></i>
                     <span>Mi cuenta</span>
                 </a>
             </nav>
 
             <div class="portal-sidebar-bottom">
                 <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
-                    <span class="portal-menu-icon">↪</span>
+                    <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i>
                     <span>Cerrar sesión</span>
                 </a>
             </div>
@@ -70,7 +119,7 @@
                 <div class="portal-topbar-inner">
                     <div class="portal-mobile-brand">
                         <a href="{% url 'portal' %}">
-                            <img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts" class="portal-mobile-logo">
+                            <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-mobile-logo">
                         </a>
                     </div>
 
@@ -80,9 +129,7 @@
                             <span class="portal-user-name">{{ cliente.nomclient }}</span>
                             <span class="portal-user-ruc">RUC / C.I. {{ cliente.ruccedcli }}</span>
                         </div>
-                        <div class="portal-user-avatar">
-                            {{ cliente.nomclient|first|upper }}
-                        </div>
+                        <div class="portal-user-avatar">{{ cliente.nomclient|first|upper }}</div>
                     </div>
                     {% else %}
                     <div class="portal-user">
@@ -90,9 +137,7 @@
                             <span class="portal-user-name">{{ request.user.get_username }}</span>
                             <span class="portal-user-ruc">Sesión administrativa</span>
                         </div>
-                        <div class="portal-user-avatar">
-                            {{ request.user.get_username|first|upper }}
-                        </div>
+                        <div class="portal-user-avatar">{{ request.user.get_username|first|upper }}</div>
                     </div>
                     {% endif %}
                 </div>
@@ -100,7 +145,6 @@
 
             <main class="portal-content">
                 <div class="container-fluid">
-
                     {% if es_administrador %}
                     <section class="portal-welcome">
                         <div class="portal-kicker">Administración</div>
@@ -116,15 +160,14 @@
 
                     <section class="portal-summary">
                         <div class="portal-stat">
-                            <div class="portal-stat-icon">＄</div>
+                            <div class="portal-stat-icon"><i class="fi fi-rr-dollar"></i></div>
                             <div>
                                 <div class="portal-stat-label">Saldo pendiente</div>
                                 <div class="portal-stat-value">$ {{ resumen.salcuenta|floatformat:2 }}</div>
                             </div>
                         </div>
-
                         <div class="portal-stat">
-                            <div class="portal-stat-icon">▤</div>
+                            <div class="portal-stat-icon"><i class="fi fi-rr-document"></i></div>
                             <div>
                                 <div class="portal-stat-label">Servicios pendientes de facturación</div>
                                 <div class="portal-stat-value">{{ resumen.prefacturas_pendientes }}</div>
@@ -142,53 +185,33 @@
 
                         <div class="portal-module-grid">
                             <a href="#" class="portal-module-card">
-                                <span class="portal-module-icon">▤</span>
-                                <span class="portal-module-content">
-                                    <strong>Facturas</strong>
-                                    <small>Consulta tus comprobantes electrónicos emitidos.</small>
-                                </span>
+                                <span class="portal-module-icon"><i class="fi fi-rr-receipt"></i></span>
+                                <span class="portal-module-content"><strong>Facturas</strong><small>Consulta tus comprobantes electrónicos emitidos.</small></span>
                                 <span class="portal-module-arrow">→</span>
                             </a>
-
                             <a href="#" class="portal-module-card">
-                                <span class="portal-module-icon">▥</span>
-                                <span class="portal-module-content">
-                                    <strong>Retenciones</strong>
-                                    <small>Revisa tus comprobantes de retención.</small>
-                                </span>
+                                <span class="portal-module-icon"><i class="fi fi-rr-file-invoice"></i></span>
+                                <span class="portal-module-content"><strong>Retenciones</strong><small>Revisa tus comprobantes de retención.</small></span>
                                 <span class="portal-module-arrow">→</span>
                             </a>
-
                             <a href="#" class="portal-module-card">
-                                <span class="portal-module-icon">▦</span>
-                                <span class="portal-module-content">
-                                    <strong>Reportes</strong>
-                                    <small>Consulta información por períodos.</small>
-                                </span>
+                                <span class="portal-module-icon"><i class="fi fi-rr-chart-line-up"></i></span>
+                                <span class="portal-module-content"><strong>Reportes</strong><small>Consulta información por períodos.</small></span>
                                 <span class="portal-module-arrow">→</span>
                             </a>
-
                             <a href="#" class="portal-module-card">
-                                <span class="portal-module-icon">◉</span>
-                                <span class="portal-module-content">
-                                    <strong>Mi empresa</strong>
-                                    <small>Consulta los datos registrados de tu empresa.</small>
-                                </span>
+                                <span class="portal-module-icon"><i class="fi fi-rr-building"></i></span>
+                                <span class="portal-module-content"><strong>Mi empresa</strong><small>Consulta los datos registrados de tu empresa.</small></span>
                                 <span class="portal-module-arrow">→</span>
                             </a>
-
                             <a href="#" class="portal-module-card">
-                                <span class="portal-module-icon">◎</span>
-                                <span class="portal-module-content">
-                                    <strong>Mi cuenta</strong>
-                                    <small>Gestiona tu usuario y acceso al portal.</small>
-                                </span>
+                                <span class="portal-module-icon"><i class="fi fi-rr-user"></i></span>
+                                <span class="portal-module-content"><strong>Mi cuenta</strong><small>Gestiona tu usuario y acceso al portal.</small></span>
                                 <span class="portal-module-arrow">→</span>
                             </a>
                         </div>
                     </section>
                     {% endif %}
-
                 </div>
             </main>
 
@@ -201,5 +224,6 @@
         </div>
     </div>
 
+    <script src="{% static 'js/portal.js' %}"></script>
 </body>
 </html>
