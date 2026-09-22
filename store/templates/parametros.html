@@ -141,7 +141,7 @@
                                 <h2>Firma electrónica</h2>
                                 <p>Certificado digital que utilizaremos posteriormente para firmar los comprobantes electrónicos.</p>
                             </div>
-                            {% if parametros_cliente.certificado_p12 %}
+                            {% if parametros_cliente.certificado_archivo %}
                             <span class="portal-parameter-status is-active">Certificado cargado</span>
                             {% else %}
                             <span class="portal-parameter-status">Sin certificado</span>
@@ -167,8 +167,8 @@
                                     <label for="certificado_p12">Archivo P12</label>
                                     <input type="file" name="certificado_p12" id="certificado_p12" accept=".p12">
                                     <small>
-                                        {% if parametros_cliente.certificado_nombre %}
-                                            Actual: {{ parametros_cliente.certificado_nombre }}
+                                        {% if parametros_cliente.certificado_archivo %}
+                                            Actual: {{ parametros_cliente.certificado_archivo.nombre_original }}
                                         {% else %}
                                             Selecciona el certificado digital .p12.
                                         {% endif %}
@@ -195,7 +195,7 @@
                         <div class="portal-parameter-readonly">
                             <strong>Ambiente:</strong> {{ parametros_cliente.get_ambiente_display }}
                             <span>·</span>
-                            <strong>Certificado:</strong> {% if parametros_cliente.certificado_p12 %}Configurado{% else %}No configurado{% endif %}
+                            <strong>Certificado:</strong> {% if parametros_cliente.certificado_archivo %}Configurado{% else %}No configurado{% endif %}
                         </div>
                         {% endif %}
                     </div>
