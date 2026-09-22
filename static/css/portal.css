@@ -1037,3 +1037,37 @@
         color: rgba(255,255,255,.78) !important;
     }
 }
+
+
+@media (max-width: 767px) {
+    /* En móvil se desplaza todo el drawer, incluido Cerrar sesión. */
+    .portal-sidebar {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,.38) transparent;
+    }
+
+    .portal-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .portal-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .portal-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,.38);
+        border-radius: 10px;
+    }
+
+    .portal-sidebar .portal-menu {
+        flex: 0 0 auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    .portal-sidebar .portal-sidebar-bottom {
+        flex: 0 0 auto !important;
+    }
+}
