@@ -122,23 +122,28 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.portal-secret-toggle').forEach(function (button) {
+        const value = button.closest('.portal-secret-value').querySelector('[data-secret]');
+        const original = value.textContent.trim();
+        const isEmpty = !original || original === 'No registrado' || original === 'No registrada';
+
+        if (isEmpty) {
+            button.disabled = true;
+            return;
+        }
+
+        value.textContent = '••••••••';
+        value.dataset.visible = 'false';
+
         button.addEventListener('click', function () {
-            const value = button.closest('.portal-secret-value').querySelector('[data-secret]');
             const visible = value.dataset.visible === 'true';
-            if (!visible) {
-                value.dataset.original = value.textContent;
-                value.textContent = value.textContent === 'No registrado' || value.textContent === 'No registrada' ? value.textContent : '••••••••';
-                value.dataset.visible = 'false';
-                if (value.dataset.original && value.dataset.original !== 'No registrado' && value.dataset.original !== 'No registrada') {
-                    value.textContent = value.dataset.original;
-                    value.dataset.visible = 'true';
-                }
-            } else {
-                value.textContent = '••••••••';
-                value.dataset.visible = 'false';
-            }
+            value.textContent = visible ? '••••••••' : original;
+            value.dataset.visible = visible ? 'false' : 'true';
+
             const icon = button.querySelector('i');
-            if (icon) icon.className = value.dataset.visible === 'true' ? 'fi fi-rr-eye-crossed' : 'fi fi-rr-eye';
+            if (icon) {
+                icon.className = visible ? 'fi fi-rr-eye' : 'fi fi-rr-eye-crossed';
+            }
+            button.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
         });
     });
 });
