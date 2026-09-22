@@ -119,12 +119,36 @@ def mi_empresa(request):
         messages.error(request, detalle)
         return redirect('signin')
 
+    cliente = asignacion.cliente
+
+    if request.method == 'POST':
+        if asignacion.rol == UsuarioCliente.Rol.CONSULTA:
+            messages.error(request, 'Tu usuario tiene permisos de consulta y no puede modificar los datos.')
+        else:
+            campos_editables = [
+                'nomclient', 'dirclient', 'ocuclient', 'corelectr',
+                'teldomcli', 'teloficli', 'telcelcli',
+                'estcivcli', 'fecnacimi', 'edaclient',
+                'clavesri', 'cediess', 'claveiess',
+                'mrlcon', 'mrlsal', 'clavesuper',
+                'iessdomestica', 'datiess',
+            ]
+
+            for campo in campos_editables:
+                setattr(cliente, campo, request.POST.get(campo, '').strip())
+
+            cliente.save(update_fields=campos_editables)
+            messages.success(request, 'Los datos de la empresa fueron actualizados correctamente.')
+
+        return redirect('mi_empresa')
+
     return render(
         request,
         'mi-empresa.html',
         {
-            'cliente': asignacion.cliente,
+            'cliente': cliente,
             'rol': asignacion.rol,
+            'puede_editar': asignacion.rol != UsuarioCliente.Rol.CONSULTA,
         },
     )
 
