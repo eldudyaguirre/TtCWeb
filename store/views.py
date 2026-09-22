@@ -229,7 +229,9 @@ def parametros(request):
                         )
 
                         if archivo_anterior and archivo_anterior.pk != nuevo_archivo.pk:
-                            eliminar_archivo(archivo_anterior)
+                            transaction.on_commit(
+                                lambda archivo_anterior=archivo_anterior: eliminar_archivo(archivo_anterior)
+                            )
                     else:
                         parametros_cliente.save(update_fields=['ambiente', 'clave_p12', 'actualizado_en'])
 
