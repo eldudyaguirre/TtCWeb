@@ -1902,9 +1902,9 @@
 
 /* Aceptaciones legales */
 .portal-legal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 3000;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1914,6 +1914,7 @@
 }
 
 .portal-legal-modal {
+    position: relative;
     width: min(720px, 100%);
     max-height: min(88vh, 820px);
     display: flex;
