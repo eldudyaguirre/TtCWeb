@@ -39,8 +39,8 @@
 }
 
  .portal-brand {
-    width: 96px !important;
-    height: 96px !important;
+    width: 125px !important;
+    height: 125px !important;
     object-fit: contain;
 }
 
@@ -191,23 +191,23 @@
 }
 
 .portal-content > .container-fluid {
-    padding-top: 12px;
+    padding-top: 14px;
+    margin-top: 0 !important;
 }
 
 .portal-content .portal-summary {
-    position: relative;
-    top: -110px;
-    margin-bottom: 18px;
+    position: static !important;
+    transform: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
 }
 
 .portal-content .portal-welcome {
-    position: relative;
-    z-index: 2;
-    margin-top: 0 !important;
+    position: static !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    margin-top: 0;
+    margin-top: 0 !important;
 }
 
  .portal-welcome {
