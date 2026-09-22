@@ -157,24 +157,30 @@
                         <h1>Bienvenido, {{ cliente.nomclient }}</h1>
                         <p>Desde aquí puedes consultar tus documentos e información registrada en TotalCounts.</p>
                     </section>
+                    {% endif %}
 
                     <section class="portal-summary">
                         <div class="portal-stat">
                             <div class="portal-stat-icon"><i class="fi fi-rr-dollar"></i></div>
                             <div>
                                 <div class="portal-stat-label">Saldo pendiente</div>
-                                <div class="portal-stat-value">$ {{ resumen.salcuenta|floatformat:2 }}</div>
+                                <div class="portal-stat-value">
+                                    {% if cliente %}$ {{ resumen.salcuenta|floatformat:2 }}{% else %}—{% endif %}
+                                </div>
                             </div>
                         </div>
                         <div class="portal-stat">
                             <div class="portal-stat-icon"><i class="fi fi-rr-document"></i></div>
                             <div>
                                 <div class="portal-stat-label">Servicios pendientes de facturación</div>
-                                <div class="portal-stat-value">{{ resumen.prefacturas_pendientes }}</div>
+                                <div class="portal-stat-value">
+                                    {% if cliente %}{{ resumen.prefacturas_pendientes }}{% else %}—{% endif %}
+                                </div>
                             </div>
                         </div>
                     </section>
 
+                    {% if not es_administrador %}
                     <section class="portal-section">
                         <div class="portal-section-heading">
                             <div>
