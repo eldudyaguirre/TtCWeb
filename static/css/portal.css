@@ -720,3 +720,44 @@
 .portal-sidebar .portal-menu-group > .portal-menu-toggle.active .portal-menu-icon {
     color: #63c3c4;
 }
+
+
+/* Override global section styles from main.css used by the public site.
+   Portal sections must not inherit the 130px vertical section padding. */
+.portal-content section.portal-summary,
+.portal-content section.portal-welcome,
+.portal-content section.portal-section {
+    padding: 0 !important;
+    margin-top: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    background-attachment: initial !important;
+}
+
+.portal-content section.portal-summary {
+    margin-bottom: 18px !important;
+}
+
+.portal-content section.portal-welcome {
+    margin-bottom: 20px !important;
+}
+
+.portal-content section.portal-section {
+    margin-bottom: 0 !important;
+}
+
+/* Make the sidebar logo visibly larger. */
+.portal-sidebar .portal-sidebar-brand {
+    height: 150px !important;
+    min-height: 150px !important;
+    overflow: visible !important;
+}
+
+.portal-sidebar .portal-brand {
+    width: 155px !important;
+    height: 155px !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    display: block !important;
+}
