@@ -8,6 +8,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 
 from .models import (
+    Archivo,
     Establecimiento,
     ParametrosCliente,
     PuntoEmision,
@@ -15,6 +16,7 @@ from .models import (
     UsuarioCliente,
 )
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
+from .services.archivos import eliminar_archivo, guardar_archivo
 
 
 TEMPLATE_PREVIEWS = {
@@ -213,12 +215,21 @@ def parametros(request):
                         if archivo.size > 10 * 1024 * 1024:
                             raise ValueError('El archivo P12 no puede superar los 10 MB.')
 
-                        archivo_anterior = parametros_cliente.certificado_p12.name
-                        parametros_cliente.certificado_p12 = archivo
-                        parametros_cliente.certificado_nombre = archivo.name
-                        parametros_cliente.save()
-                        if archivo_anterior and archivo_anterior != parametros_cliente.certificado_p12.name:
-                            parametros_cliente.certificado_p12.storage.delete(archivo_anterior)
+                        archivo_anterior = parametros_cliente.certificado_archivo
+                        nuevo_archivo = guardar_archivo(
+                            cliente=cliente,
+                            uploaded_file=archivo,
+                            tipo=Archivo.Tipo.CERTIFICADO_P12,
+                            subcarpeta='certificados',
+                            usuario=request.user,
+                        )
+                        parametros_cliente.certificado_archivo = nuevo_archivo
+                        parametros_cliente.save(
+                            update_fields=['ambiente', 'clave_p12', 'certificado_archivo', 'actualizado_en']
+                        )
+
+                        if archivo_anterior and archivo_anterior.pk != nuevo_archivo.pk:
+                            eliminar_archivo(archivo_anterior)
                     else:
                         parametros_cliente.save(update_fields=['ambiente', 'clave_p12', 'actualizado_en'])
 
