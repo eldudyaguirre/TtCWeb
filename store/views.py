@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 
 from .models import UsuarioCliente
-from .services.acceso import validar_acceso_cliente
+from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 
 
 TEMPLATE_PREVIEWS = {
@@ -100,7 +100,7 @@ def do_logout(request):
 @login_required
 def portal(request):
     if request.user.is_staff or request.user.is_superuser:
-        return render(request, 'portal.html')
+        return render(request, 'portal.html', {'es_administrador': True})
 
     asignaciones = UsuarioCliente.objects.filter(
         usuario=request.user,
@@ -112,10 +112,16 @@ def portal(request):
 
         if permitido:
             request.session['cliente_ruccedcli'] = asignacion.cliente.ruccedcli
+            resumen = obtener_resumen_cliente(asignacion.cliente)
+
             return render(
                 request,
                 'portal.html',
-                {'cliente': asignacion.cliente},
+                {
+                    'cliente': asignacion.cliente,
+                    'resumen': resumen,
+                    'rol': asignacion.rol,
+                },
             )
 
     logout(request)
