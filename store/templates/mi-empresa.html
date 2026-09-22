@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922s">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922u">
 </head>
 <body class="portal-shell">
 <div class="portal-layout">
@@ -67,34 +67,50 @@
                         <div>
                             <div class="portal-kicker">Información de la empresa</div>
                             <h1>{{ cliente.nomclient }}</h1>
-                            <p>Datos registrados en TotalCounts para tu empresa.</p>
+                            <p>Datos registrados en TotalCounts.</p>
                         </div>
                     </div>
 
-                    <div class="portal-company-grid">
-                        <div class="portal-company-field">
-                            <span>RUC / C.I.</span>
-                            <strong>{{ cliente.ruccedcli }}</strong>
+                    <div class="portal-company-section">
+                        <h2>Datos generales</h2>
+                        <div class="portal-company-grid">
+                            <div class="portal-company-field"><span>RUC / C.I.</span><strong>{{ cliente.ruccedcli }}</strong></div>
+                            <div class="portal-company-field"><span>Razón social / nombre</span><strong>{{ cliente.nomclient|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field"><span>Actividad económica</span><strong>{{ cliente.ocuclient|default:"No registrada" }}</strong></div>
+                            <div class="portal-company-field"><span>Dirección</span><strong>{{ cliente.dirclient|default:"No registrada" }}</strong></div>
+                            <div class="portal-company-field"><span>Correo electrónico</span><strong>{{ cliente.corelectr|default:"No registrado" }}</strong></div>
                         </div>
-                        <div class="portal-company-field">
-                            <span>Razón social / nombre</span>
-                            <strong>{{ cliente.nomclient|default:"No registrado" }}</strong>
+                    </div>
+
+                    <div class="portal-company-section">
+                        <h2>Teléfonos de contacto</h2>
+                        <div class="portal-company-grid">
+                            <div class="portal-company-field"><span>Domicilio</span><strong>{{ cliente.teldomcli|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field"><span>Oficina</span><strong>{{ cliente.teloficli|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field"><span>Celular</span><strong>{{ cliente.telcelcli|default:"No registrado" }}</strong></div>
                         </div>
-                        <div class="portal-company-field">
-                            <span>Estado de la empresa</span>
-                            <strong>{% if cliente.activo %}Activa{% else %}Inactiva{% endif %}</strong>
+                    </div>
+
+                    <div class="portal-company-section">
+                        <h2>Información adicional</h2>
+                        <div class="portal-company-grid">
+                            <div class="portal-company-field"><span>Estado civil</span><strong>{{ cliente.estcivcli|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field"><span>Fecha de nacimiento</span><strong>{{ cliente.fecnacimi|default:"No registrada" }}</strong></div>
+                            <div class="portal-company-field"><span>Edad</span><strong>{{ cliente.edaclient|default:"No registrada" }}</strong></div>
                         </div>
-                        <div class="portal-company-field">
-                            <span>Acceso al portal</span>
-                            <strong>{% if cliente.acceso_ttcweb %}Habilitado{% else %}Deshabilitado{% endif %}</strong>
-                        </div>
-                        <div class="portal-company-field">
-                            <span>Saldo pendiente</span>
-                            <strong>$ {{ cliente.salcuenta|floatformat:2 }}</strong>
-                        </div>
-                        <div class="portal-company-field">
-                            <span>Rol de usuario</span>
-                            <strong>{{ rol }}</strong>
+                    </div>
+
+                    <div class="portal-company-section">
+                        <h2>Accesos a sistemas públicos</h2>
+                        <div class="portal-company-grid">
+                            <div class="portal-company-field"><span>SRI</span><strong>{{ cliente.clavesri|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field"><span>IESS - Cédula</span><strong>{{ cliente.cediess|default:"No registrada" }}</strong></div>
+                            <div class="portal-company-field portal-secret-field"><span>IESS - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.claveiess|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field"><span>Ministerio de Trabajo - Usuario</span><strong>{{ cliente.mrlcon|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.mrlsal|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>Superintendencia - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.clavesuper|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>IESS Doméstica</span><div class="portal-secret-value"><strong data-secret>{{ cliente.iessdomestica|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar dato"></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>Datos IESS</span><div class="portal-secret-value"><strong data-secret>{{ cliente.datiess|default:"No registrado" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar dato"><i class="fi fi-rr-eye"></i></button></div></div>
                         </div>
                     </div>
                 </section>
@@ -103,5 +119,29 @@
     </div>
 </div>
 <script src="{% static 'js/portal.js' %}?v=20260922l"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.portal-secret-toggle').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const value = button.closest('.portal-secret-value').querySelector('[data-secret]');
+            const visible = value.dataset.visible === 'true';
+            if (!visible) {
+                value.dataset.original = value.textContent;
+                value.textContent = value.textContent === 'No registrado' || value.textContent === 'No registrada' ? value.textContent : '••••••••';
+                value.dataset.visible = 'false';
+                if (value.dataset.original && value.dataset.original !== 'No registrado' && value.dataset.original !== 'No registrada') {
+                    value.textContent = value.dataset.original;
+                    value.dataset.visible = 'true';
+                }
+            } else {
+                value.textContent = '••••••••';
+                value.dataset.visible = 'false';
+            }
+            const icon = button.querySelector('i');
+            if (icon) icon.className = value.dataset.visible === 'true' ? 'fi fi-rr-eye-crossed' : 'fi fi-rr-eye';
+        });
+    });
+});
+</script>
 </body>
 </html>
