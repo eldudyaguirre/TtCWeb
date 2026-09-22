@@ -444,6 +444,10 @@ def contactanos(request):
     return render(request, 'contactanos.html')
 
 
+def avisos_legales(request):
+    return render(request, 'avisos-legales.html')
+
+
 def servicios(request):
     raise Http404
 
