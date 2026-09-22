@@ -70,6 +70,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     links.forEach(function (link) {
         link.addEventListener('click', function (event) {
+            const href = link.getAttribute('href');
+
+            if (href && href !== '#') {
+                clearSelection();
+                if (window.innerWidth <= 767) closeMobileMenu();
+                return;
+            }
+
             event.preventDefault();
             clearSelection();
             link.classList.add('active');
