@@ -103,14 +103,14 @@
                     <div class="portal-company-section">
                         <h2>Accesos a sistemas públicos</h2>
                         <div class="portal-company-grid">
-                            <div class="portal-company-field"><span>SRI</span><strong>{{ cliente.clavesri|default:"No registrado" }}</strong></div>
+                            <div class="portal-company-field portal-secret-field"><span>SRI - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.clavesri|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field"><span>IESS - Cédula</span><strong>{{ cliente.cediess|default:"No registrada" }}</strong></div>
                             <div class="portal-company-field portal-secret-field"><span>IESS - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.claveiess|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SUT</span><div class="portal-secret-value"><strong data-secret>{{ cliente.mrlcon|default:"No registrado" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar clave"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SALARIOS</span><div class="portal-secret-value"><strong data-secret>{{ cliente.mrlsal|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar clave"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field portal-secret-field"><span>Superintendencia - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.clavesuper|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
-                            <div class="portal-company-field portal-secret-field"><span>IESS Doméstica</span><div class="portal-secret-value"><strong data-secret>{{ cliente.iessdomestica|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar dato"></button></div></div>
-                            <div class="portal-company-field portal-secret-field"><span>Datos IESS</span><div class="portal-secret-value"><strong data-secret>{{ cliente.datiess|default:"No registrado" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar dato"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>IESS Doméstica - Contraseña</span><div class="portal-secret-value"><strong data-secret>{{ cliente.iessdomestica|default:"No registrada" }}</strong><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field"><span>Datos IESS</span><strong>{{ cliente.datiess|default:"No registrados" }}</strong></div>
                         </div>
                     </div>
                 </section>
