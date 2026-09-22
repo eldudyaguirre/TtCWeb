@@ -748,8 +748,9 @@
 
 /* Make the sidebar logo visibly larger. */
 .portal-sidebar .portal-sidebar-brand {
-    height: 150px !important;
-    min-height: 150px !important;
+    height: 190px !important;
+    min-height: 190px !important;
+    padding: 18px 0 !important;
     overflow: visible !important;
 }
 
