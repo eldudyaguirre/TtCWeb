@@ -186,11 +186,11 @@
 
 .portal-content {
     flex: 1;
-    padding: 42px 34px 55px;
+    padding: 20px 34px 55px;
 }
 
-.portal-welcome {
-    margin-bottom: 28px;
+ .portal-welcome {
+    margin-bottom: 20px;
 }
 
 .portal-kicker,
