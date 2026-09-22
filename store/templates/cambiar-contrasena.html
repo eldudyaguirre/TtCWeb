@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cambiar contraseña | TotalCounts</title>
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/default.css' %}">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922r">
+</head>
+<body class="portal-shell">
+<div class="portal-layout">
+    <aside class="portal-sidebar">
+        <div class="portal-sidebar-brand">
+            <a href="{% url 'portal' %}" class="portal-brand-link">
+                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
+            </a>
+        </div>
+        <nav class="portal-menu" aria-label="Menú principal">
+            <a href="{% url 'portal' %}" class="portal-menu-item" data-menu-link>
+                <i class="fi fi-rr-home portal-menu-icon"></i><span>Inicio</span>
+            </a>
+            <div class="portal-menu-title portal-menu-title-space">MI INFORMACIÓN</div>
+            <a href="{% url 'cambiar_contrasena' %}" class="portal-menu-item active" data-menu-link>
+                <i class="fi fi-rr-user portal-menu-icon"></i><span>Mi cuenta</span>
+            </a>
+        </nav>
+        <div class="portal-sidebar-bottom">
+            <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
+                <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i><span>Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="portal-main">
+        <header class="portal-topbar">
+            <div class="portal-topbar-inner">
+                <a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
+                    <i class="fi fi-rr-arrow-left"></i>
+                </a>
+                <div class="portal-page-title">Mi cuenta</div>
+                <div class="portal-user">
+                    <div class="portal-user-data">
+                        <span class="portal-user-name">{{ request.user.get_username }}</span>
+                        <span class="portal-user-ruc">Seguridad de la cuenta</span>
+                    </div>
+                    <div class="portal-user-avatar">{{ request.user.get_username|first|upper }}</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="portal-content">
+            <div class="container-fluid">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="portal-account-message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <section class="portal-account-card">
+                    <div class="portal-account-heading">
+                        <div class="portal-stat-icon"><i class="fi fi-rr-lock"></i></div>
+                        <div>
+                            <div class="portal-kicker">Seguridad</div>
+                            <h1>Cambiar contraseña</h1>
+                            <p>Actualiza la contraseña de acceso a tu cuenta de TotalCounts.</p>
+                        </div>
+                    </div>
+
+                    <form method="post" class="portal-password-form" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="portal-form-errors">
+                                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="portal-form-field">
+                            <label for="{{ form.old_password.id_for_label }}">Contraseña actual</label>
+                            {{ form.old_password }}
+                            {% for error in form.old_password.errors %}<small class="portal-form-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div class="portal-form-field">
+                            <label for="{{ form.new_password1.id_for_label }}">Nueva contraseña</label>
+                            {{ form.new_password1 }}
+                            {% for error in form.new_password1.errors %}<small class="portal-form-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div class="portal-form-field">
+                            <label for="{{ form.new_password2.id_for_label }}">Confirmar nueva contraseña</label>
+                            {{ form.new_password2 }}
+                            {% for error in form.new_password2.errors %}<small class="portal-form-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div class="portal-password-help">
+                            <strong>Recomendación:</strong> utiliza una contraseña que no hayas usado en otros servicios.
+                        </div>
+
+                        <div class="portal-account-actions">
+                            <a href="{% url 'portal' %}" class="portal-account-cancel">Cancelar</a>
+                            <button type="submit" class="portal-account-submit">Cambiar contraseña</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="{% static 'js/portal.js' %}?v=20260922i"></script>
+</body>
+</html>
