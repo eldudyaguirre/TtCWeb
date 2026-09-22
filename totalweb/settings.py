@@ -157,7 +157,7 @@ TOTALCOUNTS_DATA_ROOT = Path(os.getenv('TOTALCOUNTS_DATA_ROOT', str(BASE_DIR / '
 
 # Versiones vigentes de documentos legales del portal.
 POLITICA_DATOS_VERSION = os.getenv('POLITICA_DATOS_VERSION', '1.0')
-TERMINOS_USO_VERSION = os.getenv('TERMINOS_USO_VERSION', '1.0')
+TERMINOS_USO_VERSION = os.getenv('TERMINOS_USO_VERSION', '1.1')
 
 # Producción detrás de Cloudflare Tunnel.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
