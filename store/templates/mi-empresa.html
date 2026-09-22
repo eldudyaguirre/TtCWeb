@@ -66,7 +66,6 @@
                     <div class="portal-company-actions">
                         {% if puede_editar %}
                         <button type="button" class="portal-account-submit" id="editarEmpresaBtn"><i class="fi fi-rr-edit"></i> Editar</button>
-                        <button type="submit" class="portal-account-submit portal-company-save" id="guardarEmpresaBtn" hidden><i class="fi fi-rr-disk"></i> Guardar</button>
                         {% endif %}
                     </div>
                     <div class="portal-account-heading">
@@ -136,14 +135,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('miEmpresaForm');
     const editButton = document.getElementById('editarEmpresaBtn');
-    const saveButton = document.getElementById('guardarEmpresaBtn');
     const saveBottom = document.getElementById('guardarEmpresaBtnBottom');
 
     if (editButton) {
         editButton.addEventListener('click', function () {
             form.querySelectorAll('input[name]').forEach(function (input) { input.removeAttribute('readonly'); });
             editButton.hidden = true;
-            if (saveButton) saveButton.hidden = false;
             if (saveBottom) saveBottom.hidden = false;
         });
     }
