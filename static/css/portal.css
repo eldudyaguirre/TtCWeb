@@ -1306,3 +1306,54 @@
         width: 100%;
     }
 }
+
+
+/* Módulo Mi empresa */
+.portal-company-card {
+    max-width: 1100px;
+}
+
+.portal-company-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.portal-company-field {
+    padding: 18px 20px;
+    border: 1px solid rgba(33, 51, 62, 0.10);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.portal-company-field span {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .65;
+}
+
+.portal-company-field strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #21333e;
+    word-break: break-word;
+}
+
+@media (max-width: 767px) {
+    .portal-company-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .portal-company-field {
+        padding: 16px;
+    }
+}
+
