@@ -93,6 +93,43 @@ def do_signin(request):
 
 
 @login_required
+def mi_empresa(request):
+    if request.user.is_staff or request.user.is_superuser:
+        return redirect('portal')
+
+    asignacion = (
+        UsuarioCliente.objects
+        .filter(usuario=request.user, activo=True)
+        .select_related('cliente')
+        .first()
+    )
+
+    if asignacion is None:
+        logout(request)
+        messages.error(
+            request,
+            'No tienes una empresa activa asignada a tu usuario.',
+        )
+        return redirect('signin')
+
+    permitido, _, detalle = validar_acceso_cliente(asignacion.cliente)
+
+    if not permitido:
+        logout(request)
+        messages.error(request, detalle)
+        return redirect('signin')
+
+    return render(
+        request,
+        'mi-empresa.html',
+        {
+            'cliente': asignacion.cliente,
+            'rol': asignacion.rol,
+        },
+    )
+
+
+@login_required
 def cambiar_contrasena(request):
     form = PasswordChangeForm(request.user, request.POST or None)
 
