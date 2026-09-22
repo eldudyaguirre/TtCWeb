@@ -796,3 +796,98 @@
     flex: 0 0 auto !important;
     margin-top: 0 !important;
 }
+
+
+/* Responsive tipo menú hamburguesa: en móvil el sidebar queda oculto
+   y se abre como panel lateral sobre el contenido. */
+.portal-mobile-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #21333e;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.portal-mobile-toggle:focus {
+    outline: none;
+}
+
+@media (max-width: 767px) {
+    .portal-sidebar {
+        position: fixed !important;
+        z-index: 1000 !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: min(310px, 86vw) !important;
+        height: 100vh !important;
+        transform: translateX(-105%);
+        transition: transform .25s ease;
+        box-shadow: 10px 0 30px rgba(0,0,0,.18);
+        overflow: hidden !important;
+    }
+
+    .portal-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .portal-sidebar-brand {
+        display: flex !important;
+        height: 150px !important;
+        min-height: 150px !important;
+    }
+
+    .portal-sidebar .portal-menu {
+        display: block !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 18px 12px 14px !important;
+    }
+
+    .portal-sidebar .portal-sidebar-bottom {
+        display: block !important;
+        flex: 0 0 auto !important;
+        padding: 12px !important;
+    }
+
+    .portal-mobile-toggle {
+        display: inline-flex;
+    }
+
+    .portal-topbar-inner {
+        justify-content: space-between !important;
+        gap: 10px;
+    }
+
+    .portal-mobile-brand {
+        order: 2;
+        flex: 1;
+        text-align: center;
+    }
+
+    .portal-mobile-logo {
+        width: 44px;
+        height: 44px;
+    }
+
+    .portal-user {
+        order: 3;
+    }
+
+    .portal-mobile-toggle {
+        order: 1;
+    }
+
+    .portal-main {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
