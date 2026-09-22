@@ -2,10 +2,6 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 
-def certificado_p12_path(instance, filename):
-    return f"certificados_p12/{instance.cliente.ruccedcli}/{filename}"
-
-
 class ParametrosCliente(models.Model):
     class Ambiente(models.TextChoices):
         PRUEBAS = '1', 'Pruebas'
@@ -22,13 +18,15 @@ class ParametrosCliente(models.Model):
         choices=Ambiente.choices,
         default=Ambiente.PRUEBAS,
     )
-    certificado_p12 = models.FileField(
-        upload_to=certificado_p12_path,
+    certificado_archivo = models.ForeignKey(
+        'store.Archivo',
+        on_delete=models.PROTECT,
+        null=True,
         blank=True,
-        max_length=500,
+        related_name='certificados_parametros',
+        db_constraint=True,
     )
     clave_p12 = models.CharField(max_length=255, blank=True)
-    certificado_nombre = models.CharField(max_length=255, blank=True)
     activo = models.BooleanField(default=True)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
