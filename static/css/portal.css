@@ -24,8 +24,8 @@
     color: #fff;
 }
 
-.portal-sidebar-brand {
-    height: 92px;
+ .portal-sidebar-brand {
+    height: 108px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,9 +38,9 @@
     justify-content: center;
 }
 
-.portal-brand {
-    width: 58px;
-    height: 58px;
+ .portal-brand {
+    width: 78px;
+    height: 78px;
     object-fit: contain;
 }
 
