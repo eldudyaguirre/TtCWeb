@@ -61,17 +61,27 @@
 }
 
 .portal-menu-item {
+    width: 100%;
     min-height: 46px;
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 4px;
     padding: 0 14px;
+    border: 0;
     border-radius: 7px;
+    background: transparent;
     color: rgba(255,255,255,.72);
+    font-family: inherit;
     font-size: .88rem;
     font-weight: 500;
+    line-height: 1.2;
+    text-align: left;
     text-decoration: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: none;
     transition: background .18s ease, color .18s ease;
 }
 
@@ -638,4 +648,28 @@
     .portal-menu-item.active {
         box-shadow: inset 3px 0 0 #058283;
     }
+}
+
+
+/* Corrección de botones del menú: evitar estilos globales de Bootstrap/main.css */
+.portal-sidebar button.portal-menu-item {
+    border: 0 !important;
+    outline: 0;
+    background: transparent !important;
+    color: rgba(255,255,255,.72) !important;
+    box-shadow: none;
+}
+
+.portal-sidebar button.portal-menu-item:hover,
+.portal-sidebar button.portal-menu-item:focus,
+.portal-sidebar button.portal-menu-item:active {
+    background: #2d4754 !important;
+    color: #fff !important;
+    box-shadow: inset 3px 0 0 #058283 !important;
+}
+
+.portal-sidebar .portal-menu-toggle.open,
+.portal-sidebar .portal-menu-toggle.active {
+    background: #2d4754 !important;
+    color: #fff !important;
 }
