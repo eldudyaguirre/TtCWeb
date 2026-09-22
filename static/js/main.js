@@ -675,32 +675,32 @@ jQuery(function ($) {
 
         // Translate
         gdprCookieNoticeLocales.en = {
-            description: 'We use cookies to offer you a better browsing experience, personalise content and ads, to provide social media features and to analyse our traffic. Read about how we use cookies and how you can control them by clicking Cookie Settings. You consent to our cookies if you continue to use this website.',
-            settings: 'Cookie settings',
-            accept: 'Accept cookies',
-            statement: 'Our cookie statement',
-            save: 'Save settings',
-            always_on: 'Always on',
-            cookie_essential_title: 'Essential website cookies',
+            description: 'Este sitio utiliza cookies técnicas y necesarias para mantener sesiones, seguridad y funciones esenciales. No utilizamos cookies de publicidad personalizada ni de seguimiento comercial.',
+            settings: 'Configuración de cookies',
+            accept: 'Aceptar cookies',
+            statement: 'Información sobre cookies',
+            save: 'Guardar configuración',
+            always_on: 'Siempre activas',
+            cookie_essential_title: 'Cookies técnicas y necesarias',
             cookie_essential_desc: 'Necessary cookies help make a website usable by enabling basic functions like page navigation and access to secure areas of the website. The website cannot function properly without these cookies.',
-            cookie_performance_title: 'Performance cookies',
-            cookie_performance_desc: 'These cookies are used to enhance the performance and functionality of our websites but are non-essential to their use. For example it stores your preferred language or the region that you are in.',
-            cookie_analytics_title: 'Analytics cookies',
-            cookie_analytics_desc: 'We use analytics cookies to help us measure how users interact with website content, which helps us customize our websites and application for you in order to enhance your experience.',
-            cookie_marketing_title: 'Marketing cookies',
-            cookie_marketing_desc: 'These cookies are used to make advertising messages more relevant to you and your interests. The intention is to display ads that are relevant and engaging for the individual user and thereby more valuable for publishers and third party advertisers.'
+            cookie_performance_title: 'Cookies de rendimiento',
+            cookie_performance_desc: 'Actualmente TotalCounts no utiliza cookies de rendimiento no esenciales en este sitio.',
+            cookie_analytics_title: 'Cookies de analítica',
+            cookie_analytics_desc: 'Actualmente TotalCounts no utiliza cookies de analítica de terceros en este sitio.',
+            cookie_marketing_title: 'Cookies de marketing',
+            cookie_marketing_desc: 'Actualmente TotalCounts no utiliza cookies de publicidad personalizada, remarketing o seguimiento comercial.'
         }
 
         gdprCookieNotice({
-            locale: 'en', // This is the default value
+            locale: 'en', // El contenido se personaliza en español
             timeout: 2000, // Time until the cookie bar appears
             expiration: 30, // This is the default value, in days
             domain: window.location.hostname, // If you run the same cookie notice on all subdomains, define the main domain starting with a .
-            implicit: true, // Accept cookies on page scroll automatically
-            statement: 'https://nexgen.codings.dev', // Link to your cookie statement page
-            performance: ['JSESSIONID'], // Cookies in the performance category.
-            analytics: ['ga'], // Cookies in the analytics category.
-            marketing: ['SSID'] // Cookies in the marketing category.
+            implicit: false, // No registrar aceptación por desplazamiento
+            statement: '/contactanos/', // Información pública sobre cookies
+            performance: [], // No se utilizan cookies de rendimiento no esenciales.
+            analytics: [], // No se utilizan cookies de analítica de terceros.
+            marketing: [] // No se utilizan cookies de marketing.
         })
     }
 })
