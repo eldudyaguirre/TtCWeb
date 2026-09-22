@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from .models import (
     Archivo,
@@ -17,6 +18,7 @@ from .models import (
 )
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 from .services.archivos import eliminar_archivo, guardar_archivo
+from .services.legales import obtener_aceptaciones_pendientes, versiones_legales_vigentes
 
 
 TEMPLATE_PREVIEWS = {
@@ -385,6 +387,8 @@ def portal(request):
                     'cliente': asignacion.cliente,
                     'resumen': resumen,
                     'rol': asignacion.rol,
+                    'pendientes_legales': obtener_aceptaciones_pendientes(request.user),
+                    'versiones_legales': versiones_legales_vigentes(),
                 },
             )
 
@@ -394,6 +398,27 @@ def portal(request):
         'El acceso al portal está restringido. Verifica el estado de tu cuenta.',
     )
     return redirect('signin')
+
+
+@login_required
+@require_POST
+def aceptar_documento_legal(request):
+    from .models import AceptacionLegal
+
+    tipo = request.POST.get('tipo', '').strip()
+    versiones = versiones_legales_vigentes()
+
+    if tipo not in versiones:
+        messages.error(request, 'El documento legal solicitado no es válido.')
+        return redirect('portal')
+
+    version = versiones[tipo]
+    AceptacionLegal.objects.get_or_create(
+        usuario=request.user,
+        tipo=tipo,
+        version=version,
+    )
+    return redirect('portal')
 
 
 def about(request):
