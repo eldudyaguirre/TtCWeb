@@ -1444,3 +1444,81 @@
     }
 }
 
+
+
+/* Edición de datos del módulo Mi empresa */
+.portal-company-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: -8px 0 16px;
+}
+
+.portal-company-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.portal-company-field input {
+    width: 100%;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #21333e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.portal-company-field input[readonly] {
+    cursor: default;
+}
+
+.portal-company-field input:not([readonly]) {
+    padding: 8px 10px;
+    border-color: #dbe2e5;
+    background: #fff;
+}
+
+.portal-company-field input:not([readonly]):focus {
+    border-color: #058283;
+    box-shadow: 0 0 0 3px rgba(5,130,131,.10);
+}
+
+.portal-company-field .portal-secret-value input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.portal-company-field .portal-secret-value input[readonly] {
+    letter-spacing: .08em;
+}
+
+.portal-company-save,
+.portal-company-save-bottom {
+    min-width: 110px;
+}
+
+@media (max-width: 767px) {
+    .portal-company-actions {
+        justify-content: stretch;
+        margin-bottom: 14px;
+    }
+
+    .portal-company-actions .portal-account-submit {
+        width: 100%;
+    }
+
+    .portal-company-form-actions {
+        justify-content: stretch;
+    }
+
+    .portal-company-save-bottom {
+        width: 100%;
+    }
+}
