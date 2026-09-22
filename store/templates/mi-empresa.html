@@ -110,13 +110,13 @@
                     <div class="portal-company-section">
                         <h2>Accesos a sistemas públicos</h2>
                         <div class="portal-company-grid">
-                            <div class="portal-company-field portal-secret-field"><span>SRI - Contraseña</span><input type="text" name="clavesri" value="{{ cliente.clavesri|default:'' }}" readonly></div>
+                            <div class="portal-company-field portal-secret-field"><span>SRI - Contraseña</span><div class="portal-secret-value"><input type="password" name="clavesri" value="{{ cliente.clavesri|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field "><span>IESS - Cédula</span><input type="text" name="cediess" value="{{ cliente.cediess|default:'' }}" readonly></div>
-                            <div class="portal-company-field portal-secret-field"><span>IESS - Contraseña</span><input type="text" name="claveiess" value="{{ cliente.claveiess|default:'' }}" readonly></div>
-                            <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SUT</span><input type="text" name="mrlcon" value="{{ cliente.mrlcon|default:'' }}" readonly></div>
-                            <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SALARIOS</span><input type="text" name="mrlsal" value="{{ cliente.mrlsal|default:'' }}" readonly></div>
-                            <div class="portal-company-field portal-secret-field"><span>Superintendencia - Contraseña</span><input type="text" name="clavesuper" value="{{ cliente.clavesuper|default:'' }}" readonly></div>
-                            <div class="portal-company-field portal-secret-field"><span>IESS Doméstica - Contraseña</span><input type="text" name="iessdomestica" value="{{ cliente.iessdomestica|default:'' }}" readonly></div>
+                            <div class="portal-company-field portal-secret-field"><span>IESS - Contraseña</span><div class="portal-secret-value"><input type="password" name="claveiess" value="{{ cliente.claveiess|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SUT</span><div class="portal-secret-value"><input type="password" name="mrlcon" value="{{ cliente.mrlcon|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>Ministerio de Trabajo - SALARIOS</span><div class="portal-secret-value"><input type="password" name="mrlsal" value="{{ cliente.mrlsal|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>Superintendencia - Contraseña</span><div class="portal-secret-value"><input type="password" name="clavesuper" value="{{ cliente.clavesuper|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
+                            <div class="portal-company-field portal-secret-field"><span>IESS Doméstica - Contraseña</span><div class="portal-secret-value"><input type="password" name="iessdomestica" value="{{ cliente.iessdomestica|default:'' }}" readonly data-secret-input><button type="button" class="portal-secret-toggle" aria-label="Mostrar contraseña"><i class="fi fi-rr-eye"></i></button></div></div>
                             <div class="portal-company-field "><span>Datos IESS</span><input type="text" name="datiess" value="{{ cliente.datiess|default:'' }}" readonly></div>
                         </div>
                     </div>
@@ -153,22 +153,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('.portal-secret-toggle').forEach(function (button) {
-        const value = button.closest('.portal-secret-value').querySelector('[data-secret]');
-        const original = value.textContent.trim();
-        const isEmpty = !original || original === 'No registrado' || original === 'No registrada';
+        const input = button.closest('.portal-secret-value').querySelector('[data-secret-input]');
 
-        if (isEmpty) {
+        if (!input.value) {
             button.disabled = true;
             return;
         }
 
-        value.textContent = '••••••••';
-        value.dataset.visible = 'false';
-
         button.addEventListener('click', function () {
-            const visible = value.dataset.visible === 'true';
-            value.textContent = visible ? '••••••••' : original;
-            value.dataset.visible = visible ? 'false' : 'true';
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
 
             const icon = button.querySelector('i');
             if (icon) {
