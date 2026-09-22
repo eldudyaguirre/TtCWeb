@@ -59,24 +59,8 @@ jQuery(function ($) {
         menu.html('');
         navbar.clone().appendTo(menu);
 
-        // Menú responsive unificado:
-        // INICIO, ACERCA, SERVICIOS, EQUIPO, BLOG, CONTACTANOS
-        // y debajo, separado, INICIAR SESIÓN.
-
-        var contact = menu.find('.contacts a[href*="contactanos"]').first();
-        var contactInItems = menu.find('.navbar-nav.items .nav-link[href*="contactanos"]').first();
-
-        if (contactInItems.length) {
-            contactInItems.closest('.nav-item').remove();
-        }
-
-        if (contact.length) {
-            var contactClone = contact.clone().removeClass('menu-extra-link');
-            menu.find('.navbar-nav.items').append(
-                $('<li class="nav-item"></li>').append(contactClone)
-            );
-            contact.remove();
-        }
+        // El menú responsive conserva exactamente los enlaces del menú principal,
+        // incluido CONTACTANOS. INICIAR SESIÓN permanece separado en .contacts.
 
         $('.menu .icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
     }
