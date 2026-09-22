@@ -12,16 +12,10 @@ def validar_acceso_cliente(cliente):
 
     Retorna una tupla (permitido, motivo, detalle).
     """
-    if not cliente.activo:
-        return False, 'inactivo', 'El cliente no se encuentra activo.'
-
-    if not cliente.acceso_ttcweb:
-        return False, 'web_desactivada', 'El acceso al portal web no está habilitado para este cliente.'
-
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT salcuenta
+            SELECT activo, acceso_ttcweb, salcuenta
             FROM clientes
             WHERE ruccedcli = %s
             """,
@@ -32,9 +26,17 @@ def validar_acceso_cliente(cliente):
     if row is None:
         return False, 'cliente_no_encontrado', 'No se encontró la información del cliente.'
 
-    salcuenta = row[0] or 0
+    activo, acceso_ttcweb, salcuenta = row
 
-    if salcuenta > 0:
+    if not activo:
+        return False, 'inactivo', 'El cliente no se encuentra activo.'
+
+    if not acceso_ttcweb:
+        return False, 'web_desactivada', (
+            'El acceso al portal web no está habilitado para este cliente.'
+        )
+
+    if (salcuenta or 0) > 0:
         return False, 'saldo_pendiente', (
             'El acceso al portal está restringido porque existen valores '
             'pendientes de pago.'
