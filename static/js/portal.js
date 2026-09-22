@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
         sidebar.classList.remove('mobile-open');
         mobileToggle.setAttribute('aria-expanded', 'false');
         mobileToggle.setAttribute('aria-label', 'Abrir menú');
+        const icon = mobileToggle.querySelector('i');
+        if (icon) icon.className = 'fi fi-rr-menu-burger';
     }
 
     if (mobileToggle) {
@@ -28,6 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const open = sidebar.classList.toggle('mobile-open');
             mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
             mobileToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+            const icon = mobileToggle.querySelector('i');
+            if (icon) {
+                icon.className = open ? 'fi fi-rr-cross-small' : 'fi fi-rr-menu-burger';
+            }
         });
     }
 
