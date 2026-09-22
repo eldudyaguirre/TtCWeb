@@ -1,0 +1,356 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Parámetros | TotalCounts</title>
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/default.css' %}">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922y">
+</head>
+<body class="portal-shell">
+<div class="portal-layout">
+    <aside class="portal-sidebar">
+        <div class="portal-sidebar-brand">
+            <a href="{% url 'portal' %}" class="portal-brand-link">
+                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
+            </a>
+        </div>
+
+        <nav class="portal-menu" aria-label="Menú principal">
+            <a href="{% url 'portal' %}" class="portal-menu-item" data-menu-link>
+                <i class="fi fi-rr-home portal-menu-icon"></i><span>Inicio</span>
+            </a>
+            <div class="portal-menu-group">
+                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-shopping-cart portal-menu-icon"></i><span>Gastos</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="#" class="portal-submenu-item">Compras</a>
+                    <a href="#" class="portal-submenu-item">Notas de Crédito</a>
+                </div>
+            </div>
+            <div class="portal-menu-group">
+                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-money-bill-wave portal-menu-icon"></i><span>Ingresos</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="#" class="portal-submenu-item">Facturador</a>
+                    <a href="#" class="portal-submenu-item">Facturas</a>
+                    <a href="#" class="portal-submenu-item">Notas de Crédito</a>
+                    <a href="#" class="portal-submenu-item">Retenciones</a>
+                </div>
+            </div>
+            <div class="portal-menu-group">
+                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-building portal-menu-icon"></i><span>SRI</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="#" class="portal-submenu-item">Declaraciones</a>
+                    <a href="#" class="portal-submenu-item">ATS</a>
+                    <a href="#" class="portal-submenu-item">ICE</a>
+                </div>
+            </div>
+            <div class="portal-menu-group">
+                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-chart-histogram portal-menu-icon"></i><span>Reportes</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="#" class="portal-submenu-item">Compras</a>
+                    <a href="#" class="portal-submenu-item">Ventas</a>
+                </div>
+            </div>
+            <div class="portal-menu-group">
+                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-users portal-menu-icon"></i><span>Laboral</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="#" class="portal-submenu-item">Trabajadores</a>
+                    <a href="#" class="portal-submenu-item">Roles de Pago</a>
+                </div>
+            </div>
+            <div class="portal-menu-group open">
+                <button type="button" class="portal-menu-item portal-menu-toggle active" aria-expanded="true">
+                    <i class="fi fi-rr-settings portal-menu-icon"></i><span>Configuración</span>
+                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
+                </button>
+                <div class="portal-submenu">
+                    <a href="{% url 'mi_empresa' %}" class="portal-submenu-item">Mi empresa</a>
+                    <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item">Cambiar contraseña</a>
+                    <a href="{% url 'parametros' %}" class="portal-submenu-item active">Parámetros</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="portal-sidebar-bottom">
+            <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
+                <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i><span>Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="portal-main">
+        <header class="portal-topbar">
+            <div class="portal-topbar-inner">
+                <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
+                    <i class="fi fi-rr-menu-burger"></i>
+                </button>
+                <a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
+                    <i class="fi fi-rr-arrow-left"></i>
+                </a>
+                <div class="portal-user">
+                    <div class="portal-user-data">
+                        <span class="portal-user-name">{{ cliente.nomclient }}</span>
+                        <span class="portal-user-ruc">RUC / C.I. {{ cliente.ruccedcli }}</span>
+                    </div>
+                    <div class="portal-user-avatar">{{ cliente.nomclient|first|upper }}</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="portal-content">
+            <div class="container-fluid">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="portal-account-message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <section class="portal-account-card portal-parameters-card">
+                    <div class="portal-account-heading">
+                        <div class="portal-stat-icon"><i class="fi fi-rr-settings"></i></div>
+                        <div>
+                            <div class="portal-kicker">Configuración</div>
+                            <h1>Parámetros</h1>
+                            <p>Configuración de establecimientos, puntos de emisión y firma electrónica.</p>
+                        </div>
+                    </div>
+
+                    <div class="portal-company-section">
+                        <div class="portal-parameters-section-heading">
+                            <div>
+                                <h2>Firma electrónica</h2>
+                                <p>Certificado digital que utilizaremos posteriormente para firmar los comprobantes electrónicos.</p>
+                            </div>
+                            {% if parametros_cliente.certificado_p12 %}
+                            <span class="portal-parameter-status is-active">Certificado cargado</span>
+                            {% else %}
+                            <span class="portal-parameter-status">Sin certificado</span>
+                            {% endif %}
+                        </div>
+
+                        {% if puede_editar %}
+                        <form method="post" enctype="multipart/form-data" class="portal-parameters-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="guardar_certificado">
+
+                            <div class="portal-parameters-grid">
+                                <div class="portal-parameter-field">
+                                    <label for="ambiente">Ambiente de emisión</label>
+                                    <select name="ambiente" id="ambiente">
+                                        {% for value, label in parametros_cliente.Ambiente.choices %}
+                                            <option value="{{ value }}" {% if parametros_cliente.ambiente == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="portal-parameter-field">
+                                    <label for="certificado_p12">Archivo P12</label>
+                                    <input type="file" name="certificado_p12" id="certificado_p12" accept=".p12">
+                                    <small>
+                                        {% if parametros_cliente.certificado_nombre %}
+                                            Actual: {{ parametros_cliente.certificado_nombre }}
+                                        {% else %}
+                                            Selecciona el certificado digital .p12.
+                                        {% endif %}
+                                    </small>
+                                </div>
+
+                                <div class="portal-parameter-field">
+                                    <label for="clave_p12">Clave del archivo P12</label>
+                                    <div class="portal-parameter-secret">
+                                        <input type="password" name="clave_p12" id="clave_p12" placeholder="{% if parametros_cliente.clave_p12 %}Clave configurada{% else %}Ingresa la clave{% endif %}" autocomplete="new-password">
+                                        <button type="button" class="portal-secret-toggle" data-toggle-password="clave_p12" aria-label="Mostrar clave">
+                                            <i class="fi fi-rr-eye"></i>
+                                        </button>
+                                    </div>
+                                    <small>Si ya existe una clave y no deseas cambiarla, deja este campo vacío.</small>
+                                </div>
+                            </div>
+
+                            <div class="portal-company-form-actions">
+                                <button type="submit" class="portal-account-submit"><i class="fi fi-rr-disk"></i> Guardar firma</button>
+                            </div>
+                        </form>
+                        {% else %}
+                        <div class="portal-parameter-readonly">
+                            <strong>Ambiente:</strong> {{ parametros_cliente.get_ambiente_display }}
+                            <span>·</span>
+                            <strong>Certificado:</strong> {% if parametros_cliente.certificado_p12 %}Configurado{% else %}No configurado{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="portal-company-section">
+                        <div class="portal-parameters-section-heading">
+                            <div>
+                                <h2>Establecimientos</h2>
+                                <p>Registra los establecimientos autorizados que utilizará cada empresa.</p>
+                            </div>
+                        </div>
+
+                        {% if puede_editar %}
+                        <form method="post" class="portal-inline-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="agregar_establecimiento">
+                            <div><label>Código</label><input type="text" name="codigo" maxlength="3" inputmode="numeric" placeholder="001" required></div>
+                            <div class="wide"><label>Nombre</label><input type="text" name="nombre" maxlength="255" placeholder="Matriz"></div>
+                            <div class="wide"><label>Dirección</label><input type="text" name="direccion" maxlength="255" placeholder="Dirección del establecimiento"></div>
+                            <button type="submit" class="portal-account-submit"><i class="fi fi-rr-plus"></i> Agregar</button>
+                        </form>
+                        {% endif %}
+
+                        <div class="portal-parameter-list">
+                            {% for establecimiento in establecimientos %}
+                            <div class="portal-parameter-item">
+                                <form method="post" class="portal-parameter-edit-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="editar_establecimiento">
+                                    <input type="hidden" name="id" value="{{ establecimiento.id }}">
+                                    <div class="portal-parameter-code">{{ establecimiento.codigo }}</div>
+                                    <div><input type="text" name="nombre" value="{{ establecimiento.nombre }}" maxlength="255" {% if not puede_editar %}readonly{% endif %}></div>
+                                    <div><input type="text" name="direccion" value="{{ establecimiento.direccion }}" maxlength="255" {% if not puede_editar %}readonly{% endif %}></div>
+                                    <div>
+                                        <select name="activo" {% if not puede_editar %}disabled{% endif %}>
+                                            <option value="1" {% if establecimiento.activo %}selected{% endif %}>Activo</option>
+                                            <option value="0" {% if not establecimiento.activo %}selected{% endif %}>Inactivo</option>
+                                        </select>
+                                    </div>
+                                    {% if puede_editar %}
+                                    <div><input type="text" name="codigo" value="{{ establecimiento.codigo }}" maxlength="3" inputmode="numeric" required></div>
+                                    <button type="submit" class="portal-parameter-icon-button" title="Guardar"><i class="fi fi-rr-disk"></i></button>
+                                    {% endif %}
+                                </form>
+
+                                <div class="portal-subparameter">
+                                    <div class="portal-subparameter-heading">
+                                        <div>
+                                            <strong>Puntos de emisión</strong>
+                                            <span>{{ establecimiento.puntos_emision.count }} registrados</span>
+                                        </div>
+                                    </div>
+
+                                    {% if puede_editar %}
+                                    <form method="post" class="portal-inline-form portal-inline-form-small">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="agregar_punto">
+                                        <input type="hidden" name="establecimiento_id" value="{{ establecimiento.id }}">
+                                        <div><label>Código</label><input type="text" name="codigo" maxlength="3" inputmode="numeric" placeholder="001" required></div>
+                                        <div class="wide"><label>Nombre</label><input type="text" name="nombre" maxlength="255" placeholder="Punto de emisión"></div>
+                                        <button type="submit" class="portal-account-submit"><i class="fi fi-rr-plus"></i> Agregar punto</button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% for punto in establecimiento.puntos_emision.all %}
+                                    <div class="portal-point-item">
+                                        <form method="post" class="portal-point-edit-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="editar_punto">
+                                            <input type="hidden" name="id" value="{{ punto.id }}">
+                                            <div class="portal-parameter-code">{{ establecimiento.codigo }}-{{ punto.codigo }}</div>
+                                            <input type="text" name="nombre" value="{{ punto.nombre }}" maxlength="255" {% if not puede_editar %}readonly{% endif %}>
+                                            <select name="activo" {% if not puede_editar %}disabled{% endif %}>
+                                                <option value="1" {% if punto.activo %}selected{% endif %}>Activo</option>
+                                                <option value="0" {% if not punto.activo %}selected{% endif %}>Inactivo</option>
+                                            </select>
+                                            {% if puede_editar %}
+                                            <input type="text" name="codigo" value="{{ punto.codigo }}" maxlength="3" inputmode="numeric" required>
+                                            <button type="submit" class="portal-parameter-icon-button" title="Guardar"><i class="fi fi-rr-disk"></i></button>
+                                            {% endif %}
+                                        </form>
+
+                                        <div class="portal-sequences">
+                                            <div class="portal-sequences-heading">Secuenciales de documentos</div>
+                                            {% for sec in punto.secuenciales.all %}
+                                            <form method="post" class="portal-sequence-row">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="accion" value="guardar_secuencial">
+                                                <input type="hidden" name="punto_id" value="{{ punto.id }}">
+                                                <select name="tipo_documento" {% if not puede_editar %}disabled{% endif %}>
+                                                    {% for value, label in tipos_documento %}
+                                                    <option value="{{ value }}" {% if sec.tipo_documento == value %}selected{% endif %}>{{ value }} - {{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="number" name="secuencial_actual" min="1" value="{{ sec.secuencial_actual }}" {% if not puede_editar %}readonly{% endif %}>
+                                                <select name="activo" {% if not puede_editar %}disabled{% endif %}>
+                                                    <option value="1" {% if sec.activo %}selected{% endif %}>Activo</option>
+                                                    <option value="0" {% if not sec.activo %}selected{% endif %}>Inactivo</option>
+                                                </select>
+                                                {% if puede_editar %}
+                                                <button type="submit" class="portal-parameter-icon-button" title="Guardar"><i class="fi fi-rr-disk"></i></button>
+                                                {% endif %}
+                                            </form>
+                                            {% empty %}
+                                            <div class="portal-parameter-empty">Todavía no hay secuenciales configurados para este punto.</div>
+                                            {% endfor %}
+
+                                            {% if puede_editar %}
+                                            <form method="post" class="portal-sequence-add">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="accion" value="guardar_secuencial">
+                                                <input type="hidden" name="punto_id" value="{{ punto.id }}">
+                                                <select name="tipo_documento">
+                                                    {% for value, label in tipos_documento %}
+                                                    <option value="{{ value }}">{{ value }} - {{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="number" name="secuencial_actual" min="1" value="1" required>
+                                                <input type="hidden" name="activo" value="1">
+                                                <button type="submit" class="portal-account-submit"><i class="fi fi-rr-plus"></i> Agregar secuencial</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="portal-parameter-empty">No hay puntos de emisión registrados.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="portal-parameter-empty">No hay establecimientos registrados.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="{% static 'js/portal.js' %}?v=20260922m"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+        const input = document.getElementById(button.dataset.togglePassword);
+        if (!input) return;
+
+        button.addEventListener('click', function () {
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            const icon = button.querySelector('i');
+            if (icon) icon.className = visible ? 'fi fi-rr-eye' : 'fi fi-rr-eye-crossed';
+            button.setAttribute('aria-label', visible ? 'Mostrar clave' : 'Ocultar clave');
+        });
+    });
+});
+</script>
+</body>
+</html>
