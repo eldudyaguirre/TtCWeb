@@ -192,8 +192,21 @@
 
 .portal-content > .container-fluid {
     padding-top: 12px;
+}
+
+.portal-content .portal-summary {
     position: relative;
-    top: -118px;
+    top: -110px;
+    margin-bottom: -92px;
+}
+
+.portal-content .portal-welcome {
+    position: relative;
+    z-index: 2;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 0;
 }
 
  .portal-welcome {
