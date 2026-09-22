@@ -80,7 +80,7 @@ class SecuencialDocumentoAdmin(admin.ModelAdmin):
 
 @admin.register(AceptacionLegal)
 class AceptacionLegalAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'tipo', 'version', 'aceptado_en')
+    list_display = ('usuario', 'tipo', 'version', 'aceptado_en', 'ip_address')
     search_fields = ('usuario__username',)
     list_filter = ('tipo', 'version')
-    readonly_fields = ('usuario', 'tipo', 'version', 'aceptado_en')
+    readonly_fields = ('usuario', 'tipo', 'version', 'aceptado_en', 'ip_address', 'user_agent')
