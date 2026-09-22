@@ -428,6 +428,10 @@ def aceptar_documento_legal(request):
         usuario=request.user,
         tipo=tipo,
         version=version,
+        defaults={
+            'ip_address': request.META.get('REMOTE_ADDR'),
+            'user_agent': request.META.get('HTTP_USER_AGENT', '')[:1000],
+        },
     )
     return redirect('portal')
 
