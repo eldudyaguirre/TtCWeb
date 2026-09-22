@@ -226,8 +226,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="accion" value="editar_establecimiento">
                                     <input type="hidden" name="id" value="{{ establecimiento.id }}">
-                                    <div class="portal-parameter-code">{{ establecimiento.codigo }}</div>
-                                    <div><input type="text" name="nombre" value="{{ establecimiento.nombre }}" maxlength="255" {% if not puede_editar %}readonly{% endif %}></div>
+                                    <div><input type="text" name="nombre" value="{{ establecimiento.nombre }}" maxlength="255" placeholder="Nombre" {% if not puede_editar %}readonly{% endif %}></div>
                                     <div><input type="text" name="direccion" value="{{ establecimiento.direccion }}" maxlength="255" {% if not puede_editar %}readonly{% endif %}></div>
                                     <div>
                                         <select name="activo" {% if not puede_editar %}disabled{% endif %}>
@@ -236,7 +235,7 @@
                                         </select>
                                     </div>
                                     {% if puede_editar %}
-                                    <div><input type="text" name="codigo" value="{{ establecimiento.codigo }}" maxlength="3" inputmode="numeric" required></div>
+                                    <div><input type="text" name="codigo" value="{{ establecimiento.codigo }}" maxlength="3" inputmode="numeric" placeholder="Código" required></div>
                                     <button type="submit" class="portal-parameter-icon-button" title="Guardar"><i class="fi fi-rr-disk"></i></button>
                                     {% endif %}
                                 </form>
