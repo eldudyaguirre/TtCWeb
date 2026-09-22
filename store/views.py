@@ -6,6 +6,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.http import Http404
 from django.shortcuts import redirect, render
 
+from .models import UsuarioCliente
+from .services.acceso import validar_acceso_cliente
+
 
 TEMPLATE_PREVIEWS = {
     'page-404-1': 'page-404-1.html',
@@ -46,10 +49,45 @@ def do_signin(request):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                login(request, user)
-                return redirect('portal')
+                # Los usuarios administrativos de Django mantienen acceso al portal.
+                if user.is_staff or user.is_superuser:
+                    login(request, user)
+                    return redirect('portal')
 
-        messages.error(request, 'Usuario o contraseña inválidos.')
+                asignaciones = UsuarioCliente.objects.filter(
+                    usuario=user,
+                    activo=True,
+                ).select_related('cliente')
+
+                if not asignaciones.exists():
+                    messages.error(
+                        request,
+                        'Tu usuario no tiene un cliente activo asignado al portal.',
+                    )
+                else:
+                    acceso_permitido = False
+                    ultimo_motivo = None
+
+                    for asignacion in asignaciones:
+                        permitido, _, detalle = validar_acceso_cliente(
+                            asignacion.cliente
+                        )
+
+                        if permitido:
+                            request.session['cliente_ruccedcli'] = (
+                                asignacion.cliente.ruccedcli
+                            )
+                            login(request, user)
+                            return redirect('portal')
+
+                        ultimo_motivo = detalle
+
+                    messages.error(
+                        request,
+                        ultimo_motivo or 'El acceso al portal está restringido.',
+                    )
+        else:
+            messages.error(request, 'Usuario o contraseña inválidos.')
 
     return render(request, 'sign-in.html', {'signin_form': form})
 
@@ -61,7 +99,31 @@ def do_logout(request):
 
 @login_required
 def portal(request):
-    return render(request, 'portal.html')
+    if request.user.is_staff or request.user.is_superuser:
+        return render(request, 'portal.html')
+
+    asignaciones = UsuarioCliente.objects.filter(
+        usuario=request.user,
+        activo=True,
+    ).select_related('cliente')
+
+    for asignacion in asignaciones:
+        permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
+
+        if permitido:
+            request.session['cliente_ruccedcli'] = asignacion.cliente.ruccedcli
+            return render(
+                request,
+                'portal.html',
+                {'cliente': asignacion.cliente},
+            )
+
+    logout(request)
+    messages.error(
+        request,
+        'El acceso al portal está restringido. Verifica el estado de tu cuenta.',
+    )
+    return redirect('signin')
 
 
 def about(request):
