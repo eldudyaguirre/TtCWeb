@@ -1708,7 +1708,7 @@
 
 .portal-parameter-edit-form {
     display: grid;
-    grid-template-columns: 72px 1fr 1.4fr 110px 110px 40px;
+    grid-template-columns: 1fr 1.4fr 110px 110px 40px;
     gap: 10px;
     align-items: center;
 }
@@ -1844,7 +1844,7 @@
     }
 
     .portal-parameter-edit-form {
-        grid-template-columns: 65px 1fr 1fr;
+        grid-template-columns: 1fr 1fr 110px;
     }
 
     .portal-parameter-edit-form > div:nth-child(4),
