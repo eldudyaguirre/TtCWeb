@@ -1071,3 +1071,32 @@
         flex: 0 0 auto !important;
     }
 }
+
+
+@media (max-width: 767px) {
+    /* El divisor debe quedar debajo de TODO el bloque del logo,
+       incluido el texto integrado en el SVG. */
+    .portal-sidebar .portal-sidebar-brand {
+        height: 195px !important;
+        min-height: 195px !important;
+        box-sizing: border-box !important;
+        padding: 20px 0 24px !important;
+        flex: 0 0 195px !important;
+        align-items: center !important;
+        border-bottom: 1px solid rgba(255,255,255,.10) !important;
+        overflow: visible !important;
+    }
+
+    .portal-sidebar .portal-brand {
+        width: 155px !important;
+        height: 155px !important;
+        max-width: none !important;
+        max-height: none !important;
+        object-fit: contain !important;
+        flex: 0 0 auto !important;
+    }
+
+    .portal-sidebar .portal-menu {
+        padding-top: 24px !important;
+    }
+}
