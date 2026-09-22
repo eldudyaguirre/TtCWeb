@@ -1,22 +1,23 @@
 from django.contrib import admin
 
+from .models import Cliente, UsuarioCliente
+
 
 admin.site.site_header = 'Administración TotalCounts'
 admin.site.site_title = 'TotalCounts'
 admin.site.index_title = 'Panel de administración'
 
-from .models import Empresa, UsuarioEmpresa
+
+@admin.register(Cliente)
+class ClienteAdmin(admin.ModelAdmin):
+    list_display = ('ruccedcli', 'nomclient', 'acceso_ttcweb')
+    search_fields = ('ruccedcli', 'nomclient')
+    list_filter = ('acceso_ttcweb',)
+    readonly_fields = ('ruccedcli', 'nomclient')
 
 
-@admin.register(Empresa)
-class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ('ruc', 'razon_social', 'nombre_comercial', 'activo')
-    search_fields = ('ruc', 'razon_social', 'nombre_comercial')
-    list_filter = ('activo',)
-
-
-@admin.register(UsuarioEmpresa)
-class UsuarioEmpresaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'empresa', 'rol', 'activo', 'creado_en')
-    search_fields = ('usuario__username', 'empresa__ruc', 'empresa__razon_social')
+@admin.register(UsuarioCliente)
+class UsuarioClienteAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'cliente', 'rol', 'activo', 'creado_en')
+    search_fields = ('usuario__username', 'cliente__ruccedcli', 'cliente__nomclient')
     list_filter = ('rol', 'activo')
