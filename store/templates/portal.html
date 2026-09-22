@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922j">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922k">
 </head>
 <body class="portal-shell">
 
@@ -117,6 +117,9 @@
         <div class="portal-main">
             <header class="portal-topbar">
                 <div class="portal-topbar-inner">
+                    <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
+    <i class="fi fi-rr-menu-burger"></i>
+</button>
                     <div class="portal-mobile-brand">
                         <a href="{% url 'portal' %}">
                             <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-mobile-logo">
@@ -230,6 +233,6 @@
         </div>
     </div>
 
-    <script src="{% static 'js/portal.js' %}?v=20260922f"></script>
+    <script src="{% static 'js/portal.js' %}?v=20260922g"></script>
 </body>
 </html>
