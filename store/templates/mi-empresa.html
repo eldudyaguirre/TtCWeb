@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mi empresa | TotalCounts</title>
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/default.css' %}">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922s">
+</head>
+<body class="portal-shell">
+<div class="portal-layout">
+    <aside class="portal-sidebar">
+        <div class="portal-sidebar-brand">
+            <a href="{% url 'portal' %}" class="portal-brand-link">
+                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
+            </a>
+        </div>
+        <nav class="portal-menu" aria-label="Menú principal">
+            <a href="{% url 'portal' %}" class="portal-menu-item" data-menu-link>
+                <i class="fi fi-rr-home portal-menu-icon"></i><span>Inicio</span>
+            </a>
+            <div class="portal-menu-title portal-menu-title-space">MI INFORMACIÓN</div>
+            <a href="{% url 'mi_empresa' %}" class="portal-menu-item active" data-menu-link>
+                <i class="fi fi-rr-building portal-menu-icon"></i><span>Mi empresa</span>
+            </a>
+            <a href="{% url 'cambiar_contrasena' %}" class="portal-menu-item" data-menu-link>
+                <i class="fi fi-rr-lock portal-menu-icon"></i><span>Cambiar contraseña</span>
+            </a>
+        </nav>
+        <div class="portal-sidebar-bottom">
+            <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
+                <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i><span>Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="portal-main">
+        <header class="portal-topbar">
+            <div class="portal-topbar-inner">
+                <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
+                    <i class="fi fi-rr-menu-burger"></i>
+                </button>
+                <a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
+                    <i class="fi fi-rr-arrow-left"></i>
+                </a>
+                <div class="portal-page-title">Mi empresa</div>
+                <div class="portal-user">
+                    <div class="portal-user-data">
+                        <span class="portal-user-name">{{ cliente.nomclient }}</span>
+                        <span class="portal-user-ruc">RUC / C.I. {{ cliente.ruccedcli }}</span>
+                    </div>
+                    <div class="portal-user-avatar">{{ cliente.nomclient|first|upper }}</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="portal-content">
+            <div class="container-fluid">
+                <section class="portal-account-card portal-company-card">
+                    <div class="portal-account-heading">
+                        <div class="portal-stat-icon"><i class="fi fi-rr-building"></i></div>
+                        <div>
+                            <div class="portal-kicker">Información de la empresa</div>
+                            <h1>{{ cliente.nomclient }}</h1>
+                            <p>Datos registrados en TotalCounts para tu empresa.</p>
+                        </div>
+                    </div>
+
+                    <div class="portal-company-grid">
+                        <div class="portal-company-field">
+                            <span>RUC / C.I.</span>
+                            <strong>{{ cliente.ruccedcli }}</strong>
+                        </div>
+                        <div class="portal-company-field">
+                            <span>Razón social / nombre</span>
+                            <strong>{{ cliente.nomclient|default:"No registrado" }}</strong>
+                        </div>
+                        <div class="portal-company-field">
+                            <span>Estado de la empresa</span>
+                            <strong>{% if cliente.activo %}Activa{% else %}Inactiva{% endif %}</strong>
+                        </div>
+                        <div class="portal-company-field">
+                            <span>Acceso al portal</span>
+                            <strong>{% if cliente.acceso_ttcweb %}Habilitado{% else %}Deshabilitado{% endif %}</strong>
+                        </div>
+                        <div class="portal-company-field">
+                            <span>Saldo pendiente</span>
+                            <strong>$ {{ cliente.salcuenta|floatformat:2 }}</strong>
+                        </div>
+                        <div class="portal-company-field">
+                            <span>Rol de usuario</span>
+                            <strong>{{ rol }}</strong>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="{% static 'js/portal.js' %}?v=20260922l"></script>
+</body>
+</html>
