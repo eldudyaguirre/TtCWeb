@@ -999,3 +999,19 @@
         margin-left: auto !important;
     }
 }
+
+
+@media (max-width: 767px) {
+    /* Separar el inicio del menú del bloque del logo. */
+    .portal-sidebar .portal-menu {
+        padding-top: 34px !important;
+        border-top: 0 !important;
+    }
+
+    .portal-sidebar .portal-sidebar-brand {
+        height: 150px !important;
+        min-height: 150px !important;
+        padding-top: 38px !important;
+        padding-bottom: 18px !important;
+    }
+}
