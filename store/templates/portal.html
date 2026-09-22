@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/default.css' %}">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922t">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922u">
 </head>
 <body class="portal-shell">
 
@@ -237,81 +237,172 @@
 
     {% if pendientes_legales %}
     <div class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-legal-title" style="position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(18,29,36,.76)!important;backdrop-filter:blur(3px)!important;">
-        <div class="portal-legal-modal" style="position:relative!important;width:min(720px,100%)!important;max-height:min(88vh,820px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-radius:12px!important;box-shadow:0 24px 70px rgba(0,0,0,.28)!important;">
+        <div class="portal-legal-modal" style="position:relative!important;width:min(760px,100%)!important;max-height:min(90vh,860px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-radius:12px!important;box-shadow:0 24px 70px rgba(0,0,0,.28)!important;">
             {% if pendientes_legales.0 == 'POLITICA_DATOS' %}
             <div class="portal-legal-header">
                 <div class="portal-legal-icon"><i class="fi fi-rr-shield-check"></i></div>
                 <div>
-                    <div class="portal-kicker">Documento obligatorio</div>
-                    <h2 id="portal-legal-title">Política de Protección de Datos</h2>
+                    <div class="portal-kicker">Información de privacidad</div>
+                    <h2 id="portal-legal-title">Política de Protección de Datos Personales</h2>
                     <span>Versión {{ versiones_legales.POLITICA_DATOS }}</span>
                 </div>
             </div>
 
             <div class="portal-legal-body">
-                <p>Antes de utilizar el Portal de Clientes TotalCounts debes leer y aceptar nuestra Política de Protección de Datos.</p>
+                <p><strong>Última actualización:</strong> {{ request.current_time|default:"Septiembre de 2026" }}</p>
+                <p>Esta Política de Protección de Datos Personales informa a los titulares sobre la forma en que TotalCounts trata los datos personales relacionados con sus servicios, de conformidad con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP), su Reglamento General y demás normativa aplicable.</p>
 
-                <h3>1. Finalidad</h3>
-                <p>La información proporcionada por el usuario se utiliza para gestionar su acceso al portal, prestar los servicios contratados, mantener la seguridad de la cuenta y atender las solicitudes relacionadas con los servicios de TotalCounts.</p>
+                <h3>1. Responsable del tratamiento</h3>
+                <p><strong>Responsable:</strong> [RAZÓN SOCIAL DEL RESPONSABLE DEBE COMPLETARSE]</p>
+                <p><strong>Nombre comercial:</strong> TotalCounts / C.A.S. (Complete Accounting System)</p>
+                <p><strong>RUC:</strong> [RUC DEL RESPONSABLE DEBE COMPLETARSE]</p>
+                <p><strong>Domicilio:</strong> [DOMICILIO LEGAL DEBE COMPLETARSE]</p>
+                <p><strong>Teléfono:</strong> [TELÉFONO DE CONTACTO DEBE COMPLETARSE]</p>
+                <p><strong>Correo para protección de datos:</strong> [CORREO DE PROTECCIÓN DE DATOS DEBE COMPLETARSE]</p>
+                <p><strong>Delegado de Protección de Datos:</strong> Cuando legalmente corresponda su designación, se informarán aquí sus datos de contacto.</p>
 
-                <h3>2. Información tratada</h3>
-                <p>Dependiendo de los servicios utilizados, el portal puede tratar datos de identificación, información de contacto, información tributaria, información de comprobantes y datos necesarios para la operación de los servicios contratados.</p>
+                <h3>2. Objeto y alcance</h3>
+                <p>Esta política se aplica al tratamiento de datos personales realizado a través del Portal de Clientes TotalCounts, sus formularios, servicios asociados, sistemas de soporte y demás medios mediante los cuales el responsable trate datos personales en el marco de la relación con sus clientes y usuarios.</p>
 
-                <h3>3. Seguridad y confidencialidad</h3>
-                <p>TotalCounts aplica medidas técnicas y organizativas destinadas a proteger la información contra acceso, modificación, pérdida o divulgación no autorizada.</p>
+                <h3>3. Datos personales que pueden ser tratados</h3>
+                <p>Según el servicio utilizado y la relación existente con el titular, pueden tratarse datos de identificación, información de contacto, datos tributarios y comerciales, información de comprobantes electrónicos, información necesaria para autenticación y seguridad de la cuenta, información de configuración de servicios y registros técnicos necesarios para operar y proteger el portal.</p>
+                <p>No se solicitarán datos personales que no sean pertinentes o necesarios para una finalidad determinada. Las categorías especiales de datos personales estarán sujetas a las condiciones y garantías adicionales previstas por la normativa aplicable cuando su tratamiento resulte procedente.</p>
 
-                <h3>4. Derechos del titular</h3>
-                <p>El titular podrá solicitar información sobre sus datos y ejercer los derechos que le correspondan conforme a la normativa aplicable, mediante los canales de atención habilitados por TotalCounts.</p>
+                <h3>4. Origen de los datos</h3>
+                <p>Los datos pueden ser proporcionados directamente por el titular, por representantes autorizados, por el cliente que contrata o administra los servicios, o provenir de fuentes públicas o de terceros cuando exista una base jurídica que permita su tratamiento. Cuando corresponda, se informará al titular sobre el origen de los datos conforme a la normativa aplicable.</p>
 
-                <p class="portal-legal-note"><strong>Importante:</strong> este documento debe mantenerse actualizado conforme a la normativa aplicable y a las condiciones reales de operación de TotalCounts.</p>
+                <h3>5. Finalidades del tratamiento</h3>
+                <ul>
+                    <li>Crear, administrar y proteger cuentas de usuario.</li>
+                    <li>Prestar y administrar los servicios contratados.</li>
+                    <li>Gestionar facturación, comprobantes y procesos administrativos relacionados con los servicios.</li>
+                    <li>Atender solicitudes, consultas, soporte y comunicaciones relacionadas con la relación contractual o de servicio.</li>
+                    <li>Prevenir accesos no autorizados, fraude, abuso y otros incidentes de seguridad.</li>
+                    <li>Mantener registros técnicos, operativos y de auditoría necesarios para seguridad, continuidad y cumplimiento.</li>
+                    <li>Cumplir obligaciones legales, tributarias, contables, laborales o administrativas que resulten aplicables.</li>
+                    <li>Realizar otras finalidades compatibles con las informadas al titular y permitidas por la normativa aplicable.</li>
+                </ul>
+
+                <h3>6. Base de legitimación</h3>
+                <p>Cada tratamiento deberá sustentarse en una base de legitimación válida conforme a la LOPDP, según corresponda, incluyendo el cumplimiento de obligaciones legales, la ejecución de una relación contractual o precontractual, el ejercicio de derechos, el cumplimiento de una misión o competencia legalmente habilitada, el interés legítimo cuando sea aplicable y el consentimiento del titular cuando la normativa lo requiera.</p>
+                <p>Cuando se requiera consentimiento, este será solicitado de forma previa y mediante una manifestación libre, específica, informada e inequívoca, sin presumirse por el silencio o la inacción.</p>
+
+                <h3>7. Tratamientos realizados</h3>
+                <p>El tratamiento puede incluir recopilación, registro, organización, almacenamiento, consulta, utilización, actualización, conservación, comunicación, transferencia cuando corresponda, bloqueo, eliminación o destrucción de datos, según la finalidad y base jurídica aplicables.</p>
+
+                <h3>8. Conservación de la información</h3>
+                <p>Los datos se conservarán durante el tiempo necesario para cumplir las finalidades informadas, mantener la relación contractual o de servicio, atender obligaciones legales y conservar evidencias cuando exista una obligación o necesidad legítima para ello. Una vez cumplidos los plazos aplicables, los datos serán eliminados, anonimizados o sometidos a las medidas que correspondan.</p>
+
+                <h3>9. Transferencias, comunicaciones y encargados</h3>
+                <p>Cuando sea necesario para prestar los servicios, TotalCounts podrá utilizar proveedores tecnológicos que actúen como encargados del tratamiento, bajo instrucciones y obligaciones contractuales de protección de datos. Cuando exista una transferencia o comunicación de datos a terceros o a otro país que jurídicamente constituya una transferencia o comunicación, se aplicarán las condiciones, garantías y requisitos establecidos por la LOPDP, su Reglamento y la normativa emitida por la Superintendencia de Protección de Datos Personales.</p>
+                <p>Los proveedores podrán incluir servicios de alojamiento, infraestructura, correo, seguridad, copias de respaldo, soporte técnico y otras herramientas estrictamente relacionadas con la operación. La relación con cada proveedor deberá definirse según el tratamiento real efectuado.</p>
+
+                <h3>10. Seguridad y confidencialidad</h3>
+                <p>Se aplicarán medidas técnicas, físicas, administrativas, organizativas y jurídicas apropiadas para proteger la confidencialidad, integridad y disponibilidad de los datos personales y reducir los riesgos asociados al tratamiento. El acceso a la información estará limitado a las personas y sistemas que lo necesiten para una finalidad legítima.</p>
+
+                <h3>11. Datos inexactos</h3>
+                <p>El titular debe procurar que la información proporcionada sea exacta y se encuentre actualizada. Los datos inexactos podrán afectar la prestación de determinados servicios, procesos administrativos o comunicaciones. El titular puede solicitar su rectificación o actualización conforme a la normativa aplicable.</p>
+
+                <h3>12. Derechos de los titulares</h3>
+                <p>El titular podrá ejercer, según corresponda y conforme a los requisitos y límites legales, sus derechos de acceso, eliminación, rectificación y actualización, oposición, anulación, limitación del tratamiento, portabilidad y a no ser objeto de una decisión basada únicamente en valoraciones automatizadas. También podrá ejercer los demás derechos reconocidos por la LOPDP y normativa aplicable.</p>
+
+                <h3>13. Cómo ejercer sus derechos</h3>
+                <p>Las solicitudes deberán dirigirse al canal de protección de datos indicado en esta política, identificando al solicitante y describiendo claramente la petición. Cuando sea necesario, podrán solicitarse elementos razonables para verificar la identidad y evitar accesos indebidos a información de terceros.</p>
+                <p><strong>Canal de atención:</strong> [CORREO DE PROTECCIÓN DE DATOS DEBE COMPLETARSE]</p>
+
+                <h3>14. Revocación del consentimiento</h3>
+                <p>Cuando el tratamiento se base en el consentimiento, el titular podrá revocarlo por los medios habilitados. La revocación no afectará la licitud de los tratamientos realizados antes de ella y no impedirá aquellos tratamientos que puedan continuar sustentados en otra base de legitimación válida.</p>
+
+                <h3>15. Valoraciones automatizadas y elaboración de perfiles</h3>
+                <p>TotalCounts no utilizará decisiones exclusivamente automatizadas que produzcan efectos jurídicos o afecten significativamente al titular salvo que exista una base jurídica y se cumplan las garantías previstas por la normativa aplicable. Si en el futuro se implementaran tratamientos de esta naturaleza, se informará al titular de acuerdo con la ley.</p>
+
+                <h3>16. Cookies y datos técnicos</h3>
+                <p>El portal puede utilizar cookies técnicas y registros de seguridad necesarios para mantener sesiones, autenticar usuarios, prevenir abusos y garantizar el funcionamiento del servicio. Cualquier uso adicional que requiera una base de legitimación específica será informado de manera correspondiente.</p>
+
+                <h3>17. Reclamos</h3>
+                <p>El titular puede presentar primero su solicitud o reclamo ante el responsable utilizando el canal indicado en esta política. Si considera que sus derechos no han sido atendidos conforme a la normativa, podrá acudir ante la Superintendencia de Protección de Datos Personales mediante los mecanismos habilitados por dicha autoridad.</p>
+
+                <h3>18. Cambios a esta política</h3>
+                <p>Esta política podrá actualizarse cuando cambien los tratamientos, servicios, proveedores, requisitos legales o medidas de protección. La versión vigente permanecerá disponible para consulta. Cuando corresponda informar nuevamente al titular o solicitar una manifestación de voluntad por un tratamiento específico, se aplicará el mecanismo previsto por la normativa.</p>
+
+                <h3>19. Vigencia</h3>
+                <p><strong>Versión:</strong> {{ versiones_legales.POLITICA_DATOS }}<br>
+                <strong>Fecha de vigencia:</strong> [FECHA DE VIGENCIA DEBE COMPLETARSE]</p>
+
+                <p class="portal-legal-note"><strong>Importante:</strong> los campos marcados entre corchetes deben completarse con los datos reales del responsable antes de publicar esta versión como política definitiva. El contenido debe mantenerse alineado con los tratamientos efectivamente realizados.</p>
             </div>
 
-            <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
-                {% csrf_token %}
-                <input type="hidden" name="tipo" value="POLITICA_DATOS">
-                <label class="portal-legal-check">
-                    <input type="checkbox" required>
-                    <span>He leído y acepto la Política de Protección de Datos.</span>
-                </label>
-                <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
-            </form>
+            <div class="portal-legal-footer">
+                <form method="post" action="{% url 'aceptar_documento_legal' %}" style="display:flex;flex-direction:column;gap:12px;width:100%;">
+                    {% csrf_token %}
+                    <input type="hidden" name="tipo" value="POLITICA_DATOS">
+                    <label class="portal-legal-check">
+                        <input type="checkbox" name="informado" value="1" required>
+                        <span>He leído y he sido informado sobre la Política de Protección de Datos Personales.</span>
+                    </label>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button type="submit" class="portal-legal-button">Registrar que fui informado</button>
+                        <button type="button" class="portal-legal-button" style="background:#eef1f3;color:#21333e;" onclick="this.closest('.portal-legal-overlay').style.display='none';">Continuar sin registrar</button>
+                    </div>
+                </form>
+            </div>
 
             {% else %}
             <div class="portal-legal-header">
                 <div class="portal-legal-icon"><i class="fi fi-rr-document"></i></div>
                 <div>
-                    <div class="portal-kicker">Documento obligatorio</div>
+                    <div class="portal-kicker">Términos de servicio</div>
                     <h2 id="portal-legal-title">Términos y Condiciones de Uso</h2>
                     <span>Versión {{ versiones_legales.TERMINOS_USO }}</span>
                 </div>
             </div>
 
             <div class="portal-legal-body">
-                <p>Para utilizar el Portal de Clientes TotalCounts debes leer y aceptar los siguientes términos y condiciones.</p>
+                <p>Estos Términos y Condiciones regulan el acceso y uso del Portal de Clientes TotalCounts y complementan la relación contractual o de servicios existente con el usuario o cliente.</p>
 
-                <h3>1. Uso de la cuenta</h3>
-                <p>El usuario es responsable de mantener la confidencialidad de sus credenciales y de informar oportunamente cualquier uso no autorizado de su cuenta.</p>
+                <h3>1. Acceso y cuenta</h3>
+                <p>El usuario debe mantener la confidencialidad de sus credenciales, utilizar únicamente su cuenta y comunicar cualquier indicio de acceso no autorizado. Las credenciales no deben compartirse con terceros.</p>
 
-                <h3>2. Uso del portal</h3>
-                <p>El portal debe utilizarse únicamente para las finalidades relacionadas con los servicios contratados. No está permitido intentar acceder a información, cuentas o recursos que no correspondan al usuario autorizado.</p>
+                <h3>2. Uso autorizado</h3>
+                <p>El portal debe utilizarse exclusivamente para las finalidades relacionadas con los servicios contratados. Está prohibido intentar acceder, modificar, extraer o interferir con información, cuentas, sistemas o recursos para los que el usuario no tenga autorización.</p>
 
                 <h3>3. Información proporcionada</h3>
-                <p>El usuario debe procurar que la información entregada para la prestación de los servicios sea correcta, suficiente y actualizada cuando corresponda.</p>
+                <p>El usuario es responsable de proporcionar información correcta y actualizada cuando dicha información sea necesaria para la prestación de los servicios. TotalCounts podrá solicitar correcciones cuando detecte inconsistencias que afecten la operación.</p>
 
-                <h3>4. Disponibilidad y seguridad</h3>
-                <p>TotalCounts podrá realizar mantenimiento, actualizaciones o mejoras que temporalmente afecten la disponibilidad del portal. Se aplicarán medidas razonables para preservar la seguridad y continuidad del servicio.</p>
+                <h3>4. Documentos y comprobantes</h3>
+                <p>La disponibilidad, consulta o descarga de documentos dentro del portal estará sujeta a los servicios contratados, a la información efectivamente registrada y a las obligaciones legales aplicables. La información mostrada en el portal no sustituye documentos oficiales cuando la ley exija una fuente o procedimiento específico.</p>
 
-                <h3>5. Cambios</h3>
-                <p>Cuando estos términos sean modificados, se podrá solicitar al usuario una nueva aceptación de la versión vigente antes de continuar utilizando el portal.</p>
+                <h3>5. Seguridad</h3>
+                <p>El usuario no podrá ejecutar acciones destinadas a vulnerar la seguridad, alterar el funcionamiento, introducir código malicioso, realizar accesos no autorizados o afectar la disponibilidad del portal.</p>
 
-                <p class="portal-legal-note"><strong>Importante:</strong> estos términos deben mantenerse actualizados conforme a los servicios efectivamente ofrecidos por TotalCounts y a la normativa aplicable.</p>
+                <h3>6. Disponibilidad y mantenimiento</h3>
+                <p>El servicio puede presentar interrupciones por mantenimiento, actualizaciones, fallas de infraestructura, proveedores externos, conectividad, eventos de seguridad o causas fuera del control razonable de TotalCounts. Se procurará restablecer la disponibilidad en un plazo razonable.</p>
+
+                <h3>7. Propiedad intelectual</h3>
+                <p>El software, diseño, estructura, marcas, contenidos y demás elementos del portal pertenecen a sus respectivos titulares y no podrán ser utilizados, reproducidos o explotados fuera de las autorizaciones aplicables.</p>
+
+                <h3>8. Suspensión o terminación</h3>
+                <p>El acceso podrá suspenderse cuando exista una causa contractual, legal, de seguridad o de protección de la información que lo justifique. Cuando sea posible y corresponda, se informará al usuario.</p>
+
+                <h3>9. Cambios en los términos</h3>
+                <p>Los términos podrán actualizarse cuando cambien los servicios, condiciones operativas o requisitos legales. La versión vigente estará disponible para consulta y, cuando corresponda, se solicitará una nueva aceptación.</p>
+
+                <h3>10. Ley aplicable</h3>
+                <p>La relación se regirá por la legislación ecuatoriana en lo que resulte aplicable, sin perjuicio de las condiciones particulares pactadas con cada cliente.</p>
+
+                <h3>11. Contacto</h3>
+                <p><strong>Correo:</strong> [CORREO DE CONTACTO DEBE COMPLETARSE]<br>
+                <strong>Teléfono:</strong> [TELÉFONO DE CONTACTO DEBE COMPLETARSE]<br>
+                <strong>Domicilio:</strong> [DOMICILIO LEGAL DEBE COMPLETARSE]</p>
+
+                <p class="portal-legal-note"><strong>Importante:</strong> estos términos deben revisarse y completarse con las condiciones contractuales reales de TotalCounts antes de considerarlos una versión jurídica definitiva.</p>
             </div>
 
             <form method="post" action="{% url 'aceptar_documento_legal' %}" class="portal-legal-footer">
                 {% csrf_token %}
                 <input type="hidden" name="tipo" value="TERMINOS_USO">
                 <label class="portal-legal-check">
-                    <input type="checkbox" required>
+                    <input type="checkbox" name="acepto" value="1" required>
                     <span>He leído y acepto los Términos y Condiciones de Uso.</span>
                 </label>
                 <button type="submit" class="portal-legal-button">Aceptar y continuar</button>
