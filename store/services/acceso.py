@@ -60,3 +60,34 @@ def validar_acceso_cliente(cliente):
         )
 
     return True, 'ok', 'Acceso permitido.'
+
+
+def obtener_resumen_cliente(cliente):
+    """Obtiene los datos que el dashboard necesita mostrar."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                COALESCE(salcuenta, 0),
+                (
+                    SELECT COUNT(*)
+                    FROM prefactura
+                    WHERE ruc = clientes.ruccedcli
+                )
+            FROM clientes
+            WHERE ruccedcli = %s
+            """,
+            [cliente.ruccedcli],
+        )
+        row = cursor.fetchone()
+
+    if row is None:
+        return {
+            'salcuenta': 0,
+            'prefacturas_pendientes': 0,
+        }
+
+    return {
+        'salcuenta': row[0] or 0,
+        'prefacturas_pendientes': row[1] or 0,
+    }
