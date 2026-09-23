@@ -52,8 +52,6 @@
                             <th>Fecha</th>
                             <th>RUC proveedor</th>
                             <th>Proveedor</th>
-                            <th>Comprobante</th>
-                            <th>Autorización</th>
                             <th>Subtotal 0%</th>
                             <th>Subtotal 5%</th>
                             <th>Subtotal 8%</th>
@@ -74,15 +72,13 @@
                             <td>{{ row.0 }}</td>
                             <td>{{ row.1 }}</td>
                             <td class="portal-report-provider-cell">{{ row.2 }}</td>
-                            <td>{{ row.3 }}</td>
-                            <td>{{ row.4 }}</td>
-                            {% for value in row|slice:"5:" %}
+                            {% for value in row|slice:"3:" %}
                             <td class="portal-report-number">{{ value|floatformat:2 }}</td>
                             {% endfor %}
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="17" class="portal-report-empty">No existen compras para los filtros seleccionados.</td>
+                            <td colspan="14" class="portal-report-empty">No existen compras para los filtros seleccionados.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
