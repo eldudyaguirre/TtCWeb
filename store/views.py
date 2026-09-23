@@ -521,7 +521,7 @@ def _compras_where(request):
     if fecha_desde:
         try:
             datetime.strptime(fecha_desde, '%Y-%m-%d')
-            where.append("to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') >= %s::date")
+            where.append("CASE WHEN NULLIF(TRIM(fecemi::text), '') ~ '^\\d{4}-\\d{2}-\\d{2}' THEN fecemi::date ELSE to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') END >= %s::date")
             params.append(fecha_desde)
         except ValueError:
             fecha_desde = ''
@@ -529,7 +529,7 @@ def _compras_where(request):
     if fecha_hasta:
         try:
             datetime.strptime(fecha_hasta, '%Y-%m-%d')
-            where.append("to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') <= %s::date")
+            where.append("CASE WHEN NULLIF(TRIM(fecemi::text), '') ~ '^\\d{4}-\\d{2}-\\d{2}' THEN fecemi::date ELSE to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') END <= %s::date")
             params.append(fecha_hasta)
         except ValueError:
             fecha_hasta = ''
@@ -575,7 +575,7 @@ def _compras_query(where, params, limit=None, offset=None):
                 + COALESCE(montoiva15, 0)
         FROM compras
         WHERE {where}
-        ORDER BY to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') DESC, numcompra DESC
+        ORDER BY CASE WHEN NULLIF(TRIM(fecemi::text), '') ~ '^\\d{4}-\\d{2}-\\d{2}' THEN fecemi::date ELSE to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') END DESC
     """
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
