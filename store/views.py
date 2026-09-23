@@ -504,9 +504,18 @@ def _compras_where(request):
     where = []
     params = []
 
+    hoy = datetime.now().date()
+    primer_dia_mes = hoy.replace(day=1)
+
     fecha_desde = request.GET.get('fecha_desde', '').strip()
     fecha_hasta = request.GET.get('fecha_hasta', '').strip()
     proveedor = request.GET.get('proveedor', '').strip()
+
+    # Al abrir el reporte sin filtros, mostrar el mes actual hasta hoy.
+    if not fecha_desde:
+        fecha_desde = primer_dia_mes.strftime('%Y-%m-%d')
+    if not fecha_hasta:
+        fecha_hasta = hoy.strftime('%Y-%m-%d')
 
     if fecha_desde:
         try:
