@@ -533,30 +533,27 @@ def _compras_base_sql():
         SELECT
             c.feccompra,
             c.ruccedpro,
-            COALESCE(p.nomprovee, 'PROVEEDOR NO REGISTRADO'),
+            c.nomprovee,
             c.subtotcom,
             c.prcivacom,
             c.valivacom,
             c.totcompra,
             '01' AS tipcom
         FROM compras c
-        LEFT JOIN proveedores p ON p.ruccedpro = c.ruccedpro
-        WHERE COALESCE(TRIM(c.tpcomp::text), '01') IN ('01', '04')
-          AND COALESCE(TRIM(c.tpcomp::text), '01') <> '04'
+        WHERE COALESCE(TRIM(c.tpcomp::text), '01') = '01'
 
         UNION ALL
 
         SELECT
             c.feccompra,
             c.ruccedpro,
-            COALESCE(p.nomprovee, 'PROVEEDOR NO REGISTRADO'),
+            c.nomprovee,
             c.subtotcom,
             c.prcivacom,
             c.valivacom,
             c.totcompra,
             '02' AS tipcom
         FROM comprasnv c
-        LEFT JOIN proveedores p ON p.ruccedpro = c.ruccedpro
         WHERE COALESCE(TRIM(c.tpcomp::text), '02') = '02'
     """
 
