@@ -63,7 +63,6 @@ def do_signin(request):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                # Los usuarios administrativos de Django mantienen acceso al portal.
                 if user.is_staff or user.is_superuser:
                     login(request, user)
                     return redirect('portal')
@@ -436,6 +435,7 @@ def aceptar_documento_legal(request):
         confirmado = request.POST.get('acepto') == '1'
         if not confirmado:
             messages.error(request, 'Debes aceptar los Términos y Condiciones de Uso para continuar.')
+
             return redirect('portal')
 
     version = versiones[tipo]
@@ -449,7 +449,6 @@ def aceptar_documento_legal(request):
         },
     )
     return redirect('portal')
-
 
 
 COMPRAS_COLUMNS = [
@@ -538,21 +537,27 @@ def _compras_where(request):
 
 
 def _compras_base_sql():
-    # Los tipos de comprobante están en la propia tabla compras:
-    # 01 = factura, 02 = nota de venta y 04 = nota de crédito.
-    # Este reporte muestra 01 y 02; las notas de crédito (04) se excluyen.
     return """
         SELECT
             c.fecemi,
             c.ruccedprovee,
             c.nomprovee,
-            c.subtotcom,
-            c.prcivacom,
-            c.valivacom,
-            c.totcompra,
-            TRIM(c.tpcomp::text) AS tipcom
+            c.baseimpiva0,
+            c.baseimpiva5,
+            c.baseimpiva8,
+            c.baseimpiva12,
+            c.baseimpiva14,
+            c.baseimpiva15,
+            c.montoiva5,
+            c.montoiva8,
+            c.montoiva12,
+            c.montoiva14,
+            c.montoiva15,
+            c.montoice,
+            c.totbases,
+            TRIM(c.tipcom::text) AS tipcom
         FROM comprasnue c
-        WHERE TRIM(c.tpcomp::text) IN ('01', '02')
+        WHERE TRIM(c.tipcom::text) IN ('01', '02')
     """
 
 
@@ -562,17 +567,26 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             fecemi,
             ruccedprovee,
             nomprovee,
-            CASE WHEN COALESCE(prcivacom, 0) = 0 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 5 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 8 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 12 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 14 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 15 THEN COALESCE(subtotcom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 5 THEN COALESCE(valivacom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 8 THEN COALESCE(valivacom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 12 THEN COALESCE(valivacom, 0) ELSE 0 END,
-            CASE WHEN COALESCE(prcivacom, 0) = 15 THEN COALESCE(valivacom, 0) ELSE 0 END,
-            COALESCE(totcompra, 0)
+            baseimpiva0,
+            baseimpiva5,
+            baseimpiva8,
+            baseimpiva12,
+            baseimpiva14,
+            baseimpiva15,
+            montoiva5,
+            montoiva8,
+            montoiva12,
+            montoiva14,
+            montoiva15,
+            (
+                COALESCE(NULLIF(totbases, ''), '0')::numeric
+                + COALESCE(NULLIF(montoice, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+            )
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
         ORDER BY fecemi DESC
@@ -590,17 +604,25 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
 def _compras_resumen(where, params, cliente):
     sql = f"""
         SELECT
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 0 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 5 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 8 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 12 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 14 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 15 THEN subtotcom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 5 THEN valivacom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 8 THEN valivacom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 12 THEN valivacom ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 15 THEN valivacom ELSE 0 END), 0),
-            COALESCE(SUM(totcompra), 0)
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(montoiva5, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(montoiva8, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(montoiva12, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(montoiva15, ''), '0')::numeric), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(totbases, ''), '0')::numeric
+                + COALESCE(NULLIF(montoice, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+            ), 0)
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
     """
