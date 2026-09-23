@@ -5,7 +5,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from io import BytesIO
 from datetime import datetime
@@ -1251,6 +1251,68 @@ def trabajadores(request):
             status=500,
             content_type='text/plain; charset=utf-8',
         )
+
+
+@login_required
+def trabajador_detalle(request, cedula):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'error': 'No autorizado.'}, status=403)
+
+    sql = """
+        SELECT
+            cedula,
+            nombres,
+            sexo,
+            fecnac,
+            cargas,
+            direccion,
+            telefono,
+            activo,
+            fecentrada,
+            comisionsec,
+            cargo,
+            tipojornada,
+            sueldo,
+            codcomision,
+            fecsalida,
+            motivos,
+            fr,
+            xiv,
+            xiii,
+            notastra,
+            jn,
+            horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [cedula.strip()])
+        row = cursor.fetchone()
+
+    if row is None:
+        return JsonResponse({'error': 'Trabajador no encontrado.'}, status=404)
+
+    campos = [
+        'cedula', 'nombres', 'sexo', 'fecnac', 'cargas', 'direccion',
+        'telefono', 'activo', 'fecentrada', 'comisionsec', 'cargo',
+        'tipojornada', 'sueldo', 'codcomision', 'fecsalida', 'motivos',
+        'fr', 'xiv', 'xiii', 'notastra', 'jn', 'horaslab',
+    ]
+
+    def serializar(valor):
+        if hasattr(valor, 'isoformat'):
+            return valor.isoformat()
+        return valor
+
+    return JsonResponse({
+        campo: serializar(valor)
+        for campo, valor in zip(campos, row)
+    })
 
 
 @login_required
