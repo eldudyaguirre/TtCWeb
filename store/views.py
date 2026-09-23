@@ -1508,7 +1508,7 @@ def roles_pago_pdf(request):
     top = ['N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
            'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
            'I N G R E S O S', '', '', '', '', '', '',
-           'E G R E S O S', '', '', '', '']
+           'E G R E S O S', '', '', '', 'FIRMA']
     second = ['', '', '', '', '', '', 'FONDO\nDE\nRESERVA',
               'HORAS\nEXTRAS', 'DÉCIMO\nXIV', 'DÉCIMO\nXIII',
               'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
