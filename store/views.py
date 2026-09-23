@@ -599,48 +599,48 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             CONCAT(numest, '-', numptoemi, '-', numsec) AS numfactura,
             numaut,
             (
-                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
             ) AS bases_sin_iva,
             (
-                COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
             ) AS bases_con_iva,
             (
-                COALESCE(NULLIF(montoiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
             ) AS iva,
             (
-                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
             ) AS total,
             (
-                COALESCE(NULLIF(retencioniva10, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva20, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva30, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva70, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva100, ''), '0')::numeric
+                COALESCE(NULLIF(retencioniva10::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva20::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva30::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva70::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva100::text, ''), '0')::numeric
             ) AS retiva,
             codret,
-            COALESCE(NULLIF(valret, ''), '0')::numeric AS retrenta,
+            COALESCE(NULLIF(valret::text, ''), '0')::numeric AS retrenta,
             CONCAT(numestret, '-', numptoemiret, '-', numsecret) AS numret
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
@@ -660,47 +660,47 @@ def _compras_resumen(where, params, cliente):
     sql = f"""
         SELECT
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(montoiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(retencioniva10, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva20, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva30, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva70, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva100, ''), '0')::numeric
+                COALESCE(NULLIF(retencioniva10::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva20::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva30::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva70::text, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva100::text, ''), '0')::numeric
             ), 0),
-            COALESCE(SUM(COALESCE(NULLIF(valret, ''), '0')::numeric), 0)
+            COALESCE(SUM(COALESCE(NULLIF(valret::text, ''), '0')::numeric), 0)
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
     """
