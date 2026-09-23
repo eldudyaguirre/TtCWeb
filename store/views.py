@@ -2749,6 +2749,33 @@ def nota_credito_buscar_sustento(request):
 
 
 
+
+@login_required
+def retencion_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+    return render(request, 'retencion-emitir.html', {
+        'cliente': cliente,
+        'establecimientos': _factura_contexto(cliente),
+        'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+        'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+    })
+
+
+@login_required
+def liquidacion_compra_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+    return render(request, 'liquidacion-compra-emitir.html', {
+        'cliente': cliente,
+        'establecimientos': _factura_contexto(cliente),
+        'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+        'formas_pago': FACTURA_FORMAS_PAGO,
+        'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+    })
+
 @login_required
 def guia_remision_emitir(request):
     cliente = _cliente_portal(request)
