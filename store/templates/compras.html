@@ -74,13 +74,13 @@
             </form>
 
             <div class="portal-report-export">
-                <a class="portal-export-btn portal-export-pdf"
+                <a style="color:#ffffff !important; font-family:inherit !important; font-size:14px !important; font-weight:600 !important; text-decoration:none !important;" class="portal-export-btn portal-export-pdf"
                    href="{% url 'compras_pdf' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}">
-                    <i class="fi fi-rr-file-pdf"></i> PDF
+                    <i style="color:#ffffff !important;" class="fi fi-rr-file-pdf"></i> PDF
                 </a>
-                <a class="portal-export-btn portal-export-excel"
+                <a style="color:#ffffff !important; font-family:inherit !important; font-size:14px !important; font-weight:600 !important; text-decoration:none !important;" class="portal-export-btn portal-export-excel"
                    href="{% url 'compras_excel' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}">
-                    <i class="fi fi-rr-file-excel"></i> Excel
+                    <i style="color:#ffffff !important;" class="fi fi-rr-file-excel"></i> Excel
                 </a>
             </div>
 
