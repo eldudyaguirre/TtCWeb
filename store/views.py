@@ -3097,6 +3097,7 @@ def roles_pago(request):
         'anios': anios,
         'meses': meses,
         'total_registros': len(filas),
+        'columns': ROLES_PAGO_COLUMNS,
     })
 
 
