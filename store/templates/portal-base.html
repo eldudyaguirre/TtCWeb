@@ -55,6 +55,9 @@
                         <a href="{% url 'ingresos_notas_credito' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}">Notas de Crédito</a>
                         <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
                         <a href="{% url 'listado_clientes' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'listado_clientes' %}active{% endif %}">Listado Clientes</a>
+        <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
+        <a href="{% url 'productos_ice' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'productos_ice' %}active{% endif %}">Productos ICE</a>
+        <a href="{% url 'registros_ice' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'registros_ice' %}active{% endif %}">Registros ICE</a>
                     </div>
                 </div>
 
