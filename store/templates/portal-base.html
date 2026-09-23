@@ -118,14 +118,14 @@
             <header class="portal-topbar">
                 <div class="portal-topbar-inner">
                     <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
-    <i class="fi fi-rr-menu-burger"></i>
-</button>
+                        <i class="fi fi-rr-menu-burger"></i>
+                    </button>
                     <div class="portal-mobile-brand">
                         <a href="{% url 'portal' %}">
                             <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-mobile-logo">
                         </a>
                     </div>
-
+                    {% block portal_page_heading %}{% endblock %}
                     {% if cliente %}
                     <div class="portal-user">
                         <div class="portal-user-data">
