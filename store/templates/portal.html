@@ -2,27 +2,27 @@
 
 {% block portal_content %}
 <main class="portal-content dashboard-page"><div class="container-fluid">
-{% if not es_administrador %}
-<section class="dashboard-header"><div><div class="portal-section-kicker">Panel principal</div><h1>Dashboard</h1><p>Resumen de compras y ventas del período fiscal seleccionado.</p></div>
-<form method="get" class="dashboard-year-form"><label for="dashboard-year">Período fiscal</label><select id="dashboard-year" name="anio" onchange="this.form.submit()">
-{% for anio_item in anios_dashboard %}<option value="{{ anio_item }}" {% if estadisticas.anio == anio_item %}selected{% endif %}>{{ anio_item }}</option>{% endfor %}
-</select></form></section>
+<section class="portal-summary">
+<div class="portal-stat"><div class="portal-stat-icon"><i class="fi fi-rr-dollar"></i></div><div><div class="portal-stat-label">Saldo pendiente</div><div class="portal-stat-value">{% if cliente %}$ {{ resumen.salcuenta|floatformat:2 }}{% else %}—{% endif %}</div></div></div>
+<div class="portal-stat"><div class="portal-stat-icon"><i class="fi fi-rr-document"></i></div><div><div class="portal-stat-label">Servicios pendientes de facturación</div><div class="portal-stat-value">{% if cliente %}{{ resumen.prefacturas_pendientes }}{% else %}—{% endif %}</div></div></div>
+</section>
+{% if es_administrador %}
+<section class="portal-welcome"><div class="portal-kicker">Administración</div><h1>Bienvenido a TotalCounts</h1><p>Sesión administrativa iniciada como <strong>{{ request.user.get_username }}</strong>.</p></section>
+{% else %}
+<section class="portal-welcome"><div class="portal-kicker">Portal de clientes</div><h1>Bienvenido, {{ cliente.nomclient }}</h1><p>Desde aquí puedes consultar tus documentos e información registrada en TotalCounts.</p></section>
+<section class="dashboard-header"><div><div class="portal-section-kicker">Panel principal</div><h1>Dashboard</h1><p>Resumen de compras y ventas del período fiscal seleccionado.</p></div><form method="get" class="dashboard-year-form"><label for="dashboard-year">Período fiscal</label><select id="dashboard-year" name="anio" onchange="this.form.submit()">{% for anio_item in anios_dashboard %}<option value="{{ anio_item }}" {% if estadisticas.anio == anio_item %}selected{% endif %}>{{ anio_item }}</option>{% endfor %}</select></form></section>
 <section class="dashboard-kpis">
 <div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-shopping-cart"></i></div><div><span>Total compras</span><strong>$ {{ estadisticas.compras_total|floatformat:2 }}</strong><small>{{ estadisticas.compras_documentos }} documentos</small></div></div>
 <div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-money-bill-wave"></i></div><div><span>Total ventas</span><strong>$ {{ estadisticas.ventas_total|floatformat:2 }}</strong><small>{{ estadisticas.ventas_documentos }} documentos</small></div></div>
-<div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-shopping-bag"></i></div><div><span>Promedio mensual compras</span><strong>$ {{ estadisticas.compras_total|floatformat:2 }}</strong><small>Acumulado del período</small></div></div>
-<div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-chart-histogram"></i></div><div><span>Promedio mensual ventas</span><strong>$ {{ estadisticas.ventas_total|floatformat:2 }}</strong><small>Acumulado del período</small></div></div>
+<div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-shopping-bag"></i></div><div><span>Acumulado compras</span><strong>$ {{ estadisticas.compras_total|floatformat:2 }}</strong><small>Período seleccionado</small></div></div>
+<div class="dashboard-kpi"><div class="dashboard-kpi-icon"><i class="fi fi-rr-chart-histogram"></i></div><div><span>Acumulado ventas</span><strong>$ {{ estadisticas.ventas_total|floatformat:2 }}</strong><small>Período seleccionado</small></div></div>
 </section>
 <section class="dashboard-chart-grid">
-<article class="dashboard-card"><div class="dashboard-card-header"><div><span class="dashboard-card-kicker">Gastos</span><h2>Compras</h2></div><span class="dashboard-card-total">$ {{ estadisticas.compras_total|floatformat:2 }}</span></div>
-<div class="dashboard-chart">{% for item in estadisticas.compras %}<div class="dashboard-bar-column"><div class="dashboard-bar-value">{% if item.total %}${{ item.total|floatformat:0 }}{% endif %}</div><div class="dashboard-bar-track"><div class="dashboard-bar dashboard-bar-purchase" data-value="{{ item.total }}"></div></div><span>{{ item.mes }}</span></div>{% endfor %}</div>
-<div class="dashboard-card-footer"><span>{{ estadisticas.compras_documentos }} documentos registrados</span><a href="{% url 'compras' %}">Ver compras →</a></div></article>
-<article class="dashboard-card"><div class="dashboard-card-header"><div><span class="dashboard-card-kicker">Ingresos</span><h2>Ventas</h2></div><span class="dashboard-card-total">$ {{ estadisticas.ventas_total|floatformat:2 }}</span></div>
-<div class="dashboard-chart">{% for item in estadisticas.ventas %}<div class="dashboard-bar-column"><div class="dashboard-bar-value">{% if item.total %}${{ item.total|floatformat:0 }}{% endif %}</div><div class="dashboard-bar-track"><div class="dashboard-bar dashboard-bar-sale" data-value="{{ item.total }}"></div></div><span>{{ forloop.counter }}</span></div>{% endfor %}</div>
-<div class="dashboard-card-footer"><span>{{ estadisticas.ventas_documentos }} documentos registrados</span><a href="{% url 'ventas' %}">Ver ventas →</a></div></article>
+<article class="dashboard-card"><div class="dashboard-card-header"><div><span class="dashboard-card-kicker">Gastos</span><h2>Compras</h2></div><span class="dashboard-card-total">$ {{ estadisticas.compras_total|floatformat:2 }}</span></div><div class="dashboard-chart">{% for item in estadisticas.compras %}<div class="dashboard-bar-column"><div class="dashboard-bar-value">{% if item.total %}$ {{ item.total|floatformat:0 }}{% endif %}</div><div class="dashboard-bar-track"><div class="dashboard-bar dashboard-bar-purchase" data-value="{{ item.total }}"></div></div><span>{{ item.mes }}</span></div>{% endfor %}</div><div class="dashboard-card-footer"><span>{{ estadisticas.compras_documentos }} documentos registrados</span><a href="{% url "compras" %}">Ver compras →</a></div></article>
+<article class="dashboard-card"><div class="dashboard-card-header"><div><span class="dashboard-card-kicker">Ingresos</span><h2>Ventas</h2></div><span class="dashboard-card-total">$ {{ estadisticas.ventas_total|floatformat:2 }}</span></div><div class="dashboard-chart">{% for item in estadisticas.ventas %}<div class="dashboard-bar-column"><div class="dashboard-bar-value">{% if item.total %}$ {{ item.total|floatformat:0 }}{% endif %}</div><div class="dashboard-bar-track"><div class="dashboard-bar dashboard-bar-sale" data-value="{{ item.total }}"></div></div><span>{{ item.mes }}</span></div>{% endfor %}</div><div class="dashboard-card-footer"><span>{{ estadisticas.ventas_documentos }} documentos registrados</span><a href="{% url "ventas" %}">Ver ventas →</a></div></article>
 </section>
 <section class="dashboard-comparison"><div><span class="dashboard-card-kicker">Período fiscal {{ estadisticas.anio }}</span><h2>Resumen del período</h2></div><div class="dashboard-comparison-values"><div><span>Compras</span><strong>$ {{ estadisticas.compras_total|floatformat:2 }}</strong></div><div><span>Ventas</span><strong>$ {{ estadisticas.ventas_total|floatformat:2 }}</strong></div></div></section>
-{% else %}<section class="portal-welcome"><div class="portal-kicker">Administración</div><h1>Bienvenido a TotalCounts</h1><p>Sesión administrativa iniciada como <strong>{{ request.user.get_username }}</strong>.</p></section>{% endif %}
+{% endif %}
 </div></main>
 {% endblock %}
 
