@@ -3,7 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from django.db import IntegrityError, connection, transaction
+from django.conf import settings
+from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from io import BytesIO
@@ -486,6 +487,16 @@ def _cliente_portal(request):
     return asignacion.cliente if permitido else None
 
 
+def _cliente_db(cliente):
+    """Obtiene una conexión PostgreSQL a la base de datos del cliente."""
+    alias = f"cliente_{cliente.ruccedcli}"
+    if alias not in connections.databases:
+        base = settings.DATABASES['default'].copy()
+        base['NAME'] = cliente.ruccedcli
+        connections.databases[alias] = base
+    return connections[alias]
+
+
 def _compras_where(request):
     cliente = _cliente_portal(request)
     if cliente is None:
@@ -545,7 +556,7 @@ def _compras_base_sql():
     """
 
 
-def _compras_query(where, params, limit=None, offset=None):
+def _compras_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
             feccompra,
@@ -571,12 +582,12 @@ def _compras_query(where, params, limit=None, offset=None):
         sql += " LIMIT %s OFFSET %s"
         params = [*params, limit, offset or 0]
 
-    with connection.cursor() as cursor:
+    with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
         return cursor.fetchall()
 
 
-def _compras_resumen(where, params):
+def _compras_resumen(where, params, cliente):
     sql = f"""
         SELECT
             COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 0 THEN subtotcom ELSE 0 END), 0),
@@ -594,7 +605,7 @@ def _compras_resumen(where, params):
         WHERE {where}
     """
 
-    with connection.cursor() as cursor:
+    with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
         row = cursor.fetchone()
 
@@ -610,8 +621,9 @@ def _compras_datos_exportacion(request):
     if where is None:
         return None, [], None, None
 
-    filas = _compras_query(where, params)
-    resumen = _compras_resumen(where, params)
+    cliente = filtros['cliente']
+    filas = _compras_query(where, params, cliente)
+    resumen = _compras_resumen(where, params, cliente)
     return filtros, filas, resumen, where
 
 
@@ -631,12 +643,12 @@ def compras(request):
         where, params, _ = _compras_where(request)
 
         count_sql = f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where}"
-        with connection.cursor() as cursor:
+        with _cliente_db(filtros['cliente']).cursor() as cursor:
             cursor.execute(count_sql, params)
             total_registros = cursor.fetchone()[0]
 
         offset = (pagina - 1) * por_pagina
-        filas = _compras_query(where, params, por_pagina, offset)
+        filas = _compras_query(where, params, filtros['cliente'], por_pagina, offset)
         total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
 
         return render(request, 'compras.html', {
