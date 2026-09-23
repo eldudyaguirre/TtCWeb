@@ -351,10 +351,22 @@ def cambiar_contrasena(request):
         )
         return redirect('cambiar_contrasena')
 
+    context = {'form': form}
+
+    if not request.user.is_staff and not request.user.is_superuser:
+        asignacion = (
+            UsuarioCliente.objects
+            .filter(usuario=request.user, activo=True)
+            .select_related('cliente')
+            .first()
+        )
+        if asignacion is not None:
+            context['cliente'] = asignacion.cliente
+
     return render(
         request,
         'cambiar-contrasena.html',
-        {'form': form},
+        context,
     )
 
 
