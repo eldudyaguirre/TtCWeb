@@ -512,7 +512,7 @@ def _compras_where(request):
     if fecha_desde:
         try:
             datetime.strptime(fecha_desde, '%Y-%m-%d')
-            where.append("feccompra >= %s::date")
+            where.append("fecemi >= %s::date")
             params.append(fecha_desde)
         except ValueError:
             fecha_desde = ''
@@ -520,7 +520,7 @@ def _compras_where(request):
     if fecha_hasta:
         try:
             datetime.strptime(fecha_hasta, '%Y-%m-%d')
-            where.append("feccompra < (%s::date + INTERVAL '1 day')")
+            where.append("fecemi < (%s::date + INTERVAL '1 day')")
             params.append(fecha_hasta)
         except ValueError:
             fecha_hasta = ''
@@ -543,7 +543,7 @@ def _compras_base_sql():
     # Este reporte muestra 01 y 02; las notas de crédito (04) se excluyen.
     return """
         SELECT
-            c.feccompra,
+            c.fecemi,
             c.ruccedpro,
             c.nomprovee,
             c.subtotcom,
@@ -559,7 +559,7 @@ def _compras_base_sql():
 def _compras_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
-            feccompra,
+            fecemi,
             ruccedpro,
             nomprovee,
             CASE WHEN COALESCE(prcivacom, 0) = 0 THEN COALESCE(subtotcom, 0) ELSE 0 END,
@@ -575,7 +575,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             COALESCE(totcompra, 0)
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
-        ORDER BY feccompra DESC
+        ORDER BY fecemi DESC
     """
 
     if limit is not None:
