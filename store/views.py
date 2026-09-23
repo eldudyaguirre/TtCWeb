@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from io import BytesIO
