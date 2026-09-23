@@ -1527,12 +1527,14 @@ def roles_pago_pdf(request):
         Paragraph(x.replace('\n', '<br/>'), encabezado_grupo)
         for x in top[:-1]
     ]
-    top_cells.append(Paragraph('<b>FIRMA</b>', firma_encabezado))
+    # FIRMA se deja como texto simple para evitar que ReportLab lo oculte
+    # al combinar las celdas del encabezado.
+    top_cells.append('FIRMA')
     second_cells = [
         Paragraph(x.replace('\n', '<br/>'), encabezado) if x else ''
         for x in second
     ]
-    second_cells[-1] = Paragraph('<b>FIRMA</b>', firma_encabezado)
+    second_cells[-1] = ''
 
     data = [top_cells, second_cells]
 
@@ -1598,6 +1600,9 @@ def roles_pago_pdf(request):
         ('SPAN', (18, 0), (18, 1)),
         ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
         ('ALIGN', (18, 0), (18, 1), 'CENTER'),
+        ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (18, 0), (18, 1), 7.5),
+        ('TEXTCOLOR', (18, 0), (18, 1), colors.black),
         ('FONTNAME', (0, 0), (-1, 1), 'Helvetica-Bold'),
         ('BACKGROUND', (6, 0), (12, 0), colors.white),
         ('BACKGROUND', (13, 0), (17, 0), colors.white),
