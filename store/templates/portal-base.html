@@ -99,8 +99,8 @@
                         <a href="{% url 'factura_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'factura_emitir' %}active{% endif %}">Facturas</a>
                         <a href="/portal/emitir/nota-credito/" class="portal-submenu-item {% if request.resolver_match.url_name == 'nota_credito_emitir' %}active{% endif %}">Notas de Crédito</a>
                         <a href="{% url 'guia_remision_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'guia_remision_emitir' %}active{% endif %}">Guías de Remisión</a>
-                        <a href="/404.html" class="portal-submenu-item">Comprobantes de Retención</a>
-                        <a href="/404.html" class="portal-submenu-item">Liquidación de Compras</a>
+                        <a href="{% url 'retencion_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'retencion_emitir' %}active{% endif %}">Comprobantes de Retención</a>
+                        <a href="{% url 'liquidacion_compra_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'liquidacion_compra_emitir' %}active{% endif %}">Liquidación de Compras</a>
                     </div>
                 </div>
 
