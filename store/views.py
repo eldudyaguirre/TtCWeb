@@ -1409,9 +1409,9 @@ def roles_pago(request):
 @login_required
 def roles_pago_pdf(request):
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import landscape, A3
+    from reportlab.lib.pagesizes import landscape, A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
     filtros, filas, _, _ = _roles_pago_datos(request)
@@ -1420,50 +1420,193 @@ def roles_pago_pdf(request):
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=landscape(A3),
-        leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20,
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=14,
+        rightMargin=14,
+        topMargin=18,
+        bottomMargin=18,
     )
+
     styles = getSampleStyleSheet()
-    titulo = ParagraphStyle('RolesPagoTitulo', parent=styles['Title'], fontName='Helvetica-Bold',
-                            fontSize=14, leading=16, alignment=TA_CENTER, spaceAfter=4)
-    subtitulo = ParagraphStyle('RolesPagoSubtitulo', parent=styles['Normal'], fontName='Helvetica-Bold',
-                               fontSize=9, leading=11, alignment=TA_CENTER)
-    tabla = ParagraphStyle('RolesPagoTabla', parent=styles['Normal'], fontName='Helvetica',
-                           fontSize=6, leading=7)
-    encabezado = ParagraphStyle('RolesPagoEncabezado', parent=tabla, fontName='Helvetica-Bold',
-                                textColor=colors.white, alignment=TA_CENTER)
+    encabezado = ParagraphStyle(
+        'RolEncabezado',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=7.2,
+        leading=8,
+        alignment=TA_CENTER,
+    )
+    encabezado_grupo = ParagraphStyle(
+        'RolGrupo',
+        parent=encabezado,
+        fontSize=8,
+        leading=9,
+    )
+    dato = ParagraphStyle(
+        'RolDato',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=6.2,
+        leading=7,
+    )
+    dato_centro = ParagraphStyle(
+        'RolDatoCentro',
+        parent=dato,
+        alignment=TA_CENTER,
+    )
+    dato_derecha = ParagraphStyle(
+        'RolDatoDerecha',
+        parent=dato,
+        alignment=TA_RIGHT,
+    )
+    titulo = ParagraphStyle(
+        'RolTitulo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=11,
+    )
+    encabezado_info = ParagraphStyle(
+        'RolInfo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8,
+        leading=10,
+    )
+
+    cliente = filtros['cliente']
+    mes_nombre = filtros['mes_nombre'].upper()
+    periodo = (
+        f'DEL 1 AL 31 DE {mes_nombre} DEL {filtros["anio"]}'
+        if filtros['mes']
+        else f'PERÍODO FISCAL {filtros["anio"]}'
+    )
 
     elements = [
-        Paragraph('ROLES DE PAGO', titulo),
-        Paragraph(f'{filtros["mes_nombre"]} {filtros["anio"]}', subtitulo),
-        Paragraph(f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}', subtitulo),
-        Spacer(1, 10),
+        Paragraph(str(cliente.nomclient).upper(), titulo),
+        Paragraph(f'RUC&nbsp;&nbsp;&nbsp;&nbsp;{cliente.ruccedcli}', encabezado_info),
+        Paragraph('RAMA DE ACTIVIDAD: ACTIVIDADES DE CONTABILIDAD', encabezado_info),
+        Paragraph(f'ROL DE PAGOS CORRESPONDIENTE A: {periodo}', encabezado_info),
+        Spacer(1, 8),
     ]
 
-    data = [[Paragraph(label, encabezado) for _, label in ROLES_PAGO_COLUMNS]]
-    for row in filas:
-        data.append([Paragraph(str(value if value is not None else ''), tabla) for value in row])
+    # El formato sigue el rol entregado como referencia: encabezados agrupados
+    # para INGRESOS y EGRESOS, con una columna de firma al final.
+    headers = [
+        'N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
+        'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
+        'FONDO\nDE\nRESERVA', 'HORAS\nEXTRAS', 'DÉCIMO\nXIV',
+        'DÉCIMO\nXIII', 'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
+        'INGRESOS\nCON\nAPORTE\nIESS',
+        'APORTE\nIESS\n9.45%', 'DÍAS NO\nLABORADOS\nPRÉSTAMOS\nANTICIPOS',
+        'ACUMULACIÓN\nFONDOS DE\nRESERVA', 'TOTAL\nEGRESOS',
+        'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA',
+    ]
 
-    widths = [35, 125, 90, 65, 45, 70, 70, 60, 60, 60, 65, 55, 70, 80, 65, 75, 65, 70, 75]
-    table = Table(data, repeatRows=1, colWidths=widths)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
-        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-        ('ALIGN', (1, 1), (2, -1), 'LEFT'),
-        ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),
+    # Dos filas de cabecera, como en el documento de referencia.
+    top = ['N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
+           'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
+           'I N G R E S O S', '', '', '', '', '', '',
+           'E G R E S O S', '', '', '', '']
+    second = ['', '', '', '', '', '', 'FONDO\nDE\nRESERVA',
+              'HORAS\nEXTRAS', 'DÉCIMO\nXIV', 'DÉCIMO\nXIII',
+              'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
+              'INGRESOS\nCON\nAPORTE\nIESS', 'APORTE\nIESS\n9.45%',
+              'DÍAS NO\nLABORADOS\nPRÉSTAMOS\nANTICIPOS',
+              'ACUMULACIÓN\nFONDOS DE\nRESERVA', 'TOTAL\nEGRESOS',
+              'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA']
+
+    data = [
+        [Paragraph(x.replace('\n', '<br/>'), encabezado_grupo) for x in top],
+        [Paragraph(x.replace('\n', '<br/>'), encabezado) if x else '' for x in second],
+    ]
+
+    def money(value):
+        if value is None or value == '':
+            return ''
+        try:
+            return f'{float(value):,.2f}'
+        except (TypeError, ValueError):
+            return str(value)
+
+    for row in filas:
+        # rolgeneral: numero, nombres, cargo, salario, dl, arecibir, fr, he,
+        # xiv, xiii, comisiones, bonos, toting, ingconaporte, aporte,
+        # dnlprestamos, fracu, totegr, liquido
+        valores = [
+            str(row[0] or ''),
+            str(row[1] or ''),
+            str(row[2] or ''),
+            money(row[3]),
+            str(row[4] if row[4] is not None else ''),
+            money(row[5]),
+            money(row[6]),
+            money(row[7]),
+            money(row[8]),
+            money(row[9]),
+            money((row[10] or 0) + (row[11] or 0)),
+            money(row[12]),
+            money(row[13]),
+            money(row[14]),
+            money(row[15]),
+            money(row[16]),
+            money(row[17]),
+            money(row[18]),
+            '',
+        ]
+        data.append([
+            Paragraph(valor, dato_centro if i in (0, 4) else dato_derecha if i >= 3 else dato)
+            for i, valor in enumerate(valores)
+        ])
+
+    col_widths = [20, 104, 58, 48, 31, 47, 43, 38, 38, 38, 48, 43, 48, 43, 58, 48, 45, 48, 61]
+
+    table = Table(
+        data,
+        colWidths=col_widths,
+        repeatRows=2,
+        hAlign='LEFT',
+    )
+
+    style = [
+        ('GRID', (0, 0), (-1, -1), 0.55, colors.black),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ]))
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('SPAN', (6, 0), (12, 0)),
+        ('SPAN', (13, 0), (17, 0)),
+        ('SPAN', (0, 0), (0, 1)),
+        ('SPAN', (1, 0), (1, 1)),
+        ('SPAN', (2, 0), (2, 1)),
+        ('SPAN', (3, 0), (3, 1)),
+        ('SPAN', (4, 0), (4, 1)),
+        ('SPAN', (5, 0), (5, 1)),
+        ('SPAN', (18, 0), (18, 1)),
+        ('FONTNAME', (0, 0), (-1, 1), 'Helvetica-Bold'),
+        ('BACKGROUND', (6, 0), (12, 0), colors.white),
+        ('BACKGROUND', (13, 0), (17, 0), colors.white),
+        ('BACKGROUND', (0, 0), (-1, 1), colors.white),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('ALIGN', (0, 2), (0, -1), 'CENTER'),
+        ('ALIGN', (3, 2), (-2, -1), 'RIGHT'),
+        ('ALIGN', (1, 2), (2, -1), 'LEFT'),
+        ('ALIGN', (18, 2), (18, -1), 'CENTER'),
+    ]
+
+    table.setStyle(TableStyle(style))
     elements.append(table)
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f'Total de trabajadores: {len(filas)}', tabla))
+
+    # El documento de referencia no incluye una fila de totales al pie.
     doc.build(elements)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="roles_pago_{filtros["anio"]}.pdf"'
+    response['Content-Disposition'] = (
+        f'attachment; filename="rol_pago_{filtros["mes"] or "periodo"}_{filtros["anio"]}.pdf"'
+    )
     return response
-
 
 @login_required
 def roles_pago_excel(request):
