@@ -1443,6 +1443,12 @@ def roles_pago_pdf(request):
         fontSize=6.5,
         leading=7,
     )
+    firma_encabezado = ParagraphStyle(
+        'RolFirma',
+        parent=encabezado,
+        fontSize=7.5,
+        leading=8.5,
+    )
     dato = ParagraphStyle(
         'RolDato',
         parent=styles['Normal'],
@@ -1518,7 +1524,7 @@ def roles_pago_pdf(request):
               'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA']
 
     data = [
-        [Paragraph(x.replace('\n', '<br/>'), encabezado_grupo) for x in top],
+        [Paragraph(x.replace('\n', '<br/>'), firma_encabezado if x == 'FIRMA' else encabezado_grupo) for x in top],
         [Paragraph(x.replace('\n', '<br/>'), encabezado) if x else '' for x in second],
     ]
 
@@ -1560,7 +1566,7 @@ def roles_pago_pdf(request):
             for i, valor in enumerate(valores)
         ])
 
-    col_widths = [17, 92, 50, 43, 28, 42, 38, 34, 34, 34, 42, 38, 43, 38, 50, 42, 39, 43, 54]
+    col_widths = [16, 78, 45, 40, 27, 40, 36, 32, 32, 32, 40, 36, 40, 36, 47, 39, 36, 40, 100]
 
     table = Table(
         data,
@@ -1582,6 +1588,8 @@ def roles_pago_pdf(request):
         ('SPAN', (4, 0), (4, 1)),
         ('SPAN', (5, 0), (5, 1)),
         ('SPAN', (18, 0), (18, 1)),
+        ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
+        ('ALIGN', (18, 0), (18, 1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 1), 'Helvetica-Bold'),
         ('BACKGROUND', (6, 0), (12, 0), colors.white),
         ('BACKGROUND', (13, 0), (17, 0), colors.white),
