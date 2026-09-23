@@ -39,6 +39,8 @@
                     <div class="portal-submenu">
                         <a href="{% url 'compras' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'compras' %}active{% endif %}">Compras</a>
                         <a href="{% url 'notas_credito' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'notas_credito' %}active{% endif %}">Notas de Crédito</a>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
+                        <a href="/404.html" class="portal-submenu-item">Listado Proveedores</a>
                     </div>
                 </div>
 
