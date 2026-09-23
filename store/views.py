@@ -806,19 +806,22 @@ def _proveedores_datos(request):
 
     sql = """
         SELECT
-            ROW_NUMBER() OVER (ORDER BY nomprovee, ruccedprovee) AS numero,
-            ruccedprovee AS ruc,
-            nomprovee AS proveedor
+            ROW_NUMBER() OVER (ORDER BY proveedor, ruc) AS numero,
+            ruc,
+            proveedor
         FROM (
-            SELECT
-                TRIM(ruccedprovee::text) AS ruccedprovee,
-                TRIM(nomprovee::text) AS nomprovee
+            SELECT DISTINCT ON (TRIM(ruccedprovee::text))
+                TRIM(ruccedprovee::text) AS ruc,
+                TRIM(nomprovee::text) AS proveedor
             FROM comprasnue
             WHERE EXTRACT(YEAR FROM fecemi::date)::integer = %s
               AND COALESCE(TRIM(ruccedprovee::text), '') <> ''
-            GROUP BY TRIM(ruccedprovee::text), TRIM(nomprovee::text)
+            ORDER BY
+                TRIM(ruccedprovee::text),
+                fecemi DESC NULLS LAST,
+                TRIM(nomprovee::text)
         ) proveedores
-        ORDER BY nomprovee, ruccedprovee
+        ORDER BY proveedor, ruc
     """
     with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, [anio])
