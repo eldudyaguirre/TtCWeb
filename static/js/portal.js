@@ -61,26 +61,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        // Los enlaces del submenú son navegación normal.
+        // No interceptamos el click: Django debe recibir la URL directamente.
         submenuItems.forEach(function (item) {
-            item.addEventListener('click', function (event) {
-                const href = item.getAttribute('href');
-
-                if (href && href !== '#') {
+            item.addEventListener('click', function () {
+                if (item.getAttribute('href') && item.getAttribute('href') !== '#') {
                     clearSelection();
                     item.classList.add('active');
                     toggle.classList.add('active');
                     if (window.innerWidth <= 767) closeMobileMenu();
-                    window.location.href = href;
-                    return;
                 }
-
-                event.preventDefault();
-                clearSelection();
-                item.classList.add('active');
-                toggle.classList.add('active');
-                group.classList.add('open');
-                toggle.setAttribute('aria-expanded', 'true');
-                if (window.innerWidth <= 767) closeMobileMenu();
             });
         });
     });
