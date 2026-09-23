@@ -90,7 +90,7 @@
                         {% for row in filas %}
                         <tr>
                             {% for value in row %}
-                            <td>{% if forloop.counter >= 4 %}{{ value|floatformat:2 }}{% else %}{{ value|default:"" }}{% endif %}</td>
+                            <td>{% if forloop.counter == 5 %}{{ value|default:"" }}{% elif forloop.counter >= 4 %}{{ value|floatformat:2 }}{% else %}{{ value|default:"" }}{% endif %}</td>
                             {% endfor %}
                         </tr>
                         {% empty %}
