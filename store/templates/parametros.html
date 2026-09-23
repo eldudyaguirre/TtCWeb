@@ -1,123 +1,16 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Parámetros | TotalCounts</title>
-    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/default.css' %}">
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922y">
-</head>
-<body class="portal-shell">
-<div class="portal-layout">
-    <aside class="portal-sidebar">
-        <div class="portal-sidebar-brand">
-            <a href="{% url 'portal' %}" class="portal-brand-link">
-                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
-            </a>
-        </div>
+{% extends "portal-base.html" %}
 
-        <nav class="portal-menu" aria-label="Menú principal">
-            <a href="{% url 'portal' %}" class="portal-menu-item" data-menu-link>
-                <i class="fi fi-rr-home portal-menu-icon"></i><span>Inicio</span>
-            </a>
-            <div class="portal-menu-group">
-                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
-                    <i class="fi fi-rr-shopping-cart portal-menu-icon"></i><span>Gastos</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="#" class="portal-submenu-item">Compras</a>
-                    <a href="#" class="portal-submenu-item">Notas de Crédito</a>
-                </div>
-            </div>
-            <div class="portal-menu-group">
-                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
-                    <i class="fi fi-rr-money-bill-wave portal-menu-icon"></i><span>Ingresos</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="#" class="portal-submenu-item">Facturador</a>
-                    <a href="#" class="portal-submenu-item">Facturas</a>
-                    <a href="#" class="portal-submenu-item">Notas de Crédito</a>
-                    <a href="#" class="portal-submenu-item">Retenciones</a>
-                </div>
-            </div>
-            <div class="portal-menu-group">
-                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
-                    <i class="fi fi-rr-building portal-menu-icon"></i><span>SRI</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="#" class="portal-submenu-item">Declaraciones</a>
-                    <a href="#" class="portal-submenu-item">ATS</a>
-                    <a href="#" class="portal-submenu-item">ICE</a>
-                </div>
-            </div>
-            <div class="portal-menu-group">
-                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
-                    <i class="fi fi-rr-chart-histogram portal-menu-icon"></i><span>Reportes</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="#" class="portal-submenu-item">Compras</a>
-                    <a href="#" class="portal-submenu-item">Ventas</a>
-                </div>
-            </div>
-            <div class="portal-menu-group">
-                <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
-                    <i class="fi fi-rr-users portal-menu-icon"></i><span>Laboral</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="#" class="portal-submenu-item">Trabajadores</a>
-                    <a href="#" class="portal-submenu-item">Roles de Pago</a>
-                </div>
-            </div>
-            <div class="portal-menu-group open">
-                <button type="button" class="portal-menu-item portal-menu-toggle active" aria-expanded="true">
-                    <i class="fi fi-rr-settings portal-menu-icon"></i><span>Configuración</span>
-                    <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
-                </button>
-                <div class="portal-submenu">
-                    <a href="{% url 'mi_empresa' %}" class="portal-submenu-item">Mi empresa</a>
-                    <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item">Cambiar contraseña</a>
-                    <a href="{% url 'parametros' %}" class="portal-submenu-item active">Parámetros</a>
-                </div>
-            </div>
-        </nav>
+{% block title %}Parámetros | TotalCounts{% endblock %}
 
-        <div class="portal-sidebar-bottom">
-            <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
-                <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i><span>Cerrar sesión</span>
-            </a>
-        </div>
-    </aside>
+{% block portal_page_heading %}
+<a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
+    <i class="fi fi-rr-arrow-left"></i>
+</a>
+<div class="portal-page-title">Parámetros</div>
+{% endblock %}
 
-    <div class="portal-main">
-        <header class="portal-topbar">
-            <div class="portal-topbar-inner">
-                <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
-                    <i class="fi fi-rr-menu-burger"></i>
-                </button>
-                <a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
-                    <i class="fi fi-rr-arrow-left"></i>
-                </a>
-                <div class="portal-user">
-                    <div class="portal-user-data">
-                        <span class="portal-user-name">{{ cliente.nomclient }}</span>
-                        <span class="portal-user-ruc">RUC / C.I. {{ cliente.ruccedcli }}</span>
-                    </div>
-                    <div class="portal-user-avatar">{{ cliente.nomclient|first|upper }}</div>
-                </div>
-            </div>
-        </header>
-
-        <main class="portal-content">
+{% block portal_content %}
+<main class="portal-content">
             <div class="container-fluid">
                 {% if messages %}
                     {% for message in messages %}
@@ -332,9 +225,9 @@
                 </section>
             </div>
         </main>
-    </div>
-</div>
-<script src="{% static 'js/portal.js' %}?v=20260922m"></script>
+{% endblock %}
+
+{% block extra_body %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
@@ -351,5 +244,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-</body>
-</html>
+{% endblock %}
