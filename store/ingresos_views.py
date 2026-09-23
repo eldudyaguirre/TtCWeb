@@ -46,7 +46,7 @@ def _ingresos_nc_where(request):
     if fecha_desde:
         try:
             datetime.strptime(fecha_desde, '%Y-%m-%d')
-            where.append("fecncc::date >= %s::date")
+            where.append("fecnc::date >= %s::date")
             params.append(fecha_desde)
         except ValueError:
             fecha_desde = ''
@@ -54,7 +54,7 @@ def _ingresos_nc_where(request):
     if fecha_hasta:
         try:
             datetime.strptime(fecha_hasta, '%Y-%m-%d')
-            where.append("fecncc::date < (%s::date + INTERVAL '1 day')")
+            where.append("fecnc::date < (%s::date + INTERVAL '1 day')")
             params.append(fecha_hasta)
         except ValueError:
             fecha_hasta = ''
@@ -74,7 +74,7 @@ def _ingresos_nc_where(request):
 def _ingresos_nc_base_sql():
     return """
         SELECT
-            n.fecncc,
+            n.fecnc,
             n.nomcli,
             n.ruccedcli,
             n.numnc,
@@ -92,10 +92,10 @@ def _ingresos_nc_base_sql():
 def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
-            ROW_NUMBER() OVER (ORDER BY fecncc::date ASC, num_nc ASC) AS numero,
+            ROW_NUMBER() OVER (ORDER BY fecnc::date ASC, num_nc ASC) AS numero,
             nomcli AS cliente,
             ruccedcli AS ruc,
-            fecncc AS fecha,
+            fecnc AS fecha,
             num_nc,
             num_aut,
             (
@@ -114,7 +114,7 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
             fecfac AS fecha_factura
         FROM ({_ingresos_nc_base_sql()}) nc_reporte
         WHERE {where}
-        ORDER BY fecncc::date ASC, num_nc ASC
+        ORDER BY fecnc::date ASC, num_nc ASC
     """
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
