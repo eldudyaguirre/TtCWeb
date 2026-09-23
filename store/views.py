@@ -1223,6 +1223,7 @@ def _trabajadores_datos(request):
             sueldo
         FROM trabajadores
         WHERE activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
     with _cliente_db(cliente).cursor() as cursor:
