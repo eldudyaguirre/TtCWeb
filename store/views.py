@@ -617,36 +617,43 @@ def _compras_datos_exportacion(request):
 
 @login_required
 def compras(request):
-    filtros, _, resumen, _ = _compras_datos_exportacion(request)
-    if filtros is None:
-        return redirect('portal')
-
     try:
-        pagina = max(1, int(request.GET.get('pagina', '1')))
-    except ValueError:
-        pagina = 1
+        filtros, _, resumen, _ = _compras_datos_exportacion(request)
+        if filtros is None:
+            return redirect('portal')
 
-    por_pagina = 50
-    where, params, _ = _compras_where(request)
+        try:
+            pagina = max(1, int(request.GET.get('pagina', '1')))
+        except ValueError:
+            pagina = 1
 
-    count_sql = f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where}"
-    with connection.cursor() as cursor:
-        cursor.execute(count_sql, params)
-        total_registros = cursor.fetchone()[0]
+        por_pagina = 50
+        where, params, _ = _compras_where(request)
 
-    offset = (pagina - 1) * por_pagina
-    filas = _compras_query(where, params, por_pagina, offset)
-    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+        count_sql = f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where}"
+        with connection.cursor() as cursor:
+            cursor.execute(count_sql, params)
+            total_registros = cursor.fetchone()[0]
 
-    return render(request, 'compras.html', {
-        'cliente': filtros['cliente'],
-        'filas': filas,
-        'resumen': resumen,
-        'filtros': filtros,
-        'pagina': pagina,
-        'total_paginas': total_paginas,
-        'total_registros': total_registros,
-    })
+        offset = (pagina - 1) * por_pagina
+        filas = _compras_query(where, params, por_pagina, offset)
+        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+
+        return render(request, 'compras.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'resumen': resumen,
+            'filtros': filtros,
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'total_registros': total_registros,
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en reporte de compras: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
 
 
 @login_required
