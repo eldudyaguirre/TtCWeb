@@ -96,8 +96,8 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
             nomcli AS cliente,
             ruccedcli AS ruc,
             fecnc AS fecha,
-            num_nc,
-            num_aut,
+            numnc AS num_nc,
+            autorizacion AS num_aut,
             (
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
