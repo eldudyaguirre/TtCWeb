@@ -817,14 +817,37 @@ def compras_pdf(request):
         Spacer(1, 10),
     ]
 
-    data = [[label for _, label in COMPRAS_COLUMNS]]
+    estilo_tabla = ParagraphStyle(
+        'ReporteComprasTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=5.4,
+        leading=6.2,
+        alignment=TA_CENTER,
+        wordWrap='CJK',
+    )
+    estilo_tabla_izquierda = ParagraphStyle(
+        'ReporteComprasTablaIzquierda',
+        parent=estilo_tabla,
+        alignment=0,
+    )
+    estilo_encabezado_tabla = ParagraphStyle(
+        'ReporteComprasEncabezadoTabla',
+        parent=estilo_tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        alignment=TA_CENTER,
+        leading=6.5,
+    )
+
+    data = [[Paragraph(label, estilo_encabezado_tabla) for _, label in COMPRAS_COLUMNS]]
     for row in filas:
         formatted = []
         for index, value in enumerate(row):
-            if index in (0,):
-                formatted.append(str(value))
-            elif index in (1, 2, 3, 4, 5, 6, 12, 14):
-                formatted.append(str(value or ''))
+            if index in (1,):
+                formatted.append(Paragraph(str(value or ''), estilo_tabla_izquierda))
+            elif index in (0, 2, 3, 4, 5, 6, 12, 14):
+                formatted.append(Paragraph(str(value or ''), estilo_tabla))
             else:
                 formatted.append(f"{float(value or 0):.2f}")
         data.append(formatted)
@@ -844,15 +867,17 @@ def compras_pdf(request):
     table = Table(
         data,
         repeatRows=1,
-        colWidths=[22, 100, 68, 38, 48, 72, 50, 54, 54, 42, 54, 45, 38, 52, 55],
+        colWidths=[22, 105, 68, 38, 48, 65, 72, 50, 50, 40, 48, 42, 38, 48, 50],
     )
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 5.4),
         ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
         ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (2, -1), 'CENTER'),
+        ('ALIGN', (3, 1), (6, -1), 'CENTER'),
         ('ALIGN', (7, 1), (14, -1), 'RIGHT'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
