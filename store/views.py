@@ -2460,6 +2460,281 @@ def compras_excel(request):
     response['Content-Disposition'] = 'attachment; filename="reporte_compras.xlsx"'
     return response
 
+
+
+FACTURA_TIPOS_IDENTIFICACION = [
+    ('C', 'Cédula'),
+    ('R', 'RUC'),
+    ('P', 'Pasaporte'),
+    ('E', 'Identificación del exterior'),
+    ('F', 'Consumidor final'),
+]
+
+FACTURA_FORMAS_PAGO = [
+    ('01', 'SIN UTILIZACION DEL SISTEMA FINANCIERO'),
+    ('15', 'COMPENSACIÓN DE DEUDAS'),
+    ('16', 'TARJETA DE DÉBITO'),
+    ('17', 'DINERO ELECTRÓNICO'),
+    ('18', 'TARJETA PREPAGO'),
+    ('19', 'TARJETA DE CRÉDITO'),
+    ('20', 'OTROS CON UTILIZACION DEL SISTEMA FINANCIERO'),
+    ('21', 'ENDOSO DE TÍTULOS'),
+]
+
+FACTURA_PRODUCT_TABLES = (
+    'productos',
+    'productosservicios',
+    'productos_servicios',
+    'producto',
+    'items',
+    'inventario',
+)
+
+
+def _factura_contexto(cliente):
+    establecimientos = []
+    for establecimiento in (
+        Establecimiento.objects
+        .filter(cliente=cliente, activo=True)
+        .prefetch_related('puntos_emision')
+        .order_by('codigo')
+    ):
+        puntos = []
+        for punto in establecimiento.puntos_emision.filter(activo=True).order_by('codigo'):
+            sec = (
+                SecuencialDocumento.objects
+                .filter(
+                    punto_emision=punto,
+                    tipo_documento=SecuencialDocumento.TipoDocumento.FACTURA,
+                    activo=True,
+                )
+                .first()
+            )
+            puntos.append({
+                'id': punto.id,
+                'codigo': punto.codigo,
+                'nombre': punto.nombre,
+                'secuencial': sec.secuencial_actual if sec else None,
+                'secuencial_id': sec.id if sec else None,
+            })
+        establecimientos.append({
+            'id': establecimiento.id,
+            'codigo': establecimiento.codigo,
+            'nombre': establecimiento.nombre,
+            'direccion': establecimiento.direccion,
+            'puntos': puntos,
+        })
+
+    return establecimientos
+
+
+def _factura_buscar_cliente_datos(cliente, identificacion):
+    identificacion = (identificacion or '').strip()
+    if not identificacion:
+        return None
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                TRIM(ruccedcli::text),
+                TRIM(COALESCE(nomclient::text, '')),
+                TRIM(COALESCE(dirclient::text, '')),
+                TRIM(COALESCE(teldomcli::text, '')),
+                TRIM(COALESCE(teloficli::text, '')),
+                TRIM(COALESCE(telcelcli::text, '')),
+                TRIM(COALESCE(corelectr::text, ''))
+            FROM clientes
+            WHERE TRIM(ruccedcli::text) = %s
+            LIMIT 1
+            """,
+            [identificacion],
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    ruc = row[0] or ''
+    if len(ruc) == 13:
+        tipo = 'R'
+    elif len(ruc) == 10:
+        tipo = 'C'
+    else:
+        tipo = 'P'
+
+    telefono = next((value for value in row[3:6] if value), '')
+
+    return {
+        'identificacion': ruc,
+        'tipo_identificacion': tipo,
+        'razon_social': row[1] or '',
+        'direccion': row[2] or '',
+        'telefono': telefono,
+        'email': row[6] or '',
+    }
+
+
+def _factura_producto_config(cursor):
+    cursor.execute(
+        """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND lower(table_name) = ANY(%s)
+        ORDER BY array_position(%s, lower(table_name))
+        LIMIT 1
+        """,
+        [list(FACTURA_PRODUCT_TABLES), list(FACTURA_PRODUCT_TABLES)],
+    )
+    table_row = cursor.fetchone()
+    if not table_row:
+        return None
+
+    table_name = table_row[0]
+    cursor.execute(
+        """
+        SELECT lower(column_name)
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = %s
+        """,
+        [table_name],
+    )
+    columns = {row[0] for row in cursor.fetchall()}
+
+    def pick(*names):
+        for name in names:
+            if name in columns:
+                return name
+        return None
+
+    return {
+        'table': table_name,
+        'codigo': pick('codprod', 'codproducto', 'codigo_principal', 'codprincipal', 'codigo', 'codpro'),
+        'descripcion': pick('nomprod', 'nomproducto', 'descripcion', 'descrip', 'detalle', 'nombre'),
+        'precio': pick('pvp', 'precio', 'precio_unitario', 'valor', 'precio_venta'),
+        'iva': pick('tarifaiva', 'poriva', 'iva', 'tarifa'),
+    }
+
+
+def _factura_buscar_productos_datos(cliente, termino):
+    termino = (termino or '').strip()
+    if not termino:
+        return []
+
+    with _cliente_db(cliente).cursor() as cursor:
+        config = _factura_producto_config(cursor)
+        if not config or not config['codigo'] or not config['descripcion']:
+            return []
+
+        table = '"' + config['table'].replace('"', '""') + '"'
+        codigo = '"' + config['codigo'].replace('"', '""') + '"'
+        descripcion = '"' + config['descripcion'].replace('"', '""') + '"'
+        precio = (
+            '"' + config['precio'].replace('"', '""') + '"'
+            if config['precio'] else 'NULL'
+        )
+        iva = (
+            '"' + config['iva'].replace('"', '""') + '"'
+            if config['iva'] else 'NULL'
+        )
+
+        sql = f"""
+            SELECT
+                TRIM(COALESCE({codigo}::text, '')),
+                TRIM(COALESCE({descripcion}::text, '')),
+                {precio}::text,
+                {iva}::text
+            FROM {table}
+            WHERE (
+                {codigo}::text ILIKE %s
+                OR {descripcion}::text ILIKE %s
+            )
+            ORDER BY {descripcion}::text
+            LIMIT 20
+        """
+        like = f'%{termino}%'
+        cursor.execute(sql, [like, like])
+        rows = cursor.fetchall()
+
+    result = []
+    for row in rows:
+        try:
+            precio_valor = float(row[2]) if row[2] not in (None, '') else 0
+        except (TypeError, ValueError):
+            precio_valor = 0
+        try:
+            iva_valor = float(row[3]) if row[3] not in (None, '') else 0
+        except (TypeError, ValueError):
+            iva_valor = 0
+
+        result.append({
+            'codigo': row[0] or '',
+            'descripcion': row[1] or '',
+            'precio': precio_valor,
+            'iva': iva_valor,
+        })
+    return result
+
+
+@login_required
+def factura_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    return render(
+        request,
+        'factura-emitir.html',
+        {
+            'cliente': cliente,
+            'establecimientos': _factura_contexto(cliente),
+            'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+            'formas_pago': FACTURA_FORMAS_PAGO,
+            'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+        },
+    )
+
+
+@login_required
+def factura_buscar_cliente(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    identificacion = request.GET.get('identificacion', '').strip()
+    if not identificacion:
+        return JsonResponse({'ok': False, 'error': 'Ingrese la identificación.'}, status=400)
+
+    try:
+        datos = _factura_buscar_cliente_datos(cliente, identificacion)
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': f'No se pudo consultar el cliente: {exc}'}, status=500)
+
+    if datos is None:
+        return JsonResponse({'ok': False, 'error': 'No se encontró el cliente en la base de datos.'}, status=404)
+
+    return JsonResponse({'ok': True, 'cliente': datos})
+
+
+@login_required
+def factura_buscar_productos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    termino = request.GET.get('q', '').strip()
+    if len(termino) < 1:
+        return JsonResponse({'ok': True, 'productos': []})
+
+    try:
+        productos = _factura_buscar_productos_datos(cliente, termino)
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': f'No se pudo consultar productos: {exc}'}, status=500)
+
+    return JsonResponse({'ok': True, 'productos': productos})
+
 def about(request):
     return render(request, 'about.html')
 
