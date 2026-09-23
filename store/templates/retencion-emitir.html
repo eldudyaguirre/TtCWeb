@@ -1,0 +1,63 @@
+{% extends "portal-base.html" %}
+{% block title %}Comprobante de Retención | Emitir Comprobantes | TotalCounts{% endblock %}
+{% block extra_head %}
+<style>
+.emit-card{margin:0 0 40px;padding:28px 0;background:#fff;border:1px solid #e5eaed;border-radius:12px;box-shadow:0 3px 15px rgba(33,51,62,.05)}
+.emit-head{margin:0 28px 18px}.emit-head h1{margin:4px 0 5px;color:#21333e;font-size:1.55rem;font-weight:600}.emit-head p{margin:2px 0;color:#78838b;font-size:.84rem}
+.emit-section{width:calc(100% - 56px)!important;margin:0 28px 18px!important;padding:0!important;border:1px solid #e1e7e9;border-radius:9px;overflow:hidden;background:transparent!important}
+.emit-title{padding:11px 15px;background:#21333e;color:#fff;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.emit-body{padding:18px}
+.emit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.full{grid-column:1/-1}.field{min-width:0}.field label{display:block;margin-bottom:6px;color:#52616a;font-size:.76rem;font-weight:600}.field input,.field select{width:100%;min-height:40px;padding:0 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;box-sizing:border-box}.field input:focus,.field select:focus{border-color:#058283;outline:none;box-shadow:0 0 0 3px rgba(5,130,131,.1)}.field input[readonly]{background:#f6f8f9}
+.idgrid{display:grid;grid-template-columns:1fr auto;gap:8px}.btn{min-height:40px;border:0;border-radius:7px;padding:0 14px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer}.btn-add,.btn-primary{background:#058283;color:#fff}.btn-add:hover,.btn-primary:hover{background:#046f70}.btn-remove{width:34px;background:#f8eaea;color:#c62828}.message{min-height:18px;margin-top:6px;color:#c62828;font-size:.73rem}
+.data-wrap{overflow-x:auto;border:1px solid #e1e7e9;border-radius:8px}.data-table{width:100%;min-width:900px;border-collapse:collapse;font-size:.72rem}.data-table th{padding:9px 8px;background:#21333e;color:#fff;font-weight:600;white-space:nowrap}.data-table td{padding:7px;border-top:1px solid #edf0f1;color:#52616a;vertical-align:middle}.data-table input,.data-table select{width:100%;min-height:34px;padding:0 7px;border:1px solid #dbe2e5;border-radius:5px;font:inherit;box-sizing:border-box}.empty{text-align:center!important;padding:25px!important;color:#89949b!important}
+.additional{display:grid;grid-template-columns:220px 1fr auto;gap:10px}.additional input,.additional textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid #dbe2e5;border-radius:7px;font-family:inherit;font-size:.82rem;box-sizing:border-box;resize:vertical}.additional-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.75rem}
+.actions{display:flex;justify-content:flex-end;gap:9px;margin:20px 28px 0}.btn-secondary{background:#eef2f3;color:#52616a}
+@media(max-width:767px){.emit-card{padding:18px 14px;margin-bottom:25px}.emit-head{margin:0 0 18px}.emit-head h1{font-size:1.3rem}.emit-section{width:100%!important;margin:0 0 14px!important}.emit-grid{grid-template-columns:1fr}.full{grid-column:auto}.additional{grid-template-columns:1fr}.actions{display:grid;grid-template-columns:1fr;margin:18px 0 0}.actions .btn{width:100%}}
+</style>
+{% endblock %}
+{% block portal_content %}
+<main class="portal-content"><div class="container-fluid"><section class="emit-card">
+<div class="emit-head"><div class="portal-kicker">Emitir Comprobantes</div><h1>COMPROBANTE DE RETENCIÓN</h1><p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p></div>
+<section class="emit-section"><div class="emit-title">Identificación del comprobante</div><div class="emit-body"><div class="emit-grid">
+<div class="field"><label>Establecimiento *</label><select id="establecimiento"><option value="">Seleccione</option>{% for item in establecimientos %}<option value="{{ item.id }}">{{ item.codigo }} - {{ item.direccion|default:item.nombre }}</option>{% endfor %}</select></div>
+<div class="field"><label>Nombre comercial</label><input id="nombre_comercial" readonly></div>
+<div class="field"><label>Fecha de emisión</label><input type="date" value="{{ fecha_emision }}" readonly></div>
+<div class="field"><label>Punto de emisión *</label><select id="punto_emision"><option value="">Seleccione</option></select></div>
+<div class="field"><label>Periodo fiscal</label><div class="emit-grid" style="grid-template-columns:1fr 1fr;gap:8px"><select id="periodo_anio"><option>2026</option><option>2025</option></select><select id="periodo_mes">{% for m in "Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre"|cut:"," %}{% endfor %}<option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div></div>
+</div></div></section>
+<section class="emit-section"><div class="emit-title">Sujeto retenido</div><div class="emit-body"><div class="emit-grid">
+<div class="field"><label>Identificación *</label><div class="idgrid"><input id="identificacion" maxlength="20" placeholder="RUC / CI / Pasaporte"><button type="button" class="btn btn-add" id="buscar_cliente">Buscar</button></div><div id="cliente_msg" class="message"></div></div>
+<div class="field"><label>Tipo identificación *</label><select id="tipo_identificacion"><option value="">Seleccione</option>{% for codigo,nombre in tipos_identificacion %}<option value="{{ codigo }}">{{ nombre }}</option>{% endfor %}</select></div>
+<div class="field"><label>Razón social *</label><input id="razon_social" maxlength="150"></div><div class="field"><label>Dirección</label><input id="direccion" maxlength="150"></div><div class="field"><label>Teléfono</label><input id="telefono"></div><div class="field"><label>Correo electrónico</label><input id="email" type="email"></div>
+</div></div></section>
+<section class="emit-section"><div class="emit-title">Documento objeto de retención</div><div class="emit-body"><div class="emit-grid">
+<div class="field"><label>Comprobante *</label><select id="tipo_comprobante"><option>Factura</option><option>Nota de Débito</option><option>Liquidación de Compras</option></select></div>
+<div class="field"><label>Emisión</label><select id="tipo_emision"><option>Electrónica</option><option>Física</option></select></div>
+<div class="field"><label>Fecha de emisión *</label><input id="fecha_documento" type="date"></div><div class="field"><label>Número de comprobante *</label><input id="numero_documento" maxlength="17" placeholder="001-001-000000000"></div>
+</div></div></section>
+<section class="emit-section"><div class="emit-title">Detalle valores retenidos</div><div class="emit-body">
+<div class="emit-grid">
+<div class="field"><label>Impuesto</label><select id="impuesto"><option value="IVA">I.V.A.</option><option value="RENTA">Impuesto a la Renta</option></select></div>
+<div class="field"><label>Código / concepto de retención</label><select id="codigo_retencion"><option value="">Seleccione</option><option>10 - Retención IVA servicios 20%</option><option>3 - Retención IVA 100%</option><option>2 - Retención IVA servicios</option><option>5 - Retención IVA periódicos</option><option>7 - Retención en cero</option><option>1 - Retención IVA bienes</option><option>8 - No procede retención</option><option>9 - Retención IVA bienes 10%</option></select></div>
+<div class="field"><label>Base imponible *</label><input id="base" type="number" min="0" step="0.01" value="0.00"></div><div class="field"><label>% de retención *</label><input id="porcentaje" type="number" min="0" step="0.01" value="0.00"></div>
+<div class="field"><label>Valor retenido</label><input id="valor_retenido" readonly value="0.00"></div><div class="field" style="display:flex;align-items:flex-end"><button type="button" class="btn btn-add" id="agregar_retencion">Añadir retención</button></div>
+</div>
+<div class="data-wrap" style="margin-top:16px"><table class="data-table"><thead><tr><th>Impuesto</th><th>Código</th><th>Descripción</th><th>Base imponible</th><th>% retención</th><th>Valor retenido</th><th>Acciones</th></tr></thead><tbody id="retenciones_body"><tr id="retenciones_vacio"><td colspan="7" class="empty">No existen impuestos</td></tr></tbody></table></div>
+</div></section>
+<section class="emit-section"><div class="emit-title">Campos adicionales</div><div class="emit-body"><div class="additional"><input id="ad_nombre" maxlength="50" placeholder="Nombre"><textarea id="ad_descripcion" rows="1" maxlength="300" placeholder="Descripción"></textarea><button type="button" class="btn btn-add" id="ad_agregar">Añadir campo</button></div><div id="ad_lista"></div></div></section>
+<div class="actions"><button type="button" class="btn btn-secondary" id="guardar">Guardar sin firmar</button><button type="button" class="btn btn-primary" id="firmar">Firmar</button></div>
+</section></div></main>
+{% endblock %}
+{% block extra_body %}
+{{ establecimientos|json_script:"comprobante-establecimientos" }}<script>
+(function(){
+const data=JSON.parse(document.getElementById('comprobante-establecimientos').textContent),$=id=>document.getElementById(id);
+const est=$('establecimiento'),punto=$('punto_emision'),nombre=$('nombre_comercial');
+function puntos(){const x=data.find(v=>String(v.id)===String(est.value));punto.innerHTML='<option value="">Seleccione</option>';nombre.value='';if(!x)return;nombre.value=x.nombre||'';(x.puntos||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.codigo+(p.nombre?' - '+p.nombre:'');punto.appendChild(o)})}est.addEventListener('change',puntos);puntos();
+$('base').addEventListener('input',calc);$('porcentaje').addEventListener('input',calc);function calc(){$('valor_retenido').value=(Number($('base').value||0)*Number($('porcentaje').value||0)/100).toFixed(2)}
+$('buscar_cliente').onclick=async()=>{const q=$('identificacion').value.trim();if(!q){$('cliente_msg').textContent='Ingrese una identificación.';return}try{const r=await fetch('{% url "factura_buscar_cliente" %}?identificacion='+encodeURIComponent(q));const d=await r.json();if(!d.ok)throw Error(d.error||'No se encontró el sujeto retenido.');const x=d.cliente;$('tipo_identificacion').value=x.tipo_identificacion||'';$('razon_social').value=x.razon_social||'';$('direccion').value=x.direccion||'';$('telefono').value=x.telefono||'';$('email').value=x.email||'';$('cliente_msg').textContent=''}catch(e){$('cliente_msg').textContent=e.message}};
+$('agregar_retencion').onclick=()=>{const b=Number($('base').value||0),p=Number($('porcentaje').value||0);if(b<=0)return;const v=(b*p/100).toFixed(2),empty=$('retenciones_vacio');if(empty)empty.remove();const tr=document.createElement('tr');tr.innerHTML='<td>'+($('impuesto').selectedOptions[0]?.text||'')+'</td><td>'+($('codigo_retencion').value||'')+'</td><td>'+($('codigo_retencion').selectedOptions[0]?.text||'')+'</td><td>'+b.toFixed(2)+'</td><td>'+p.toFixed(2)+'%</td><td>'+v+'</td><td></td>';const btn=document.createElement('button');btn.className='btn btn-remove';btn.type='button';btn.textContent='×';btn.onclick=()=>{tr.remove();if(!$('retenciones_body').children.length)$('retenciones_body').innerHTML='<tr id="retenciones_vacio"><td colspan="7" class="empty">No existen impuestos</td></tr>'};tr.lastElementChild.appendChild(btn);$('retenciones_body').appendChild(tr)};
+$('ad_agregar').onclick=()=>{const n=$('ad_nombre').value.trim(),d=$('ad_descripcion').value.trim();if(!n&&!d)return;const r=document.createElement('div');r.className='additional-row';r.innerHTML='<span><strong>'+n+'</strong> — '+d+'</span>';const b=document.createElement('button');b.type='button';b.className='btn btn-remove';b.textContent='×';b.onclick=()=>r.remove();r.appendChild(b);$('ad_lista').appendChild(r);$('ad_nombre').value='';$('ad_descripcion').value=''};
+$('guardar').onclick=()=>alert('La estructura del comprobante de retención está preparada.');$('firmar').onclick=()=>alert('La firma digital y envío al SRI se integrarán sobre esta estructura.');
+})();
+</script>
+{% endblock %}
