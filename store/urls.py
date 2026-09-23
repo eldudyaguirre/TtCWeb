@@ -42,6 +42,9 @@ urlpatterns = [
 
     path('portal/emitir/factura/buscar-cliente/', views.factura_buscar_cliente, name='factura_buscar_cliente'),
     path('portal/emitir/factura/buscar-productos/', views.factura_buscar_productos, name='factura_buscar_productos'),
+    path('portal/laboral/roles-de-pago/', views.roles_pago, name='roles_pago'),
+    path('portal/laboral/roles-de-pago/pdf/', views.roles_pago_pdf, name='roles_pago_pdf'),
+    path('portal/laboral/roles-de-pago/excel/', views.roles_pago_excel, name='roles_pago_excel'),
     path('portal/laboral/trabajadores/', views.trabajadores, name='trabajadores'),
     path('portal/laboral/trabajadores/pdf/', views.trabajadores_pdf, name='trabajadores_pdf'),
     path('portal/laboral/trabajadores/excel/', views.trabajadores_excel, name='trabajadores_excel'),
