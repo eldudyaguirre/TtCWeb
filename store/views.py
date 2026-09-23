@@ -713,13 +713,38 @@ def compras_pdf(request):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
     styles = getSampleStyleSheet()
+
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.styles import ParagraphStyle
+
+    estilo_titulo = ParagraphStyle(
+        'ReporteComprasTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=3,
+    )
+    estilo_cabecera = ParagraphStyle(
+        'ReporteComprasCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
+        alignment=TA_CENTER,
+        spaceAfter=2,
+    )
+
     elements = [
-        Paragraph('Reporte de Compras', styles['Title']),
+        Paragraph('REPORTE DE COMPRAS', estilo_titulo),
         Paragraph(
-            f"Proveedor: {filtros['proveedor'] or 'Todos'} | "
-            f"Desde: {filtros['fecha_desde'] or '—'} | "
-            f"Hasta: {filtros['fecha_hasta'] or '—'}",
-            styles['Normal'],
+            f"COMPRAS DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            estilo_cabecera,
+        ),
+        Paragraph(
+            f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",
+            estilo_cabecera,
         ),
         Spacer(1, 10),
     ]
