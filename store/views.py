@@ -573,6 +573,8 @@ def _compras_base_sql():
 def _compras_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
+            numcompra,
+            numcompra,
             fecemi,
             ruccedprovee,
             nomprovee,
@@ -598,7 +600,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             )
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
-        ORDER BY fecemi DESC
+        ORDER BY numcompra DESC
     """
 
     if limit is not None:
