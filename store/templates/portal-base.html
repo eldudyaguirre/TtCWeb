@@ -54,7 +54,7 @@
                         <a href="{% url 'ventas' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">Facturas</a>
                         <a href="{% url 'ingresos_notas_credito' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}">Notas de Crédito</a>
                         <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
-                        <a href="#" class="portal-submenu-item">Listado Clientes</a>
+                        <a href="{% url 'listado_clientes' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'listado_clientes' %}active{% endif %}">Listado Clientes</a>
                     </div>
                 </div>
 
