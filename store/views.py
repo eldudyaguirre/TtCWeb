@@ -78,27 +78,10 @@ def do_signin(request):
                         'Tu usuario no tiene un cliente activo asignado al portal.',
                     )
                 else:
-                    acceso_permitido = False
-                    ultimo_motivo = None
-
-                    for asignacion in asignaciones:
-                        permitido, _, detalle = validar_acceso_cliente(
-                            asignacion.cliente
-                        )
-
-                        if permitido:
-                            request.session['cliente_ruccedcli'] = (
-                                asignacion.cliente.ruccedcli
-                            )
-                            login(request, user)
-                            return redirect('portal')
-
-                        ultimo_motivo = detalle
-
-                    messages.error(
-                        request,
-                        ultimo_motivo or 'El acceso al portal está restringido.',
-                    )
+                    asignacion = asignaciones.first()
+                    request.session['cliente_ruccedcli'] = asignacion.cliente.ruccedcli
+                    login(request, user)
+                    return redirect('portal')
         else:
             messages.error(request, 'Usuario o contraseña inválidos.')
 
@@ -128,9 +111,8 @@ def mi_empresa(request):
     permitido, _, detalle = validar_acceso_cliente(asignacion.cliente)
 
     if not permitido:
-        logout(request)
         messages.error(request, detalle)
-        return redirect('signin')
+        return redirect('portal')
 
     cliente = asignacion.cliente
 
@@ -343,6 +325,12 @@ def parametros(request):
 
 @login_required
 def cambiar_contrasena(request):
+    if not request.user.is_staff and not request.user.is_superuser:
+        cliente = _cliente_portal(request)
+        if cliente is None:
+            messages.error(request, 'Esta sección está bloqueada mientras existan valores pendientes por regularizar.')
+            return redirect('portal')
+
     form = PasswordChangeForm(request.user, request.POST or None)
 
     if request.method == 'POST' and form.is_valid():
@@ -387,31 +375,26 @@ def portal(request):
         activo=True,
     ).select_related('cliente')
 
-    for asignacion in asignaciones:
-        permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
+    asignacion = asignaciones.first()
+    cliente = asignacion.cliente
+    permitido, motivo, detalle = validar_acceso_cliente(cliente)
+    request.session['cliente_ruccedcli'] = cliente.ruccedcli
+    resumen = obtener_resumen_cliente(cliente)
 
-        if permitido:
-            request.session['cliente_ruccedcli'] = asignacion.cliente.ruccedcli
-            resumen = obtener_resumen_cliente(asignacion.cliente)
-
-            return render(
-                request,
-                'portal.html',
-                {
-                    'cliente': asignacion.cliente,
-                    'resumen': resumen,
-                    'rol': asignacion.rol,
-                    'pendientes_legales': obtener_aceptaciones_pendientes(request.user),
-                    'versiones_legales': versiones_legales_vigentes(),
-                },
-            )
-
-    logout(request)
-    messages.error(
+    return render(
         request,
-        'El acceso al portal está restringido. Verifica el estado de tu cuenta.',
+        'portal.html',
+        {
+            'cliente': cliente,
+            'resumen': resumen,
+            'rol': asignacion.rol,
+            'acceso_restringido': not permitido,
+            'motivo_acceso': motivo,
+            'detalle_acceso': detalle,
+            'pendientes_legales': obtener_aceptaciones_pendientes(request.user),
+            'versiones_legales': versiones_legales_vigentes(),
+        },
     )
-    return redirect('signin')
 
 
 @login_required
