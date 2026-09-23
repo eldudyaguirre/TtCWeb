@@ -520,7 +520,7 @@ def _compras_where(request):
     if fecha_desde:
         try:
             datetime.strptime(fecha_desde, '%Y-%m-%d')
-            where.append("fecemi >= %s::date")
+            where.append("fecemi::date >= %s::date")
             params.append(fecha_desde)
         except ValueError:
             fecha_desde = ''
@@ -528,7 +528,7 @@ def _compras_where(request):
     if fecha_hasta:
         try:
             datetime.strptime(fecha_hasta, '%Y-%m-%d')
-            where.append("fecemi < (%s::date + INTERVAL '1 day')")
+            where.append("fecemi::date < (%s::date + INTERVAL '1 day')")
             params.append(fecha_hasta)
         except ValueError:
             fecha_hasta = ''
