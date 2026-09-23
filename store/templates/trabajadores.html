@@ -18,6 +18,93 @@
     }
     .trabajadores-export-btn i { color: #ffffff !important; }
     .trabajadores-total { margin-top: 12px; font-size: 13px; font-weight: 600; }
+
+    .trabajador-link {
+        color: inherit;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .trabajador-link:hover { text-decoration: underline; }
+
+    .trabajador-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.55);
+        padding: 24px;
+        align-items: center;
+        justify-content: center;
+    }
+    .trabajador-modal.show { display: flex; }
+    .trabajador-modal-card {
+        width: min(850px, 100%);
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 18px 50px rgba(0,0,0,.28);
+    }
+    .trabajador-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        background: #21333e;
+        color: #ffffff;
+    }
+    .trabajador-modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+    .trabajador-modal-close {
+        border: 0;
+        background: transparent;
+        color: #ffffff;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .trabajador-modal-body {
+        padding: 22px;
+    }
+    .trabajador-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 20px;
+    }
+    .trabajador-detail {
+        border-bottom: 1px solid #e6ebed;
+        padding-bottom: 8px;
+    }
+    .trabajador-detail.full { grid-column: 1 / -1; }
+    .trabajador-detail-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #6b777d;
+        margin-bottom: 3px;
+    }
+    .trabajador-detail-value {
+        display: block;
+        font-size: 14px;
+        color: #21333e;
+        word-break: break-word;
+    }
+    .trabajador-modal-loading,
+    .trabajador-modal-error {
+        padding: 30px;
+        text-align: center;
+    }
+    @media (max-width: 700px) {
+        .trabajador-modal { padding: 10px; }
+        .trabajador-modal-card { max-height: 95vh; }
+        .trabajador-detail-grid { grid-template-columns: 1fr; }
+        .trabajador-detail.full { grid-column: auto; }
+    }
 </style>
 {% endblock %}
 
@@ -64,7 +151,7 @@
                         <tr>
                             <td>{{ row.0 }}</td>
                             <td>{{ row.1 }}</td>
-                            <td>{{ row.2 }}</td>
+                            <td><a href="#" class="trabajador-link" data-cedula="{{ row.1 }}">{{ row.2 }}</a></td>
                             <td>{{ row.3 }}</td>
                             <td>{{ row.4 }}</td>
                             <td>{{ row.5|date:"d/m/Y" }}</td>
@@ -84,6 +171,123 @@
             <div class="trabajadores-total">
                 Total de trabajadores activos: {{ total_registros }}
             </div>
+
+            <div id="trabajadorModal" class="trabajador-modal" aria-hidden="true">
+                <div class="trabajador-modal-card" role="dialog" aria-modal="true" aria-labelledby="trabajadorModalTitle">
+                    <div class="trabajador-modal-header">
+                        <h2 id="trabajadorModalTitle">Información del trabajador</h2>
+                        <button type="button" class="trabajador-modal-close" id="trabajadorModalClose" aria-label="Cerrar">&times;</button>
+                    </div>
+                    <div class="trabajador-modal-body" id="trabajadorModalBody">
+                        <div class="trabajador-modal-loading">Cargando información...</div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const modal = document.getElementById('trabajadorModal');
+                const body = document.getElementById('trabajadorModalBody');
+                const close = document.getElementById('trabajadorModalClose');
+                const detailUrl = "{% url 'trabajador_detalle' 'CEDULA_TRABAJADOR' %}";
+
+                function escapeHtml(value) {
+                    return String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                }
+
+                function fecha(value) {
+                    if (!value) return '';
+                    const d = new Date(value);
+                    if (Number.isNaN(d.getTime())) return value;
+                    return d.toLocaleDateString('es-EC');
+                }
+
+                function booleano(value) {
+                    return value ? 'Sí' : 'No';
+                }
+
+                function dinero(value) {
+                    if (value === null || value === undefined || value === '') return '';
+                    const n = Number(value);
+                    return Number.isNaN(n) ? value : n.toLocaleString('es-EC', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+
+                function detalle(label, value, full) {
+                    return '<div class="trabajador-detail' + (full ? ' full' : '') + '">' +
+                        '<span class="trabajador-detail-label">' + escapeHtml(label) + '</span>' +
+                        '<span class="trabajador-detail-value">' + escapeHtml(value) + '</span>' +
+                        '</div>';
+                }
+
+                function cerrar() {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+
+                document.querySelectorAll('.trabajador-link').forEach(function (link) {
+                    link.addEventListener('click', async function (event) {
+                        event.preventDefault();
+                        const cedula = this.dataset.cedula;
+                        modal.classList.add('show');
+                        modal.setAttribute('aria-hidden', 'false');
+                        body.innerHTML = '<div class="trabajador-modal-loading">Cargando información...</div>';
+
+                        try {
+                            const url = detailUrl.replace('CEDULA_TRABAJADOR', encodeURIComponent(cedula));
+                            const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(data.error || 'No fue posible obtener la información.');
+                            }
+
+                            document.getElementById('trabajadorModalTitle').textContent = data.nombres || 'Información del trabajador';
+
+                            body.innerHTML =
+                                '<div class="trabajador-detail-grid">' +
+                                detalle('Cédula', data.cedula) +
+                                detalle('Nombres', data.nombres) +
+                                detalle('Sexo', data.sexo) +
+                                detalle('Fecha de nacimiento', fecha(data.fecnac)) +
+                                detalle('Cargas familiares', data.cargas) +
+                                detalle('Dirección de contacto', data.direccion, true) +
+                                detalle('Teléfono de contacto', data.telefono) +
+                                detalle('Estado', booleano(data.activo)) +
+                                detalle('Fecha de ingreso', fecha(data.fecentrada)) +
+                                detalle('Comisión sectorial', data.comisionsec) +
+                                detalle('Cargo', data.cargo) +
+                                detalle('Jornada laboral', data.tipojornada) +
+                                detalle('Horas de jornada', data.horaslab) +
+                                detalle('Sueldo', dinero(data.sueldo)) +
+                                detalle('Código sectorial', data.codcomision) +
+                                detalle('Fecha de salida', fecha(data.fecsalida)) +
+                                detalle('Motivos', data.motivos, true) +
+                                detalle('Acumulación F.P.', booleano(data.fr)) +
+                                detalle('XIV mensualizado', booleano(data.xiv)) +
+                                detalle('XIII mensualizado', booleano(data.xiii)) +
+                                detalle('Jornada nocturna', booleano(data.jn)) +
+                                detalle('Notas', data.notastra, true) +
+                                '</div>';
+                        } catch (error) {
+                            body.innerHTML = '<div class="trabajador-modal-error">' + escapeHtml(error.message) + '</div>';
+                        }
+                    });
+                });
+
+                close.addEventListener('click', cerrar);
+                modal.addEventListener('click', function (event) {
+                    if (event.target === modal) cerrar();
+                });
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') cerrar();
+                });
+            });
+            </script>
         </section>
     </div>
 </main>
