@@ -38,6 +38,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     groups.forEach(function (group) {
+        const activeToggle = group.querySelector('.portal-menu-toggle.active');
+        if (activeToggle) {
+            group.classList.add('open');
+            activeToggle.setAttribute('aria-expanded', 'true');
+        }
+
         const toggle = group.querySelector('.portal-menu-toggle');
         const submenuItems = group.querySelectorAll('.portal-submenu-item');
 
