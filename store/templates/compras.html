@@ -1,0 +1,124 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Compras | TotalCounts{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading">
+                <div>
+                    <div class="portal-kicker">Gastos</div>
+                    <h1>Compras</h1>
+                    <p>Facturas y notas de venta registradas en la base de datos.</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} registros</div>
+            </div>
+
+            <form method="get" class="portal-report-filters">
+                <div class="portal-report-field">
+                    <label for="fecha_desde">Fecha desde</label>
+                    <input type="date" id="fecha_desde" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+                </div>
+                <div class="portal-report-field">
+                    <label for="fecha_hasta">Fecha hasta</label>
+                    <input type="date" id="fecha_hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+                </div>
+                <div class="portal-report-field portal-report-provider">
+                    <label for="proveedor">Proveedor</label>
+                    <input type="search" id="proveedor" name="proveedor" value="{{ filtros.proveedor }}" placeholder="Nombre o RUC del proveedor">
+                </div>
+                <div class="portal-report-actions">
+                    <button type="submit" class="portal-report-filter-btn"><i class="fi fi-rr-search"></i> Buscar</button>
+                    <a href="{% url 'compras' %}" class="portal-report-clear-btn">Limpiar</a>
+                </div>
+            </form>
+
+            <div class="portal-report-export">
+                <a class="portal-export-btn portal-export-pdf"
+                   href="{% url 'compras_pdf' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn portal-export-excel"
+                   href="{% url 'compras_excel' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="portal-report-table-wrap">
+                <table class="portal-report-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>RUC proveedor</th>
+                            <th>Proveedor</th>
+                            <th>Comprobante</th>
+                            <th>Autorización</th>
+                            <th>Subtotal 0%</th>
+                            <th>Subtotal 5%</th>
+                            <th>Subtotal 8%</th>
+                            <th>Subtotal 12%</th>
+                            <th>Subtotal 14%</th>
+                            <th>Subtotal 15%</th>
+                            <th>IVA 5%</th>
+                            <th>IVA 8%</th>
+                            <th>IVA 12%</th>
+                            <th>IVA 14%</th>
+                            <th>IVA 15%</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            <td>{{ row.0 }}</td>
+                            <td>{{ row.1 }}</td>
+                            <td class="portal-report-provider-cell">{{ row.2 }}</td>
+                            <td>{{ row.3 }}</td>
+                            <td>{{ row.4 }}</td>
+                            {% for value in row|slice:"5:" %}
+                            <td class="portal-report-number">{{ value|floatformat:2 }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="17" class="portal-report-empty">No existen compras para los filtros seleccionados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="portal-report-summary">
+                <div class="portal-report-summary-title">Resumen del período</div>
+                <div class="portal-report-summary-grid">
+                    <div><span>Subtotal 0%</span><strong>{{ resumen.subtotal0|floatformat:2 }}</strong></div>
+                    <div><span>Subtotal 5%</span><strong>{{ resumen.subtotal5|floatformat:2 }}</strong></div>
+                    <div><span>Subtotal 8%</span><strong>{{ resumen.subtotal8|floatformat:2 }}</strong></div>
+                    <div><span>Subtotal 12%</span><strong>{{ resumen.subtotal12|floatformat:2 }}</strong></div>
+                    <div><span>Subtotal 14%</span><strong>{{ resumen.subtotal14|floatformat:2 }}</strong></div>
+                    <div><span>Subtotal 15%</span><strong>{{ resumen.subtotal15|floatformat:2 }}</strong></div>
+                    <div><span>IVA 5%</span><strong>{{ resumen.iva5|floatformat:2 }}</strong></div>
+                    <div><span>IVA 8%</span><strong>{{ resumen.iva8|floatformat:2 }}</strong></div>
+                    <div><span>IVA 12%</span><strong>{{ resumen.iva12|floatformat:2 }}</strong></div>
+                    <div><span>IVA 14%</span><strong>{{ resumen.iva14|floatformat:2 }}</strong></div>
+                    <div><span>IVA 15%</span><strong>{{ resumen.iva15|floatformat:2 }}</strong></div>
+                    <div class="portal-report-total"><span>Total</span><strong>{{ resumen.total|floatformat:2 }}</strong></div>
+                </div>
+            </div>
+
+            {% if total_paginas > 1 %}
+            <div class="portal-report-pagination">
+                {% if pagina > 1 %}
+                <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}&pagina={{ pagina|add:'-1' }}">‹ Anterior</a>
+                {% endif %}
+                <span>Página {{ pagina }} de {{ total_paginas }}</span>
+                {% if pagina < total_paginas %}
+                <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}&pagina={{ pagina|add:'1' }}">Siguiente ›</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% endblock %}
