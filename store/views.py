@@ -1020,19 +1020,22 @@ def _clientes_datos(request):
 
     sql = """
         SELECT
-            ROW_NUMBER() OVER (ORDER BY nomcli, ruccedcli) AS numero,
-            ruccedcli AS ruc,
-            nomcli AS cliente
+            ROW_NUMBER() OVER (ORDER BY cliente, ruc) AS numero,
+            ruc,
+            cliente
         FROM (
-            SELECT
-                TRIM(ruccedcli::text) AS ruccedcli,
-                TRIM(nomcli::text) AS nomcli
+            SELECT DISTINCT ON (TRIM(ruccedcli::text))
+                TRIM(ruccedcli::text) AS ruc,
+                TRIM(nomcli::text) AS cliente
             FROM ventas
             WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
               AND COALESCE(TRIM(ruccedcli::text), '') <> ''
-            GROUP BY TRIM(ruccedcli::text), TRIM(nomcli::text)
+            ORDER BY
+                TRIM(ruccedcli::text),
+                fecfactur DESC NULLS LAST,
+                TRIM(nomcli::text)
         ) clientes
-        ORDER BY nomcli, ruccedcli
+        ORDER BY cliente, ruc
     """
     with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, [anio])
