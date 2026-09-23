@@ -31,7 +31,7 @@
                 </a>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'compras' or request.resolver_match.url_name == 'notas_credito' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'compras' or request.resolver_match.url_name == 'notas_credito' or request.resolver_match.url_name == 'listado_proveedores' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-shopping-cart portal-menu-icon"></i>
                         <span>Gastos</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
@@ -40,7 +40,7 @@
                         <a href="{% url 'compras' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'compras' %}active{% endif %}">Compras</a>
                         <a href="{% url 'notas_credito' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'notas_credito' %}active{% endif %}">Notas de Crédito</a>
                         <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
-                        <a href="/404.html" class="portal-submenu-item">Listado Proveedores</a>
+                        <a href="{% url 'listado_proveedores' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'listado_proveedores' %}active{% endif %}">Listado Proveedores</a>
                     </div>
                 </div>
 
