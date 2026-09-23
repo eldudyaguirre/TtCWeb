@@ -34,6 +34,8 @@ urlpatterns = [
     path('portal/ingresos/registros-ice/', views.error_404, name='registros_ice'),
     path('portal/emitir/factura/', views.factura_emitir, name='factura_emitir'),
     path('portal/emitir/nota-credito/', views.nota_credito_emitir, name='nota_credito_emitir'),
+    path('portal/emitir/guia-remision/', views.guia_remision_emitir, name='guia_remision_emitir'),
+
     path('portal/emitir/nota-credito/buscar-sustento/', views.nota_credito_buscar_sustento, name='nota_credito_buscar_sustento'),
 
     path('portal/emitir/factura/buscar-cliente/', views.factura_buscar_cliente, name='factura_buscar_cliente'),
