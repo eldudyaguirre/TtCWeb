@@ -35,6 +35,7 @@ urlpatterns = [
     path('portal/laboral/trabajadores/', views.trabajadores, name='trabajadores'),
     path('portal/laboral/trabajadores/pdf/', views.trabajadores_pdf, name='trabajadores_pdf'),
     path('portal/laboral/trabajadores/excel/', views.trabajadores_excel, name='trabajadores_excel'),
+    path('portal/laboral/trabajadores/<str:cedula>/pdf/', views.trabajador_pdf, name='trabajador_pdf'),
     path('portal/laboral/trabajadores/<str:cedula>/', views.trabajador_detalle, name='trabajador_detalle'),
     path('portal/', views.portal, name='portal'),
     path('about/', views.about, name='about'),
