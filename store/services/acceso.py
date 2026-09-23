@@ -7,7 +7,9 @@ def validar_acceso_cliente(cliente):
     Reglas:
     - El cliente debe estar activo.
     - El acceso web debe estar habilitado.
-    - No debe tener saldo pendiente en salcuenta.
+    - Si salcuenta es mayor que cero, solo se permite el acceso cuando
+      todos los registros PENDIENTE de cuentascobrar tienen menos de
+      45 días de antigüedad, calculados desde fecinicio.
     - No puede tener más de 3 registros pendientes en prefactura.
 
     Retorna una tupla (permitido, motivo, detalle).
@@ -37,10 +39,27 @@ def validar_acceso_cliente(cliente):
         )
 
     if (salcuenta or 0) > 0:
-        return False, 'saldo_pendiente', (
-            'El acceso al portal está restringido porque existen valores '
-            'pendientes de pago.'
-        )
+        # Con saldo pendiente, revisar únicamente las cuentas PENDIENTE.
+        # La antigüedad se calcula desde fecinicio.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM cuentascobrar
+                WHERE ruccedcli = %s
+                  AND UPPER(TRIM(COALESCE(estpagcue, ''))) = 'PENDIENTE'
+                  AND fecinicio IS NOT NULL
+                  AND fecinicio <= CURRENT_TIMESTAMP - INTERVAL '45 days'
+                """,
+                [cliente.ruccedcli],
+            )
+            saldos_vencidos_45 = cursor.fetchone()[0]
+
+        if saldos_vencidos_45 > 0:
+            return False, 'saldo_pendiente', (
+                'El acceso al portal está restringido porque existe al menos '
+                'un saldo pendiente con 45 días o más de antigüedad.'
+            )
 
     with connection.cursor() as cursor:
         cursor.execute(
