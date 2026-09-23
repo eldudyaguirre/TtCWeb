@@ -558,7 +558,7 @@ def _compras_base_sql():
             c.numaut,
             c.baseimpnoobj,
             c.baseimpiva0,
-            c.baseexcenta,
+            c.baseexenta,
             c.baseimpiva5,
             c.baseimpiva8,
             c.baseimpiva12,
@@ -601,7 +601,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             (
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
             ) AS bases_sin_iva,
             (
                 COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
@@ -620,7 +620,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
             (
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
@@ -662,7 +662,7 @@ def _compras_resumen(where, params, cliente):
             COALESCE(SUM(
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
@@ -681,7 +681,7 @@ def _compras_resumen(where, params, cliente):
             COALESCE(SUM(
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexcenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
