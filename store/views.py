@@ -517,11 +517,6 @@ def _dashboard_estadisticas(cliente, anio):
                 + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
             ), 0) AS total
         FROM comprasnue
         WHERE TRIM(tipcom::text) IN ('01', '02')
@@ -538,7 +533,6 @@ def _dashboard_estadisticas(cliente, anio):
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
             ), 0) AS total
         FROM ventas
         WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
