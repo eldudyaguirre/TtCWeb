@@ -1322,11 +1322,11 @@ def _roles_pago_datos(request):
 
     with db.cursor() as cursor:
         cursor.execute("""
-            SELECT DISTINCT TRIM(año::text)
+            SELECT DISTINCT TRIM("año"::text)
             FROM rolgeneral
-            WHERE TRIM(COALESCE(año::text, '')) <> ''
+            WHERE TRIM(COALESCE("año"::text, '')) <> ''
             ORDER BY
-                CASE WHEN TRIM(año::text) ~ '^[0-9]+
+                CASE WHEN TRIM("año"::text) ~ '^[0-9]+
     ('numero', 'N°'),
     ('cedula', 'CÉDULA'),
     ('trabajador', 'TRABAJADOR'),
@@ -3018,8 +3018,8 @@ def template_preview(request, slug):
         raise Http404
     return render(request, template_name, {'preview_mode': True, 'preview_slug': slug})
 
-                     THEN TRIM(año::text)::integer ELSE 0 END DESC,
-                TRIM(año::text) DESC
+                     THEN TRIM("año"::text)::integer ELSE 0 END DESC,
+                TRIM("año"::text) DESC
         """)
         anios = [row[0] for row in cursor.fetchall()]
 
@@ -3040,7 +3040,7 @@ def template_preview(request, slug):
     if mes not in meses_validos:
         mes = ''
 
-    where = ["TRIM(año::text) = %s"]
+    where = ["TRIM("año"::text) = %s"]
     params = [anio]
 
     if mes:
