@@ -92,7 +92,7 @@ def _ingresos_nc_base_sql():
 def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
-            ROW_NUMBER() OVER (ORDER BY fecnc::date ASC, num_nc ASC) AS numero,
+            ROW_NUMBER() OVER (ORDER BY fecnc::date ASC, numnc ASC) AS numero,
             nomcli AS cliente,
             ruccedcli AS ruc,
             fecnc AS fecha,
@@ -114,7 +114,7 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
             fecfac AS fecha_factura
         FROM ({_ingresos_nc_base_sql()}) nc_reporte
         WHERE {where}
-        ORDER BY fecnc::date ASC, num_nc ASC
+        ORDER BY fecnc::date ASC, numnc ASC
     """
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
