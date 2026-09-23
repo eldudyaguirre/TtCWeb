@@ -1196,6 +1196,228 @@ def listado_clientes_excel(request):
     return response
 
 
+TRABAJADORES_COLUMNS = [
+    ('numero', 'N°'),
+    ('cedula', 'CÉDULA'),
+    ('trabajador', 'TRABAJADOR'),
+    ('cargo', 'CARGO'),
+    ('tipojornada', 'TIPO JORNADA'),
+    ('fecentrada', 'FECHA ENTRADA'),
+    ('sueldo', 'SUELDO'),
+]
+
+
+def _trabajadores_datos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, []
+
+    sql = """
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY nombres, cedula) AS numero,
+            TRIM(cedula::text) AS cedula,
+            TRIM(nombres::text) AS trabajador,
+            TRIM(COALESCE(cargo::text, '')) AS cargo,
+            TRIM(COALESCE(tipojornada::text, '')) AS tipojornada,
+            fecentrada,
+            sueldo
+        FROM trabajadores
+        WHERE activo = TRUE
+        ORDER BY nombres, cedula
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql)
+        filas = cursor.fetchall()
+
+    return {'cliente': cliente}, filas
+
+
+@login_required
+def trabajadores(request):
+    try:
+        filtros, filas = _trabajadores_datos(request)
+        if filtros is None:
+            return redirect('portal')
+
+        return render(request, 'trabajadores.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'total_registros': len(filas),
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en listado de trabajadores: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+
+@login_required
+def trabajadores_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas = _trabajadores_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=25,
+        rightMargin=25,
+        topMargin=25,
+        bottomMargin=25,
+    )
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'TrabajadoresTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    cabecera = ParagraphStyle(
+        'TrabajadoresCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=11,
+        alignment=TA_CENTER,
+    )
+    tabla = ParagraphStyle(
+        'TrabajadoresTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7,
+        leading=9,
+    )
+    encabezado = ParagraphStyle(
+        'TrabajadoresEncabezado',
+        parent=tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        alignment=TA_CENTER,
+    )
+
+    elements = [
+        Paragraph('LISTADO DE TRABAJADORES', titulo),
+        Paragraph('TRABAJADORES ACTIVOS', cabecera),
+        Paragraph(
+            f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}',
+            cabecera,
+        ),
+        Spacer(1, 12),
+    ]
+
+    data = [[Paragraph(label, encabezado) for _, label in TRABAJADORES_COLUMNS]]
+    for row in filas:
+        data.append([
+            Paragraph(str(row[0]), tabla),
+            Paragraph(str(row[1] or ''), tabla),
+            Paragraph(str(row[2] or ''), tabla),
+            Paragraph(str(row[3] or ''), tabla),
+            Paragraph(str(row[4] or ''), tabla),
+            Paragraph(
+                row[5].strftime('%d/%m/%Y') if row[5] else '',
+                tabla,
+            ),
+            Paragraph(f'{float(row[6] or 0):.2f}', tabla),
+        ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[35, 85, 180, 115, 100, 90, 75],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 0), (1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (4, -1), 'LEFT'),
+        ('ALIGN', (5, 1), (6, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f'Total de trabajadores activos: {len(filas)}', tabla))
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="listado_trabajadores.pdf"'
+    return response
+
+
+@login_required
+def trabajadores_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas = _trabajadores_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Trabajadores'
+    ws.append([label for _, label in TRABAJADORES_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append([
+            row[0],
+            row[1],
+            row[2],
+            row[3],
+            row[4],
+            row[5],
+            float(row[6] or 0),
+        ])
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    ws.column_dimensions['A'].width = 8
+    ws.column_dimensions['B'].width = 16
+    ws.column_dimensions['C'].width = 40
+    ws.column_dimensions['D'].width = 25
+    ws.column_dimensions['E'].width = 20
+    ws.column_dimensions['F'].width = 18
+    ws.column_dimensions['G'].width = 15
+
+    for cell in ws['F'][1:]:
+        if cell.value:
+            cell.number_format = 'DD/MM/YYYY'
+
+    for cell in ws['G'][1:]:
+        if cell.value is not None:
+            cell.number_format = '#,##0.00'
+
+    ws.append([])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="listado_trabajadores.xlsx"'
+    return response
+
+
 VENTAS_COLUMNS = [
     ('numero', 'N°'),
     ('cliente', 'CLIENTE'),
