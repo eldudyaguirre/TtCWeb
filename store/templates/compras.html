@@ -1,16 +1,40 @@
 {% extends "portal-base.html" %}
 
 {% block title %}Compras | TotalCounts
+
+
+
 <style>
-    .portal-export-btn,
-    .portal-export-btn:visited,
-    .portal-export-btn:hover,
-    .portal-export-btn:focus,
-    .portal-export-btn:active {
+    .portal-export-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        text-decoration: none !important;
         color: #ffffff !important;
     }
 
     .portal-export-btn i {
+        color: #ffffff !important;
+        font-size: 15px;
+    }
+
+    .portal-export-btn:hover,
+    .portal-export-btn:focus,
+    .portal-export-btn:active,
+    .portal-export-btn:visited {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+
+    .portal-export-btn:hover i,
+    .portal-export-btn:focus i,
+    .portal-export-btn:active i,
+    .portal-export-btn:visited i {
         color: #ffffff !important;
     }
 </style>
