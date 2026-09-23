@@ -1524,14 +1524,15 @@ def roles_pago_pdf(request):
               'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA']
 
     top_cells = [
-        Paragraph(x.replace('\n', '<br/>'), encabezado_grupo) if x != 'FIRMA'
-        else Paragraph('FIRMA', firma_encabezado)
-        for x in top
+        Paragraph(x.replace('\n', '<br/>'), encabezado_grupo)
+        for x in top[:-1]
     ]
+    top_cells.append(Paragraph('<b>FIRMA</b>', firma_encabezado))
     second_cells = [
         Paragraph(x.replace('\n', '<br/>'), encabezado) if x else ''
         for x in second
     ]
+    second_cells[-1] = Paragraph('<b>FIRMA</b>', firma_encabezado)
 
     data = [top_cells, second_cells]
 
