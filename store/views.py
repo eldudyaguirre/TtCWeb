@@ -982,6 +982,407 @@ def listado_proveedores_excel(request):
     return response
 
 
+VENTAS_COLUMNS = [
+    ('numero', 'N°'),
+    ('cliente', 'CLIENTE'),
+    ('ruc', 'RUC'),
+    ('fecha', 'FECHA'),
+    ('factura', 'FACTURA'),
+    ('autorizacion', 'AUTORIZACION'),
+    ('base0', 'BASE0'),
+    ('baseiva', 'BASE IVA'),
+    ('iva', 'IVA'),
+    ('total', 'TOTAL'),
+    ('retiva', 'RET IVA'),
+    ('retrenta', 'RET RENTA'),
+    ('numret', 'NUM RET'),
+    ('autret', 'AUT RET'),
+]
+
+
+def _ventas_where(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, [], None
+
+    where = []
+    params = []
+
+    hoy = datetime.now().date()
+    primer_dia_mes = hoy.replace(day=1)
+
+    fecha_desde = request.GET.get('fecha_desde', '').strip()
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip()
+    cliente_busqueda = request.GET.get('cliente_busqueda', '').strip()
+
+    if not fecha_desde:
+        fecha_desde = primer_dia_mes.strftime('%Y-%m-%d')
+    if not fecha_hasta:
+        fecha_hasta = hoy.strftime('%Y-%m-%d')
+
+    if fecha_desde:
+        try:
+            datetime.strptime(fecha_desde, '%Y-%m-%d')
+            where.append("fecfactur::date >= %s::date")
+            params.append(fecha_desde)
+        except ValueError:
+            fecha_desde = ''
+
+    if fecha_hasta:
+        try:
+            datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            where.append("fecfactur::date < (%s::date + INTERVAL '1 day')")
+            params.append(fecha_hasta)
+        except ValueError:
+            fecha_hasta = ''
+
+    if cliente_busqueda:
+        where.append("(ruccedcli ILIKE %s OR nomcli ILIKE %s)")
+        params.extend([f'%{cliente_busqueda}%', f'%{cliente_busqueda}%'])
+
+    return " AND ".join(where) if where else "1=1", params, {
+        'cliente': cliente,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'cliente_busqueda': cliente_busqueda,
+    }
+
+
+def _ventas_base_sql():
+    return """
+        SELECT
+            v.fecfactur,
+            v.nomcli,
+            v.ruccedcli,
+            v.numfactur,
+            v.autorizacion,
+            v.basenoobj,
+            v.baseiva0,
+            v.baseiva12,
+            v.iva,
+            v.retiva,
+            v.retrenta,
+            v.numret,
+            v.autret
+        FROM ventas v
+    """
+
+
+def _ventas_query(where, params, cliente, limit=None, offset=None):
+    sql = f"""
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY fecfactur::date ASC, factura ASC) AS numero,
+            nomcli AS cliente,
+            ruccedcli AS ruc,
+            fecfactur AS fecha,
+            factura,
+            autorizacion,
+            (
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+            ) AS base0,
+            COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric AS baseiva,
+            COALESCE(NULLIF(iva::text, ''), '0')::numeric AS iva,
+            (
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ) AS total,
+            COALESCE(NULLIF(retiva::text, ''), '0')::numeric AS retiva,
+            COALESCE(NULLIF(retrenta::text, ''), '0')::numeric AS retrenta,
+            numret,
+            autret
+        FROM (
+            SELECT
+                fecfactur,
+                nomcli,
+                ruccedcli,
+                numfactur AS factura,
+                autorizacion,
+                basenoobj,
+                baseiva0,
+                baseiva12,
+                iva,
+                retiva,
+                retrenta,
+                numret,
+                autret
+            FROM ({_ventas_base_sql()}) ventas_reporte
+        ) ventas_datos
+        WHERE {where}
+        ORDER BY fecfactur::date ASC, factura ASC
+    """
+
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        params = [*params, limit, offset or 0]
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        return cursor.fetchall()
+
+
+def _ventas_resumen(where, params, cliente):
+    sql = f"""
+        SELECT
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0)
+        FROM ({_ventas_base_sql()}) ventas_reporte
+        WHERE {where}
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    base0, baseiva, iva, total, retiva, retrenta = [float(x or 0) for x in row]
+    return {
+        'base0': base0,
+        'baseiva': baseiva,
+        'iva': iva,
+        'total': total,
+        'retiva': retiva,
+        'retrenta': retrenta,
+    }
+
+
+def _ventas_datos_exportacion(request):
+    where, params, filtros = _ventas_where(request)
+    if where is None:
+        return None, [], None, None
+    cliente = filtros['cliente']
+    filas = _ventas_query(where, params, cliente)
+    resumen = _ventas_resumen(where, params, cliente)
+    return filtros, filas, resumen, where
+
+
+@login_required
+def ventas(request):
+    try:
+        filtros, _, resumen, _ = _ventas_datos_exportacion(request)
+        if filtros is None:
+            return redirect('portal')
+
+        try:
+            pagina = max(1, int(request.GET.get('pagina', '1')))
+        except ValueError:
+            pagina = 1
+
+        por_pagina = 50
+        where, params, _ = _ventas_where(request)
+
+        count_sql = f"SELECT COUNT(*) FROM ({_ventas_base_sql()}) ventas_reporte WHERE {where}"
+        with _cliente_db(filtros['cliente']).cursor() as cursor:
+            cursor.execute(count_sql, params)
+            total_registros = cursor.fetchone()[0]
+
+        offset = (pagina - 1) * por_pagina
+        filas = _ventas_query(where, params, filtros['cliente'], por_pagina, offset)
+        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+
+        return render(request, 'ventas.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'resumen': resumen,
+            'filtros': filtros,
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'total_registros': total_registros,
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en reporte de facturas: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+
+@login_required
+def ventas_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas, resumen, _ = _ventas_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20,
+    )
+    styles = getSampleStyleSheet()
+
+    titulo = ParagraphStyle(
+        'VentasTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=3,
+    )
+    cabecera = ParagraphStyle(
+        'VentasCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
+        alignment=TA_CENTER,
+        spaceAfter=2,
+    )
+    tabla = ParagraphStyle(
+        'VentasTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=5.2,
+        leading=6,
+        alignment=TA_CENTER,
+        wordWrap='CJK',
+    )
+    tabla_izq = ParagraphStyle(
+        'VentasTablaIzq',
+        parent=tabla,
+        alignment=0,
+    )
+    encabezado = ParagraphStyle(
+        'VentasEncabezado',
+        parent=tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        leading=6.4,
+    )
+
+    elements = [
+        Paragraph('REPORTE DE FACTURAS', titulo),
+        Paragraph(
+            f"FACTURAS DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            cabecera,
+        ),
+        Paragraph(
+            f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",
+            cabecera,
+        ),
+        Spacer(1, 10),
+    ]
+
+    data = [[Paragraph(label, encabezado) for _, label in VENTAS_COLUMNS]]
+    for row in filas:
+        formatted = []
+        for index, value in enumerate(row):
+            if index in (1, 2, 3, 4, 5, 12, 13):
+                formatted.append(Paragraph(str(value or ''), tabla if index != 1 else tabla_izq))
+            else:
+                formatted.append(f"{float(value or 0):.2f}" if index in (6, 7, 8, 9, 10, 11) else Paragraph(str(value or ''), tabla))
+        data.append(formatted)
+
+    data.append([
+        '', '', '', '', '', '',
+        f"{resumen['base0']:.2f}",
+        f"{resumen['baseiva']:.2f}",
+        f"{resumen['iva']:.2f}",
+        f"{resumen['total']:.2f}",
+        f"{resumen['retiva']:.2f}",
+        f"{resumen['retrenta']:.2f}",
+        '', '',
+    ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[22, 105, 68, 48, 72, 76, 52, 52, 42, 52, 45, 50, 52, 60],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 5.2),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (13, -1), 'CENTER'),
+        ('ALIGN', (6, 1), (11, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_facturas.pdf"'
+    return response
+
+
+@login_required
+def ventas_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas, resumen, _ = _ventas_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Facturas'
+    ws.append([label for _, label in VENTAS_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.append([])
+    ws.append(['', '', '', '', '', '', 'RESUMEN'])
+    ws.cell(ws.max_row, 7, resumen['base0'])
+    ws.cell(ws.max_row, 8, resumen['baseiva'])
+    ws.cell(ws.max_row, 9, resumen['iva'])
+    ws.cell(ws.max_row, 10, resumen['total'])
+    ws.cell(ws.max_row, 11, resumen['retiva'])
+    ws.cell(ws.max_row, 12, resumen['retrenta'])
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+
+    widths = [7, 35, 17, 13, 25, 28, 15, 15, 13, 16, 14, 16, 18, 22]
+    for i, width in enumerate(widths, 1):
+        ws.column_dimensions[chr(64 + i)].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_facturas.xlsx"'
+    return response
+
+
 
 NOTAS_CREDITO_COLUMNS = [
     ('numero', 'N°'),
