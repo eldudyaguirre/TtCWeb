@@ -1433,22 +1433,22 @@ def roles_pago_pdf(request):
         'RolEncabezado',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=7.2,
-        leading=8,
+        fontSize=5.8,
+        leading=6.5,
         alignment=TA_CENTER,
     )
     encabezado_grupo = ParagraphStyle(
         'RolGrupo',
         parent=encabezado,
-        fontSize=8,
-        leading=9,
+        fontSize=6.5,
+        leading=7,
     )
     dato = ParagraphStyle(
         'RolDato',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=6.2,
-        leading=7,
+        fontSize=5.2,
+        leading=6,
     )
     dato_centro = ParagraphStyle(
         'RolDatoCentro',
@@ -1560,7 +1560,7 @@ def roles_pago_pdf(request):
             for i, valor in enumerate(valores)
         ])
 
-    col_widths = [20, 104, 58, 48, 31, 47, 43, 38, 38, 38, 48, 43, 48, 43, 58, 48, 45, 48, 61]
+    col_widths = [17, 92, 50, 43, 28, 42, 38, 34, 34, 34, 42, 38, 43, 38, 50, 42, 39, 43, 54]
 
     table = Table(
         data,
