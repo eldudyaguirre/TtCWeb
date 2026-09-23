@@ -510,9 +510,8 @@ def _compras_where(request):
         "tipcom IN ('01', '02')",
         "ruccedprovee IS NOT NULL",
         "TRIM(ruccedprovee) <> ''",
-        "ruccedprovee <> %s",
     ]
-    params = [cliente.ruccedcli]
+    params = []
 
     # La fecha almacenada en la base histórica se maneja como DD/MM/YYYY.
     fecha_desde = request.GET.get('fecha_desde', '').strip()
@@ -569,6 +568,11 @@ def _compras_query(where, params, limit=None, offset=None):
             COALESCE(montoiva14, 0),
             COALESCE(montoiva15, 0),
             COALESCE(totbases, 0)
+                + COALESCE(montoiva5, 0)
+                + COALESCE(montoiva8, 0)
+                + COALESCE(montoiva12, 0)
+                + COALESCE(montoiva14, 0)
+                + COALESCE(montoiva15, 0)
         FROM compras
         WHERE {where}
         ORDER BY to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') DESC, numcompra DESC
@@ -596,6 +600,11 @@ def _compras_resumen(where, params):
             COALESCE(SUM(montoiva14), 0),
             COALESCE(SUM(montoiva15), 0),
             COALESCE(SUM(totbases), 0)
+                + COALESCE(SUM(montoiva5), 0)
+                + COALESCE(SUM(montoiva8), 0)
+                + COALESCE(SUM(montoiva12), 0)
+                + COALESCE(SUM(montoiva14), 0)
+                + COALESCE(SUM(montoiva15), 0)
         FROM compras
         WHERE {where}
     """
