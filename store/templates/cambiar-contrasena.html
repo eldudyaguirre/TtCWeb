@@ -1,62 +1,16 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cambiar contraseña | TotalCounts</title>
-    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/default.css' %}">
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260922s">
-</head>
-<body class="portal-shell">
-<div class="portal-layout">
-    <aside class="portal-sidebar">
-        <div class="portal-sidebar-brand">
-            <a href="{% url 'portal' %}" class="portal-brand-link">
-                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts" class="portal-brand">
-            </a>
-        </div>
-        <nav class="portal-menu" aria-label="Menú principal">
-            <a href="{% url 'portal' %}" class="portal-menu-item" data-menu-link>
-                <i class="fi fi-rr-home portal-menu-icon"></i><span>Inicio</span>
-            </a>
-            <div class="portal-menu-title portal-menu-title-space">MI INFORMACIÓN</div>
-            <a href="{% url 'cambiar_contrasena' %}" class="portal-menu-item active" data-menu-link>
-                <i class="fi fi-rr-user portal-menu-icon"></i><span>Mi cuenta</span>
-            </a>
-        </nav>
-        <div class="portal-sidebar-bottom">
-            <a href="{% url 'logout' %}" class="portal-menu-item portal-menu-logout">
-                <i class="fi fi-rr-sign-out-alt portal-menu-icon"></i><span>Cerrar sesión</span>
-            </a>
-        </div>
-    </aside>
+{% extends "portal-base.html" %}
 
-    <div class="portal-main">
-        <header class="portal-topbar">
-            <div class="portal-topbar-inner">
-                <button type="button" class="portal-mobile-toggle" aria-label="Abrir menú" aria-expanded="false">
-                    <i class="fi fi-rr-menu-burger"></i>
-                </button>
-                <a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
-                    <i class="fi fi-rr-arrow-left"></i>
-                </a>
-                <div class="portal-page-title">Mi cuenta</div>
-                <div class="portal-user">
-                    <div class="portal-user-data">
-                        <span class="portal-user-name">{{ request.user.get_username }}</span>
-                        <span class="portal-user-ruc">Seguridad de la cuenta</span>
-                    </div>
-                    <div class="portal-user-avatar">{{ request.user.get_username|first|upper }}</div>
-                </div>
-            </div>
-        </header>
+{% block title %}Cambiar contraseña | TotalCounts{% endblock %}
 
-        <main class="portal-content">
+{% block portal_page_heading %}
+<a href="{% url 'portal' %}" class="portal-back-button" aria-label="Volver al portal">
+    <i class="fi fi-rr-arrow-left"></i>
+</a>
+<div class="portal-page-title">Mi cuenta</div>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
             <div class="container-fluid">
                 {% if messages %}
                     {% for message in messages %}
@@ -113,8 +67,8 @@
                 </section>
             </div>
         </main>
-    </div>
-</div>
-<script src="{% static 'js/portal.js' %}?v=20260922i"></script>
-</body>
-</html>
+{% endblock %}
+
+{% block extra_body %}
+
+{% endblock %}
