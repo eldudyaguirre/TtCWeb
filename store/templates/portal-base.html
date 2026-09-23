@@ -97,7 +97,7 @@
                         <a href="/404.html" class="portal-submenu-item">Productos y Servicios</a>
                         <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
                         <a href="{% url 'factura_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'factura_emitir' %}active{% endif %}">Facturas</a>
-                        <a href="{% url 'nota_credito_emitir' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'nota_credito_emitir' %}active{% endif %}">Notas de Crédito</a>
+                        <a href="/portal/emitir/nota-credito/" class="portal-submenu-item {% if request.resolver_match.url_name == 'nota_credito_emitir' %}active{% endif %}">Notas de Crédito</a>
                         <a href="/404.html" class="portal-submenu-item">Guías de Remisión</a>
                         <a href="/404.html" class="portal-submenu-item">Comprobantes de Retención</a>
                         <a href="/404.html" class="portal-submenu-item">Liquidación de Compras</a>
