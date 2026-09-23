@@ -1,0 +1,110 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Guía de Remisión | Emitir Comprobantes | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.factura-card{margin:0 0 40px;padding:28px 0 28px;background:#fff;border:1px solid #e5eaed;border-radius:12px;box-shadow:0 3px 15px rgba(33,51,62,.05)}
+.factura-heading{display:flex;justify-content:space-between;gap:20px;margin:0 28px 0}
+.factura-heading h1{margin:4px 0 5px;color:#21333e;font-size:1.55rem;font-weight:600;text-transform:uppercase}
+.factura-heading p{margin:2px 0;color:#78838b;font-size:.84rem}
+.portal-content section.factura-section{width:calc(100% - 56px)!important;box-sizing:border-box!important;padding:0!important;margin:0 28px 18px!important;background:transparent!important;background-image:none!important}.factura-section{border:1px solid #e1e7e9;border-radius:9px;overflow:hidden;box-sizing:border-box}
+.factura-section:first-of-type{margin:0 28px 18px;border:0;border-radius:0}.factura-section:first-of-type .factura-section-title{margin-top:-1px;padding-left:28px;padding-right:28px;border-radius:9px 9px 0 0}.factura-section:first-of-type .factura-section-body{padding-left:28px;padding-right:28px;border:1px solid #e1e7e9;border-top:0;border-radius:0 0 9px 9px}.factura-section-title{padding:11px 15px;background:#21333e;color:#fff;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.factura-section-body{padding:18px}
+.factura-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.factura-field{min-width:0}.factura-field label{display:block;margin-bottom:6px;color:#52616a;font-size:.76rem;font-weight:600}
+.factura-field input,.factura-field select,.factura-search input,.factura-payment input,.factura-payment select{width:100%;min-height:40px;padding:0 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;outline:none;box-sizing:border-box}
+.factura-field input:focus,.factura-field select:focus,.factura-search input:focus,.factura-payment input:focus,.factura-payment select:focus{border-color:#058283;box-shadow:0 0 0 3px rgba(5,130,131,.10)}
+.factura-field input[readonly]{background:#f6f8f9}
+.factura-identificacion{display:grid;grid-template-columns:1fr auto;gap:8px}
+.factura-search-btn,.factura-add-btn,.factura-remove-btn,.factura-action{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:7px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.factura-search-btn,.factura-add-btn{padding:0 14px;background:#058283;color:#fff}
+.factura-search-btn:hover,.factura-add-btn:hover{background:#046f70;color:#fff}
+.factura-message{min-height:18px;margin-top:6px;color:#c62828;font-size:.73rem}
+.factura-search{position:relative;display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:14px}
+.factura-product-results{position:absolute;z-index:50;top:46px;left:0;right:90px;display:none;max-height:250px;overflow-y:auto;border:1px solid #dbe2e5;border-radius:7px;background:#fff;box-shadow:0 8px 25px rgba(33,51,62,.12)}
+.factura-product-result{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 12px;border-bottom:1px solid #edf0f1;cursor:pointer}
+.factura-product-result:hover{background:#f5f9f9}.factura-product-result strong{display:block;color:#21333e;font-size:.79rem}.factura-product-result small{color:#89949b;font-size:.69rem}.factura-product-result .price{color:#058283;font-weight:700;white-space:nowrap}
+.factura-table-wrap{overflow-x:auto;border:1px solid #e1e7e9;border-radius:8px}
+.factura-table{width:100%;min-width:1180px;border-collapse:collapse;font-size:.72rem}
+.factura-table th{padding:9px 8px;background:#21333e;color:#fff;font-weight:600;white-space:nowrap}
+.factura-table td{padding:7px;border-top:1px solid #edf0f1;color:#52616a;vertical-align:middle}
+.factura-table input,.factura-table select{width:100%;min-height:34px;padding:0 7px;border:1px solid #dbe2e5;border-radius:5px;background:#fff;color:#26343d;font-family:inherit;font-size:.72rem;box-sizing:border-box}
+.factura-table input:focus,.factura-table select:focus{border-color:#058283;outline:none}
+.factura-remove-btn{width:34px;padding:0;background:#f8eaea;color:#c62828}.factura-empty{padding:25px!important;color:#89949b!important;text-align:center}
+.factura-totales{display:grid;grid-template-columns:1.4fr .8fr;gap:20px;margin-top:18px}
+.factura-summary{border:1px solid #e1e7e9;border-radius:8px;background:#fafcfc}
+.factura-summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 12px;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.77rem}
+.factura-summary-row:last-child{border-bottom:0}.factura-summary-row strong{color:#21333e;font-variant-numeric:tabular-nums}
+.factura-summary-row.total{background:#21333e;color:#fff;border-radius:0 0 8px 8px}.factura-summary-row.total strong{color:#fff;font-size:.92rem}
+.factura-payment{padding:15px;border:1px solid #e1e7e9;border-radius:8px;background:#fafcfc}
+.factura-payment h3{margin:0 0 12px;color:#21333e;font-size:.82rem;font-weight:700}
+.factura-payment-grid{display:grid;grid-template-columns:1fr 120px;gap:10px}
+.factura-negociable{display:flex!important;align-items:center;gap:8px;color:#52616a;font-size:.78rem}.factura-negociable input{width:16px!important;height:16px;accent-color:#058283}
+.factura-final-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin:0 28px 0}.factura-final-row .factura-section{width:100%!important;margin:0!important}.factura-final-row .factura-actions{height:100%;display:flex;align-items:flex-end;justify-content:flex-end;gap:9px;margin:0;padding-bottom:0}.factura-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.factura-action{min-height:42px;padding:0 18px}
+.factura-action.secondary{background:#eef2f3;color:#52616a}.factura-action.primary{background:#058283;color:#fff}.factura-action.primary:hover{background:#046f70}
+.factura-additional{display:grid;grid-template-columns:220px 1fr auto;gap:10px}
+.factura-additional input,.factura-additional textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;box-sizing:border-box;resize:vertical}
+.factura-adicional-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.75rem}
+@media(max-width:900px){.factura-grid,.factura-totales{grid-template-columns:1fr}}
+@media(max-width:767px){.factura-card{margin:0 0 25px;padding:18px 14px}.factura-heading{flex-direction:column;gap:10px}.factura-heading h1{font-size:1.3rem}.factura-section-body{padding:14px}.factura-grid,.factura-totales{grid-template-columns:1fr}.factura-search{grid-template-columns:1fr}.factura-product-results{right:0}.factura-payment-grid,.factura-additional{grid-template-columns:1fr}.factura-final-row{grid-template-columns:1fr;margin:0 14px}.factura-final-row .factura-actions{display:grid;grid-template-columns:1fr}.factura-action{width:100%}}
+.guia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.guia-full{grid-column:1/-1}.guia-table{width:100%;min-width:720px;border-collapse:collapse;font-size:.72rem}.guia-table th{padding:9px 8px;background:#21333e;color:#fff;font-weight:600;white-space:nowrap}.guia-table td{padding:7px;border-top:1px solid #edf0f1;color:#52616a;vertical-align:middle}.guia-table input{width:100%;min-height:34px;padding:0 7px;border:1px solid #dbe2e5;border-radius:5px;background:#fff;color:#26343d;font-family:inherit;font-size:.72rem;box-sizing:border-box}.guia-actions{display:flex;justify-content:flex-end;gap:9px;margin:20px 28px 0}@media(max-width:767px){.guia-grid{grid-template-columns:1fr}.guia-full{grid-column:auto}.guia-actions{display:grid;grid-template-columns:1fr;margin:20px 14px 0}.guia-actions .factura-action{width:100%}}</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+<div class="container-fluid">
+<section class="factura-card">
+<div class="factura-heading">
+<div><div class="portal-kicker">Emitir Comprobantes</div><h1>GUÍA DE REMISIÓN</h1><p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p></div>
+</div>
+
+<section class="factura-section"><div class="factura-section-title">Traslado</div><div class="factura-section-body"><div class="guia-grid">
+<div class="factura-field guia-full"><label>Dirección de partida *</label><input id="direccion_partida" maxlength="300"></div>
+<div class="factura-field"><label>Inicio de transporte *</label><input id="fecha_inicio" type="date"></div><div class="factura-field"><label>Fin de transporte *</label><input id="fecha_fin" type="date"></div><div class="factura-field"><label>Placa *</label><input id="placa" maxlength="9"></div>
+</div></div></section>
+<section class="factura-section"><div class="factura-section-title">Transportista</div><div class="factura-section-body"><div class="guia-grid">
+<div class="factura-field"><label>Identificación *</label><div class="factura-identificacion"><input id="transportista_identificacion" maxlength="20" placeholder="RUC / CI / Pasaporte"><button type="button" id="buscar_transportista" class="factura-search-btn"><i class="fi fi-rr-search"></i></button></div><div id="transportista_message" class="factura-message"></div></div>
+<div class="factura-field"><label>Tipo identificación *</label><select id="transportista_tipo"><option value="">Seleccione</option>{% for codigo,nombre in tipos_identificacion %}<option value="{{ codigo }}">{{ nombre }}</option>{% endfor %}</select></div>
+<div class="factura-field"><label>Razón social *</label><input id="transportista_nombre" maxlength="150"></div><div class="factura-field"><label>Correo electrónico</label><input id="transportista_email" type="email" maxlength="50"></div>
+</div></div></section>
+<section class="factura-section"><div class="factura-section-title">Destinatario / Cliente</div><div class="factura-section-body"><div class="guia-grid">
+<div class="factura-field"><label>Identificación *</label><div class="factura-identificacion"><input id="destinatario_identificacion" maxlength="20" placeholder="RUC / CI / Pasaporte"><button type="button" id="buscar_destinatario" class="factura-search-btn"><i class="fi fi-rr-search"></i></button></div><div id="destinatario_message" class="factura-message"></div></div>
+<div class="factura-field"><label>Tipo identificación *</label><select id="destinatario_tipo"><option value="">Seleccione</option><option value="05">Cédula</option><option value="04">RUC</option><option value="06">Pasaporte</option><option value="08">Id. Exterior</option><option value="07">Consumidor Final</option><option value="22">Emisor Itinerante</option></select></div>
+<div class="factura-field"><label>Razón social *</label><input id="destinatario_nombre" maxlength="150"></div><div class="factura-field guia-full"><label>Dirección destino *</label><input id="direccion_destino" maxlength="300"></div>
+<div class="factura-field"><label>Ruta</label><input id="ruta" maxlength="300"></div><div class="factura-field"><label>Motivo *</label><input id="motivo" maxlength="300"></div><div class="factura-field"><label>Documento aduanero</label><input id="documento_aduanero" maxlength="25"></div>
+</div></div></section>
+<section class="factura-section"><div class="factura-section-title">Comprobante sustento</div><div class="factura-section-body"><div class="guia-grid">
+<div class="factura-field"><label>Tipo de emisión</label><select id="tipo_emision_sustento"><option value="FIS">Física</option><option value="ELE">Electrónica</option></select></div><div class="factura-field"><label>Documento</label><select id="tipo_comprobante_sustento"><option value="FACTURA">Factura</option></select></div>
+<div class="factura-field"><label>Buscar por</label><select id="buscar_por_sustento"><option value="ACC">Clave de acceso</option><option value="AUT">Número de autorización</option></select></div>
+<div class="factura-field"><label>Criterio de búsqueda</label><div class="factura-identificacion"><input id="criterio_sustento"><button type="button" id="buscar_sustento_guia" class="factura-search-btn">Validar</button></div><div id="sustento_guia_message" class="factura-message"></div></div>
+<div class="factura-field"><label>Clave de acceso</label><input id="clave_acceso_sustento" readonly></div><div class="factura-field"><label>Número autorización</label><input id="numero_autorizacion_sustento"></div><div class="factura-field"><label>Fecha de emisión</label><input id="fecha_emision_sustento" type="date"></div><div class="factura-field"><label>Número comprobante</label><input id="numero_comprobante_sustento" maxlength="17" placeholder="001-001-000000000"></div>
+</div></div></section>
+<section class="factura-section"><div class="factura-section-title">Detalle de productos</div><div class="factura-section-body"><div class="factura-search"><input id="producto_busqueda" type="search" autocomplete="off" placeholder="Escriba una letra o palabra, después seleccione el producto"><button type="button" id="agregar_manual" class="factura-add-btn"><i class="fi fi-rr-plus"></i> Agregar</button><div id="producto_resultados" class="factura-product-results"></div></div><div class="factura-table-wrap"><table class="guia-table"><thead><tr><th>Código Principal</th><th>Código Auxiliar</th><th>Cantidad</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="detalle_body"><tr id="detalle_vacio"><td colspan="5" class="factura-empty">No existen productos</td></tr></tbody></table></div></div></section>
+<section class="factura-section"><div class="factura-section-title">Información adicional</div><div class="factura-section-body"><div class="factura-additional"><input id="campo_adicional_nombre" maxlength="50" placeholder="Nombre"><textarea id="campo_adicional_descripcion" rows="1" maxlength="300" placeholder="Descripción"></textarea><button type="button" id="agregar_adicional" class="factura-add-btn">Añadir</button></div><div id="adicionales_lista"></div></div></section><div class="guia-actions"><button type="button" class="factura-action secondary" id="guardar_sin_firmar"><i class="fi fi-rr-disk"></i> Guardar sin firmar</button><button type="button" class="factura-action primary" id="firmar_enviar"><i class="fi fi-rr-paper-plane"></i> Firmar y enviar</button></div></div>
+</section>
+</div>
+</main>
+{% endblock %}
+
+{% block extra_body %}
+{{ establecimientos|json_script:"factura-establecimientos" }}
+<script>
+(function(){
+const data=JSON.parse(document.getElementById('factura-establecimientos').textContent);const $=id=>document.getElementById(id);
+const est=$('establecimiento'),punto=$('punto_emision'),nombre=$('nombre_comercial'),busqueda=$('producto_busqueda'),resultados=$('producto_resultados'),cuerpo=$('detalle_body');let timer=null;
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function cargarPuntos(){const item=data.find(x=>String(x.id)===String(est.value));punto.innerHTML='<option value="">Seleccione</option>';nombre.value='';if(!item)return;nombre.value=item.nombre||'';item.puntos.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.codigo+(p.nombre?' - '+p.nombre:'')+(p.secuencial?' | Sec. '+String(p.secuencial).padStart(9,'0'):' | Sin secuencial');punto.appendChild(o)})}est.addEventListener('change',cargarPuntos);
+async function buscarPersona(inputId,prefix,msgId){const value=$(inputId).value.trim();$(msgId).textContent='';if(!value){$(msgId).textContent='Ingrese una identificación.';return}try{const r=await fetch('{% url "factura_buscar_cliente" %}?identificacion='+encodeURIComponent(value));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'No se encontró la identificación.');const x=d.cliente;$(prefix+'_tipo').value=x.tipo_identificacion||'';$(prefix+'_nombre').value=x.razon_social||'';$(prefix+'_email').value=x.email||'';if(prefix==='destinatario')$('direccion_destino').value=x.direccion||''}catch(e){$(msgId).textContent=e.message}}
+$('buscar_transportista').onclick=()=>buscarPersona('transportista_identificacion','transportista','transportista_message');$('buscar_destinatario').onclick=()=>buscarPersona('destinatario_identificacion','destinatario','destinatario_message');
+async function buscarProductos(){const q=busqueda.value.trim();if(!q){resultados.style.display='none';return}try{const r=await fetch('{% url "factura_buscar_productos" %}?q='+encodeURIComponent(q));const d=await r.json();resultados.innerHTML='';(d.productos||[]).forEach(item=>{const x=document.createElement('div');x.className='factura-product-result';x.innerHTML='<div><strong>'+esc(item.descripcion)+'</strong><small>'+esc(item.codigo)+'</small></div>';x.onclick=()=>{agregarFila(item);resultados.style.display='none';busqueda.value=''};resultados.appendChild(x)});if(!d.productos?.length)resultados.innerHTML='<div class="factura-product-result"><small>No se encontraron productos.</small></div>';resultados.style.display='block'}catch(e){resultados.innerHTML='<div class="factura-product-result"><small>'+esc(e.message)+'</small></div>';resultados.style.display='block'}}
+busqueda.oninput=()=>{clearTimeout(timer);timer=setTimeout(buscarProductos,250)};document.addEventListener('click',e=>{if(!resultados.contains(e.target)&&e.target!==busqueda)resultados.style.display='none'});
+function eliminar(tr){tr.remove();if(!cuerpo.querySelector('.guia-detalle-row'))cuerpo.innerHTML='<tr id="detalle_vacio"><td colspan="5" class="factura-empty">No existen productos</td></tr>'}
+function agregarFila(item){const v=$('detalle_vacio');if(v)v.remove();const tr=document.createElement('tr');tr.className='guia-detalle-row';tr.innerHTML='<td><input value="'+esc(item.codigo||'')+'"></td><td><input></td><td><input type="number" min="0.01" step="0.01" value="1"></td><td><input value="'+esc(item.descripcion||'')+'"></td><td><button type="button" class="factura-remove-btn"><i class="fi fi-rr-trash"></i></button></td>';tr.querySelector('button').onclick=()=>eliminar(tr);cuerpo.appendChild(tr)}
+$('agregar_manual').onclick=()=>agregarFila({codigo:'',descripcion:''});
+$('agregar_adicional').onclick=()=>{const n=$('campo_adicional_nombre').value.trim(),d=$('campo_adicional_descripcion').value.trim();if(!n&&!d)return;const row=document.createElement('div');row.className='factura-adicional-row';row.innerHTML='<span><strong>'+esc(n)+'</strong> — '+esc(d)+'</span>';const b=document.createElement('button');b.type='button';b.className='factura-remove-btn';b.innerHTML='<i class="fi fi-rr-trash"></i>';b.onclick=()=>row.remove();row.appendChild(b);$('adicionales_lista').appendChild(row);$('campo_adicional_nombre').value='';$('campo_adicional_descripcion').value=''};
+$('buscar_sustento_guia').onclick=()=>{$('sustento_guia_message').textContent='La validación del comprobante de sustento se conectará con el SRI.'};
+$('guardar_sin_firmar').onclick=()=>alert('La estructura de la guía de remisión está preparada.');$('firmar_enviar').onclick=()=>alert('La firma digital y envío al SRI se integrarán sobre esta estructura.');cargarPuntos();
+})();
+</script>
+{% endblock %}
