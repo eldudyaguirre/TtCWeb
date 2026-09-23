@@ -21,7 +21,8 @@
 
     .trabajador-link {
         color: inherit;
-        font-weight: 600;
+        font-weight: inherit;
+        font-size: inherit;
         text-decoration: none;
         cursor: pointer;
     }
@@ -59,6 +60,24 @@
         margin: 0;
         font-size: 20px;
     }
+    .trabajador-modal-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .trabajador-modal-pdf {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #21333e;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .trabajador-modal-pdf:hover { text-decoration: none; opacity: .9; }
     .trabajador-modal-close {
         border: 0;
         background: transparent;
@@ -176,7 +195,12 @@
                 <div class="trabajador-modal-card" role="dialog" aria-modal="true" aria-labelledby="trabajadorModalTitle">
                     <div class="trabajador-modal-header">
                         <h2 id="trabajadorModalTitle">Información del trabajador</h2>
-                        <button type="button" class="trabajador-modal-close" id="trabajadorModalClose" aria-label="Cerrar">&times;</button>
+                        <div class="trabajador-modal-actions">
+                            <a href="#" id="trabajadorModalPdf" class="trabajador-modal-pdf" target="_blank" rel="noopener">
+                                <i class="fi fi-rr-file-pdf"></i> PDF
+                            </a>
+                            <button type="button" class="trabajador-modal-close" id="trabajadorModalClose" aria-label="Cerrar">&times;</button>
+                        </div>
                     </div>
                     <div class="trabajador-modal-body" id="trabajadorModalBody">
                         <div class="trabajador-modal-loading">Cargando información...</div>
@@ -189,7 +213,9 @@
                 const modal = document.getElementById('trabajadorModal');
                 const body = document.getElementById('trabajadorModalBody');
                 const close = document.getElementById('trabajadorModalClose');
+                const pdfButton = document.getElementById('trabajadorModalPdf');
                 const detailUrl = "{% url 'trabajador_detalle' 'CEDULA_TRABAJADOR' %}";
+                const pdfUrl = "{% url 'trabajador_pdf' 'CEDULA_TRABAJADOR' %}";
 
                 function escapeHtml(value) {
                     return String(value ?? '')
@@ -233,6 +259,7 @@
                     link.addEventListener('click', async function (event) {
                         event.preventDefault();
                         const cedula = this.dataset.cedula;
+                        pdfButton.href = pdfUrl.replace('CEDULA_TRABAJADOR', encodeURIComponent(cedula));
                         modal.classList.add('show');
                         modal.setAttribute('aria-hidden', 'false');
                         body.innerHTML = '<div class="trabajador-modal-loading">Cargando información...</div>';
