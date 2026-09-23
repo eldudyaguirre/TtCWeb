@@ -527,8 +527,9 @@ def _compras_where(request):
 
 
 def _compras_base_sql():
-    # Compras normales = tipo 01; notas de venta = tipo 02.
-    # Las notas de crédito (04) no forman parte de este módulo.
+    # Los tipos de comprobante están en la propia tabla compras:
+    # 01 = factura, 02 = nota de venta y 04 = nota de crédito.
+    # Este reporte muestra 01 y 02; las notas de crédito (04) se excluyen.
     return """
         SELECT
             c.feccompra,
@@ -538,23 +539,9 @@ def _compras_base_sql():
             c.prcivacom,
             c.valivacom,
             c.totcompra,
-            '01' AS tipcom
+            TRIM(c.tpcomp::text) AS tipcom
         FROM compras c
-        WHERE COALESCE(TRIM(c.tpcomp::text), '01') = '01'
-
-        UNION ALL
-
-        SELECT
-            c.feccompra,
-            c.ruccedpro,
-            c.nomprovee,
-            c.subtotcom,
-            c.prcivacom,
-            c.valivacom,
-            c.totcompra,
-            '02' AS tipcom
-        FROM comprasnv c
-        WHERE COALESCE(TRIM(c.tpcomp::text), '02') = '02'
+        WHERE TRIM(c.tpcomp::text) IN ('01', '02')
     """
 
 
