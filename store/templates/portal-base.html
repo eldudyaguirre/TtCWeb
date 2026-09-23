@@ -25,7 +25,7 @@
             <nav class="portal-menu" aria-label="Menú principal">
                 <div class="portal-menu-title">MENÚ PRINCIPAL</div>
 
-                <a href="#" class="portal-menu-item {% if request.resolver_match.url_name == 'portal' %}active{% endif %}" data-menu-link>
+                <a href="{% url 'portal' %}" class="portal-menu-item {% if request.resolver_match.url_name == 'portal' %}active{% endif %}" data-menu-link>
                     <i class="fi fi-rr-home portal-menu-icon"></i>
                     <span>Inicio</span>
                 </a>
@@ -94,15 +94,15 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'mi_empresa' or request.resolver_match.url_name == 'cambiar_contrasena' or request.resolver_match.url_name == 'parametros' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-settings portal-menu-icon"></i>
                         <span>Configuración</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
-                        <a href="{% url 'mi_empresa' %}" class="portal-submenu-item" onclick="window.location.href=this.href; return false;">Mi empresa</a>
-                        <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item" onclick="window.location.href=this.href; return false;">Cambiar contraseña</a>
-                        <a href="{% url 'parametros' %}" class="portal-submenu-item" onclick="window.location.href=this.href; return false;">Parámetros</a>
+                        <a href="{% url 'mi_empresa' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'mi_empresa' %}active{% endif %}" onclick="window.location.href=this.href; return false;">Mi empresa</a>
+                        <a href="{% url 'cambiar_contrasena' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'cambiar_contrasena' %}active{% endif %}" onclick="window.location.href=this.href; return false;">Cambiar contraseña</a>
+                        <a href="{% url 'parametros' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'parametros' %}active{% endif %}" onclick="window.location.href=this.href; return false;">Parámetros</a>
                     </div>
                 </div>
             </nav>
