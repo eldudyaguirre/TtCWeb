@@ -12,6 +12,17 @@
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260923v">
     {% block extra_head %}{% endblock %}
+<style>
+.portal-menu-locked { opacity: .7; cursor: not-allowed !important; }
+.portal-menu-locked .portal-menu-arrow { opacity: .45; }
+.portal-menu-lock { margin-left: auto; font-size: 12px; opacity: .8; }
+.portal-access-alert { margin: 18px 24px 0; padding: 14px 18px; display:flex; align-items:flex-start; gap:12px; border:1px solid rgba(192,145,35,.35); background:rgba(192,145,35,.08); border-radius:10px; }
+.portal-access-alert-icon { font-size:20px; margin-top:2px; }
+.portal-access-alert-content { display:flex; flex-direction:column; gap:3px; }
+.portal-access-alert-content strong { font-size:14px; }
+.portal-access-alert-content span { font-size:13px; }
+.portal-access-alert-content small { opacity:.75; font-size:12px; }
+</style>
 </head>
 <body class="portal-shell">
     <div class="portal-layout">
@@ -31,9 +42,9 @@
                 </a>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'compras' or request.resolver_match.url_name == 'notas_credito' or request.resolver_match.url_name == 'listado_proveedores' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'compras' or request.resolver_match.url_name == 'notas_credito' or request.resolver_match.url_name == 'listado_proveedores' %}active{% endif %}{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-shopping-cart portal-menu-icon"></i>
-                        <span>Gastos</span>
+                        <span>Gastos</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -45,9 +56,9 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'ventas' or request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'ventas' or request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-money-bill-wave portal-menu-icon"></i>
-                        <span>Ingresos</span>
+                        <span>Ingresos</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -62,9 +73,9 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-building portal-menu-icon"></i>
-                        <span>SRI</span>
+                        <span>SRI</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -74,9 +85,9 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'trabajadores' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'trabajadores' %}active{% endif %}{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-users portal-menu-icon"></i>
-                        <span>Laboral</span>
+                        <span>Laboral</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -88,9 +99,9 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'factura_emitir' or request.resolver_match.url_name == 'nota_credito_emitir' or request.resolver_match.url_name == 'guia_remision_emitir' or request.resolver_match.url_name == 'retencion_emitir' or request.resolver_match.url_name == 'liquidacion_compra_emitir' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'factura_emitir' or request.resolver_match.url_name == 'nota_credito_emitir' or request.resolver_match.url_name == 'guia_remision_emitir' or request.resolver_match.url_name == 'retencion_emitir' or request.resolver_match.url_name == 'liquidacion_compra_emitir' %}active{% endif %}{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-document portal-menu-icon"></i>
-                        <span>Emitir Comprobantes</span>
+                        <span>Emitir Comprobantes</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -105,9 +116,9 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'mi_empresa' or request.resolver_match.url_name == 'cambiar_contrasena' or request.resolver_match.url_name == 'parametros' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'mi_empresa' or request.resolver_match.url_name == 'cambiar_contrasena' or request.resolver_match.url_name == 'parametros' %}active{% endif %}{% if acceso_restringido %} portal-menu-locked{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-settings portal-menu-icon"></i>
-                        <span>Configuración</span>
+                        <span>Configuración</span>{% if acceso_restringido %}<i class="fi fi-rr-lock portal-menu-lock"></i>{% endif %}
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
@@ -155,6 +166,16 @@
                     {% endif %}
                 </div>
             </header>
+            {% if acceso_restringido and not es_administrador %}
+            <div class="portal-access-alert">
+                <div class="portal-access-alert-icon"><i class="fi fi-rr-lock"></i></div>
+                <div class="portal-access-alert-content">
+                    <strong>Acceso a beneficios restringido</strong>
+                    <span>{{ detalle_acceso }}</span>
+                    <small>Regulariza tus valores pendientes para habilitar nuevamente las funciones del portal.</small>
+                </div>
+            </div>
+            {% endif %}
             {% block portal_content %}{% endblock %}
             <footer class="portal-footer">
                 <div class="container-fluid">
