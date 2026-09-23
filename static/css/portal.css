@@ -723,6 +723,57 @@
 }
 
 
+/* Dashboard: prevent global section spacing from main.css from creating
+   large blank areas, especially on responsive/mobile layouts. */
+.portal-content section.dashboard-header,
+.portal-content section.dashboard-kpis,
+.portal-content section.dashboard-chart-grid,
+.portal-content section.dashboard-comparison {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.portal-content section.dashboard-header {
+    margin-top: 0 !important;
+}
+
+.portal-content section.dashboard-kpis {
+    margin-top: 0 !important;
+    margin-bottom: 20px !important;
+}
+
+.portal-content section.dashboard-chart-grid {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.portal-content section.dashboard-comparison {
+    margin-top: 18px !important;
+    margin-bottom: 0 !important;
+}
+
+@media (max-width: 767px) {
+    .portal-content section.dashboard-header {
+        margin: 0 0 14px !important;
+        padding: 0 !important;
+    }
+
+    .portal-content section.dashboard-kpis {
+        margin: 0 0 14px !important;
+        padding: 0 !important;
+    }
+
+    .portal-content section.dashboard-chart-grid {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .portal-content section.dashboard-comparison {
+        margin: 14px 0 0 !important;
+        padding: 0 !important;
+    }
+}
+
 /* Override global section styles from main.css used by the public site.
    Portal sections must not inherit the 130px vertical section padding. */
 .portal-content section.portal-summary,
