@@ -1523,10 +1523,17 @@ def roles_pago_pdf(request):
               'ACUMULACIÓN\nFONDOS DE\nRESERVA', 'TOTAL\nEGRESOS',
               'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA']
 
-    data = [
-        [Paragraph(x.replace('\n', '<br/>'), firma_encabezado if x == 'FIRMA' else encabezado_grupo) for x in top],
-        [Paragraph(x.replace('\n', '<br/>'), encabezado) if x else '' for x in second],
+    top_cells = [
+        Paragraph(x.replace('\n', '<br/>'), encabezado_grupo) if x != 'FIRMA'
+        else Paragraph('FIRMA', firma_encabezado)
+        for x in top
     ]
+    second_cells = [
+        Paragraph(x.replace('\n', '<br/>'), encabezado) if x else ''
+        for x in second
+    ]
+
+    data = [top_cells, second_cells]
 
     def money(value):
         if value is None or value == '':
