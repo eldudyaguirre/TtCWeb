@@ -88,7 +88,7 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'factura_emitir' or request.resolver_match.url_name == 'nota_credito_emitir' or request.resolver_match.url_name == 'guia_remision_emitir' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'factura_emitir' or request.resolver_match.url_name == 'nota_credito_emitir' or request.resolver_match.url_name == 'guia_remision_emitir' or request.resolver_match.url_name == 'retencion_emitir' or request.resolver_match.url_name == 'liquidacion_compra_emitir' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-document portal-menu-icon"></i>
                         <span>Emitir Comprobantes</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
