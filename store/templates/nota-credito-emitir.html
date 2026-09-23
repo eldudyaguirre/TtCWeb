@@ -1,0 +1,159 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Nota de Crédito | Emitir Comprobantes | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.factura-card{margin:0 0 40px;padding:28px 0 28px;background:#fff;border:1px solid #e5eaed;border-radius:12px;box-shadow:0 3px 15px rgba(33,51,62,.05)}
+.factura-heading{display:flex;justify-content:space-between;gap:20px;margin:0 28px 0}
+.factura-heading h1{margin:4px 0 5px;color:#21333e;font-size:1.55rem;font-weight:600;text-transform:uppercase}
+.factura-heading p{margin:2px 0;color:#78838b;font-size:.84rem}
+.portal-content section.factura-section{width:calc(100% - 56px)!important;box-sizing:border-box!important;padding:0!important;margin:0 28px 18px!important;background:transparent!important;background-image:none!important}.factura-section{border:1px solid #e1e7e9;border-radius:9px;overflow:hidden;box-sizing:border-box}
+.factura-section:first-of-type{margin:0 28px 18px;border:0;border-radius:0}.factura-section:first-of-type .factura-section-title{margin-top:-1px;padding-left:28px;padding-right:28px;border-radius:9px 9px 0 0}.factura-section:first-of-type .factura-section-body{padding-left:28px;padding-right:28px;border:1px solid #e1e7e9;border-top:0;border-radius:0 0 9px 9px}.factura-section-title{padding:11px 15px;background:#21333e;color:#fff;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.factura-section-body{padding:18px}
+.factura-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.factura-field{min-width:0}.factura-field label{display:block;margin-bottom:6px;color:#52616a;font-size:.76rem;font-weight:600}
+.factura-field input,.factura-field select,.factura-search input,.factura-payment input,.factura-payment select{width:100%;min-height:40px;padding:0 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;outline:none;box-sizing:border-box}
+.factura-field input:focus,.factura-field select:focus,.factura-search input:focus,.factura-payment input:focus,.factura-payment select:focus{border-color:#058283;box-shadow:0 0 0 3px rgba(5,130,131,.10)}
+.factura-field input[readonly]{background:#f6f8f9}
+.factura-identificacion{display:grid;grid-template-columns:1fr auto;gap:8px}
+.factura-search-btn,.factura-add-btn,.factura-remove-btn,.factura-action{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:7px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.factura-search-btn,.factura-add-btn{padding:0 14px;background:#058283;color:#fff}
+.factura-search-btn:hover,.factura-add-btn:hover{background:#046f70;color:#fff}
+.factura-message{min-height:18px;margin-top:6px;color:#c62828;font-size:.73rem}
+.factura-search{position:relative;display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:14px}
+.factura-product-results{position:absolute;z-index:50;top:46px;left:0;right:90px;display:none;max-height:250px;overflow-y:auto;border:1px solid #dbe2e5;border-radius:7px;background:#fff;box-shadow:0 8px 25px rgba(33,51,62,.12)}
+.factura-product-result{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 12px;border-bottom:1px solid #edf0f1;cursor:pointer}
+.factura-product-result:hover{background:#f5f9f9}.factura-product-result strong{display:block;color:#21333e;font-size:.79rem}.factura-product-result small{color:#89949b;font-size:.69rem}.factura-product-result .price{color:#058283;font-weight:700;white-space:nowrap}
+.factura-table-wrap{overflow-x:auto;border:1px solid #e1e7e9;border-radius:8px}
+.factura-table{width:100%;min-width:1180px;border-collapse:collapse;font-size:.72rem}
+.factura-table th{padding:9px 8px;background:#21333e;color:#fff;font-weight:600;white-space:nowrap}
+.factura-table td{padding:7px;border-top:1px solid #edf0f1;color:#52616a;vertical-align:middle}
+.factura-table input,.factura-table select{width:100%;min-height:34px;padding:0 7px;border:1px solid #dbe2e5;border-radius:5px;background:#fff;color:#26343d;font-family:inherit;font-size:.72rem;box-sizing:border-box}
+.factura-table input:focus,.factura-table select:focus{border-color:#058283;outline:none}
+.factura-remove-btn{width:34px;padding:0;background:#f8eaea;color:#c62828}.factura-empty{padding:25px!important;color:#89949b!important;text-align:center}
+.factura-totales{display:grid;grid-template-columns:1.4fr .8fr;gap:20px;margin-top:18px}
+.factura-summary{border:1px solid #e1e7e9;border-radius:8px;background:#fafcfc}
+.factura-summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 12px;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.77rem}
+.factura-summary-row:last-child{border-bottom:0}.factura-summary-row strong{color:#21333e;font-variant-numeric:tabular-nums}
+.factura-summary-row.total{background:#21333e;color:#fff;border-radius:0 0 8px 8px}.factura-summary-row.total strong{color:#fff;font-size:.92rem}
+.factura-payment{padding:15px;border:1px solid #e1e7e9;border-radius:8px;background:#fafcfc}
+.factura-payment h3{margin:0 0 12px;color:#21333e;font-size:.82rem;font-weight:700}
+.factura-payment-grid{display:grid;grid-template-columns:1fr 120px;gap:10px}
+.factura-negociable{display:flex!important;align-items:center;gap:8px;color:#52616a;font-size:.78rem}.factura-negociable input{width:16px!important;height:16px;accent-color:#058283}
+.factura-final-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin:0 28px 0}.factura-final-row .factura-section{width:100%!important;margin:0!important}.factura-final-row .factura-actions{height:100%;display:flex;align-items:flex-end;justify-content:flex-end;gap:9px;margin:0;padding-bottom:0}.factura-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.factura-action{min-height:42px;padding:0 18px}
+.factura-action.secondary{background:#eef2f3;color:#52616a}.factura-action.primary{background:#058283;color:#fff}.factura-action.primary:hover{background:#046f70}
+.factura-additional{display:grid;grid-template-columns:220px 1fr auto;gap:10px}
+.factura-additional input,.factura-additional textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;box-sizing:border-box;resize:vertical}
+.factura-adicional-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.75rem}
+@media(max-width:900px){.factura-grid,.factura-totales{grid-template-columns:1fr}}
+@media(max-width:767px){.factura-card{margin:0 0 25px;padding:18px 14px}.factura-heading{flex-direction:column;gap:10px}.factura-heading h1{font-size:1.3rem}.factura-section-body{padding:14px}.factura-grid,.factura-totales{grid-template-columns:1fr}.factura-search{grid-template-columns:1fr}.factura-product-results{right:0}.factura-payment-grid,.factura-additional{grid-template-columns:1fr}.factura-final-row{grid-template-columns:1fr;margin:0 14px}.factura-final-row .factura-actions{display:grid;grid-template-columns:1fr}.factura-action{width:100%}}
+
+.nota-sustento-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.nota-sustento-grid .full{grid-column:1/-1}.nota-sustento-search{display:grid;grid-template-columns:1fr auto;gap:8px}.nota-sustento-message{min-height:18px;margin-top:6px;color:#c62828;font-size:.73rem}.nota-radio-group{display:flex;align-items:center;gap:18px;min-height:40px}.nota-radio{display:flex;align-items:center;gap:7px;color:#52616a;font-size:.78rem}.nota-radio input{width:16px!important;height:16px!important;accent-color:#058283}
+@media(max-width:767px){.nota-sustento-grid{grid-template-columns:1fr}.nota-sustento-grid .full{grid-column:auto}.nota-sustento-search{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+<div class="container-fluid">
+<section class="factura-card">
+<div class="factura-heading">
+<div><div class="portal-kicker">Emitir Comprobantes</div><h1>NOTA DE CRÉDITO</h1><p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p></div>
+</div>
+
+<section class="factura-section">
+<div class="factura-section-title">Identificación del comprobante</div>
+<div class="factura-section-body">
+<div class="factura-grid">
+<div class="factura-field"><label for="establecimiento">Establecimiento *</label>
+<select id="establecimiento"><option value="">Seleccione</option>{% for item in establecimientos %}<option value="{{ item.id }}">{{ item.codigo }} - {{ item.direccion|default:item.nombre }}</option>{% endfor %}</select></div>
+<div class="factura-field"><label>Nombre comercial</label><input id="nombre_comercial" readonly></div>
+<div class="factura-field"><label for="fecha_emision">Fecha de emisión</label><input id="fecha_emision" type="date" value="{{ fecha_emision }}" readonly></div>
+<div class="factura-field"><label for="punto_emision">Punto de emisión *</label><select id="punto_emision"><option value="">Seleccione</option></select></div>
+<div class="factura-field"><label for="guia_remision">Guía de remisión</label><input id="guia_remision" maxlength="17" placeholder="001-001-000000000"></div>
+<div class="factura-field"><label class="factura-negociable"><input id="factura_negociable" type="checkbox"> Factura comercial negociable</label></div>
+</div></div></section>
+
+<section class="factura-section">
+<div class="factura-section-title">Adquirente</div>
+<div class="factura-section-body">
+<div class="factura-grid">
+<div class="factura-field"><label for="identificacion">Identificación *</label><div class="factura-identificacion"><input id="identificacion" maxlength="20" placeholder="RUC / CI / Pasaporte / Id. exterior"><button type="button" id="buscar_cliente" class="factura-search-btn"><i class="fi fi-rr-search"></i></button></div><div id="cliente_message" class="factura-message"></div></div>
+<div class="factura-field"><label for="tipo_identificacion">Tipo identificación *</label><select id="tipo_identificacion"><option value="">Seleccione</option>{% for codigo,nombre in tipos_identificacion %}<option value="{{ codigo }}">{{ nombre }}</option>{% endfor %}</select></div>
+<div class="factura-field"><label for="razon_social">Razón social *</label><input id="razon_social" maxlength="150"></div>
+<div class="factura-field"><label for="direccion">Dirección</label><input id="direccion" maxlength="70"></div>
+<div class="factura-field"><label for="telefono">Teléfono</label><input id="telefono"></div>
+<div class="factura-field"><label for="email">Correo electrónico *</label><input id="email" type="email" maxlength="50"></div>
+</div></div></section>
+
+<section class="factura-section">
+<div class="factura-section-title">Datos del comprobante de sustento</div>
+<div class="factura-section-body">
+<div class="nota-sustento-grid">
+<div class="factura-field"><label for="sustento_numero">Número de comprobante *</label><div class="nota-sustento-search"><input id="sustento_numero" maxlength="17" placeholder="001-001-000000000"><button type="button" id="buscar_sustento" class="factura-search-btn"><i class="fi fi-rr-search"></i></button></div><div id="sustento_message" class="nota-sustento-message"></div></div>
+<div class="factura-field"><label for="sustento_comprobante">Comprobante</label><select id="sustento_comprobante"><option value="01">Factura</option></select></div>
+<div class="factura-field"><label for="sustento_emision">Emisión</label><div class="nota-radio-group"><label class="nota-radio"><input type="radio" name="sustento_emision" value="FISICA"> Física</label><label class="nota-radio"><input type="radio" name="sustento_emision" value="ELECTRONICA" checked> Electrónica</label></div></div>
+<div class="factura-field"><label for="sustento_fecha">Fecha de emisión</label><input id="sustento_fecha" type="date" readonly></div>
+<div class="factura-field full"><label for="motivo">Motivo *</label><input id="motivo" maxlength="300" placeholder="Ingrese el motivo de la nota de crédito"></div>
+<div class="factura-field full"><label>Autorización del comprobante de sustento</label><input id="sustento_autorizacion" readonly></div>
+</div></div></section>
+
+<section class="factura-section">
+<div class="factura-section-title">Detalle de productos y servicios</div>
+<div class="factura-section-body">
+<div class="factura-search"><input id="producto_busqueda" type="search" autocomplete="off" placeholder="Escriba una letra o palabra, después seleccione el producto"><button type="button" id="agregar_manual" class="factura-add-btn"><i class="fi fi-rr-plus"></i> Agregar</button><div id="producto_resultados" class="factura-product-results"></div></div>
+<div class="factura-table-wrap">
+<table class="factura-table"><thead><tr><th>Código Principal</th><th>Código Auxiliar</th><th>Cantidad</th><th>Descripción</th><th>Precio unitario</th><th>Tarifa</th><th>Descuento</th><th>Valor total</th><th>Valor ICE</th><th>Acciones</th></tr></thead>
+<tbody id="detalle_body"><tr id="detalle_vacio"><td colspan="10" class="factura-empty">No existen productos</td></tr></tbody></table>
+</div>
+<div class="factura-totales">
+<div class="factura-payment"><h3>Información adicional</h3><div class="factura-additional"><input id="campo_adicional_nombre" maxlength="50" placeholder="Nombre"><textarea id="campo_adicional_descripcion" rows="1" maxlength="300" placeholder="Descripción"></textarea><button type="button" id="agregar_adicional" class="factura-add-btn">Añadir</button></div><div id="adicionales_lista"></div></div>
+<div class="factura-summary">
+<div class="factura-summary-row"><span>Subtotal sin impuestos</span><strong id="subtotal">0.00</strong></div><div class="factura-summary-row"><span>Descuento</span><strong id="descuento_total">0.00</strong></div><div class="factura-summary-row"><span>Subtotal 0%</span><strong id="subtotal_0">0.00</strong></div><div class="factura-summary-row"><span>Subtotal gravado</span><strong id="subtotal_gravado">0.00</strong></div><div class="factura-summary-row"><span>IVA</span><strong id="iva_total">0.00</strong></div><div class="factura-summary-row"><span>ICE</span><strong id="ice_total">0.00</strong></div><div class="factura-summary-row"><span>Propina 10%</span><strong id="propina_total">0.00</strong></div><div class="factura-summary-row total"><span>Total</span><strong id="total_factura">0.00</strong></div>
+</div></div>
+</div></section>
+
+<div class="factura-actions"><button type="button" class="factura-action secondary" id="guardar_sin_firmar"><i class="fi fi-rr-disk"></i> Guardar sin firmar</button><button type="button" class="factura-action primary" id="firmar_enviar"><i class="fi fi-rr-paper-plane"></i> Firmar y enviar</button></div>
+</section>
+</div>
+</main>
+{% endblock %}
+
+{% block extra_body %}
+{{ establecimientos|json_script:"factura-establecimientos" }}
+<script>
+(function(){
+const data=JSON.parse(document.getElementById('factura-establecimientos').textContent);
+const $=id=>document.getElementById(id);
+const est=$('establecimiento'), punto=$('punto_emision'), nombre=$('nombre_comercial');
+const identificacion=$('identificacion'), mensaje=$('cliente_message'), buscar=$('buscar_cliente');
+const busqueda=$('producto_busqueda'), resultados=$('producto_resultados'), cuerpo=$('detalle_body');
+let timer=null, fila=0;
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function money(v){return Number(v||0).toFixed(2)}
+function cargarPuntos(){const item=data.find(x=>String(x.id)===String(est.value));punto.innerHTML='<option value="">Seleccione</option>';nombre.value='';if(!item)return;nombre.value=item.nombre||'';item.puntos.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.codigo+(p.nombre?' - '+p.nombre:'')+(p.secuencial?' | Sec. '+String(p.secuencial).padStart(9,'0'):' | Sin secuencial');punto.appendChild(o)})}
+est.addEventListener('change',cargarPuntos);
+
+async function consultarCliente(){const value=identificacion.value.trim();mensaje.textContent='';if(!value){mensaje.textContent='Ingrese una identificación.';return}buscar.disabled=true;try{const r=await fetch('{% url "factura_buscar_cliente" %}?identificacion='+encodeURIComponent(value),{headers:{'X-Requested-With':'XMLHttpRequest'}});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'No se encontró el cliente.');$('tipo_identificacion').value=d.cliente.tipo_identificacion||'';$('razon_social').value=d.cliente.razon_social||'';$('direccion').value=d.cliente.direccion||'';$('telefono').value=d.cliente.telefono||'';$('email').value=d.cliente.email||''}catch(e){mensaje.textContent=e.message}finally{buscar.disabled=false}}
+buscar.addEventListener('click',consultarCliente);identificacion.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();consultarCliente()}});
+
+async function consultarSustento(){const value=$('sustento_numero').value.trim();$('sustento_message').textContent='';if(!value){$('sustento_message').textContent='Ingrese el número del comprobante.';return}$('buscar_sustento').disabled=true;try{const r=await fetch('{% url "nota_credito_buscar_sustento" %}?numero='+encodeURIComponent(value),{headers:{'X-Requested-With':'XMLHttpRequest'}});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'No se encontró la factura.');const s=d.sustento;$('sustento_numero').value=s.numero||value;$('sustento_fecha').value=s.fecha||'';$('sustento_autorizacion').value=s.autorizacion||'';$('identificacion').value=s.identificacion||'';if(s.identificacion)await consultarCliente()}catch(e){$('sustento_message').textContent=e.message}finally{$('buscar_sustento').disabled=false}}
+$('buscar_sustento').addEventListener('click',consultarSustento);$('sustento_numero').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();consultarSustento()}});
+
+function mostrarProductos(items){resultados.innerHTML='';if(!items.length){resultados.innerHTML='<div class="factura-product-result"><small>No se encontraron productos.</small></div>'}items.forEach(item=>{const div=document.createElement('div');div.className='factura-product-result';div.innerHTML='<div><strong>'+esc(item.descripcion)+'</strong><small>'+esc(item.codigo)+'</small></div><span class="price">$ '+money(item.precio)+'</span>';div.addEventListener('click',()=>{agregarFila(item);resultados.style.display='none';busqueda.value=''});resultados.appendChild(div)});resultados.style.display='block'}
+async function buscarProductos(){const q=busqueda.value.trim();if(!q){resultados.style.display='none';return}try{const r=await fetch('{% url "factura_buscar_productos" %}?q='+encodeURIComponent(q),{headers:{'X-Requested-With':'XMLHttpRequest'}});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'No se pudieron consultar productos.');mostrarProductos(d.productos||[])}catch(e){resultados.innerHTML='<div class="factura-product-result"><small>'+esc(e.message)+'</small></div>';resultados.style.display='block'}}
+busqueda.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(buscarProductos,250)});document.addEventListener('click',e=>{if(!resultados.contains(e.target)&&e.target!==busqueda)resultados.style.display='none'});
+
+function eliminar(tr){tr.remove();if(!cuerpo.querySelector('.factura-detalle-row'))cuerpo.innerHTML='<tr id="detalle_vacio"><td colspan="10" class="factura-empty">No existen productos</td></tr>';recalcular()}
+function agregarFila(item){const vacio=$('detalle_vacio');if(vacio)vacio.remove();const tr=document.createElement('tr');tr.className='factura-detalle-row';tr.dataset.id=String(++fila);tr.innerHTML='<td><input class="codigo" value="'+esc(item.codigo||'')+'"></td><td><input class="auxiliar"></td><td><input class="cantidad" type="number" step="0.000001" min="0.000001" value="1"></td><td><input class="descripcion" value="'+esc(item.descripcion||'')+'"></td><td><input class="precio" type="number" step="0.01" min="0" value="'+money(item.precio)+'"></td><td><select class="tarifa"><option value="0">0%</option><option value="5">5%</option><option value="8">8%</option><option value="12">12%</option><option value="15" selected>15%</option></select></td><td><input class="descuento" type="number" step="0.01" min="0" value="0.00"></td><td><input class="valor-total" value="0.00" readonly></td><td><input class="ice" type="number" step="0.01" min="0" value="0.00"></td><td><button type="button" class="factura-remove-btn" title="Eliminar"><i class="fi fi-rr-trash"></i></button></td>';tr.querySelector('.factura-remove-btn').addEventListener('click',()=>eliminar(tr));tr.querySelectorAll('input,select').forEach(x=>{x.addEventListener('input',recalcular);x.addEventListener('change',recalcular)});cuerpo.appendChild(tr);recalcular()}
+$('agregar_manual').addEventListener('click',()=>agregarFila({codigo:'',descripcion:'',precio:0}));
+function recalcular(){let subtotal=0,descuento=0,sub0=0,gravado=0,iva=0,ice=0;cuerpo.querySelectorAll('.factura-detalle-row').forEach(tr=>{const cantidad=Number(tr.querySelector('.cantidad').value||0),precio=Number(tr.querySelector('.precio').value||0);let desc=Number(tr.querySelector('.descuento').value||0);const base=Math.max(0,cantidad*precio);if(desc>base){desc=base;tr.querySelector('.descuento').value=money(desc)}const neto=Math.max(0,base-desc),tarifa=Number(tr.querySelector('.tarifa').value||0),iceVal=Number(tr.querySelector('.ice').value||0);tr.querySelector('.valor-total').value=money(neto);subtotal+=base;descuento+=desc;ice+=iceVal;if(tarifa>0){gravado+=neto;iva+=neto*tarifa/100}else sub0+=neto});const total=subtotal-descuento+iva+ice;$('subtotal').textContent=money(subtotal);$('descuento_total').textContent=money(descuento);$('subtotal_0').textContent=money(sub0);$('subtotal_gravado').textContent=money(gravado);$('iva_total').textContent=money(iva);$('ice_total').textContent=money(ice);$('propina_total').textContent='0.00';$('total_factura').textContent=money(total)}
+$('agregar_adicional').addEventListener('click',()=>{const n=$('campo_adicional_nombre').value.trim(),d=$('campo_adicional_descripcion').value.trim();if(!n&&!d)return;const row=document.createElement('div');row.className='factura-adicional-row';row.innerHTML='<span><strong>'+esc(n)+'</strong> — '+esc(d)+'</span>';const btn=document.createElement('button');btn.type='button';btn.className='factura-remove-btn';btn.innerHTML='<i class="fi fi-rr-trash"></i>';btn.addEventListener('click',()=>row.remove());row.appendChild(btn);$('adicionales_lista').appendChild(row);$('campo_adicional_nombre').value='';$('campo_adicional_descripcion').value=''});
+$('guardar_sin_firmar').addEventListener('click',()=>alert('La estructura de la nota de crédito está preparada. La persistencia del comprobante sin firmar se integrará sobre esta estructura.'));
+$('firmar_enviar').addEventListener('click',()=>alert('La interfaz de la nota de crédito está preparada. La generación XML, firma digital y envío al SRI se integrarán sobre esta estructura.'));
+cargarPuntos();recalcular();
+})();
+</script>
+{% endblock %}
