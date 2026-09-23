@@ -569,7 +569,7 @@
 }
 
 .portal-menu-group.open .portal-submenu {
-    max-height: 260px;
+    max-height: 420px;
 }
 
 .portal-submenu-item {
@@ -663,7 +663,7 @@
     }
 
     .portal-menu-group.open .portal-submenu {
-        max-height: 300px;
+        max-height: 600px;
     }
 
     .portal-menu-item.active {
