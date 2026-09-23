@@ -663,7 +663,8 @@
     }
 
     .portal-menu-group.open .portal-submenu {
-        max-height: 600px;
+        max-height: none !important;
+        overflow: visible !important;
     }
 
     .portal-menu-item.active {
