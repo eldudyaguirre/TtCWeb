@@ -491,7 +491,7 @@ def _compras_where(request):
     if cliente is None:
         return None, [], None
 
-    where = ["tipcom IN ('01', '02')"]
+    where = []
     params = []
 
     fecha_desde = request.GET.get('fecha_desde', '').strip()
@@ -501,7 +501,7 @@ def _compras_where(request):
     if fecha_desde:
         try:
             datetime.strptime(fecha_desde, '%Y-%m-%d')
-            where.append("fecemi >= %s::date")
+            where.append("feccompra >= %s::date")
             params.append(fecha_desde)
         except ValueError:
             fecha_desde = ''
@@ -509,16 +509,16 @@ def _compras_where(request):
     if fecha_hasta:
         try:
             datetime.strptime(fecha_hasta, '%Y-%m-%d')
-            where.append("fecemi < (%s::date + INTERVAL '1 day')")
+            where.append("feccompra < (%s::date + INTERVAL '1 day')")
             params.append(fecha_hasta)
         except ValueError:
             fecha_hasta = ''
 
     if proveedor:
-        where.append("(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)")
+        where.append("(ruccedpro ILIKE %s OR nomprovee ILIKE %s)")
         params.extend([f'%{proveedor}%', f'%{proveedor}%'])
 
-    return " AND ".join(where), params, {
+    return " AND ".join(where) if where else "1=1", params, {
         'cliente': cliente,
         'fecha_desde': fecha_desde,
         'fecha_hasta': fecha_hasta,
@@ -526,27 +526,63 @@ def _compras_where(request):
     }
 
 
+def _compras_base_sql():
+    # Compras normales = tipo 01; notas de venta = tipo 02.
+    # Las notas de crédito (04) no forman parte de este módulo.
+    return """
+        SELECT
+            c.feccompra,
+            c.ruccedpro,
+            COALESCE(p.nomprovee, 'PROVEEDOR NO REGISTRADO'),
+            c.subtotcom,
+            c.prcivacom,
+            c.valivacom,
+            c.totcompra,
+            '01' AS tipcom
+        FROM compras c
+        LEFT JOIN proveedores p ON p.ruccedpro = c.ruccedpro
+        WHERE COALESCE(TRIM(c.tpcomp::text), '01') IN ('01', '04')
+          AND COALESCE(TRIM(c.tpcomp::text), '01') <> '04'
+
+        UNION ALL
+
+        SELECT
+            c.feccompra,
+            c.ruccedpro,
+            COALESCE(p.nomprovee, 'PROVEEDOR NO REGISTRADO'),
+            c.subtotcom,
+            c.prcivacom,
+            c.valivacom,
+            c.totcompra,
+            '02' AS tipcom
+        FROM comprasnv c
+        LEFT JOIN proveedores p ON p.ruccedpro = c.ruccedpro
+        WHERE COALESCE(TRIM(c.tpcomp::text), '02') = '02'
+    """
+
+
 def _compras_query(where, params, limit=None, offset=None):
     sql = f"""
         SELECT
-            fecemi,
-            ruccedprovee,
+            feccompra,
+            ruccedpro,
             nomprovee,
-            COALESCE(subtotal0, 0),
-            COALESCE(subtotal5, 0),
-            COALESCE(subtotal8, 0),
-            COALESCE(subtotal12, 0),
-            COALESCE(subtotal14, 0),
-            COALESCE(subtotal15, 0),
-            COALESCE(iva5, 0),
-            COALESCE(iva8, 0),
-            COALESCE(iva12, 0),
-            COALESCE(iva15, 0),
-            COALESCE(total, 0)
-        FROM compras
+            CASE WHEN COALESCE(prcivacom, 0) = 0 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 5 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 8 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 12 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 14 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 15 THEN COALESCE(subtotcom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 5 THEN COALESCE(valivacom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 8 THEN COALESCE(valivacom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 12 THEN COALESCE(valivacom, 0) ELSE 0 END,
+            CASE WHEN COALESCE(prcivacom, 0) = 15 THEN COALESCE(valivacom, 0) ELSE 0 END,
+            COALESCE(totcompra, 0)
+        FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
-        ORDER BY fecemi DESC
+        ORDER BY feccompra DESC
     """
+
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
         params = [*params, limit, offset or 0]
@@ -559,20 +595,21 @@ def _compras_query(where, params, limit=None, offset=None):
 def _compras_resumen(where, params):
     sql = f"""
         SELECT
-            COALESCE(SUM(subtotal0), 0),
-            COALESCE(SUM(subtotal5), 0),
-            COALESCE(SUM(subtotal8), 0),
-            COALESCE(SUM(subtotal12), 0),
-            COALESCE(SUM(subtotal14), 0),
-            COALESCE(SUM(subtotal15), 0),
-            COALESCE(SUM(iva5), 0),
-            COALESCE(SUM(iva8), 0),
-            COALESCE(SUM(iva12), 0),
-            COALESCE(SUM(iva15), 0),
-            COALESCE(SUM(total), 0)
-        FROM compras
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 0 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 5 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 8 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 12 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 14 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 15 THEN subtotcom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 5 THEN valivacom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 8 THEN valivacom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 12 THEN valivacom ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN COALESCE(prcivacom, 0) = 15 THEN valivacom ELSE 0 END), 0),
+            COALESCE(SUM(totcompra), 0)
+        FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
     """
+
     with connection.cursor() as cursor:
         cursor.execute(sql, params)
         row = cursor.fetchone()
@@ -588,6 +625,7 @@ def _compras_datos_exportacion(request):
     where, params, filtros = _compras_where(request)
     if where is None:
         return None, [], None, None
+
     filas = _compras_query(where, params)
     resumen = _compras_resumen(where, params)
     return filtros, filas, resumen, where
@@ -607,8 +645,9 @@ def compras(request):
     por_pagina = 50
     where, params, _ = _compras_where(request)
 
+    count_sql = f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where}"
     with connection.cursor() as cursor:
-        cursor.execute(f"SELECT COUNT(*) FROM compras WHERE {where}", params)
+        cursor.execute(count_sql, params)
         total_registros = cursor.fetchone()[0]
 
     offset = (pagina - 1) * por_pagina
