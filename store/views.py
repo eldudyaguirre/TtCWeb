@@ -2678,6 +2678,75 @@ def _factura_buscar_productos_datos(cliente, termino):
     return result
 
 
+
+
+@login_required
+def nota_credito_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    return render(
+        request,
+        'nota-credito-emitir.html',
+        {
+            'cliente': cliente,
+            'establecimientos': _factura_contexto(cliente),
+            'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+            'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+        },
+    )
+
+
+@login_required
+def nota_credito_buscar_sustento(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    numero = request.GET.get('numero', '').strip()
+    if not numero:
+        return JsonResponse({'ok': False, 'error': 'Ingrese el número del comprobante de sustento.'}, status=400)
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                TRIM(COALESCE(numfactur::text, '')),
+                fecfactur,
+                TRIM(COALESCE(ruccedcli::text, '')),
+                TRIM(COALESCE(nomcli::text, '')),
+                TRIM(COALESCE(autorizacion::text, ''))
+            FROM ventas
+            WHERE REPLACE(TRIM(COALESCE(numfactur::text, '')), '-', '') =
+                  REPLACE(%s, '-', '')
+               OR TRIM(COALESCE(numfactur::text, '')) = %s
+            ORDER BY fecfactur DESC NULLS LAST
+            LIMIT 1
+            """,
+            [numero, numero],
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return JsonResponse(
+            {'ok': False, 'error': 'No se encontró la factura de sustento en la base de datos.'},
+            status=404,
+        )
+
+    fecha = row[1].strftime('%Y-%m-%d') if row[1] else ''
+
+    return JsonResponse({
+        'ok': True,
+        'sustento': {
+            'numero': row[0] or '',
+            'fecha': fecha,
+            'identificacion': row[2] or '',
+            'razon_social': row[3] or '',
+            'autorizacion': row[4] or '',
+        },
+    })
+
 @login_required
 def factura_emitir(request):
     cliente = _cliente_portal(request)
