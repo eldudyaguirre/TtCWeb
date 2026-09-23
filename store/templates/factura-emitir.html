@@ -41,13 +41,13 @@
 .factura-payment h3{margin:0 0 12px;color:#21333e;font-size:.82rem;font-weight:700}
 .factura-payment-grid{display:grid;grid-template-columns:1fr 120px;gap:10px}
 .factura-negociable{display:flex!important;align-items:center;gap:8px;color:#52616a;font-size:.78rem}.factura-negociable input{width:16px!important;height:16px;accent-color:#058283}
-.factura-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.factura-action{min-height:42px;padding:0 18px}
+.factura-final-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin:0 28px 0}.factura-final-row .factura-section{width:100%!important;margin:0!important}.factura-final-row .factura-actions{height:100%;display:flex;align-items:flex-end;justify-content:flex-end;gap:9px;margin:0;padding-bottom:0}.factura-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.factura-action{min-height:42px;padding:0 18px}
 .factura-action.secondary{background:#eef2f3;color:#52616a}.factura-action.primary{background:#058283;color:#fff}.factura-action.primary:hover{background:#046f70}
 .factura-additional{display:grid;grid-template-columns:220px 1fr auto;gap:10px}
 .factura-additional input,.factura-additional textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid #dbe2e5;border-radius:7px;background:#fff;color:#26343d;font-family:inherit;font-size:.82rem;box-sizing:border-box;resize:vertical}
 .factura-adicional-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #e7ecee;color:#52616a;font-size:.75rem}
 @media(max-width:900px){.factura-grid,.factura-totales{grid-template-columns:1fr}}
-@media(max-width:767px){.factura-card{margin:0 0 25px;padding:18px 14px}.factura-heading{flex-direction:column;gap:10px}.factura-heading h1{font-size:1.3rem}.factura-section-body{padding:14px}.factura-grid,.factura-totales{grid-template-columns:1fr}.factura-search{grid-template-columns:1fr}.factura-product-results{right:0}.factura-payment-grid,.factura-additional{grid-template-columns:1fr}.factura-actions{display:grid;grid-template-columns:1fr}.factura-action{width:100%}}
+@media(max-width:767px){.factura-card{margin:0 0 25px;padding:18px 14px}.factura-heading{flex-direction:column;gap:10px}.factura-heading h1{font-size:1.3rem}.factura-section-body{padding:14px}.factura-grid,.factura-totales{grid-template-columns:1fr}.factura-search{grid-template-columns:1fr}.factura-product-results{right:0}.factura-payment-grid,.factura-additional{grid-template-columns:1fr}.factura-final-row{grid-template-columns:1fr;margin:0 14px}.factura-final-row .factura-actions{display:grid;grid-template-columns:1fr}.factura-action{width:100%}}
 </style>
 {% endblock %}
 
@@ -99,9 +99,7 @@
 </div></div>
 </div></section>
 
-<section class="factura-section"><div class="factura-section-title">Forma de pago</div><div class="factura-section-body"><div class="factura-payment-grid"><select id="forma_pago"><option value="">Seleccione</option>{% for codigo,nombre in formas_pago %}<option value="{{ codigo }}">{{ codigo }} - {{ nombre }}</option>{% endfor %}</select><input id="valor_pago" type="number" step="0.01" min="0" value="0.00"></div></div></section>
-
-<div class="factura-actions"><button type="button" class="factura-action secondary" id="guardar_sin_firmar"><i class="fi fi-rr-disk"></i> Guardar sin firmar</button><button type="button" class="factura-action primary" id="firmar_enviar"><i class="fi fi-rr-paper-plane"></i> Firmar y enviar</button></div>
+<div class="factura-final-row"><section class="factura-section"><div class="factura-section-title">Forma de pago</div><div class="factura-section-body"><div class="factura-payment-grid"><select id="forma_pago"><option value="">Seleccione</option>{% for codigo,nombre in formas_pago %}<option value="{{ codigo }}">{{ codigo }} - {{ nombre }}</option>{% endfor %}</select><input id="valor_pago" type="number" step="0.01" min="0" value="0.00"></div></div></section><div class="factura-actions"><button type="button" class="factura-action secondary" id="guardar_sin_firmar"><i class="fi fi-rr-disk"></i> Guardar sin firmar</button><button type="button" class="factura-action primary" id="firmar_enviar"><i class="fi fi-rr-paper-plane"></i> Firmar y enviar</button></div></div>
 </section>
 </div>
 </main>
