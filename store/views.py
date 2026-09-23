@@ -1316,6 +1316,164 @@ def trabajador_detalle(request, cedula):
 
 
 @login_required
+def trabajador_pdf(request, cedula):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    sql = """
+        SELECT
+            cedula, nombres, sexo, fecnac, cargas, direccion, telefono,
+            activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+            codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+            jn, horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [cedula.strip()])
+        row = cursor.fetchone()
+
+    if row is None:
+        return HttpResponse('Trabajador no encontrado.', status=404, content_type='text/plain; charset=utf-8')
+
+    (
+        cedula_db, nombres, sexo, fecnac, cargas, direccion, telefono,
+        activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+        codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+        jn, horaslab
+    ) = row
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    def valor(v):
+        return '' if v is None else str(v)
+
+    def fecha(v):
+        return v.strftime('%d/%m/%Y') if v else ''
+
+    def si_no(v):
+        return 'Sí' if v else 'No'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=40,
+        rightMargin=40,
+        topMargin=35,
+        bottomMargin=35,
+    )
+
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'TrabajadorPDFTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=16,
+        leading=19,
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    subtitulo = ParagraphStyle(
+        'TrabajadorPDFSubtitulo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=12,
+        alignment=TA_CENTER,
+        spaceAfter=10,
+    )
+    etiqueta = ParagraphStyle(
+        'TrabajadorPDFEtiqueta',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8,
+        leading=10,
+    )
+    dato = ParagraphStyle(
+        'TrabajadorPDFDato',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        leading=11,
+    )
+
+    elements = [
+        Paragraph('FICHA DEL TRABAJADOR', titulo),
+        Paragraph(f'{valor(nombres)} | CÉDULA {valor(cedula_db)}', subtitulo),
+    ]
+
+    datos = [
+        ('Cédula', cedula_db),
+        ('Nombres', nombres),
+        ('Sexo', sexo),
+        ('Fecha de nacimiento', fecha(fecnac)),
+        ('Cargas familiares', cargas),
+        ('Dirección de contacto', direccion),
+        ('Teléfono de contacto', telefono),
+        ('Estado', si_no(activo)),
+        ('Fecha de ingreso', fecha(fecentrada)),
+        ('Comisión sectorial', comisionsec),
+        ('Cargo', cargo),
+        ('Jornada laboral', tipojornada),
+        ('Horas de jornada', horaslab),
+        ('Sueldo', f'{float(sueldo or 0):,.2f}'),
+        ('Código sectorial', codcomision),
+        ('Fecha de salida', fecha(fecsalida)),
+        ('Motivos', motivos),
+        ('Acumulación F.P.', si_no(fr)),
+        ('XIV mensualizado', si_no(xiv)),
+        ('XIII mensualizado', si_no(xiii)),
+        ('Jornada nocturna', si_no(jn)),
+        ('Notas', notastra),
+    ]
+
+    data = []
+    for etiqueta_texto, dato_valor in datos:
+        data.append([
+            Paragraph(etiqueta_texto, etiqueta),
+            Paragraph(valor(dato_valor), dato),
+        ])
+
+    table = Table(data, colWidths=[145, 365])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#eef5f5')),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+    elements.append(
+        Paragraph(
+            f'{cliente.nomclient} | RUC. {cliente.ruccedcli}',
+            subtitulo,
+        )
+    )
+
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="trabajador_{cedula_db}.pdf"'
+    )
+    return response
+
+
+@login_required
 def trabajadores_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import landscape, A4
