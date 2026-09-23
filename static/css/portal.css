@@ -2058,3 +2058,101 @@
         padding: 15px 18px 18px;
     }
 }
+
+
+/* Módulo Gastos - Compras */
+.portal-report-card {
+    margin: 0 0 40px;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #e5eaed;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(33,51,62,.05);
+}
+
+.portal-report-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.portal-report-heading h1 {
+    margin: 4px 0 5px;
+    color: #21333e;
+    font-size: 1.55rem;
+    font-weight: 600;
+}
+
+.portal-report-heading p { margin: 0; color: #78838b; font-size: .84rem; }
+.portal-report-count { padding: 7px 11px; border-radius: 999px; background: #eef2f3; color: #68777e; font-size: .72rem; font-weight: 600; }
+
+.portal-report-filters {
+    display: grid;
+    grid-template-columns: 170px 170px minmax(240px, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(33,51,62,.10);
+    border-radius: 9px;
+    background: #fafcfc;
+}
+
+.portal-report-field label { display:block; margin-bottom:6px; color:#52616a; font-size:.76rem; font-weight:600; }
+.portal-report-field input { width:100%; min-height:40px; padding:0 10px; border:1px solid #dbe2e5; border-radius:7px; background:#fff; color:#26343d; font-family:inherit; font-size:.82rem; box-sizing:border-box; outline:none; }
+.portal-report-field input:focus { border-color:#058283; box-shadow:0 0 0 3px rgba(5,130,131,.10); }
+.portal-report-actions { display:flex; gap:8px; }
+.portal-report-filter-btn, .portal-report-clear-btn { min-height:40px; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:0 14px; border-radius:7px; font-size:.78rem; font-weight:600; text-decoration:none; box-sizing:border-box; }
+.portal-report-filter-btn { border:0; background:#058283; color:#fff; cursor:pointer; }
+.portal-report-filter-btn:hover { background:#046f70; }
+.portal-report-clear-btn { background:#eef2f3; color:#52616a; }
+.portal-report-clear-btn:hover { color:#21333e; text-decoration:none; }
+
+.portal-report-export { display:flex; justify-content:flex-end; gap:9px; margin:0 0 14px; }
+.portal-export-btn { min-height:39px; display:inline-flex; align-items:center; gap:7px; padding:0 14px; border-radius:7px; color:#fff; font-size:.78rem; font-weight:600; text-decoration:none; }
+.portal-export-btn:hover { color:#fff; text-decoration:none; opacity:.9; }
+.portal-export-pdf { background:#c62828; }
+.portal-export-excel { background:#218739; }
+
+.portal-report-table-wrap { overflow-x:auto; border:1px solid #e1e7e9; border-radius:9px; }
+.portal-report-table { width:100%; min-width:1450px; border-collapse:collapse; font-size:.73rem; }
+.portal-report-table th { padding:10px 9px; background:#21333e; color:#fff; font-weight:600; text-align:left; white-space:nowrap; }
+.portal-report-table td { padding:9px; border-top:1px solid #edf0f1; color:#52616a; white-space:nowrap; }
+.portal-report-table tbody tr:hover { background:#f8fbfb; }
+.portal-report-table .portal-report-number { text-align:right; font-variant-numeric:tabular-nums; }
+.portal-report-provider-cell { max-width:280px; overflow:hidden; text-overflow:ellipsis; }
+.portal-report-empty { padding:35px !important; text-align:center; color:#89949b !important; }
+
+.portal-report-summary { margin-top:18px; padding:17px; border:1px solid rgba(33,51,62,.10); border-radius:9px; background:#fafcfc; }
+.portal-report-summary-title { margin-bottom:12px; color:#21333e; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.portal-report-summary-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:9px; }
+.portal-report-summary-grid > div { padding:11px 12px; border:1px solid #e1e7e9; border-radius:7px; background:#fff; }
+.portal-report-summary-grid span { display:block; margin-bottom:5px; color:#89949b; font-size:.68rem; }
+.portal-report-summary-grid strong { display:block; color:#21333e; font-size:.88rem; text-align:right; font-variant-numeric:tabular-nums; }
+.portal-report-summary-grid .portal-report-total { background:#21333e; border-color:#21333e; }
+.portal-report-summary-grid .portal-report-total span, .portal-report-summary-grid .portal-report-total strong { color:#fff; }
+.portal-report-pagination { display:flex; justify-content:center; align-items:center; gap:16px; margin-top:17px; color:#78838b; font-size:.78rem; }
+.portal-report-pagination a { color:#058283; font-weight:600; text-decoration:none; }
+.portal-report-pagination a:hover { text-decoration:underline; }
+
+@media (max-width: 1000px) {
+    .portal-report-filters { grid-template-columns:1fr 1fr; }
+    .portal-report-provider { grid-column:span 2; }
+    .portal-report-actions { justify-content:flex-end; }
+    .portal-report-summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+
+@media (max-width: 767px) {
+    .portal-report-card { margin:0 0 25px; padding:18px 14px; }
+    .portal-report-heading { flex-direction:column; gap:10px; }
+    .portal-report-heading h1 { font-size:1.3rem; }
+    .portal-report-filters { grid-template-columns:1fr; padding:13px; }
+    .portal-report-provider { grid-column:auto; }
+    .portal-report-actions { display:grid; grid-template-columns:1fr 1fr; }
+    .portal-report-filter-btn, .portal-report-clear-btn { width:100%; }
+    .portal-report-export { justify-content:stretch; }
+    .portal-export-btn { flex:1; justify-content:center; }
+    .portal-report-summary-grid { grid-template-columns:1fr 1fr; }
+}
