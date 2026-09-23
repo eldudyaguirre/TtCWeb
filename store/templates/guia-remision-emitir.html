@@ -49,14 +49,11 @@
 @media(max-width:900px){.factura-grid,.factura-totales{grid-template-columns:1fr}}
 @media(max-width:767px){.factura-card{margin:0 0 25px;padding:18px 14px}.factura-heading{flex-direction:column;gap:10px}.factura-heading h1{font-size:1.3rem}.factura-section-body{padding:14px}.factura-grid,.factura-totales{grid-template-columns:1fr}.factura-search{grid-template-columns:1fr}.factura-product-results{right:0}.factura-payment-grid,.factura-additional{grid-template-columns:1fr}.factura-final-row{grid-template-columns:1fr;margin:0 14px}.factura-final-row .factura-actions{display:grid;grid-template-columns:1fr}.factura-action{width:100%}}
 .guia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.guia-full{grid-column:1/-1}.guia-table{width:100%;min-width:720px;border-collapse:collapse;font-size:.72rem}.guia-table th{padding:9px 8px;background:#21333e;color:#fff;font-weight:600;white-space:nowrap}.guia-table td{padding:7px;border-top:1px solid #edf0f1;color:#52616a;vertical-align:middle}.guia-table input{width:100%;min-height:34px;padding:0 7px;border:1px solid #dbe2e5;border-radius:5px;background:#fff;color:#26343d;font-family:inherit;font-size:.72rem;box-sizing:border-box}.guia-actions{display:flex;justify-content:flex-end;gap:9px;margin:20px 28px 0}@media(max-width:767px){.guia-grid{grid-template-columns:1fr}.guia-full{grid-column:auto}.guia-actions{display:grid;grid-template-columns:1fr;margin:20px 14px 0}.guia-actions .factura-action{width:100%}}
-/* Corrección exclusiva de la página de Guías de Remisión */
-.guia-remision-page{display:flex!important;flex-direction:column!important;width:100%!important;min-width:0!important}
-.guia-remision-page > .container-fluid{width:100%!important;min-width:0!important}
 </style>
 {% endblock %}
 
 {% block portal_content %}
-<main class="portal-content guia-remision-page">
+<main class="portal-content">
 <div class="container-fluid">
 <section class="factura-card">
 <div class="factura-heading">
