@@ -1,0 +1,101 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Listado de Clientes | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .clientes-report-header { align-items: flex-start; }
+    .clientes-report-title h1 { margin-bottom: 6px; text-transform: uppercase; }
+    .clientes-report-title p { margin: 2px 0; }
+    .clientes-table-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .clientes-table { min-width: 700px; }
+    .clientes-table th { position: sticky; top: 0; z-index: 2; }
+    .clientes-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .clientes-export-btn {
+        display: inline-flex !important; align-items: center; justify-content: center; gap: 8px;
+        font-family: inherit !important; font-size: 14px !important; font-weight: 600 !important;
+        line-height: 1.2 !important; text-decoration: none !important; color: #ffffff !important;
+    }
+    .clientes-export-btn i { color: #ffffff !important; }
+    .clientes-total { margin-top: 12px; font-size: 13px; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading clientes-report-header">
+                <div class="clientes-report-title">
+                    <div class="portal-kicker">Ingresos</div>
+                    <h1>LISTADO DE CLIENTES</h1>
+                    <p>PERÍODO FISCAL {{ anio }}</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} clientes</div>
+            </div>
+
+            <form method="get" class="portal-report-filters">
+                <div class="portal-report-field">
+                    <label for="anio">Período fiscal</label>
+                    <select id="anio" name="anio">
+                        {% for item in anios %}
+                        <option value="{{ item }}" {% if item == anio %}selected{% endif %}>{{ item }}</option>
+                        {% empty %}
+                        <option value="{{ anio }}">{{ anio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="portal-report-actions">
+                    <button type="submit" class="portal-report-filter-btn">
+                        <i class="fi fi-rr-search"></i> Consultar
+                    </button>
+                </div>
+            </form>
+
+            <div class="portal-report-export clientes-actions">
+                <a class="portal-export-btn clientes-export-btn portal-export-pdf"
+                   href="{% url 'listado_clientes_pdf' %}?anio={{ anio }}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn clientes-export-btn portal-export-excel"
+                   href="{% url 'listado_clientes_excel' %}?anio={{ anio }}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="clientes-table-wrap">
+                <table class="portal-report-table clientes-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>RUC</th>
+                            <th>CLIENTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            <td>{{ row.0 }}</td>
+                            <td>{{ row.1 }}</td>
+                            <td>{{ row.2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="portal-report-empty">
+                                No existen clientes registrados para el período fiscal seleccionado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="clientes-total">
+                Total de clientes: {{ total_registros }}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
