@@ -1,0 +1,107 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Roles de Pago | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .roles-report-header{align-items:flex-start}
+    .roles-report-title h1{margin-bottom:6px;text-transform:uppercase}
+    .roles-report-title p{margin:2px 0}
+    .roles-filters{display:flex;align-items:end;gap:14px;flex-wrap:wrap;margin:18px 0}
+    .roles-filter{display:flex;flex-direction:column;gap:6px;min-width:180px}
+    .roles-filter label{font-size:11px;font-weight:700;text-transform:uppercase;color:#66747d}
+    .roles-filter select{height:42px;padding:0 38px 0 12px;border:1px solid #d9e0e3;border-radius:8px;background:#fff;color:#21333e;font-family:inherit;font-size:14px;font-weight:600;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#5f6c73 50%),linear-gradient(135deg,#5f6c73 50%,transparent 50%);background-position:calc(100% - 17px) 17px,calc(100% - 11px) 17px;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+    .roles-filter select:focus{outline:none;border-color:#1596a3;box-shadow:0 0 0 3px rgba(21,150,163,.1)}
+    .roles-filter-actions{display:flex;gap:10px}
+    .roles-filter-btn{height:42px;padding:0 16px;border:0;border-radius:8px;background:#1596a3;color:#fff;font-family:inherit;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+    .roles-filter-clear{background:#eef3f4;color:#21333e}
+    .roles-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+    .roles-export-btn{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;font-family:inherit!important;font-size:14px!important;font-weight:600!important;text-decoration:none!important;color:#fff!important}
+    .roles-table-wrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+    .roles-table{min-width:1800px}
+    .roles-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
+    .roles-table td{white-space:nowrap}
+    .roles-total{margin-top:12px;font-size:13px;font-weight:600;color:#52616a}
+    @media(max-width:700px){
+        .roles-filters{align-items:stretch;flex-direction:column}
+        .roles-filter{min-width:0;width:100%}
+        .roles-filter-actions{width:100%}
+        .roles-filter-btn{flex:1;justify-content:center}
+    }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading roles-report-header">
+                <div class="roles-report-title">
+                    <div class="portal-kicker">Laboral</div>
+                    <h1>ROLES DE PAGO</h1>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                    <p>{{ filtros.mes_nombre }} {{ filtros.anio }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} trabajadores</div>
+            </div>
+
+            <form method="get" class="roles-filters">
+                <div class="roles-filter">
+                    <label for="roles-anio">Año</label>
+                    <select id="roles-anio" name="anio">
+                        {% for item in anios %}
+                        <option value="{{ item }}" {% if item == filtros.anio %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="roles-filter">
+                    <label for="roles-mes">Mes</label>
+                    <select id="roles-mes" name="mes">
+                        {% for value,label in meses %}
+                        <option value="{{ value }}" {% if value == filtros.mes %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="roles-filter-actions">
+                    <button type="submit" class="roles-filter-btn"><i class="fi fi-rr-search"></i> Consultar</button>
+                    <a href="{% url 'roles_pago' %}" class="roles-filter-btn roles-filter-clear"><i class="fi fi-rr-refresh"></i> Limpiar</a>
+                </div>
+            </form>
+
+            <div class="roles-actions">
+                <a class="portal-export-btn roles-export-btn portal-export-pdf" href="{% url 'roles_pago_pdf' %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn roles-export-btn portal-export-excel" href="{% url 'roles_pago_excel' %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="roles-table-wrap">
+                <table class="portal-report-table roles-table">
+                    <thead>
+                        <tr>
+                            {% for key,label in columns %}
+                            <th>{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            {% for value in row %}
+                            <td>{% if forloop.counter >= 4 %}{{ value|floatformat:2 }}{% else %}{{ value|default:"" }}{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="19" class="portal-report-empty">No existen roles de pago registrados para el período seleccionado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="roles-total">Total de trabajadores en el período: {{ total_registros }}</div>
+        </section>
+    </div>
+</main>
+{% endblock %}
