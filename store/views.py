@@ -379,18 +379,29 @@ def portal(request):
     cliente = asignacion.cliente
     permitido, motivo, detalle = validar_acceso_cliente(cliente)
     request.session['cliente_ruccedcli'] = cliente.ruccedcli
-    resumen = obtener_resumen_cliente(cliente)
+
+    anio_actual = datetime.now().year
+    try:
+        anio = int(request.GET.get('anio', anio_actual))
+    except (TypeError, ValueError):
+        anio = anio_actual
+    if anio < anio_actual - 6 or anio > anio_actual:
+        anio = anio_actual
+
+    estadisticas = _dashboard_estadisticas(cliente, anio)
 
     return render(
         request,
         'portal.html',
         {
             'cliente': cliente,
-            'resumen': resumen,
+            'resumen': obtener_resumen_cliente(cliente),
             'rol': asignacion.rol,
             'acceso_restringido': not permitido,
             'motivo_acceso': motivo,
             'detalle_acceso': detalle,
+            'estadisticas': estadisticas,
+            'anios_dashboard': range(anio_actual, anio_actual - 7, -1),
             'pendientes_legales': obtener_aceptaciones_pendientes(request.user),
             'versiones_legales': versiones_legales_vigentes(),
         },
@@ -468,6 +479,103 @@ def _cliente_portal(request):
 
     permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
     return asignacion.cliente if permitido else None
+
+
+def _cliente_portal_sin_restriccion(request):
+    if request.user.is_staff or request.user.is_superuser:
+        return None
+
+    asignacion = (
+        UsuarioCliente.objects
+        .filter(usuario=request.user, activo=True)
+        .select_related('cliente')
+        .first()
+    )
+    return asignacion.cliente if asignacion else None
+
+
+def _dashboard_estadisticas(cliente, anio):
+    meses = [
+        'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+    ]
+    compras = {i: {'total': 0.0, 'documentos': 0} for i in range(1, 13)}
+    ventas = {i: {'total': 0.0, 'documentos': 0} for i in range(1, 13)}
+
+    db = _cliente_db(cliente)
+
+    compras_sql = """
+        SELECT
+            EXTRACT(MONTH FROM fecemi::date)::integer AS mes,
+            COUNT(*) AS documentos,
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ), 0) AS total
+        FROM comprasnue
+        WHERE TRIM(tipcom::text) IN ('01', '02')
+          AND EXTRACT(YEAR FROM fecemi::date)::integer = %s
+        GROUP BY EXTRACT(MONTH FROM fecemi::date)::integer
+        ORDER BY mes
+    """
+
+    ventas_sql = """
+        SELECT
+            EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
+            COUNT(*) AS documentos,
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ), 0) AS total
+        FROM ventas
+        WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
+        GROUP BY EXTRACT(MONTH FROM fecfactur::date)::integer
+        ORDER BY mes
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(compras_sql, [anio])
+        for mes, documentos, total in cursor.fetchall():
+            compras[mes] = {
+                'total': float(total or 0),
+                'documentos': int(documentos or 0),
+            }
+
+        cursor.execute(ventas_sql, [anio])
+        for mes, documentos, total in cursor.fetchall():
+            ventas[mes] = {
+                'total': float(total or 0),
+                'documentos': int(documentos or 0),
+            }
+
+    compras_total = sum(item['total'] for item in compras.values())
+    ventas_total = sum(item['total'] for item in ventas.values())
+    compras_documentos = sum(item['documentos'] for item in compras.values())
+    ventas_documentos = sum(item['documentos'] for item in ventas.values())
+
+    return {
+        'anio': anio,
+        'meses': meses,
+        'compras': [compras[i] for i in range(1, 13)],
+        'ventas': [ventas[i] for i in range(1, 13)],
+        'compras_total': compras_total,
+        'ventas_total': ventas_total,
+        'compras_documentos': compras_documentos,
+        'ventas_documentos': ventas_documentos,
+    }
 
 
 def _cliente_db(cliente):
