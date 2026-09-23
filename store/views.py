@@ -464,6 +464,7 @@ COMPRAS_COLUMNS = [
     ('iva5', 'IVA 5%'),
     ('iva8', 'IVA 8%'),
     ('iva12', 'IVA 12%'),
+    ('iva14', 'IVA 14%'),
     ('iva15', 'IVA 15%'),
     ('total', 'Total'),
 ]
@@ -622,6 +623,7 @@ def _compras_resumen(where, params, cliente):
             COALESCE(SUM(COALESCE(NULLIF(montoiva5, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(montoiva8, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(montoiva12, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(montoiva14, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(montoiva15, ''), '0')::numeric), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(totbases, ''), '0')::numeric
@@ -642,7 +644,7 @@ def _compras_resumen(where, params, cliente):
 
     return dict(zip(
         ['subtotal0', 'subtotal5', 'subtotal8', 'subtotal12', 'subtotal14',
-         'subtotal15', 'iva5', 'iva8', 'iva12', 'iva15', 'total'],
+         'subtotal15', 'iva5', 'iva8', 'iva12', 'iva14', 'iva15', 'total'],
         [float(value or 0) for value in row],
     ))
 
@@ -756,7 +758,7 @@ def compras_pdf(request):
     data.append(['', '', 'RESUMEN'] + [
         resumen[k] for k in [
             'subtotal0', 'subtotal5', 'subtotal8', 'subtotal12', 'subtotal14',
-            'subtotal15', 'iva5', 'iva8', 'iva12', 'iva15', 'total'
+            'subtotal15', 'iva5', 'iva8', 'iva12', 'iva14', 'iva15', 'total'
         ]
     ])
 
