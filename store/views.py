@@ -823,7 +823,7 @@ def compras_pdf(request):
         for index, value in enumerate(row):
             if index in (0,):
                 formatted.append(str(value))
-            elif index in (1, 2, 3, 4, 5, 6, 13, 14):
+            elif index in (1, 2, 3, 4, 5, 6, 12, 14):
                 formatted.append(str(value or ''))
             else:
                 formatted.append(f"{float(value or 0):.2f}")
@@ -844,7 +844,7 @@ def compras_pdf(request):
     table = Table(
         data,
         repeatRows=1,
-        colWidths=[24, 105, 75, 40, 52, 78, 55, 58, 58, 45, 58, 48, 42, 55, 60],
+        colWidths=[22, 100, 68, 38, 48, 72, 50, 54, 54, 42, 54, 45, 38, 52, 55],
     )
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
