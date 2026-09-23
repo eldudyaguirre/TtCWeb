@@ -4,8 +4,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.db import IntegrityError, transaction
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
+from io import BytesIO
+from datetime import datetime
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from django.views.decorators.http import require_POST
 
 from .models import (
@@ -446,6 +455,283 @@ def aceptar_documento_legal(request):
         },
     )
     return redirect('portal')
+
+
+
+COMPRAS_COLUMNS = [
+    ('fecha', 'Fecha'),
+    ('ruc', 'RUC proveedor'),
+    ('proveedor', 'Proveedor'),
+    ('comprobante', 'Comprobante'),
+    ('autorizacion', 'Autorización'),
+    ('subtotal0', 'Subtotal 0%'),
+    ('subtotal5', 'Subtotal 5%'),
+    ('subtotal8', 'Subtotal 8%'),
+    ('subtotal12', 'Subtotal 12%'),
+    ('subtotal14', 'Subtotal 14%'),
+    ('subtotal15', 'Subtotal 15%'),
+    ('iva5', 'IVA 5%'),
+    ('iva8', 'IVA 8%'),
+    ('iva12', 'IVA 12%'),
+    ('iva14', 'IVA 14%'),
+    ('iva15', 'IVA 15%'),
+    ('total', 'Total'),
+]
+
+COMPRAS_NUMERIC = [
+    'subtotal0', 'subtotal5', 'subtotal8', 'subtotal12', 'subtotal14',
+    'subtotal15', 'iva5', 'iva8', 'iva12', 'iva14', 'iva15', 'total',
+]
+
+
+def _cliente_portal(request):
+    if request.user.is_staff or request.user.is_superuser:
+        return None
+
+    asignacion = (
+        UsuarioCliente.objects
+        .filter(usuario=request.user, activo=True)
+        .select_related('cliente')
+        .first()
+    )
+    if asignacion is None:
+        return None
+
+    permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
+    return asignacion.cliente if permitido else None
+
+
+def _compras_where(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, [], None
+
+    where = [
+        "tipcom IN ('01', '02')",
+        "ruccedprovee IS NOT NULL",
+        "TRIM(ruccedprovee) <> ''",
+        "ruccedprovee <> %s",
+    ]
+    params = [cliente.ruccedcli]
+
+    # La fecha almacenada en la base histórica se maneja como DD/MM/YYYY.
+    fecha_desde = request.GET.get('fecha_desde', '').strip()
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip()
+    proveedor = request.GET.get('proveedor', '').strip()
+
+    if fecha_desde:
+        try:
+            datetime.strptime(fecha_desde, '%Y-%m-%d')
+            where.append("to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') >= %s::date")
+            params.append(fecha_desde)
+        except ValueError:
+            fecha_desde = ''
+
+    if fecha_hasta:
+        try:
+            datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            where.append("to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') <= %s::date")
+            params.append(fecha_hasta)
+        except ValueError:
+            fecha_hasta = ''
+
+    if proveedor:
+        where.append("(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)")
+        params.extend([f'%{proveedor}%', f'%{proveedor}%'])
+
+    # El cliente se identifica por RUC del proveedor/comprobante en la tabla.
+    # Si la tabla está separada por base de datos, no se requiere filtro adicional.
+    return " AND ".join(where), params, {
+        'cliente': cliente,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'proveedor': proveedor,
+    }
+
+
+def _compras_query(where, params, limit=None, offset=None):
+    sql = f"""
+        SELECT
+            fecemi,
+            ruccedprovee,
+            nomprovee,
+            CONCAT_WS('-', NULLIF(TRIM(numest::text), ''), NULLIF(TRIM(numptoemi::text), ''), NULLIF(TRIM(numsec::text), '')) AS comprobante,
+            numaut,
+            COALESCE(baseimpiva0, 0),
+            COALESCE(baseimpiva5, 0),
+            COALESCE(baseimpiva8, 0),
+            COALESCE(baseimpiva12, 0),
+            COALESCE(baseimpiva14, 0),
+            COALESCE(baseimpiva15, 0),
+            COALESCE(montoiva5, 0),
+            COALESCE(montoiva8, 0),
+            COALESCE(montoiva12, 0),
+            COALESCE(montoiva14, 0),
+            COALESCE(montoiva15, 0),
+            COALESCE(totbases, 0)
+        FROM compras
+        WHERE {where}
+        ORDER BY to_date(NULLIF(TRIM(fecemi::text), ''), 'DD/MM/YYYY') DESC, numcompra DESC
+    """
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        params = [*params, limit, offset or 0]
+    with connection.cursor() as cursor:
+        cursor.execute(sql, params)
+        return cursor.fetchall()
+
+
+def _compras_resumen(where, params):
+    sql = f"""
+        SELECT
+            COALESCE(SUM(baseimpiva0), 0),
+            COALESCE(SUM(baseimpiva5), 0),
+            COALESCE(SUM(baseimpiva8), 0),
+            COALESCE(SUM(baseimpiva12), 0),
+            COALESCE(SUM(baseimpiva14), 0),
+            COALESCE(SUM(baseimpiva15), 0),
+            COALESCE(SUM(montoiva5), 0),
+            COALESCE(SUM(montoiva8), 0),
+            COALESCE(SUM(montoiva12), 0),
+            COALESCE(SUM(montoiva14), 0),
+            COALESCE(SUM(montoiva15), 0),
+            COALESCE(SUM(totbases), 0)
+        FROM compras
+        WHERE {where}
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+    return dict(zip(
+        ['subtotal0','subtotal5','subtotal8','subtotal12','subtotal14','subtotal15',
+         'iva5','iva8','iva12','iva14','iva15','total'],
+        [float(value or 0) for value in row],
+    ))
+
+
+def _compras_datos_exportacion(request):
+    where, params, filtros = _compras_where(request)
+    if where is None:
+        return None, [], None, None
+    filas = _compras_query(where, params)
+    resumen = _compras_resumen(where, params)
+    return filtros, filas, resumen, where
+
+
+@login_required
+def compras(request):
+    filtros, filas, resumen, _ = _compras_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    # Mostrar 50 registros por página.
+    try:
+        pagina = max(1, int(request.GET.get('pagina', '1')))
+    except ValueError:
+        pagina = 1
+    por_pagina = 50
+    total_registros = 0
+
+    where, params, _ = _compras_where(request)
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT COUNT(*) FROM compras WHERE {where}", params)
+        total_registros = cursor.fetchone()[0]
+
+    offset = (pagina - 1) * por_pagina
+    filas = _compras_query(where, params, por_pagina, offset)
+    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+
+    return render(request, 'compras.html', {
+        'cliente': filtros['cliente'],
+        'filas': filas,
+        'resumen': resumen,
+        'filtros': filtros,
+        'pagina': pagina,
+        'total_paginas': total_paginas,
+        'total_registros': total_registros,
+    })
+
+
+@login_required
+def compras_pdf(request):
+    filtros, filas, resumen, _ = _compras_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
+    styles = getSampleStyleSheet()
+    elements = [
+        Paragraph('Reporte de Compras', styles['Title']),
+        Paragraph(f"Proveedor: {filtros['proveedor'] or 'Todos'} | Desde: {filtros['fecha_desde'] or '—'} | Hasta: {filtros['fecha_hasta'] or '—'}", styles['Normal']),
+        Spacer(1, 10),
+    ]
+
+    headers = [label for _, label in COMPRAS_COLUMNS]
+    data = [headers]
+    for row in filas:
+        values = list(row[:5]) + [float(x or 0) for x in row[5:]]
+        data.append(values)
+
+    data.append(['', '', '', '', 'RESUMEN'] + [
+        resumen[k] for k in ['subtotal0','subtotal5','subtotal8','subtotal12','subtotal14','subtotal15','iva5','iva8','iva12','iva14','iva15','total']
+    ])
+
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 6),
+        ('GRID', (0,0), (-1,-1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (5,1), (-1,-1), 'RIGHT'),
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_compras.pdf"'
+    return response
+
+
+@login_required
+def compras_excel(request):
+    filtros, filas, resumen, _ = _compras_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Compras'
+    ws.append([label for _, label in COMPRAS_COLUMNS])
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        values = list(row[:5]) + [float(x or 0) for x in row[5:]]
+        ws.append(values)
+
+    ws.append([])
+    ws.append(['', '', '', '', 'RESUMEN'])
+    for key, label in COMPRAS_COLUMNS[5:]:
+        if key in resumen:
+            ws.cell(ws.max_row, COMPRAS_COLUMNS.index((key, label)) + 1, resumen[key])
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    widths = [13, 16, 42, 18, 28, 14, 14, 14, 14, 14, 14, 12, 12, 12, 12, 12, 14]
+    for i, width in enumerate(widths, 1):
+        ws.column_dimensions[chr(64+i) if i <= 26 else 'A'].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_compras.xlsx"'
+    return response
 
 
 def about(request):
