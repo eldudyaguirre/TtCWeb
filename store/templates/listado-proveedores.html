@@ -1,0 +1,145 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Listado de Proveedores | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .proveedores-report-header {
+        align-items: flex-start;
+    }
+
+    .proveedores-report-title h1 {
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+
+    .proveedores-report-title p {
+        margin: 2px 0;
+    }
+
+    .proveedores-table-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .proveedores-table {
+        min-width: 700px;
+    }
+
+    .proveedores-table th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .proveedores-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .proveedores-export-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        text-decoration: none !important;
+        color: #ffffff !important;
+    }
+
+    .proveedores-export-btn i {
+        color: #ffffff !important;
+    }
+
+    .proveedores-total {
+        margin-top: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading proveedores-report-header">
+                <div class="proveedores-report-title">
+                    <div class="portal-kicker">Gastos</div>
+                    <h1>LISTADO DE PROVEEDORES</h1>
+                    <p>PERÍODO FISCAL {{ anio }}</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} proveedores</div>
+            </div>
+
+            <form method="get" class="portal-report-filters">
+                <div class="portal-report-field">
+                    <label for="anio">Período fiscal</label>
+                    <select id="anio" name="anio">
+                        {% for item in anios %}
+                        <option value="{{ item }}" {% if item == anio %}selected{% endif %}>{{ item }}</option>
+                        {% empty %}
+                        <option value="{{ anio }}">{{ anio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="portal-report-actions">
+                    <button type="submit" class="portal-report-filter-btn">
+                        <i class="fi fi-rr-search"></i> Consultar
+                    </button>
+                </div>
+            </form>
+
+            <div class="portal-report-export proveedores-actions">
+                <a class="portal-export-btn proveedores-export-btn portal-export-pdf"
+                   href="{% url 'listado_proveedores_pdf' %}?anio={{ anio }}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn proveedores-export-btn portal-export-excel"
+                   href="{% url 'listado_proveedores_excel' %}?anio={{ anio }}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="proveedores-table-wrap">
+                <table class="portal-report-table proveedores-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>RUC</th>
+                            <th>PROVEEDOR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            <td>{{ row.0 }}</td>
+                            <td>{{ row.1 }}</td>
+                            <td>{{ row.2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="portal-report-empty">
+                                No existen proveedores registrados para el período fiscal seleccionado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="proveedores-total">
+                Total de proveedores: {{ total_registros }}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
