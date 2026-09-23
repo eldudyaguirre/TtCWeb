@@ -45,14 +45,14 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'ventas' or request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-money-bill-wave portal-menu-icon"></i>
                         <span>Ingresos</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
                         <a href="{% url 'ventas' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">Facturas</a>
-                        <a href="#" class="portal-submenu-item">Notas de Crédito</a>
+                        <a href="{% url 'ingresos_notas_credito' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'ingresos_notas_credito' %}active{% endif %}">Notas de Crédito</a>
                         <div style="border-top: 1px solid rgba(255,255,255,0.12); margin: 6px 12px;"></div>
                         <a href="#" class="portal-submenu-item">Listado Clientes</a>
                     </div>
