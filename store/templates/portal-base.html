@@ -31,13 +31,13 @@
                 </a>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'compras' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-shopping-cart portal-menu-icon"></i>
                         <span>Gastos</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
-                        <a href="#" class="portal-submenu-item">Compras</a>
+                        <a href="{% url 'compras' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'compras' %}active{% endif %}">Compras</a>
                         <a href="#" class="portal-submenu-item">Notas de Crédito</a>
                     </div>
                 </div>
