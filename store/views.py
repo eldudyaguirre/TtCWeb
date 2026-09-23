@@ -767,6 +767,257 @@ def compras(request):
         )
 
 
+
+
+NOTAS_CREDITO_COLUMNS = [
+    ('numero', 'N°'),
+    ('proveedor', 'PROVEEDOR'),
+    ('ruc', 'RUC'),
+    ('tipdoc', 'TIPO DOC'),
+    ('fecha', 'FECHA'),
+    ('numdocumento', 'NUMERO DOCUMENTO'),
+    ('numaut', 'NUM AUT.'),
+    ('bases_sin_iva', 'BASES SIN IVA'),
+    ('bases_con_iva', 'BASES CON IVA'),
+    ('iva', 'IVA'),
+    ('total', 'TOTAL'),
+    ('codmod', 'COD MOD'),
+    ('documentomod', 'DOCUMENTO MODIFICADO'),
+    ('numautmod', 'NUM AUT'),
+]
+
+
+def _notas_credito_base_sql():
+    return """
+        SELECT
+            c.fecemi,
+            c.ruccedprovee,
+            c.nomprovee,
+            TRIM(c.tipcom::text) AS tipcom,
+            c.numest,
+            c.numptoemi,
+            c.numsec,
+            c.numaut,
+            c.baseimpnoobj,
+            c.baseimpiva0,
+            c.baseexenta,
+            c.baseimpiva5,
+            c.baseimpiva8,
+            c.baseimpiva12,
+            c.baseimpiva14,
+            c.baseimpiva15,
+            c.montoiva5,
+            c.montoiva8,
+            c.montoiva12,
+            c.montoiva14,
+            c.montoiva15,
+            c.codtipodoc,
+            c.numestmod,
+            c.numptoemimod,
+            c.numsecmod,
+            c.numautmod
+        FROM comprasnue c
+        WHERE TRIM(c.tipcom::text) = '04'
+    """
+
+
+def _notas_credito_query(where, params, cliente, limit=None, offset=None):
+    sql = f"""
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY fecemi::date ASC) AS numero,
+            nomprovee AS proveedor,
+            ruccedprovee AS ruc,
+            'N/C' AS tipdoc,
+            fecemi AS fecha,
+            CONCAT(numest, '-', numptoemi, '-', numsec) AS numdocumento,
+            numaut,
+            (
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+            ) AS bases_sin_iva,
+            (
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+            ) AS bases_con_iva,
+            (
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ) AS iva,
+            (
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ) AS total,
+            codtipodoc AS codmod,
+            CONCAT(numestmod, '-', numptoemimod, '-', numsecmod) AS documentomod,
+            numautmod
+        FROM ({_notas_credito_base_sql()}) notas_reporte
+        WHERE {where}
+        ORDER BY fecemi::date ASC
+    """
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        params = [*params, limit, offset or 0]
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        return cursor.fetchall()
+
+
+def _notas_credito_resumen(where, params, cliente):
+    sql = f"""
+        SELECT
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ), 0)
+        FROM ({_notas_credito_base_sql()}) notas_reporte
+        WHERE {where}
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        row=cursor.fetchone()
+    bases_sin, bases_con, iva = [float(x or 0) for x in row]
+    return {'bases_sin_iva': bases_sin, 'bases_con_iva': bases_con, 'iva': iva, 'total': bases_sin + bases_con + iva}
+
+
+def _notas_credito_datos(request):
+    where, params, filtros = _compras_where(request)
+    if where is None:
+        return None, [], None, None
+    cliente=filtros['cliente']
+    return filtros, _notas_credito_query(where, params, cliente), _notas_credito_resumen(where, params, cliente), where
+
+
+@login_required
+def notas_credito(request):
+    try:
+        filtros, _, resumen, _ = _notas_credito_datos(request)
+        if filtros is None:
+            return redirect('portal')
+        try:
+            pagina=max(1, int(request.GET.get('pagina','1')))
+        except ValueError:
+            pagina=1
+        por_pagina=50
+        where, params, _ = _compras_where(request)
+        count_sql=f"SELECT COUNT(*) FROM ({_notas_credito_base_sql()}) notas_reporte WHERE {where}"
+        with _cliente_db(filtros['cliente']).cursor() as cursor:
+            cursor.execute(count_sql, params)
+            total_registros=cursor.fetchone()[0]
+        offset=(pagina-1)*por_pagina
+        filas=_notas_credito_query(where, params, filtros['cliente'], por_pagina, offset)
+        total_paginas=max(1,(total_registros+por_pagina-1)//por_pagina)
+        return render(request,'notas-credito.html',{
+            'cliente':filtros['cliente'],'filas':filas,'resumen':resumen,'filtros':filtros,
+            'pagina':pagina,'total_paginas':total_paginas,'total_registros':total_registros,
+        })
+    except Exception as exc:
+        return HttpResponse(f"Error en reporte de notas de crédito: {type(exc).__name__}: {exc}",status=500,content_type='text/plain; charset=utf-8')
+
+
+@login_required
+def notas_credito_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    filtros, filas, resumen, _ = _notas_credito_datos(request)
+    if filtros is None: return redirect('portal')
+    buffer=BytesIO()
+    doc=SimpleDocTemplate(buffer,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
+    styles=getSampleStyleSheet()
+    titulo=ParagraphStyle('NCtitulo',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,leading=16,alignment=TA_CENTER,spaceAfter=3)
+    cab=ParagraphStyle('NCcab',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8.5,leading=11,alignment=TA_CENTER,spaceAfter=2)
+    tabla=ParagraphStyle('NCtabla',parent=styles['Normal'],fontName='Helvetica',fontSize=5.4,leading=6.2,alignment=TA_CENTER,wordWrap='CJK')
+    tabla_izq=ParagraphStyle('NCtablaIzq',parent=tabla,alignment=0)
+    enc=ParagraphStyle('NCenc',parent=tabla,fontName='Helvetica-Bold',textColor=colors.white,leading=6.5)
+    elements=[Paragraph('REPORTE DE NOTAS DE CRÉDITO',titulo),
+              Paragraph(f"NOTAS DE CRÉDITO DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",cab),
+              Paragraph(f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",cab),Spacer(1,10)]
+    data=[[Paragraph(label,enc) for _,label in NOTAS_CREDITO_COLUMNS]]
+    for row in filas:
+        vals=[]
+        for i,v in enumerate(row):
+            if i==1: vals.append(Paragraph(str(v or ''),tabla_izq))
+            elif i in (0,2,3,4,5,6,11,12,13): vals.append(Paragraph(str(v or ''),tabla))
+            else: vals.append(f"{float(v or 0):.2f}")
+        data.append(vals)
+    data.append(['','','','','','','',
+                 f"{resumen['bases_sin_iva']:.2f}",f"{resumen['bases_con_iva']:.2f}",
+                 f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",'','',''])
+    table=Table(data,repeatRows=1,colWidths=[22,105,68,38,48,72,50,54,54,42,54,42,70,55])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('FONTSIZE',(0,0),(-1,-1),5.4),
+        ('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),
+        ('ALIGN',(0,1),(0,-1),'CENTER'),('ALIGN',(2,1),(6,-1),'CENTER'),('ALIGN',(7,1),(13,-1),'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    response=HttpResponse(buffer.getvalue(),content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="reporte_notas_credito.pdf"'
+    return response
+
+
+@login_required
+def notas_credito_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    filtros, filas, resumen, _ = _notas_credito_datos(request)
+    if filtros is None: return redirect('portal')
+    wb=Workbook(); ws=wb.active; ws.title='Notas de crédito'
+    ws.append([label for _,label in NOTAS_CREDITO_COLUMNS])
+    for cell in ws[1]:
+        cell.font=Font(bold=True,color='FFFFFF'); cell.fill=PatternFill('solid',fgColor='21333E'); cell.alignment=Alignment(horizontal='center')
+    for row in filas: ws.append(list(row))
+    ws.append([])
+    ws.append(['','','','','','','RESUMEN'])
+    ws.cell(ws.max_row,8,resumen['bases_sin_iva']); ws.cell(ws.max_row,9,resumen['bases_con_iva'])
+    ws.cell(ws.max_row,10,resumen['iva']); ws.cell(ws.max_row,11,resumen['total'])
+    ws.freeze_panes='A2'; ws.auto_filter.ref=ws.dimensions
+    widths=[7,38,17,10,13,25,18,16,16,13,16,11,24,18]
+    for i,width in enumerate(widths,1): ws.column_dimensions[chr(64+i)].width=width
+    buffer=BytesIO(); wb.save(buffer)
+    response=HttpResponse(buffer.getvalue(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition']='attachment; filename="reporte_notas_credito.xlsx"'
+    return response
+
 @login_required
 def compras_pdf(request):
     from reportlab.lib import colors
