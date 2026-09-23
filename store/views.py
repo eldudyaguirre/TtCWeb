@@ -1597,9 +1597,12 @@ def roles_pago_pdf(request):
         ('SPAN', (3, 0), (3, 1)),
         ('SPAN', (4, 0), (4, 1)),
         ('SPAN', (5, 0), (5, 1)),
-        ('SPAN', (18, 0), (18, 1)),
-        ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
-        ('ALIGN', (18, 0), (18, 1), 'CENTER'),
+        # FIRMA no se combina verticalmente: el texto queda en la celda
+        # superior para garantizar que ReportLab lo renderice.
+        ('FONTNAME', (18, 0), (18, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (18, 0), (18, 0), 8),
+        ('TEXTCOLOR', (18, 0), (18, 0), colors.black),
+        ('ALIGN', (18, 0), (18, 0), 'CENTER'),
         ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
         ('FONTSIZE', (18, 0), (18, 1), 7.5),
         ('TEXTCOLOR', (18, 0), (18, 1), colors.black),
