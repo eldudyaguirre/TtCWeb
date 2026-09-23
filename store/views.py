@@ -1322,10 +1322,10 @@ def _roles_pago_datos(request):
 
     meses = [
         ('', 'Todos los meses'),
-        ('ENERO', 'Enero'), ('FEBRERO', 'Febrero'), ('MARZO', 'Marzo'),
-        ('ABRIL', 'Abril'), ('MAYO', 'Mayo'), ('JUNIO', 'Junio'),
-        ('JULIO', 'Julio'), ('AGOSTO', 'Agosto'), ('SEPTIEMBRE', 'Septiembre'),
-        ('OCTUBRE', 'Octubre'), ('NOVIEMBRE', 'Noviembre'), ('DICIEMBRE', 'Diciembre'),
+        ('01', 'Enero'), ('02', 'Febrero'), ('03', 'Marzo'),
+        ('04', 'Abril'), ('05', 'Mayo'), ('06', 'Junio'),
+        ('07', 'Julio'), ('08', 'Agosto'), ('09', 'Septiembre'),
+        ('10', 'Octubre'), ('11', 'Noviembre'), ('12', 'Diciembre'),
     ]
 
     with db.cursor() as cursor:
@@ -1349,7 +1349,7 @@ def _roles_pago_datos(request):
     params = [anio]
 
     if mes_param:
-        where.append('UPPER(TRIM(mes::text)) = %s')
+        where.append('TRIM(mes::text) = %s')
         params.append(mes_param)
 
     sql = f"""
