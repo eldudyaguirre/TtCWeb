@@ -75,13 +75,13 @@
                 </div>
 
                 <div class="portal-menu-group">
-                    <button type="button" class="portal-menu-item portal-menu-toggle" aria-expanded="false">
+                    <button type="button" class="portal-menu-item portal-menu-toggle {% if request.resolver_match.url_name == 'trabajadores' %}active{% endif %}" aria-expanded="false">
                         <i class="fi fi-rr-users portal-menu-icon"></i>
                         <span>Laboral</span>
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
-                        <a href="#" class="portal-submenu-item">Trabajadores</a>
+                        <a href="{% url 'trabajadores' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'trabajadores' %}active{% endif %}">Trabajadores</a>
                         <a href="#" class="portal-submenu-item">Roles de Pago</a>
                     </div>
                 </div>
