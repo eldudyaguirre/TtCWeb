@@ -8,13 +8,6 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from io import BytesIO
 from datetime import datetime
-
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import landscape, A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from django.views.decorators.http import require_POST
 
 from .models import (
@@ -663,6 +656,11 @@ def compras(request):
 
 @login_required
 def compras_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
     filtros, filas, resumen, _ = _compras_datos_exportacion(request)
     if filtros is None:
         return redirect('portal')
@@ -705,6 +703,9 @@ def compras_pdf(request):
 
 @login_required
 def compras_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
     filtros, filas, resumen, _ = _compras_datos_exportacion(request)
     if filtros is None:
         return redirect('portal')
