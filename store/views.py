@@ -526,7 +526,7 @@ def _compras_where(request):
             fecha_hasta = ''
 
     if proveedor:
-        where.append("(ruccedpro ILIKE %s OR nomprovee ILIKE %s)")
+        where.append("(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)")
         params.extend([f'%{proveedor}%', f'%{proveedor}%'])
 
     return " AND ".join(where) if where else "1=1", params, {
@@ -544,7 +544,7 @@ def _compras_base_sql():
     return """
         SELECT
             c.fecemi,
-            c.ruccedpro,
+            c.ruccedprovee,
             c.nomprovee,
             c.subtotcom,
             c.prcivacom,
@@ -560,7 +560,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
             fecemi,
-            ruccedpro,
+            ruccedprovee,
             nomprovee,
             CASE WHEN COALESCE(prcivacom, 0) = 0 THEN COALESCE(subtotcom, 0) ELSE 0 END,
             CASE WHEN COALESCE(prcivacom, 0) = 5 THEN COALESCE(subtotcom, 0) ELSE 0 END,
