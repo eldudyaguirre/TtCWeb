@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import ingresos_views
 
 
 urlpatterns = [
@@ -23,6 +24,9 @@ urlpatterns = [
     path('portal/ingresos/facturas/', views.ventas, name='ventas'),
     path('portal/ingresos/facturas/pdf/', views.ventas_pdf, name='ventas_pdf'),
     path('portal/ingresos/facturas/excel/', views.ventas_excel, name='ventas_excel'),
+    path('portal/ingresos/notas-credito/', ingresos_views.ingresos_notas_credito, name='ingresos_notas_credito'),
+    path('portal/ingresos/notas-credito/pdf/', ingresos_views.ingresos_notas_credito_pdf, name='ingresos_notas_credito_pdf'),
+    path('portal/ingresos/notas-credito/excel/', ingresos_views.ingresos_notas_credito_excel, name='ingresos_notas_credito_excel'),
     path('portal/', views.portal, name='portal'),
     path('about/', views.about, name='about'),
     path('contactanos/', views.contactanos, name='contactanos'),
