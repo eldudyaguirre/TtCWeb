@@ -819,23 +819,42 @@ def compras_pdf(request):
 
     data = [[label for _, label in COMPRAS_COLUMNS]]
     for row in filas:
-        data.append(list(row[:3]) + [float(x or 0) for x in row[3:]])
+        formatted = []
+        for index, value in enumerate(row):
+            if index in (0,):
+                formatted.append(str(value))
+            elif index in (1, 2, 3, 4, 5, 6, 13, 14):
+                formatted.append(str(value or ''))
+            else:
+                formatted.append(f"{float(value or 0):.2f}")
+        data.append(formatted)
 
-    data.append(['', '', 'RESUMEN'] + [
-        resumen[k] for k in [
-            'subtotal0', 'subtotal5', 'subtotal8', 'subtotal12', 'subtotal14',
-            'subtotal15', 'iva5', 'iva8', 'iva12', 'iva14', 'iva15', 'total'
-        ]
+    data.append([
+        '', '', '', '', '', '', '',
+        f"{resumen['bases_sin_iva']:.2f}",
+        f"{resumen['bases_con_iva']:.2f}",
+        f"{resumen['iva']:.2f}",
+        f"{resumen['total']:.2f}",
+        f"{resumen['retiva']:.2f}",
+        '',
+        f"{resumen['retrenta']:.2f}",
+        '',
     ])
 
-    table = Table(data, repeatRows=1)
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[24, 105, 75, 40, 52, 78, 55, 58, 58, 45, 58, 48, 42, 55, 60],
+    )
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
-        ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (14, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
     ]))
     elements.append(table)
@@ -866,17 +885,21 @@ def compras_excel(request):
         cell.alignment = Alignment(horizontal='center')
 
     for row in filas:
-        ws.append(list(row[:3]) + [float(x or 0) for x in row[3:]])
+        ws.append(list(row))
 
     ws.append([])
-    ws.append(['', '', 'RESUMEN'])
-    for key, label in COMPRAS_COLUMNS[3:]:
-        ws.cell(ws.max_row, COMPRAS_COLUMNS.index((key, label)) + 1, resumen[key])
+    ws.append(['', '', '', '', '', '', 'RESUMEN'])
+    ws.cell(ws.max_row, 8, resumen['bases_sin_iva'])
+    ws.cell(ws.max_row, 9, resumen['bases_con_iva'])
+    ws.cell(ws.max_row, 10, resumen['iva'])
+    ws.cell(ws.max_row, 11, resumen['total'])
+    ws.cell(ws.max_row, 12, resumen['retiva'])
+    ws.cell(ws.max_row, 14, resumen['retrenta'])
 
     ws.freeze_panes = 'A2'
     ws.auto_filter.ref = ws.dimensions
 
-    widths = [13, 16, 42] + [14] * 11
+    widths = [7, 38, 17, 10, 13, 25, 18, 16, 16, 13, 16, 14, 11, 16, 18]
     for i, width in enumerate(widths, 1):
         ws.column_dimensions[chr(64 + i)].width = width
 
