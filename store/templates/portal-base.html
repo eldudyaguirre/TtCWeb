@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=20260923v">
     {% block extra_head %}{% endblock %}
 <style>
-.portal-menu-locked { opacity: .7; cursor: not-allowed !important; }
+.portal-menu-locked { opacity: .7; pointer-events: none; cursor: not-allowed !important; }
 .portal-menu-locked .portal-menu-arrow { opacity: .45; }
 .portal-menu-lock { margin-left: auto; font-size: 12px; opacity: .8; }
 .portal-access-alert { margin: 18px 24px 0; padding: 14px 18px; display:flex; align-items:flex-start; gap:12px; border:1px solid rgba(192,145,35,.35); background:rgba(192,145,35,.08); border-radius:10px; }
