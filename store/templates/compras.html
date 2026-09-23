@@ -39,17 +39,45 @@
     }
 </style>
 
+
+<style>
+    .compras-report-header {
+        align-items: flex-start;
+    }
+    .compras-report-title h1 {
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+    .compras-report-title p {
+        margin: 2px 0;
+    }
+    .portal-report-table-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    .portal-report-table {
+        min-width: 1450px;
+    }
+    .portal-report-table th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+</style>
+
 {% endblock %}
 
 {% block portal_content %}
 <main class="portal-content">
     <div class="container-fluid">
         <section class="portal-report-card">
-            <div class="portal-report-heading">
-                <div>
+            <div class="portal-report-heading compras-report-header">
+                <div class="compras-report-title">
                     <div class="portal-kicker">Gastos</div>
-                    <h1>Compras</h1>
-                    <p>Facturas y notas de venta registradas en la base de datos.</p>
+                    <h1>REPORTE DE COMPRAS</h1>
+                    <p>COMPRAS DESDE {{ filtros.fecha_desde }} A {{ filtros.fecha_hasta }}</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
                 </div>
                 <div class="portal-report-count">{{ total_registros }} registros</div>
             </div>
