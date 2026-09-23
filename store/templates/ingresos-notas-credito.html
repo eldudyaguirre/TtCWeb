@@ -1,0 +1,118 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Notas de Crédito | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .ingresos-nc-report-header { align-items: flex-start; }
+    .ingresos-nc-report-title h1 { margin-bottom: 6px; text-transform: uppercase; }
+    .ingresos-nc-report-title p { margin: 2px 0; }
+    .ingresos-nc-table-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .ingresos-nc-table { min-width: 1250px; }
+    .ingresos-nc-table th { position: sticky; top: 0; z-index: 2; }
+    .ingresos-nc-export-btn {
+        display: inline-flex !important; align-items: center; justify-content: center; gap: 8px;
+        font-family: inherit !important; font-size: 14px !important; font-weight: 600 !important;
+        line-height: 1.2 !important; text-decoration: none !important; color: #ffffff !important;
+    }
+    .ingresos-nc-export-btn i { color: #ffffff !important; font-size: 15px; }
+    .ingresos-nc-export-btn:hover, .ingresos-nc-export-btn:focus,
+    .ingresos-nc-export-btn:active, .ingresos-nc-export-btn:visited {
+        color: #ffffff !important; text-decoration: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading ingresos-nc-report-header">
+                <div class="ingresos-nc-report-title">
+                    <div class="portal-kicker">Ingresos</div>
+                    <h1>REPORTE DE NOTAS DE CRÉDITO</h1>
+                    <p>NOTAS DE CRÉDITO DESDE {{ filtros.fecha_desde }} A {{ filtros.fecha_hasta }}</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} registros</div>
+            </div>
+
+            <form method="get" class="portal-report-filters">
+                <div class="portal-report-field">
+                    <label for="fecha_desde">Fecha desde</label>
+                    <input type="date" id="fecha_desde" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+                </div>
+                <div class="portal-report-field">
+                    <label for="fecha_hasta">Fecha hasta</label>
+                    <input type="date" id="fecha_hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+                </div>
+                <div class="portal-report-field portal-report-provider">
+                    <label for="cliente_busqueda">Cliente</label>
+                    <input type="search" id="cliente_busqueda" name="cliente_busqueda" value="{{ filtros.cliente_busqueda }}" placeholder="Nombre o RUC del cliente">
+                </div>
+                <div class="portal-report-actions">
+                    <button type="submit" class="portal-report-filter-btn"><i class="fi fi-rr-search"></i> Buscar</button>
+                    <a href="{% url 'ingresos_notas_credito' %}" class="portal-report-clear-btn">Limpiar</a>
+                </div>
+            </form>
+
+            <div class="portal-report-export">
+                <a class="portal-export-btn ingresos-nc-export-btn portal-export-pdf" href="{% url 'ingresos_notas_credito_pdf' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn ingresos-nc-export-btn portal-export-excel" href="{% url 'ingresos_notas_credito_excel' %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="ingresos-nc-table-wrap">
+                <table class="portal-report-table ingresos-nc-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th><th>CLIENTE</th><th>RUC</th><th>FECHA</th><th>NUM NC</th><th>NUM AUT</th>
+                            <th>BASES SIN IVA</th><th>BASES CON IVA</th><th>IVA</th><th>TOTAL</th><th>FAC MOD</th><th>FECHA FACTURA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            {% for value in row %}
+                            {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 10 or forloop.counter0 == 11 %}
+                            <td>{{ value }}</td>
+                            {% else %}
+                            <td class="portal-report-number">{{ value|floatformat:2 }}</td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="12" class="portal-report-empty">No existen notas de crédito para los filtros seleccionados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="portal-report-summary">
+                <div class="portal-report-summary-title">Resumen del período</div>
+                <div class="portal-report-summary-grid">
+                    <div><span>Bases sin IVA</span><strong>{{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
+                    <div><span>Bases con IVA</span><strong>{{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
+                    <div><span>IVA</span><strong>{{ resumen.iva|floatformat:2 }}</strong></div>
+                    <div class="portal-report-total"><span>Total</span><strong>{{ resumen.total|floatformat:2 }}</strong></div>
+                </div>
+            </div>
+
+            {% if total_paginas > 1 %}
+            <div class="portal-report-pagination">
+                {% if pagina > 1 %}
+                <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}&pagina={{ pagina|add:'-1' }}">‹ Anterior</a>
+                {% endif %}
+                <span>Página {{ pagina }} de {{ total_paginas }}</span>
+                {% if pagina < total_paginas %}
+                <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}&pagina={{ pagina|add:'1' }}">Siguiente ›</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% endblock %}
