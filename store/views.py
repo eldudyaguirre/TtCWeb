@@ -452,21 +452,21 @@ def aceptar_documento_legal(request):
 
 
 COMPRAS_COLUMNS = [
-    ('fecha', 'Fecha'),
-    ('ruc', 'RUC proveedor'),
-    ('proveedor', 'Proveedor'),
-    ('subtotal0', 'Subtotal 0%'),
-    ('subtotal5', 'Subtotal 5%'),
-    ('subtotal8', 'Subtotal 8%'),
-    ('subtotal12', 'Subtotal 12%'),
-    ('subtotal14', 'Subtotal 14%'),
-    ('subtotal15', 'Subtotal 15%'),
-    ('iva5', 'IVA 5%'),
-    ('iva8', 'IVA 8%'),
-    ('iva12', 'IVA 12%'),
-    ('iva14', 'IVA 14%'),
-    ('iva15', 'IVA 15%'),
-    ('total', 'Total'),
+    ('numero', 'N°'),
+    ('proveedor', 'PROVEEDOR'),
+    ('ruc', 'RUC'),
+    ('tipcom', 'TIP COM'),
+    ('fecha', 'FECHA'),
+    ('numfactura', 'NUMERO FACTURA'),
+    ('numaut', 'NUM AUT.'),
+    ('bases_sin_iva', 'BASES SIN IVA'),
+    ('bases_con_iva', 'BASES CON IVA'),
+    ('iva', 'IVA'),
+    ('total', 'TOTAL'),
+    ('retiva', 'RET IVA'),
+    ('codret', 'COD RET'),
+    ('retrenta', 'RET RENTA'),
+    ('numret', 'NUM RET.'),
 ]
 
 
@@ -512,7 +512,6 @@ def _compras_where(request):
     fecha_hasta = request.GET.get('fecha_hasta', '').strip()
     proveedor = request.GET.get('proveedor', '').strip()
 
-    # Al abrir el reporte sin filtros, mostrar el mes actual hasta hoy.
     if not fecha_desde:
         fecha_desde = primer_dia_mes.strftime('%Y-%m-%d')
     if not fecha_hasta:
@@ -552,7 +551,14 @@ def _compras_base_sql():
             c.fecemi,
             c.ruccedprovee,
             c.nomprovee,
+            TRIM(c.tipcom::text) AS tipcom,
+            c.numest,
+            c.numptoemi,
+            c.numsec,
+            c.numaut,
+            c.baseimpnoobj,
             c.baseimpiva0,
+            c.baseexcenta,
             c.baseimpiva5,
             c.baseimpiva8,
             c.baseimpiva12,
@@ -563,9 +569,16 @@ def _compras_base_sql():
             c.montoiva12,
             c.montoiva14,
             c.montoiva15,
-            c.montoice,
-            c.totbases,
-            TRIM(c.tipcom::text) AS tipcom
+            c.retencioniva10,
+            c.retencioniva20,
+            c.retencioniva30,
+            c.retencioniva70,
+            c.retencioniva100,
+            c.codret,
+            c.valret,
+            c.numestret,
+            c.numptoemiret,
+            c.numsecret
         FROM comprasnue c
         WHERE TRIM(c.tipcom::text) IN ('01', '02')
     """
@@ -574,32 +587,64 @@ def _compras_base_sql():
 def _compras_query(where, params, cliente, limit=None, offset=None):
     sql = f"""
         SELECT
-            fecemi,
-            ruccedprovee,
-            nomprovee,
-            baseimpiva0,
-            baseimpiva5,
-            baseimpiva8,
-            baseimpiva12,
-            baseimpiva14,
-            baseimpiva15,
-            montoiva5,
-            montoiva8,
-            montoiva12,
-            montoiva14,
-            montoiva15,
+            ROW_NUMBER() OVER (ORDER BY fecemi::date ASC) AS numero,
+            nomprovee AS proveedor,
+            ruccedprovee AS ruc,
+            CASE
+                WHEN tipcom = '01' THEN 'FAC'
+                WHEN tipcom = '02' THEN 'N/V'
+                ELSE tipcom
+            END AS tipcom,
+            fecemi AS fecha,
+            CONCAT(numest, '-', numptoemi, '-', numsec) AS numfactura,
+            numaut,
             (
-                COALESCE(NULLIF(totbases, ''), '0')::numeric
-                + COALESCE(NULLIF(montoice, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+            ) AS bases_sin_iva,
+            (
+                COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
+            ) AS bases_con_iva,
+            (
+                COALESCE(NULLIF(montoiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+            ) AS iva,
+            (
+                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
-            )
+            ) AS total,
+            (
+                COALESCE(NULLIF(retencioniva10, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva20, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva30, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva70, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva100, ''), '0')::numeric
+            ) AS retiva,
+            codret,
+            COALESCE(NULLIF(valret, ''), '0')::numeric AS retrenta,
+            CONCAT(numestret, '-', numptoemiret, '-', numsecret) AS numret
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
-        ORDER BY fecemi ASC
+        ORDER BY fecemi::date ASC
     """
 
     if limit is not None:
@@ -614,26 +659,48 @@ def _compras_query(where, params, cliente, limit=None, offset=None):
 def _compras_resumen(where, params, cliente):
     sql = f"""
         SELECT
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(montoiva5, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(montoiva8, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(montoiva12, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(montoiva14, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(montoiva15, ''), '0')::numeric), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(totbases, ''), '0')::numeric
-                + COALESCE(NULLIF(montoice, ''), '0')::numeric
+                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(montoiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpnoobj, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexcenta, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva5, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva8, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva15, ''), '0')::numeric
-            ), 0)
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(retencioniva10, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva20, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva30, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva70, ''), '0')::numeric
+                + COALESCE(NULLIF(retencioniva100, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(COALESCE(NULLIF(valret, ''), '0')::numeric), 0)
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
     """
@@ -643,8 +710,7 @@ def _compras_resumen(where, params, cliente):
         row = cursor.fetchone()
 
     return dict(zip(
-        ['subtotal0', 'subtotal5', 'subtotal8', 'subtotal12', 'subtotal14',
-         'subtotal15', 'iva5', 'iva8', 'iva12', 'iva14', 'iva15', 'total'],
+        ['bases_sin_iva', 'bases_con_iva', 'iva', 'total', 'retiva', 'retrenta'],
         [float(value or 0) for value in row],
     ))
 
@@ -822,7 +888,6 @@ def compras_excel(request):
     )
     response['Content-Disposition'] = 'attachment; filename="reporte_compras.xlsx"'
     return response
-
 
 def about(request):
     return render(request, 'about.html')
