@@ -982,6 +982,220 @@ def listado_proveedores_excel(request):
     return response
 
 
+CLIENTES_COLUMNS = [
+    ('numero', 'N°'),
+    ('ruc', 'RUC'),
+    ('cliente', 'CLIENTE'),
+]
+
+
+def _clientes_anios(cliente):
+    sql = """
+        SELECT DISTINCT EXTRACT(YEAR FROM fecfactur::date)::integer AS anio
+        FROM ventas
+        WHERE fecfactur IS NOT NULL
+          AND EXTRACT(YEAR FROM fecfactur::date)::integer BETWEEN %s AND %s
+        ORDER BY anio DESC
+    """
+    hoy = datetime.now().date()
+    anio_actual = hoy.year
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [anio_actual - 6, anio_actual])
+        return [row[0] for row in cursor.fetchall()]
+
+
+def _clientes_datos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, [], []
+
+    anios = _clientes_anios(cliente)
+    try:
+        anio = int(request.GET.get('anio', anios[0] if anios else datetime.now().year))
+    except (TypeError, ValueError):
+        anio = anios[0] if anios else datetime.now().year
+
+    if anio not in anios:
+        anio = anios[0] if anios else datetime.now().year
+
+    sql = """
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY nomcli, ruccedcli) AS numero,
+            ruccedcli AS ruc,
+            nomcli AS cliente
+        FROM (
+            SELECT
+                TRIM(ruccedcli::text) AS ruccedcli,
+                TRIM(nomcli::text) AS nomcli
+            FROM ventas
+            WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
+              AND COALESCE(TRIM(ruccedcli::text), '') <> ''
+            GROUP BY TRIM(ruccedcli::text), TRIM(nomcli::text)
+        ) clientes
+        ORDER BY nomcli, ruccedcli
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [anio])
+        filas = cursor.fetchall()
+
+    return {'cliente': cliente, 'anio': anio, 'anios': anios}, filas, anios
+
+
+@login_required
+def listado_clientes(request):
+    try:
+        filtros, filas, _ = _clientes_datos(request)
+        if filtros is None:
+            return redirect('portal')
+        return render(request, 'listado-clientes.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'anio': filtros['anio'],
+            'anios': filtros['anios'],
+            'total_registros': len(filas),
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en listado de clientes: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+
+@login_required
+def listado_clientes_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas, _ = _clientes_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=35,
+        rightMargin=35,
+        topMargin=30,
+        bottomMargin=30,
+    )
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'ClientesTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    cabecera = ParagraphStyle(
+        'ClientesCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=11,
+        alignment=TA_CENTER,
+    )
+    tabla = ParagraphStyle(
+        'ClientesTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8,
+        leading=10,
+    )
+    encabezado = ParagraphStyle(
+        'ClientesEncabezado',
+        parent=tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        alignment=TA_CENTER,
+    )
+
+    elements = [
+        Paragraph('LISTADO DE CLIENTES', titulo),
+        Paragraph(f'PERÍODO FISCAL {filtros["anio"]}', cabecera),
+        Paragraph(
+            f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}',
+            cabecera,
+        ),
+        Spacer(1, 12),
+    ]
+
+    data = [[Paragraph(label, encabezado) for _, label in CLIENTES_COLUMNS]]
+    for row in filas:
+        data.append([
+            Paragraph(str(row[0]), tabla),
+            Paragraph(str(row[1] or ''), tabla),
+            Paragraph(str(row[2] or ''), tabla),
+        ])
+
+    table = Table(data, repeatRows=1, colWidths=[45, 130, 330])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 0), (1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (2, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f'Total de clientes: {len(filas)}', tabla))
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="listado_clientes_{filtros["anio"]}.pdf"'
+    )
+    return response
+
+
+@login_required
+def listado_clientes_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas, _ = _clientes_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Clientes'
+    ws.append([label for _, label in CLIENTES_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    ws.column_dimensions['A'].width = 8
+    ws.column_dimensions['B'].width = 20
+    ws.column_dimensions['C'].width = 55
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = (
+        f'attachment; filename="listado_clientes_{filtros["anio"]}.xlsx"'
+    )
+    return response
+
+
 VENTAS_COLUMNS = [
     ('numero', 'N°'),
     ('cliente', 'CLIENTE'),
