@@ -49,7 +49,7 @@ def home(request):
 
 def do_signin(request):
     if request.user.is_authenticated:
-        return redirect('home')
+        return redirect('portal')
 
     form = AuthenticationForm(request, data=request.POST or None)
 
