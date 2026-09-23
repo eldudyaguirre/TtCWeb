@@ -36,16 +36,21 @@
 <section class="dashboard-comparison"><div><span class="dashboard-card-kicker">Período fiscal {{ estadisticas.anio }}</span><h2>Resumen del período</h2></div><div class="dashboard-comparison-values"><div><span>Compras</span><strong>$ {{ estadisticas.compras_total|floatformat:2 }}</strong></div><div><span>Ventas</span><strong>$ {{ estadisticas.ventas_total|floatformat:2 }}</strong></div></div></section>
 {% endif %}
 </div></main>
-{% endblock %}
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-document.querySelectorAll('.dashboard-chart').forEach(function(chart){
- let bars=[...chart.querySelectorAll('.dashboard-bar')], max=Math.max(...bars.map(b=>parseFloat(b.dataset.value)||0),1);
- bars.forEach(function(bar){bar.style.height=((parseFloat(bar.dataset.value)||0)/max*100)+'%';});
-});
+    document.querySelectorAll('.dashboard-chart').forEach(function(chart){
+        const bars=[...chart.querySelectorAll('.dashboard-bar')];
+        const values=bars.map(function(bar){return parseFloat(bar.dataset.value)||0;});
+        const max=Math.max(...values,1);
+        bars.forEach(function(bar){
+            const value=parseFloat(bar.dataset.value)||0;
+            bar.style.height=(value/max*100)+'%';
+        });
+    });
 });
 </script>
+{% endblock %}
 {% block extra_body %}
 {% if pendientes_legales %}
     <div class="portal-legal-overlay" role="dialog" aria-modal="true" aria-labelledby="portal-legal-title" style="position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(18,29,36,.76)!important;backdrop-filter:blur(3px)!important;">
