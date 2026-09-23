@@ -116,31 +116,32 @@
                 <table class="portal-report-table">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>RUC proveedor</th>
-                            <th>Proveedor</th>
-                            <th>Subtotal 0%</th>
-                            <th>Subtotal 5%</th>
-                            <th>Subtotal 8%</th>
-                            <th>Subtotal 12%</th>
-                            <th>Subtotal 14%</th>
-                            <th>Subtotal 15%</th>
-                            <th>IVA 5%</th>
-                            <th>IVA 8%</th>
-                            <th>IVA 12%</th>
-                            <th>IVA 14%</th>
-                            <th>IVA 15%</th>
-                            <th>Total</th>
+                            <th>N°</th>
+                            <th>PROVEEDOR</th>
+                            <th>RUC</th>
+                            <th>TIP COM</th>
+                            <th>FECHA</th>
+                            <th>NUMERO FACTURA</th>
+                            <th>NUM AUT.</th>
+                            <th>BASES SIN IVA</th>
+                            <th>BASES CON IVA</th>
+                            <th>IVA</th>
+                            <th>TOTAL</th>
+                            <th>RET IVA</th>
+                            <th>COD RET</th>
+                            <th>RET RENTA</th>
+                            <th>NUM RET.</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for row in filas %}
                         <tr>
-                            <td>{{ row.0 }}</td>
-                            <td>{{ row.1 }}</td>
-                            <td class="portal-report-provider-cell">{{ row.2 }}</td>
-                            {% for value in row|slice:"3:" %}
+                            {% for value in row %}
+                            {% if forloop.counter0 == 0 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
+                            <td>{{ value }}</td>
+                            {% else %}
                             <td class="portal-report-number">{{ value|floatformat:2 }}</td>
+                            {% endif %}
                             {% endfor %}
                         </tr>
                         {% empty %}
@@ -155,18 +156,12 @@
             <div class="portal-report-summary">
                 <div class="portal-report-summary-title">Resumen del período</div>
                 <div class="portal-report-summary-grid">
-                    <div><span>Subtotal 0%</span><strong>{{ resumen.subtotal0|floatformat:2 }}</strong></div>
-                    <div><span>Subtotal 5%</span><strong>{{ resumen.subtotal5|floatformat:2 }}</strong></div>
-                    <div><span>Subtotal 8%</span><strong>{{ resumen.subtotal8|floatformat:2 }}</strong></div>
-                    <div><span>Subtotal 12%</span><strong>{{ resumen.subtotal12|floatformat:2 }}</strong></div>
-                    <div><span>Subtotal 14%</span><strong>{{ resumen.subtotal14|floatformat:2 }}</strong></div>
-                    <div><span>Subtotal 15%</span><strong>{{ resumen.subtotal15|floatformat:2 }}</strong></div>
-                    <div><span>IVA 5%</span><strong>{{ resumen.iva5|floatformat:2 }}</strong></div>
-                    <div><span>IVA 8%</span><strong>{{ resumen.iva8|floatformat:2 }}</strong></div>
-                    <div><span>IVA 12%</span><strong>{{ resumen.iva12|floatformat:2 }}</strong></div>
-                    <div><span>IVA 14%</span><strong>{{ resumen.iva14|floatformat:2 }}</strong></div>
-                    <div><span>IVA 15%</span><strong>{{ resumen.iva15|floatformat:2 }}</strong></div>
+                    <div><span>Bases sin IVA</span><strong>{{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
+                    <div><span>Bases con IVA</span><strong>{{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
+                    <div><span>IVA</span><strong>{{ resumen.iva|floatformat:2 }}</strong></div>
                     <div class="portal-report-total"><span>Total</span><strong>{{ resumen.total|floatformat:2 }}</strong></div>
+                    <div><span>Ret IVA</span><strong>{{ resumen.retiva|floatformat:2 }}</strong></div>
+                    <div><span>Ret Renta</span><strong>{{ resumen.retrenta|floatformat:2 }}</strong></div>
                 </div>
             </div>
 
