@@ -1,0 +1,90 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Trabajadores | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .trabajadores-report-header { align-items: flex-start; }
+    .trabajadores-report-title h1 { margin-bottom: 6px; text-transform: uppercase; }
+    .trabajadores-report-title p { margin: 2px 0; }
+    .trabajadores-table-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .trabajadores-table { min-width: 1050px; }
+    .trabajadores-table th { position: sticky; top: 0; z-index: 2; }
+    .trabajadores-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .trabajadores-export-btn {
+        display: inline-flex !important; align-items: center; justify-content: center; gap: 8px;
+        font-family: inherit !important; font-size: 14px !important; font-weight: 600 !important;
+        line-height: 1.2 !important; text-decoration: none !important; color: #ffffff !important;
+    }
+    .trabajadores-export-btn i { color: #ffffff !important; }
+    .trabajadores-total { margin-top: 12px; font-size: 13px; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading trabajadores-report-header">
+                <div class="trabajadores-report-title">
+                    <div class="portal-kicker">Laboral</div>
+                    <h1>LISTADO DE TRABAJADORES</h1>
+                    <p>TRABAJADORES ACTIVOS</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} trabajadores</div>
+            </div>
+
+            <div class="portal-report-export trabajadores-actions">
+                <a class="portal-export-btn trabajadores-export-btn portal-export-pdf"
+                   href="{% url 'trabajadores_pdf' %}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn trabajadores-export-btn portal-export-excel"
+                   href="{% url 'trabajadores_excel' %}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="trabajadores-table-wrap">
+                <table class="portal-report-table trabajadores-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>CÉDULA</th>
+                            <th>TRABAJADOR</th>
+                            <th>CARGO</th>
+                            <th>TIPO JORNADA</th>
+                            <th>FECHA ENTRADA</th>
+                            <th>SUELDO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            <td>{{ row.0 }}</td>
+                            <td>{{ row.1 }}</td>
+                            <td>{{ row.2 }}</td>
+                            <td>{{ row.3 }}</td>
+                            <td>{{ row.4 }}</td>
+                            <td>{{ row.5|date:"d/m/Y" }}</td>
+                            <td>{{ row.6|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="portal-report-empty">
+                                No existen trabajadores activos registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="trabajadores-total">
+                Total de trabajadores activos: {{ total_registros }}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
