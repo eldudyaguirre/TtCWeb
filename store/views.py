@@ -540,7 +540,7 @@ def _compras_base_sql():
             c.valivacom,
             c.totcompra,
             TRIM(c.tpcomp::text) AS tipcom
-        FROM compras c
+        FROM comprasnue c
         WHERE TRIM(c.tpcomp::text) IN ('01', '02')
     """
 
