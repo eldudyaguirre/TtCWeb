@@ -569,8 +569,8 @@ def _dashboard_estadisticas(cliente, anio):
     return {
         'anio': anio,
         'meses': meses,
-        'compras': [compras[i] for i in range(1, 13)],
-        'ventas': [ventas[i] for i in range(1, 13)],
+        'compras': [dict(compras[i], mes=meses[i - 1]) for i in range(1, 13)],
+        'ventas': [dict(ventas[i], mes=meses[i - 1]) for i in range(1, 13)],
         'compras_total': compras_total,
         'ventas_total': ventas_total,
         'compras_documentos': compras_documentos,
