@@ -300,3 +300,138 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     height:auto;
     overflow:visible;
 }
+
+/* Menú administrativo: mismo patrón de grupos/submenús del portal */
+.admin-sidebar{
+    overflow:hidden;
+}
+.admin-nav{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+}
+.admin-nav-group{
+    width:100%;
+    flex:0 0 auto;
+}
+.admin-nav-group .admin-menu-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-height:46px;
+    margin:0 0 4px;
+    padding:12px 13px;
+    border:0;
+    border-radius:9px;
+    background:transparent;
+    color:rgba(255,255,255,.88);
+    font:inherit;
+    font-size:14px;
+    font-weight:400;
+    line-height:1.2;
+    text-align:left;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    box-shadow:none;
+}
+.admin-nav-group .admin-menu-toggle:hover,
+.admin-nav-group.open .admin-menu-toggle{
+    background:rgba(255,255,255,.08);
+    color:#fff;
+}
+.admin-nav-group .admin-menu-toggle > i:first-child{
+    width:20px;
+    min-width:20px;
+    text-align:center;
+}
+.admin-nav-group .admin-menu-toggle span{
+    flex:1;
+}
+.admin-submenu{
+    max-height:0 !important;
+    overflow:hidden !important;
+    visibility:hidden;
+    width:100% !important;
+    margin:0 0 4px !important;
+    padding:0 0 0 33px !important;
+    border-left:0 !important;
+    box-sizing:border-box;
+    transition:max-height .22s ease,padding .22s ease,visibility .22s ease;
+}
+.admin-nav-group.open .admin-submenu{
+    display:block !important;
+    max-height:420px !important;
+    overflow:hidden !important;
+    visibility:visible;
+    padding-bottom:4px !important;
+}
+.admin-submenu-item{
+    display:block !important;
+    width:100% !important;
+    min-height:38px !important;
+    margin:0 !important;
+    padding:9px 12px !important;
+    border-radius:7px !important;
+    color:rgba(255,255,255,.56) !important;
+    font-size:13px !important;
+    text-decoration:none !important;
+}
+.admin-submenu-item:hover,
+.admin-submenu-item.active{
+    background:transparent !important;
+    color:#fff !important;
+}
+.admin-submenu-item i{
+    display:none !important;
+}
+.admin-submenu-separator{
+    height:1px;
+    width:calc(100% - 24px);
+    margin:6px 12px;
+    background:rgba(255,255,255,.12);
+}
+.admin-nav-group .admin-submenu-arrow{
+    width:auto !important;
+    min-width:0 !important;
+    margin-left:auto;
+    font-size:16px !important;
+    transition:transform .18s ease,color .18s ease;
+}
+.admin-nav-group.open .admin-submenu-arrow{
+    transform:rotate(180deg);
+    color:#63c3c4;
+}
+.admin-sidebar-bottom{
+    flex:0 0 auto;
+    margin-top:0;
+}
+@media(max-width:700px){
+    .admin-sidebar{
+        overflow:hidden;
+    }
+    .admin-nav{
+        overflow-y:auto;
+        flex:1 1 auto;
+    }
+    .admin-nav-group .admin-menu-toggle{
+        width:100%;
+        min-height:46px;
+        padding:12px 13px;
+        margin-bottom:4px;
+        font-size:14px;
+    }
+    .admin-submenu{
+        padding-left:25px !important;
+    }
+    .admin-nav-group.open .admin-submenu{
+        max-height:420px !important;
+    }
+    .admin-sidebar-bottom{
+        padding-top:10px;
+        padding-bottom:12px;
+    }
+}
