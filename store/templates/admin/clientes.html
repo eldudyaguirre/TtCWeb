@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% block title %}Clientes | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Administración</span>
+        <h1>Clientes</h1>
+        <p>Selecciona una empresa para gestionar su información y servicios.</p>
+    </div>
+</div>
+
+<form method="get" class="admin-filters">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por RUC o razón social">
+    <select name="estado">
+        <option value="">Todos los estados</option>
+        <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+        <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+    </select>
+    <button type="submit" class="admin-secondary-button">Buscar</button>
+</form>
+
+<section class="admin-card">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>RUC / C.I.</th><th>Cliente</th><th>Correo</th><th>Estado</th><th>Saldo</th><th></th></tr></thead>
+            <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.ruccedcli }}</td>
+                    <td><strong>{{ cliente.nomclient }}</strong></td>
+                    <td>{{ cliente.corelectr|default:"—" }}</td>
+                    <td><span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span></td>
+                    <td>$ {{ cliente.salcuenta|floatformat:2 }}</td>
+                    <td><a class="admin-table-action" href="{% url 'admin_cliente' cliente.ruccedcli %}">Gestionar →</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="admin-empty">No se encontraron clientes.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
