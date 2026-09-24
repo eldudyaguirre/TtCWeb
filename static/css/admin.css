@@ -655,3 +655,21 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         justify-content:flex-start !important;
     }
 }
+
+/* Apertura explícita del submenú Configuración */
+.admin-nav-group .admin-submenu.open{
+    display:block !important;
+    visibility:visible !important;
+    height:auto !important;
+    max-height:none !important;
+    opacity:1 !important;
+    overflow:visible !important;
+}
+.admin-nav-group .admin-submenu.open .admin-submenu-item{
+    display:block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+}
+.admin-nav-group .admin-submenu.open .admin-submenu-separator{
+    display:block !important;
+}
