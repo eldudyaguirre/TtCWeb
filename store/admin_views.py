@@ -1,59 +1,102 @@
+from functools import wraps
+
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from django.core.exceptions import PermissionDenied
-from django.db import connections
+from django.db import connection, connections
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
 
 from .models import Cliente, UsuarioCliente
 
 
+ADMIN_SESSION_KEY = 'admin_portal'
+ADMIN_USERNAME_KEY = 'admin_username'
+ADMIN_NAME_KEY = 'admin_name'
+
+
+def admin_required(view_func):
+    """Protege las vistas del portal administrativo con la sesión propia de TotalCounts."""
+    @wraps(view_func)
+    def wrapped(request, *args, **kwargs):
+        if not request.session.get(ADMIN_SESSION_KEY):
+            return redirect('admin_login')
+        return view_func(request, *args, **kwargs)
+    return wrapped
+
+
 def _admin_required(request):
-    if not request.user.is_authenticated:
-        return None
-    if not (request.user.is_staff or request.user.is_superuser):
-        raise PermissionDenied
-    return request.user
+    return request.session.get(ADMIN_SESSION_KEY, False)
 
 
 def admin_login(request):
-    if request.user.is_authenticated:
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect('admin_dashboard')
-        messages.error(request, 'Este acceso es exclusivo para administración de TotalCounts.')
-        return redirect('signin')
+    if request.session.get(ADMIN_SESSION_KEY):
+        return redirect('admin_dashboard')
 
-    form = AuthenticationForm(request, data=request.POST or None)
+    error = ''
+    username = ''
 
     if request.method == 'POST':
-        if form.is_valid():
-            user = authenticate(
-                request,
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password'],
-            )
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
 
-            if user is not None and (user.is_staff or user.is_superuser):
-                login(request, user)
-                request.session['admin_portal'] = True
-                return redirect('admin_dashboard')
-
-            messages.error(
-                request,
-                'El usuario o la contraseña no son válidos para el portal administrativo.',
-            )
+        if not username or not password:
+            error = 'Ingresa el usuario y la contraseña.'
         else:
-            messages.error(request, 'Usuario o contraseña inválidos.')
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    '''
+                    SELECT usrname, nomusuari, conusuari
+                    FROM seguridad
+                    WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
+                    LIMIT 1
+                    ''',
+                    [username],
+                )
+                usuario = cursor.fetchone()
 
-    return render(request, 'admin/login.html', {'login_form': form})
+            if usuario:
+                usuario_db, nombre_db, clave_db = usuario
+                clave_db = '' if clave_db is None else str(clave_db)
+                valido = False
+
+                # Soporta tanto las claves heredadas almacenadas como texto
+                # como hashes Django, si en el futuro se migran.
+                if clave_db.startswith(('pbkdf2_', 'argon2$', 'bcrypt$', 'scrypt$')):
+                    try:
+                        valido = check_password(password, clave_db)
+                    except Exception:
+                        valido = False
+                else:
+                    valido = password == clave_db
+
+                if valido:
+                    request.session[ADMIN_SESSION_KEY] = True
+                    request.session[ADMIN_USERNAME_KEY] = str(usuario_db).strip()
+                    request.session[ADMIN_NAME_KEY] = str(nombre_db or usuario_db).strip()
+                    request.session.set_expiry(1800)
+                    return redirect('admin_dashboard')
+
+            error = 'Usuario o contraseña inválidos.'
+
+    return render(
+        request,
+        'admin/login.html',
+        {
+            'error': error,
+            'username': username,
+        },
+    )
 
 
-@login_required
+def admin_logout(request):
+    request.session.pop(ADMIN_SESSION_KEY, None)
+    request.session.pop(ADMIN_USERNAME_KEY, None)
+    request.session.pop(ADMIN_NAME_KEY, None)
+    return redirect('admin_login')
+
+
+@admin_required
 def admin_dashboard(request):
-    _admin_required(request)
-
     clientes_qs = Cliente.objects.all()
     clientes = clientes_qs.order_by('nomclient')[:12]
 
@@ -63,14 +106,14 @@ def admin_dashboard(request):
         'clientes_inactivos': clientes_qs.filter(activo=False).count(),
         'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
         'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
     }
     return render(request, 'admin/dashboard.html', context)
 
 
-@login_required
+@admin_required
 def admin_clientes(request):
-    _admin_required(request)
-
     query = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
 
@@ -99,10 +142,8 @@ def admin_clientes(request):
     )
 
 
-@login_required
+@admin_required
 def admin_cliente(request, ruc):
-    _admin_required(request)
-
     cliente = get_object_or_404(Cliente, pk=ruc)
     usuarios = (
         UsuarioCliente.objects
@@ -120,8 +161,8 @@ def admin_cliente(request, ruc):
             base = settings.DATABASES['default'].copy()
             base['NAME'] = db_name
             connections.databases[alias] = base
-        connection = connections[alias]
-        connection.ensure_connection()
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
         db_status = 'Conectada'
     except Exception:
         db_status = 'No disponible'
