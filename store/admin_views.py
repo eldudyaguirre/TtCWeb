@@ -2,11 +2,15 @@ from functools import wraps
 
 from django.contrib import messages
 from django.db import connection, connections
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.utils import timezone
+from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.contrib.auth.hashers import check_password
 
-from .models import Cliente, UsuarioCliente
+from .models import Cliente, UsuarioCliente, VisitaWeb
 
 
 ADMIN_SESSION_KEY = 'admin_portal'
@@ -100,6 +104,43 @@ def admin_dashboard(request):
     clientes_qs = Cliente.objects.all()
     clientes = clientes_qs.order_by('nomclient')[:12]
 
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
     context = {
         'clientes_total': clientes_qs.count(),
         'clientes_activos': clientes_qs.filter(activo=True).count(),
@@ -108,6 +149,12 @@ def admin_dashboard(request):
         'clientes': clientes,
         'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
         'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
     }
     return render(request, 'admin/dashboard.html', context)
 
