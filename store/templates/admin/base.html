@@ -39,6 +39,9 @@
         </div>
     </aside>
 
+    <div class="admin-mobile-overlay" id="adminMobileOverlay"></div>
+    <button class="admin-mobile-toggle" id="adminMobileToggle" type="button" aria-label="Abrir menú" aria-expanded="false"><i class="fi fi-rr-menu-burger"></i></button>
+
     <main class="admin-main">
         <header class="admin-topbar">
             <div>
@@ -60,5 +63,48 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+<script>
+(function () {
+    const toggle = document.getElementById('adminMobileToggle');
+    const sidebar = document.querySelector('.admin-sidebar');
+    const overlay = document.getElementById('adminMobileOverlay');
+
+    if (!toggle || !sidebar || !overlay) return;
+
+    function closeMenu() {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Abrir menú');
+        toggle.innerHTML = '<i class="fi fi-rr-menu-burger"></i>';
+        document.body.classList.remove('admin-menu-open');
+    }
+
+    function openMenu() {
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('active');
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', 'Cerrar menú');
+        toggle.innerHTML = '<i class="fi fi-rr-cross"></i>';
+        document.body.classList.add('admin-menu-open');
+    }
+
+    toggle.addEventListener('click', function () {
+        sidebar.classList.contains('mobile-open') ? closeMenu() : openMenu();
+    });
+
+    overlay.addEventListener('click', closeMenu);
+
+    sidebar.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 700) closeMenu();
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 700) closeMenu();
+    });
+})();
+</script>
 </body>
 </html>
