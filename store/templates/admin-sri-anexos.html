@@ -1,0 +1,122 @@
+{% extends "portal-base.html" %}
+
+{% block title %}Administración - SRI Anexos | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.admin-anexos-card{background:#fff;border:1px solid #e0e6e8;border-radius:12px;padding:24px;max-width:1000px}
+.admin-anexos-header{margin-bottom:22px}
+.admin-anexos-header h1{margin:0 0 6px;text-transform:uppercase}
+.admin-anexos-header p{margin:0;color:#66747d}
+.admin-anexos-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.admin-anexos-field{display:flex;flex-direction:column;gap:7px}
+.admin-anexos-field.full{grid-column:1/-1}
+.admin-anexos-field label{font-size:11px;font-weight:700;text-transform:uppercase;color:#66747d}
+.admin-anexos-field select,.admin-anexos-field input[type="number"],.admin-anexos-field input[type="file"]{width:100%;min-height:42px;border:1px solid #d9e0e3;border-radius:8px;background:#fff;padding:8px 12px;font-family:inherit;color:#21333e}
+.admin-anexos-help{font-size:11px;color:#7a878d}
+.admin-anexos-actions{display:flex;justify-content:flex-end;margin-top:20px}
+.admin-anexos-btn{border:0;border-radius:8px;background:#1596a3;color:#fff;padding:11px 18px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.admin-anexos-alert{margin-bottom:18px;padding:12px 15px;border-radius:8px;font-size:13px}
+.admin-anexos-success{background:#edf8f1;border:1px solid #c9ead5;color:#247043}
+.admin-anexos-error{background:#fff1f1;border:1px solid #efcccc;color:#9a3434}
+.admin-anexos-preview{margin-top:22px;padding:14px 16px;background:#f7f9fa;border-radius:8px;font-size:12px;color:#52616a}
+@media(max-width:700px){.admin-anexos-grid{grid-template-columns:1fr}.admin-anexos-field.full{grid-column:auto}}
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="admin-anexos-card">
+            <div class="admin-anexos-header">
+                <div class="portal-kicker">Administración</div>
+                <h1>Cargar archivos SRI</h1>
+                <p>Selecciona el cliente y el período. El sistema archivará automáticamente los documentos en su carpeta correspondiente.</p>
+            </div>
+
+            {% if mensaje %}
+            <div class="admin-anexos-alert admin-anexos-success">{{ mensaje }}</div>
+            {% endif %}
+            {% if error %}
+            <div class="admin-anexos-alert admin-anexos-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="admin-anexos-grid">
+                    <div class="admin-anexos-field full">
+                        <label for="admin-cliente">Cliente</label>
+                        <select id="admin-cliente" name="cliente" required>
+                            <option value="">Seleccionar cliente...</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.pk }}">{{ cliente.nomclient }} — {{ cliente.ruccedcli }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="admin-anexos-field">
+                        <label for="admin-tipo">Tipo de anexo</label>
+                        <select id="admin-tipo" name="tipo" required>
+                            <option value="">Seleccionar tipo...</option>
+                            {% for value,label in tipos_anexos %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="admin-anexos-field">
+                        <label for="admin-anio">Año</label>
+                        <input id="admin-anio" name="anio" type="number" min="2000" max="2100" value="{{ anio_actual }}" required>
+                    </div>
+
+                    <div class="admin-anexos-field">
+                        <label for="admin-mes">Mes</label>
+                        <select id="admin-mes" name="mes" required>
+                            <option value="">Seleccionar mes...</option>
+                            {% for value,label in meses %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="admin-anexos-field">
+                        <label for="admin-archivos">Archivos</label>
+                        <input id="admin-archivos" name="archivos" type="file" multiple required>
+                        <span class="admin-anexos-help">Puedes seleccionar varios archivos a la vez.</span>
+                    </div>
+                </div>
+
+                <div class="admin-anexos-preview">
+                    <strong>Destino:</strong>
+                    <span id="admin-destino">Selecciona cliente, tipo, año y mes.</span>
+                </div>
+
+                <div class="admin-anexos-actions">
+                    <button type="submit" class="admin-anexos-btn">
+                        <i class="fi fi-rr-upload"></i>
+                        Archivar archivos
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    const cliente=document.getElementById('admin-cliente');
+    const tipo=document.getElementById('admin-tipo');
+    const anio=document.getElementById('admin-anio');
+    const mes=document.getElementById('admin-mes');
+    const destino=document.getElementById('admin-destino');
+    function actualizar(){
+        const c=cliente.options[cliente.selectedIndex]?.text||'';
+        const t=tipo.options[tipo.selectedIndex]?.text||'';
+        const a=anio.value||'';
+        const m=mes.value||'';
+        destino.textContent=(c&&t&&a&&m) ? c+' / '+t+' / '+a+' / '+m : 'Selecciona cliente, tipo, año y mes.';
+    }
+    [cliente,tipo,anio,mes].forEach(e=>e.addEventListener('change',actualizar));
+});
+</script>
+{% endblock %}
