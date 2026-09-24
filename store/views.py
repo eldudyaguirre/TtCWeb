@@ -1514,7 +1514,7 @@ def roles_pago_pdf(request):
     top = ['N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
            'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
            'I N G R E S O S', '', '', '', '', '', '',
-           'E G R E S O S', '', '', '', 'FIRMA']
+           'E G R E S O S', '', '', '', '']
     second = ['', '', '', '', '', '', 'FONDO\nDE\nRESERVA',
               'HORAS\nEXTRAS', 'DÉCIMO\nXIV', 'DÉCIMO\nXIII',
               'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
@@ -1533,7 +1533,7 @@ def roles_pago_pdf(request):
         Paragraph(x.replace('\n', '<br/>'), encabezado) if x else ''
         for x in second
     ]
-    second_cells[-1] = ''
+    second_cells[-1] = Paragraph('FIRMA', firma_encabezado)
 
     data = [top_cells, second_cells]
 
@@ -1596,7 +1596,6 @@ def roles_pago_pdf(request):
         ('SPAN', (3, 0), (3, 1)),
         ('SPAN', (4, 0), (4, 1)),
         ('SPAN', (5, 0), (5, 1)),
-        ('SPAN', (18, 0), (18, 1)),
         ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
         ('FONTSIZE', (18, 0), (18, 1), 7.5),
         ('TEXTCOLOR', (18, 0), (18, 1), colors.black),
