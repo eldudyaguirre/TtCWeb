@@ -31,7 +31,7 @@
                 {% for dia in grafica_visitas %}
                     <div class="admin-chart-column">
                         <span class="admin-chart-value">{{ dia.total }}</span>
-                        <div class="admin-chart-bar" style="--bar-height: {% if dia.total %}{{ dia.total }}{% else %}1{% endif %};"></div>
+                        <div class="admin-chart-bar" data-value="{{ dia.total }}"></div>
                         <small>{{ dia.fecha|date:"d/m" }}</small>
                     </div>
                 {% endfor %}
@@ -94,3 +94,15 @@
     </div>
 </section>
 {% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const bars = Array.from(document.querySelectorAll('.admin-chart-bar'));
+    const values = bars.map(bar => Number(bar.dataset.value || 0));
+    const max = Math.max(...values, 1);
+    bars.forEach(bar => {
+        const value = Number(bar.dataset.value || 0);
+        bar.style.height = Math.max(value ? (value / max) * 100 : 4, 4) + '%';
+    });
+});
+</script>
