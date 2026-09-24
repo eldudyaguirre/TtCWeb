@@ -89,9 +89,9 @@
             <a href="{% url 'sri_anexos_admin' %}"><i class="fi fi-rr-folder-open"></i><span>Anexos</span></a>
             <a href="#"><i class="fi fi-rr-edit"></i><span>Blog y noticias</span><small>Próximamente</small></a>
             <div class="admin-nav-group {% if request.resolver_match.url_name == 'admin_dashboard' and False %}active{% endif %}">
-                <a href="#" class="admin-nav-parent" id="adminConfigToggle" aria-expanded="false" role="button">
+                <button type="button" class="admin-nav-parent admin-menu-toggle" aria-expanded="false">
                     <i class="fi fi-rr-settings"></i><span>Configuración</span><i class="fi fi-rr-angle-small-down admin-submenu-arrow"></i>
-                </a>
+                </button>
                 <div class="admin-submenu" id="adminConfigSubmenu">
                     <a href="#" class="admin-submenu-item"><span>Datos Usuario</span></a>
                     <a href="#" class="admin-submenu-item"><span>Cambiar Contraseña</span></a>
@@ -131,67 +131,72 @@
         </div>
     </main>
 <script>
-(function () {
-    const toggle = document.getElementById('adminMobileToggle');
+document.addEventListener('DOMContentLoaded', function () {
+    const groups = document.querySelectorAll('.admin-nav-group');
     const sidebar = document.querySelector('.admin-sidebar');
+    const mobileToggle = document.getElementById('adminMobileToggle');
     const overlay = document.getElementById('adminMobileOverlay');
 
-    if (!toggle || !sidebar || !overlay) return;
-
-    function closeMenu() {
+    function closeMobileMenu() {
+        if (!sidebar || !mobileToggle) return;
         sidebar.classList.remove('mobile-open');
-        overlay.classList.remove('active');
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.setAttribute('aria-label', 'Abrir menú');
-        toggle.innerHTML = '<i class="fi fi-rr-menu-burger"></i>';
+        if (overlay) overlay.classList.remove('active');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        mobileToggle.setAttribute('aria-label', 'Abrir menú');
+        mobileToggle.innerHTML = '<i class="fi fi-rr-menu-burger"></i>';
         document.body.classList.remove('admin-menu-open');
     }
 
-    function openMenu() {
+    function openMobileMenu() {
+        if (!sidebar || !mobileToggle) return;
         sidebar.classList.add('mobile-open');
-        overlay.classList.add('active');
-        toggle.setAttribute('aria-expanded', 'true');
-        toggle.setAttribute('aria-label', 'Cerrar menú');
-        toggle.innerHTML = '<i class="fi fi-rr-cross"></i>';
+        if (overlay) overlay.classList.add('active');
+        mobileToggle.setAttribute('aria-expanded', 'true');
+        mobileToggle.setAttribute('aria-label', 'Cerrar menú');
+        mobileToggle.innerHTML = '<i class="fi fi-rr-cross-small"></i>';
         document.body.classList.add('admin-menu-open');
     }
 
-    toggle.addEventListener('click', function () {
-        sidebar.classList.contains('mobile-open') ? closeMenu() : openMenu();
-    });
-
-    const configToggle = document.getElementById('adminConfigToggle');
-    const configSubmenu = document.getElementById('adminConfigSubmenu');
-
-    if (configToggle && configSubmenu) {
-        configToggle.setAttribute('aria-expanded', 'false');
-        configSubmenu.classList.remove('open');
-        configToggle.classList.remove('open');
-
-        configToggle.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const isOpen = configSubmenu.classList.contains('open');
-            configSubmenu.classList.toggle('open', !isOpen);
-            configToggle.classList.toggle('open', !isOpen);
-            configToggle.setAttribute('aria-expanded', String(!isOpen));
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function () {
+            sidebar.classList.contains('mobile-open') ? closeMobileMenu() : openMobileMenu();
         });
     }
 
-    overlay.addEventListener('click', closeMenu);
+    if (overlay) overlay.addEventListener('click', closeMobileMenu);
+
+    groups.forEach(function (group) {
+        const toggle = group.querySelector('.admin-menu-toggle');
+        const submenu = group.querySelector('.admin-submenu');
+        if (!toggle || !submenu) return;
+
+        toggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            const wasOpen = group.classList.contains('open');
+
+            groups.forEach(function (otherGroup) {
+                otherGroup.classList.remove('open');
+                const otherToggle = otherGroup.querySelector('.admin-menu-toggle');
+                if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+            });
+
+            if (!wasOpen) {
+                group.classList.add('open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 
     sidebar.querySelectorAll('a').forEach(function (link) {
-        if (link.id === 'adminConfigToggle') return;
         link.addEventListener('click', function () {
-            if (window.innerWidth <= 700) closeMenu();
+            if (window.innerWidth <= 700) closeMobileMenu();
         });
     });
 
     window.addEventListener('resize', function () {
-        if (window.innerWidth > 700) closeMenu();
+        if (window.innerWidth > 700) closeMobileMenu();
     });
-})();
+});
 </script>
 </body>
 </html>
