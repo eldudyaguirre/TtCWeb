@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Panel principal</span>
+        <h1>Administración de TotalCounts</h1>
+        <p>Gestiona clientes, bases de datos y operaciones internas desde un solo lugar.</p>
+    </div>
+    <a href="{% url 'admin_clientes' %}" class="admin-primary-button admin-button-link">Gestionar clientes</a>
+</div>
+
+<section class="admin-kpis">
+    <div class="admin-kpi"><span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small></div>
+    <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
+    <div class="admin-kpi"><span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small></div>
+    <div class="admin-kpi"><span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small></div>
+</section>
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <span class="admin-kicker">Clientes</span>
+            <h2>Acceso rápido</h2>
+        </div>
+        <a href="{% url 'admin_clientes' %}">Ver todos →</a>
+    </div>
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>RUC</th><th>Cliente</th><th>Estado</th><th>Saldo</th><th></th></tr></thead>
+            <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.ruccedcli }}</td>
+                    <td>{{ cliente.nomclient }}</td>
+                    <td><span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span></td>
+                    <td>$ {{ cliente.salcuenta|floatformat:2 }}</td>
+                    <td><a class="admin-table-action" href="{% url 'admin_cliente' cliente.ruccedcli %}">Gestionar</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="admin-empty">No existen clientes registrados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
