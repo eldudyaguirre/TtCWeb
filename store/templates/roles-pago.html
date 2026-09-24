@@ -1,92 +1,6 @@
 {% extends "portal-base.html" %}
 
-{% block title %}Roles de Pago | TotalCounts    
-<div id="rolPagoModal" class="rol-modal" aria-hidden="true">
-    <div class="rol-modal-card" role="dialog" aria-modal="true" aria-labelledby="rolPagoModalTitle">
-        <div class="rol-modal-head">
-            <div>
-                <h2 id="rolPagoModalTitle" class="rol-modal-title">ROL DE PAGOS</h2>
-                <div id="rolPagoModalEmpresa" class="rol-modal-subtitle"></div>
-            </div>
-            <button type="button" class="rol-modal-close" id="rolPagoModalClose" aria-label="Cerrar">&times;</button>
-        </div>
-        <div class="rol-modal-info">
-            <strong>NOMBRE DEL EMPLEADO:</strong><span id="rolPagoNombre"></span>
-            <strong>CARGO:</strong><span id="rolPagoCargo"></span>
-            <strong>FECHA:</strong><span id="rolPagoFecha"></span>
-        </div>
-        <table class="rol-modal-table">
-            <thead><tr><th>RESUMEN</th><th>VALORES</th></tr></thead>
-            <tbody>
-                <tr><td>Salario Unificado</td><td id="rolSalario"></td></tr>
-                <tr><td>Horas Extras</td><td id="rolHe"></td></tr>
-                <tr><td>Fondo de Reserva (8.33%)</td><td id="rolFr"></td></tr>
-                <tr><td>XIV Mensualizado</td><td id="rolXiv"></td></tr>
-                <tr><td>XIII Mensualizado</td><td id="rolXiii"></td></tr>
-                <tr><td>Comisiones y/o Bonos</td><td id="rolComisiones"></td></tr>
-                <tr><td></td><td></td></tr>
-                <tr class="total"><td>TOTAL DE INGRESOS</td><td id="rolIngresos"></td></tr>
-                <tr><td>Aporte Personal IESS 9.45%</td><td id="rolAporte"></td></tr>
-                <tr><td>Fondo de Reserva Acumulado</td><td id="rolFracu"></td></tr>
-                <tr><td>Prestamos o Dias No Laborados</td><td id="rolDnl"></td></tr>
-                <tr class="total"><td>TOTAL DE EGRESOS</td><td id="rolEgresos"></td></tr>
-                <tr class="neto"><td>NETO A RECIBIR</td><td id="rolLiquido"></td></tr>
-            </tbody>
-        </table>
-        <div class="rol-modal-actions">
-            <a id="rolPagoPrint" class="rol-modal-print" href="#" target="_blank"><i class="fi fi-rr-print"></i> Imprimir</a>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-    const modal=document.getElementById('rolPagoModal');
-    const close=document.getElementById('rolPagoModalClose');
-    const baseUrl="{% url 'rol_pago_detalle' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
-    const pdfBaseUrl="{% url 'rol_pago_pdf' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
-    const money=v=>Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const set=(id,v)=>{document.getElementById(id).textContent=v;};
-
-    function cerrar(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');}
-    close.addEventListener('click',cerrar);
-    modal.addEventListener('click',function(e){if(e.target===modal)cerrar();});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')cerrar();});
-
-    document.querySelectorAll('.rol-empleado-link').forEach(function(btn){
-        btn.addEventListener('click',async function(){
-            const numero=this.dataset.numero;
-            try{
-                const response=await fetch(baseUrl.replace('/0/','/'+numero+'/'),{headers:{'X-Requested-With':'XMLHttpRequest'}});
-                const data=await response.json();
-                if(!response.ok) throw new Error(data.error||'No se pudo consultar el rol.');
-                document.getElementById('rolPagoModalTitle').textContent='ROL DE PAGOS';
-                set('rolPagoModalEmpresa',data.empresa+' | RUC: '+data.ruc);
-                set('rolPagoNombre',data.nombres);
-                set('rolPagoCargo',data.cargo);
-                set('rolPagoFecha',data.mes && data.mes!=='Todos los meses' ? 'DEL 1 AL 31 DE '+data.mes.toUpperCase()+' DEL '+data.anio : 'PERÍODO FISCAL '+data.anio);
-                set('rolSalario',money(data.arecibir));
-                set('rolHe',money(data.he));
-                set('rolFr',money(data.fr));
-                set('rolXiv',money(data.xiv));
-                set('rolXiii',money(data.xiii));
-                set('rolComisiones',money(data.comisiones_bonos));
-                set('rolIngresos',money(data.toting));
-                set('rolAporte',money(data.aporte));
-                set('rolFracu',money(data.fracu));
-                set('rolDnl',money(data.dnlprestamos));
-                set('rolEgresos',money(data.totregr));
-                set('rolLiquido',money(data.liquido));
-                document.getElementById('rolPagoPrint').href=pdfBaseUrl.replace('/0/','/'+numero+'/');
-                modal.classList.add('is-open');
-                modal.setAttribute('aria-hidden','false');
-            }catch(error){alert(error.message);}
-        });
-    });
-});
-</script>
-
-{% endblock %}
+{% block title %}Roles de Pago | TotalCounts{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -208,4 +122,89 @@ document.addEventListener('DOMContentLoaded', function(){
         </section>
     </div>
 </main>
+
+<div id="rolPagoModal" class="rol-modal" aria-hidden="true">
+    <div class="rol-modal-card" role="dialog" aria-modal="true" aria-labelledby="rolPagoModalTitle">
+        <div class="rol-modal-head">
+            <div>
+                <h2 id="rolPagoModalTitle" class="rol-modal-title">ROL DE PAGOS</h2>
+                <div id="rolPagoModalEmpresa" class="rol-modal-subtitle"></div>
+            </div>
+            <button type="button" class="rol-modal-close" id="rolPagoModalClose" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="rol-modal-info">
+            <strong>NOMBRE DEL EMPLEADO:</strong><span id="rolPagoNombre"></span>
+            <strong>CARGO:</strong><span id="rolPagoCargo"></span>
+            <strong>FECHA:</strong><span id="rolPagoFecha"></span>
+        </div>
+        <table class="rol-modal-table">
+            <thead><tr><th>RESUMEN</th><th>VALORES</th></tr></thead>
+            <tbody>
+                <tr><td>Salario Unificado</td><td id="rolSalario"></td></tr>
+                <tr><td>Horas Extras</td><td id="rolHe"></td></tr>
+                <tr><td>Fondo de Reserva (8.33%)</td><td id="rolFr"></td></tr>
+                <tr><td>XIV Mensualizado</td><td id="rolXiv"></td></tr>
+                <tr><td>XIII Mensualizado</td><td id="rolXiii"></td></tr>
+                <tr><td>Comisiones y/o Bonos</td><td id="rolComisiones"></td></tr>
+                <tr><td></td><td></td></tr>
+                <tr class="total"><td>TOTAL DE INGRESOS</td><td id="rolIngresos"></td></tr>
+                <tr><td>Aporte Personal IESS 9.45%</td><td id="rolAporte"></td></tr>
+                <tr><td>Fondo de Reserva Acumulado</td><td id="rolFracu"></td></tr>
+                <tr><td>Prestamos o Dias No Laborados</td><td id="rolDnl"></td></tr>
+                <tr class="total"><td>TOTAL DE EGRESOS</td><td id="rolEgresos"></td></tr>
+                <tr class="neto"><td>NETO A RECIBIR</td><td id="rolLiquido"></td></tr>
+            </tbody>
+        </table>
+        <div class="rol-modal-actions">
+            <a id="rolPagoPrint" class="rol-modal-print" href="#" target="_blank"><i class="fi fi-rr-print"></i> Imprimir</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const modal=document.getElementById('rolPagoModal');
+    const close=document.getElementById('rolPagoModalClose');
+    const baseUrl="{% url 'rol_pago_detalle' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
+    const pdfBaseUrl="{% url 'rol_pago_pdf' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
+    const money=v=>Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const set=(id,v)=>{document.getElementById(id).textContent=v;};
+
+    function cerrar(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');}
+    close.addEventListener('click',cerrar);
+    modal.addEventListener('click',function(e){if(e.target===modal)cerrar();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')cerrar();});
+
+    document.querySelectorAll('.rol-empleado-link').forEach(function(btn){
+        btn.addEventListener('click',async function(){
+            const numero=this.dataset.numero;
+            try{
+                const response=await fetch(baseUrl.replace('/0/','/'+numero+'/'),{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                const data=await response.json();
+                if(!response.ok) throw new Error(data.error||'No se pudo consultar el rol.');
+                document.getElementById('rolPagoModalTitle').textContent='ROL DE PAGOS';
+                set('rolPagoModalEmpresa',data.empresa+' | RUC: '+data.ruc);
+                set('rolPagoNombre',data.nombres);
+                set('rolPagoCargo',data.cargo);
+                set('rolPagoFecha',data.mes && data.mes!=='Todos los meses' ? 'DEL 1 AL 31 DE '+data.mes.toUpperCase()+' DEL '+data.anio : 'PERÍODO FISCAL '+data.anio);
+                set('rolSalario',money(data.arecibir));
+                set('rolHe',money(data.he));
+                set('rolFr',money(data.fr));
+                set('rolXiv',money(data.xiv));
+                set('rolXiii',money(data.xiii));
+                set('rolComisiones',money(data.comisiones_bonos));
+                set('rolIngresos',money(data.toting));
+                set('rolAporte',money(data.aporte));
+                set('rolFracu',money(data.fracu));
+                set('rolDnl',money(data.dnlprestamos));
+                set('rolEgresos',money(data.totregr));
+                set('rolLiquido',money(data.liquido));
+                document.getElementById('rolPagoPrint').href=pdfBaseUrl.replace('/0/','/'+numero+'/');
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden','false');
+            }catch(error){alert(error.message);}
+        });
+    });
+});
+</script>
 {% endblock %}
