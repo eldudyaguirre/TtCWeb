@@ -1394,7 +1394,6 @@ def _roles_pago_datos(request):
     }, filas, anios, meses
 
 
-@staff_member_required
 @admin_required
 def sri_anexos_admin(request):
     clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
