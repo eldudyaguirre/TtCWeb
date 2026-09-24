@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
 from django.db import connections
 from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
 
 from .models import Cliente, UsuarioCliente
 
@@ -114,7 +115,12 @@ def admin_cliente(request, ruc):
     db_status = 'No verificada'
 
     try:
-        connection = connections[db_name]
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        connection = connections[alias]
         connection.ensure_connection()
         db_status = 'Conectada'
     except Exception:
