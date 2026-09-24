@@ -33,6 +33,7 @@ urlpatterns = [
     path('portal/ingresos/productos-ice/', views.error_404, name='productos_ice'),
     path('portal/ingresos/registros-ice/', views.error_404, name='registros_ice'),
     path('portal/sri/anexos/', views.sri_anexos, name='sri_anexos'),
+    path('administracion/sri/anexos/', views.sri_anexos_admin, name='sri_anexos_admin'),
     path('portal/emitir/factura/', views.factura_emitir, name='factura_emitir'),
     path('portal/emitir/nota-credito/', views.nota_credito_emitir, name='nota_credito_emitir'),
     path('portal/emitir/guia-remision/', views.guia_remision_emitir, name='guia_remision_emitir'),
