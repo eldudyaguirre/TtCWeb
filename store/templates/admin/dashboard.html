@@ -51,14 +51,33 @@
                     <h2>Últimos 7 días</h2>
                 </div>
             </div>
-            <div class="admin-visits-chart">
-                {% for dia in grafica_visitas %}
-                    <div class="admin-chart-column">
-                        <span class="admin-chart-value">{{ dia.total }}</span>
-                        <div class="admin-chart-bar" data-value="{{ dia.total }}"></div>
-                        <small>{{ dia.fecha|date:"d/m" }}</small>
+            <div class="admin-visits-chart admin-line-chart">
+                <div class="admin-chart-y-labels">
+                    <span id="traffic-max">0</span>
+                    <span id="traffic-mid">0</span>
+                    <span>0</span>
+                </div>
+                <div class="admin-chart-area">
+                    <svg id="traffic-chart" viewBox="0 0 700 250" preserveAspectRatio="none" role="img" aria-label="Visitas de los últimos 7 días">
+                        <defs>
+                            <linearGradient id="trafficFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="rgba(25, 157, 173, .28)"/>
+                                <stop offset="100%" stop-color="rgba(25, 157, 173, 0)"/>
+                            </linearGradient>
+                        </defs>
+                        <line x1="0" y1="35" x2="700" y2="35" class="traffic-grid-line"/>
+                        <line x1="0" y1="125" x2="700" y2="125" class="traffic-grid-line"/>
+                        <line x1="0" y1="215" x2="700" y2="215" class="traffic-grid-line"/>
+                        <polygon id="traffic-area" class="traffic-area-fill" points="0,215 700,215"/>
+                        <polyline id="traffic-line" class="traffic-line" points="0,215 700,215"/>
+                        <g id="traffic-points"></g>
+                    </svg>
+                    <div class="admin-chart-x-labels">
+                        {% for dia in grafica_visitas %}
+                            <span>{{ dia.fecha|date:"d/m" }}</span>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
             </div>
         </section>
 
@@ -121,12 +140,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const bars = Array.from(document.querySelectorAll('.admin-chart-bar'));
-    const values = bars.map(bar => Number(bar.dataset.value || 0));
+    const values = [
+        {% for dia in grafica_visitas %}{{ dia.total }}{% if not forloop.last %},{% endif %}{% endfor %}
+    ];
+
+    const chart = document.getElementById('traffic-chart');
+    const line = document.getElementById('traffic-line');
+    const area = document.getElementById('traffic-area');
+    const pointsGroup = document.getElementById('traffic-points');
+    const maxLabel = document.getElementById('traffic-max');
+    const midLabel = document.getElementById('traffic-mid');
+
+    if (!chart || !values.length) return;
+
+    const width = 700;
+    const top = 35;
+    const bottom = 215;
+    const left = 10;
+    const right = 690;
     const max = Math.max(...values, 1);
-    bars.forEach(bar => {
-        const value = Number(bar.dataset.value || 0);
-        bar.style.height = Math.max(value ? (value / max) * 100 : 4, 4) + '%';
+    const mid = Math.ceil(max / 2);
+    const step = values.length > 1 ? (right - left) / (values.length - 1) : 0;
+
+    maxLabel.textContent = max;
+    midLabel.textContent = mid;
+
+    const coords = values.map((value, index) => {
+        const x = left + (step * index);
+        const y = bottom - ((value / max) * (bottom - top));
+        return {x, y, value};
+    });
+
+    const points = coords.map(p => p.x + ',' + p.y).join(' ');
+    line.setAttribute('points', points);
+    area.setAttribute('points', left + ',' + bottom + ' ' + points + ' ' + right + ',' + bottom);
+
+    coords.forEach(p => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', '5');
+        circle.setAttribute('class', 'traffic-point');
+        circle.setAttribute('data-value', p.value);
+        pointsGroup.appendChild(circle);
     });
 });
 </script>
+{% endblock %}
