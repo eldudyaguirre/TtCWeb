@@ -1608,8 +1608,7 @@ def rol_pago_pdf(request, numero):
         [Paragraph('TRABAJADOR', etiqueta), Paragraph('RESPONSABLE / EMPLEADOR', etiqueta)],
     ], colWidths=[240, 240], rowHeights=[24, 14, 14])
     firmas.setStyle(TableStyle([
-        ('LINEABOVE', (0, 0), (0, 0), 0.8, colors.black),
-        ('LINEABOVE', (1, 0), (1, 0), 0.8, colors.black),
+        # Sin líneas visibles: solo dejamos el espacio para las firmas.
         ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 10),
