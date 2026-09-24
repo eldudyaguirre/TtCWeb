@@ -43,6 +43,41 @@
 @media(max-width:700px){.admin-content .admin-visit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:18px!important}.admin-content .admin-visit-kpi{padding:16px!important}.admin-visit-kpi .admin-stat-icon{width:36px;height:36px;font-size:15px;margin-bottom:12px}.admin-visit-kpi strong{font-size:25px!important}.admin-traffic-card{padding:18px 14px 14px!important}.admin-traffic-header h2{font-size:20px!important}.admin-chart-shell{height:245px}.admin-chart-area svg{height:195px}.admin-chart-y-labels{width:22px;font-size:9px;padding-bottom:38px}.admin-chart-x-labels{font-size:9px}.admin-traffic-summary{grid-template-columns:1fr 1fr}.admin-traffic-summary-item{padding:8px;border-right:0!important}.admin-traffic-summary-value{font-size:15px}}
 </style>
 
+<section class="admin-kpis">
+    <div class="admin-kpi"><span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small></div>
+    <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
+    <div class="admin-kpi"><span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small></div>
+    <div class="admin-kpi"><span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small></div>
+</section>
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <span class="admin-kicker">Clientes</span>
+            <h2>Acceso rápido</h2>
+        </div>
+        <a href="{% url 'admin_clientes' %}">Ver todos →</a>
+    </div>
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>RUC</th><th>Cliente</th><th>Estado</th><th>Saldo</th><th></th></tr></thead>
+            <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.ruccedcli }}</td>
+                    <td>{{ cliente.nomclient }}</td>
+                    <td><span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span></td>
+                    <td>$ {{ cliente.salcuenta|floatformat:2 }}</td>
+                    <td><a class="admin-table-action" href="{% url 'admin_cliente' cliente.ruccedcli %}">Gestionar</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="admin-empty">No existen clientes registrados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
 <section class="admin-visit-section">
     <div class="admin-visit-kpis">
         <div class="admin-kpi admin-visit-kpi"><div class="admin-stat-icon">◉</div><span>Visitas hoy</span><strong>{{ visitas_hoy }}</strong><small>Páginas cargadas hoy</small></div>
@@ -91,41 +126,6 @@
                 {% empty %}<div class="admin-empty">Todavía no hay visitas registradas.</div>{% endfor %}
             </div>
         </section>
-    </div>
-</section>
-
-<section class="admin-kpis">
-    <div class="admin-kpi"><span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small></div>
-    <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
-    <div class="admin-kpi"><span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small></div>
-    <div class="admin-kpi"><span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small></div>
-</section>
-
-<section class="admin-card">
-    <div class="admin-card-header">
-        <div>
-            <span class="admin-kicker">Clientes</span>
-            <h2>Acceso rápido</h2>
-        </div>
-        <a href="{% url 'admin_clientes' %}">Ver todos →</a>
-    </div>
-    <div class="admin-table-wrap">
-        <table class="admin-table">
-            <thead><tr><th>RUC</th><th>Cliente</th><th>Estado</th><th>Saldo</th><th></th></tr></thead>
-            <tbody>
-            {% for cliente in clientes %}
-                <tr>
-                    <td>{{ cliente.ruccedcli }}</td>
-                    <td>{{ cliente.nomclient }}</td>
-                    <td><span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span></td>
-                    <td>$ {{ cliente.salcuenta|floatformat:2 }}</td>
-                    <td><a class="admin-table-action" href="{% url 'admin_cliente' cliente.ruccedcli %}">Gestionar</a></td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="5" class="admin-empty">No existen clientes registrados.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
     </div>
 </section>
 
