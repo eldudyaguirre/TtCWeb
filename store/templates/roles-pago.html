@@ -1,6 +1,92 @@
 {% extends "portal-base.html" %}
 
-{% block title %}Roles de Pago | TotalCounts{% endblock %}
+{% block title %}Roles de Pago | TotalCounts    
+<div id="rolPagoModal" class="rol-modal" aria-hidden="true">
+    <div class="rol-modal-card" role="dialog" aria-modal="true" aria-labelledby="rolPagoModalTitle">
+        <div class="rol-modal-head">
+            <div>
+                <h2 id="rolPagoModalTitle" class="rol-modal-title">ROL DE PAGOS</h2>
+                <div id="rolPagoModalEmpresa" class="rol-modal-subtitle"></div>
+            </div>
+            <button type="button" class="rol-modal-close" id="rolPagoModalClose" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="rol-modal-info">
+            <strong>NOMBRE DEL EMPLEADO:</strong><span id="rolPagoNombre"></span>
+            <strong>CARGO:</strong><span id="rolPagoCargo"></span>
+            <strong>FECHA:</strong><span id="rolPagoFecha"></span>
+        </div>
+        <table class="rol-modal-table">
+            <thead><tr><th>RESUMEN</th><th>VALORES</th></tr></thead>
+            <tbody>
+                <tr><td>Salario Unificado</td><td id="rolSalario"></td></tr>
+                <tr><td>Horas Extras</td><td id="rolHe"></td></tr>
+                <tr><td>Fondo de Reserva (8.33%)</td><td id="rolFr"></td></tr>
+                <tr><td>XIV Mensualizado</td><td id="rolXiv"></td></tr>
+                <tr><td>XIII Mensualizado</td><td id="rolXiii"></td></tr>
+                <tr><td>Comisiones y/o Bonos</td><td id="rolComisiones"></td></tr>
+                <tr><td></td><td></td></tr>
+                <tr class="total"><td>TOTAL DE INGRESOS</td><td id="rolIngresos"></td></tr>
+                <tr><td>Aporte Personal IESS 9.45%</td><td id="rolAporte"></td></tr>
+                <tr><td>Fondo de Reserva Acumulado</td><td id="rolFracu"></td></tr>
+                <tr><td>Prestamos o Dias No Laborados</td><td id="rolDnl"></td></tr>
+                <tr class="total"><td>TOTAL DE EGRESOS</td><td id="rolEgresos"></td></tr>
+                <tr class="neto"><td>NETO A RECIBIR</td><td id="rolLiquido"></td></tr>
+            </tbody>
+        </table>
+        <div class="rol-modal-actions">
+            <a id="rolPagoPrint" class="rol-modal-print" href="#" target="_blank"><i class="fi fi-rr-print"></i> Imprimir</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const modal=document.getElementById('rolPagoModal');
+    const close=document.getElementById('rolPagoModalClose');
+    const baseUrl="{% url 'rol_pago_detalle' 0 %}";
+    const pdfBaseUrl="{% url 'rol_pago_pdf' 0 %}";
+    const money=v=>Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const set=(id,v)=>{document.getElementById(id).textContent=v;};
+
+    function cerrar(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');}
+    close.addEventListener('click',cerrar);
+    modal.addEventListener('click',function(e){if(e.target===modal)cerrar();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')cerrar();});
+
+    document.querySelectorAll('.rol-empleado-link').forEach(function(btn){
+        btn.addEventListener('click',async function(){
+            const numero=this.dataset.numero;
+            try{
+                const response=await fetch(baseUrl.replace('/0/','/'+numero+'/'),{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                const data=await response.json();
+                if(!response.ok) throw new Error(data.error||'No se pudo consultar el rol.');
+                document.getElementById('rolPagoModalTitle').textContent='ROL DE PAGOS';
+                set('rolPagoModalEmpresa',data.empresa+' | RUC: '+data.ruc);
+                set('rolPagoNombre',data.nombres);
+                set('rolPagoCargo',data.cargo);
+                set('rolPagoFecha',data.mes && data.mes!=='Todos los meses' ? 'DEL 1 AL 31 DE '+data.mes.toUpperCase()+' DEL '+data.anio : 'PERÍODO FISCAL '+data.anio);
+                set('rolSalario',money(data.arecibir));
+                set('rolHe',money(data.he));
+                set('rolFr',money(data.fr));
+                set('rolXiv',money(data.xiv));
+                set('rolXiii',money(data.xiii));
+                set('rolComisiones',money(data.comisiones_bonos));
+                set('rolIngresos',money(data.toting));
+                set('rolAporte',money(data.aporte));
+                set('rolFracu',money(data.fracu));
+                set('rolDnl',money(data.dnlprestamos));
+                set('rolEgresos',money(data.totregr));
+                set('rolLiquido',money(data.liquido));
+                document.getElementById('rolPagoPrint').href=pdfBaseUrl.replace('/0/','/'+numero+'/');
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden','false');
+            }catch(error){alert(error.message);}
+        });
+    });
+});
+</script>
+
+{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -21,6 +107,27 @@
     .roles-table{min-width:1800px}
     .roles-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
     .roles-table td{white-space:nowrap}
+    .rol-empleado-link{border:0;background:none;padding:0;margin:0;color:#1596a3;font:inherit;font-weight:700;cursor:pointer;text-align:left}
+    .rol-empleado-link:hover{text-decoration:underline}
+    .rol-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(16,28,35,.58);align-items:center;justify-content:center;padding:20px}
+    .rol-modal.is-open{display:flex}
+    .rol-modal-card{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:24px}
+    .rol-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+    .rol-modal-title{font-size:20px;font-weight:800;color:#21333e;margin:0}
+    .rol-modal-subtitle{font-size:12px;color:#68767e;margin-top:4px}
+    .rol-modal-close{border:0;background:#eef3f4;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;color:#21333e}
+    .rol-modal-info{display:grid;grid-template-columns:135px 1fr;gap:7px 14px;margin:14px 0 18px}
+    .rol-modal-info strong{font-size:11px;text-transform:uppercase;color:#66747d}
+    .rol-modal-info span{font-size:13px;color:#21333e}
+    .rol-modal-table{width:100%;border-collapse:collapse;font-size:13px}
+    .rol-modal-table th,.rol-modal-table td{border:1px solid #222;padding:7px 9px}
+    .rol-modal-table th{text-align:center;font-weight:800}
+    .rol-modal-table td:last-child{text-align:right}
+    .rol-modal-table .total td{font-weight:800}
+    .rol-modal-table .neto td{font-size:14px;font-weight:800;border-top:2px solid #222}
+    .rol-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    .rol-modal-print{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:8px;background:#1596a3;color:#fff;padding:10px 16px;text-decoration:none;font-weight:700;cursor:pointer}
+    @media(max-width:600px){.rol-modal{padding:10px}.rol-modal-card{padding:18px}.rol-modal-info{grid-template-columns:1fr;gap:3px 0}.rol-modal-info strong{margin-top:5px}.rol-modal-actions{flex-direction:column}.rol-modal-print{justify-content:center}}
     .roles-total{margin-top:12px;font-size:13px;font-weight:600;color:#52616a}
     @media(max-width:700px){
         .roles-filters{align-items:stretch;flex-direction:column}
@@ -87,7 +194,7 @@
                         {% for row in filas %}
                         <tr>
                             {% for value in row %}
-                            <td>{% if forloop.counter == 5 %}{{ value|default:"" }}{% elif forloop.counter >= 4 %}{{ value|floatformat:2 }}{% else %}{{ value|default:"" }}{% endif %}</td>
+                            <td>{% if forloop.counter == 2 %}<button type="button" class="rol-empleado-link" data-numero="{{ row.0 }}">{{ value|default:"" }}</button>{% elif forloop.counter == 5 %}{{ value|default:"" }}{% elif forloop.counter >= 4 %}{{ value|floatformat:2 }}{% else %}{{ value|default:"" }}{% endif %}</td>
                             {% endfor %}
                         </tr>
                         {% empty %}
