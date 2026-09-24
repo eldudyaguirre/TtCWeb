@@ -286,3 +286,17 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         padding-left:14px!important;
     }
 }
+
+/* Estado inequívoco del submenú de Configuración */
+.admin-nav-group .admin-submenu{
+    display:none !important;
+    visibility:hidden;
+    height:0;
+    overflow:hidden;
+}
+.admin-nav-group .admin-submenu.open{
+    display:block !important;
+    visibility:visible;
+    height:auto;
+    overflow:visible;
+}
