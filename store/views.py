@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
@@ -26,6 +25,7 @@ from .models import (
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 from .services.archivos import eliminar_archivo, guardar_archivo
 from .services.legales import obtener_aceptaciones_pendientes, versiones_legales_vigentes
+from .admin_views import admin_required
 
 
 TEMPLATE_PREVIEWS = {
@@ -1395,6 +1395,7 @@ def _roles_pago_datos(request):
 
 
 @staff_member_required
+@admin_required
 def sri_anexos_admin(request):
     clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
 
