@@ -214,3 +214,42 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     .admin-nav-parent{min-height:46px;height:auto;padding:12px 13px;font-size:14px}
     .admin-submenu{margin-left:31px}
 }
+
+/* Corrección visual del botón Configuración */
+.admin-nav-group .admin-nav-parent,
+.admin-nav-group .admin-nav-parent:focus,
+.admin-nav-group .admin-nav-parent:active{
+    appearance:none !important;
+    -webkit-appearance:none !important;
+    border:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+    background:transparent !important;
+    color:rgba(255,255,255,.88) !important;
+    font-family:inherit !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:1.2 !important;
+    text-decoration:none !important;
+}
+.admin-nav-group .admin-nav-parent:hover,
+.admin-nav-group .admin-nav-parent.open{
+    background:rgba(255,255,255,.08) !important;
+    color:#fff !important;
+}
+.admin-nav-group .admin-nav-parent > span{
+    color:inherit !important;
+    font:inherit !important;
+}
+.admin-nav-group .admin-nav-parent > i{
+    color:inherit !important;
+}
+@media(max-width:700px){
+    .admin-nav-group .admin-nav-parent{
+        width:100% !important;
+        min-height:46px !important;
+        padding:12px 13px !important;
+        margin:0 !important;
+        border-radius:9px !important;
+    }
+}
