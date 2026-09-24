@@ -80,6 +80,9 @@
                     </button>
                     <div class="portal-submenu">
                         <a href="{% url 'sri_anexos' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'sri_anexos' %}active{% endif %}">Anexos</a>
+                        {% if request.user.is_staff or request.user.is_superuser %}
+                        <a href="{% url 'sri_anexos_admin' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'sri_anexos_admin' %}active{% endif %}">Administrar Anexos</a>
+                        {% endif %}
                         <a href="#" class="portal-submenu-item">Declaraciones</a>
                     </div>
                 </div>
