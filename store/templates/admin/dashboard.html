@@ -12,59 +12,59 @@
 </div>
 
 <style>
-.admin-content .admin-visit-kpis{
-    display:grid !important;
-    grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
-    gap:16px !important;
-}
-.admin-content .admin-visit-kpi{
-    width:auto !important;
-    max-width:none !important;
-    min-width:0 !important;
-}
-@media (max-width:1000px){
-    .admin-content .admin-visit-kpis{
-        grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-@media (max-width:700px){
-    .admin-content .admin-visit-kpis{
-        grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-        gap:10px !important;
-    }
-}
+.admin-content .admin-visit-kpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;margin-bottom:28px!important}
+.admin-content .admin-visit-kpi{width:auto!important;min-width:0!important;margin:0!important;padding:24px!important;border-radius:15px!important}
+.admin-visit-kpi .admin-stat-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e8f5f7;color:var(--admin-accent);font-size:18px;margin-bottom:18px}
+.admin-visit-kpi strong{font-size:32px!important;margin:5px 0 7px!important}
+.admin-visit-section{margin-top:0!important}
+.admin-visit-grid{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr)!important;gap:20px!important;align-items:stretch}
+.admin-traffic-card{padding:26px 28px 20px!important;margin-bottom:20px!important}
+.admin-traffic-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.admin-traffic-header .admin-kicker{display:block;margin-bottom:5px}
+.admin-traffic-header h2{font-size:25px!important;margin:0!important}
+.admin-chart-shell{height:310px;display:flex;gap:10px}
+.admin-chart-y-labels{width:30px;display:flex;flex-direction:column;justify-content:space-between;padding:13px 0 45px;text-align:right;font-size:11px;color:var(--admin-muted)}
+.admin-chart-area{flex:1;min-width:0;display:flex;flex-direction:column}
+.admin-chart-area svg{width:100%;height:260px;overflow:visible}
+.traffic-grid-line{stroke:#e6edef;stroke-width:1;stroke-dasharray:4 5}
+.traffic-area-fill{fill:rgba(21,150,163,.12)!important}
+.traffic-line{fill:none;stroke:var(--admin-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.traffic-point{fill:#fff;stroke:var(--admin-accent);stroke-width:3}
+.admin-chart-x-labels{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--admin-muted);text-align:center;padding-top:8px}
+.admin-traffic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#f7fafb;border-radius:12px;padding:15px 8px;margin-top:3px}
+.admin-traffic-summary-item{display:flex;align-items:center;gap:10px;padding:3px 18px;border-right:1px solid #e1e9eb}
+.admin-traffic-summary-item:last-child{border-right:0}
+.admin-traffic-summary-icon{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:#fff;color:var(--admin-accent);display:flex;align-items:center;justify-content:center}
+.admin-traffic-summary-label{display:block;font-size:11px;color:var(--admin-muted);margin-bottom:2px}
+.admin-traffic-summary-value{font-size:18px;font-weight:700;color:var(--admin-dark)}
+.admin-traffic-summary-value small{font-size:11px;font-weight:400;color:var(--admin-muted)}
+.admin-pages-card{margin-bottom:20px!important}
+@media(max-width:1000px){.admin-content .admin-visit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.admin-visit-grid{grid-template-columns:1fr!important}.admin-traffic-summary{grid-template-columns:repeat(2,1fr);gap:10px}.admin-traffic-summary-item:nth-child(2){border-right:0}.admin-traffic-summary-item{padding:8px 12px}}
+@media(max-width:700px){.admin-content .admin-visit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:18px!important}.admin-content .admin-visit-kpi{padding:16px!important}.admin-visit-kpi .admin-stat-icon{width:36px;height:36px;font-size:15px;margin-bottom:12px}.admin-visit-kpi strong{font-size:25px!important}.admin-traffic-card{padding:18px 14px 14px!important}.admin-traffic-header h2{font-size:20px!important}.admin-chart-shell{height:245px}.admin-chart-area svg{height:195px}.admin-chart-y-labels{width:22px;font-size:9px;padding-bottom:38px}.admin-chart-x-labels{font-size:9px}.admin-traffic-summary{grid-template-columns:1fr 1fr}.admin-traffic-summary-item{padding:8px;border-right:0!important}.admin-traffic-summary-value{font-size:15px}}
 </style>
 
 <section class="admin-visit-section">
     <div class="admin-visit-kpis">
-        <div class="admin-kpi admin-visit-kpi"><span>Visitas hoy</span><strong>{{ visitas_hoy }}</strong><small>Páginas cargadas hoy</small></div>
-        <div class="admin-kpi admin-visit-kpi"><span>Visitantes únicos hoy</span><strong>{{ visitantes_hoy }}</strong><small>Visitantes identificados</small></div>
-        <div class="admin-kpi admin-visit-kpi"><span>Visitas este mes</span><strong>{{ visitas_mes }}</strong><small>Total acumulado</small></div>
-        <div class="admin-kpi admin-visit-kpi"><span>Mes anterior</span><strong>{{ visitas_mes_anterior }}</strong><small>Referencia mensual</small></div>
+        <div class="admin-kpi admin-visit-kpi"><div class="admin-stat-icon">◉</div><span>Visitas hoy</span><strong>{{ visitas_hoy }}</strong><small>Páginas cargadas hoy</small></div>
+        <div class="admin-kpi admin-visit-kpi"><div class="admin-stat-icon">♙</div><span>Visitantes únicos hoy</span><strong>{{ visitantes_hoy }}</strong><small>Visitantes identificados</small></div>
+        <div class="admin-kpi admin-visit-kpi"><div class="admin-stat-icon">▥</div><span>Visitas este mes</span><strong>{{ visitas_mes }}</strong><small>Total acumulado</small></div>
+        <div class="admin-kpi admin-visit-kpi"><div class="admin-stat-icon">▣</div><span>Mes anterior</span><strong>{{ visitas_mes_anterior }}</strong><small>Referencia mensual</small></div>
     </div>
 
     <div class="admin-visit-grid">
-        <section class="admin-card">
-            <div class="admin-card-header">
+        <section class="admin-card admin-traffic-card">
+            <div class="admin-traffic-header">
                 <div>
                     <span class="admin-kicker">Tráfico</span>
                     <h2>Últimos 7 días</h2>
                 </div>
             </div>
-            <div class="admin-visits-chart admin-line-chart">
+            <div class="admin-chart-shell">
                 <div class="admin-chart-y-labels">
-                    <span id="traffic-max">0</span>
-                    <span id="traffic-mid">0</span>
-                    <span>0</span>
+                    <span id="traffic-max">0</span><span id="traffic-mid">0</span><span>0</span>
                 </div>
                 <div class="admin-chart-area">
                     <svg id="traffic-chart" viewBox="0 0 700 250" preserveAspectRatio="none" role="img" aria-label="Visitas de los últimos 7 días">
-                        <defs>
-                            <linearGradient id="trafficFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="rgba(25, 157, 173, .28)"/>
-                                <stop offset="100%" stop-color="rgba(25, 157, 173, 0)"/>
-                            </linearGradient>
-                        </defs>
                         <line x1="0" y1="35" x2="700" y2="35" class="traffic-grid-line"/>
                         <line x1="0" y1="125" x2="700" y2="125" class="traffic-grid-line"/>
                         <line x1="0" y1="215" x2="700" y2="215" class="traffic-grid-line"/>
@@ -72,34 +72,26 @@
                         <polyline id="traffic-line" class="traffic-line" points="0,215 700,215"/>
                         <g id="traffic-points"></g>
                     </svg>
-                    <div class="admin-chart-x-labels">
-                        {% for dia in grafica_visitas %}
-                            <span>{{ dia.fecha|date:"d/m" }}</span>
-                        {% endfor %}
-                    </div>
+                    <div class="admin-chart-x-labels">{% for dia in grafica_visitas %}<span>{{ dia.fecha|date:"d/m" }}</span>{% endfor %}</div>
                 </div>
+            </div>
+            <div class="admin-traffic-summary">
+                <div class="admin-traffic-summary-item"><div class="admin-traffic-summary-icon">▥</div><div><span class="admin-traffic-summary-label">Total período</span><span class="admin-traffic-summary-value" id="traffic-total">0 <small>visitas</small></span></div></div>
+                <div class="admin-traffic-summary-item"><div class="admin-traffic-summary-icon">↗</div><div><span class="admin-traffic-summary-label">Promedio diario</span><span class="admin-traffic-summary-value" id="traffic-average">0 <small>visitas/día</small></span></div></div>
+                <div class="admin-traffic-summary-item"><div class="admin-traffic-summary-icon">▣</div><div><span class="admin-traffic-summary-label">Día con más visitas</span><span class="admin-traffic-summary-value" id="traffic-best">—</span></div></div>
+                <div class="admin-traffic-summary-item"><div class="admin-traffic-summary-icon">□</div><div><span class="admin-traffic-summary-label">Día con menos visitas</span><span class="admin-traffic-summary-value" id="traffic-worst">—</span></div></div>
             </div>
         </section>
 
-        <section class="admin-card">
-            <div class="admin-card-header">
-                <div>
-                    <span class="admin-kicker">Contenido</span>
-                    <h2>Páginas más visitadas</h2>
-                </div>
-            </div>
+        <section class="admin-card admin-pages-card">
+            <div class="admin-card-header"><div><span class="admin-kicker">Contenido</span><h2>Páginas más visitadas</h2></div></div>
             <div class="admin-visit-pages">
                 {% for pagina in paginas_mas_visitadas %}
-                    <div class="admin-visit-page">
-                        <span title="{{ pagina.pagina }}">{{ pagina.pagina }}</span>
-                        <strong>{{ pagina.total }}</strong>
-                    </div>
-                {% empty %}
-                    <div class="admin-empty">Todavía no hay visitas registradas.</div>
-                {% endfor %}
+                    <div class="admin-visit-page"><span title="{{ pagina.pagina }}">{{ pagina.pagina }}</span><strong>{{ pagina.total }}</strong></div>
+                {% empty %}<div class="admin-empty">Todavía no hay visitas registradas.</div>{% endfor %}
             </div>
         </section>
-    </div>
+    </div>div>
 </section>
 
 <section class="admin-kpis">
@@ -163,6 +155,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     maxLabel.textContent = max;
     midLabel.textContent = mid;
+    const total = values.reduce((a,b) => a+b, 0);
+    const average = total / values.length;
+    const maxIndex = values.indexOf(Math.max(...values));
+    const minIndex = values.indexOf(Math.min(...values));
+    const dates = [{% for dia in grafica_visitas %}"{{ dia.fecha|date:'d/m' }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    document.getElementById('traffic-total').innerHTML = total + ' <small>visitas</small>';
+    document.getElementById('traffic-average').innerHTML = average.toFixed(1) + ' <small>visitas/día</small>';
+    document.getElementById('traffic-best').innerHTML = dates[maxIndex] + ' <small>' + values[maxIndex] + ' visitas</small>';
+    document.getElementById('traffic-worst').innerHTML = dates[minIndex] + ' <small>' + values[minIndex] + ' visitas</small>';
 
     const coords = values.map((value, index) => {
         const x = left + (step * index);
