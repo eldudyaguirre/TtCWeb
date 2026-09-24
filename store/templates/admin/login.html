@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Administración | TotalCounts</title>
+    <title>Acceso administrativo | TotalCounts</title>
     <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
@@ -16,27 +16,24 @@
         </div>
         <div class="admin-login-kicker">TOTALCOUNTS</div>
         <h1>Acceso administrativo</h1>
-        <p>Ingresa con una cuenta autorizada para administrar clientes y servicios internos.</p>
+        <p>Ingresa con tu usuario de administración de TotalCounts.</p>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="admin-alert">{{ message }}</div>
-            {% endfor %}
+        {% if error %}
+            <div class="admin-alert">{{ error }}</div>
         {% endif %}
 
-        <form method="post" action="{% url 'admin_login' %}">
+        <form method="post" action="{% url 'admin_login' %}" autocomplete="off">
             {% csrf_token %}
             <div class="admin-field">
-                <label for="{{ login_form.username.id_for_label }}">Usuario</label>
-                {{ login_form.username }}
+                <label for="admin-username">Usuario</label>
+                <input id="admin-username" type="text" name="username" value="{{ username }}" autocomplete="username" required autofocus>
             </div>
+
             <div class="admin-field">
-                <label for="{{ login_form.password.id_for_label }}">Contraseña</label>
-                {{ login_form.password }}
+                <label for="admin-password">Contraseña</label>
+                <input id="admin-password" type="password" name="password" autocomplete="current-password" required>
             </div>
-            {% if login_form.non_field_errors %}
-                <div class="admin-form-error">{{ login_form.non_field_errors }}</div>
-            {% endif %}
+
             <button type="submit" class="admin-primary-button">Iniciar sesión</button>
         </form>
 
