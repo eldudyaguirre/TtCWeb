@@ -1,0 +1,88 @@
+{% extends "portal-base.html" %}
+
+{% block title %}SRI - Anexos | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+    .sri-anexos-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+    .sri-anexos-title h1{margin:0 0 6px;text-transform:uppercase}
+    .sri-anexos-title p{margin:3px 0;color:#66747d}
+    .sri-anexos-ruc{font-size:12px;font-weight:700}
+    .sri-anexos-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .sri-anexo-card{background:#fff;border:1px solid #e0e6e8;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(33,51,62,.05)}
+    .sri-anexo-card-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid #e8edef}
+    .sri-anexo-icon{width:40px;height:40px;border-radius:10px;background:#eef7f8;color:#1596a3;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+    .sri-anexo-card-title{min-width:0;flex:1}
+    .sri-anexo-card-title h2{font-size:15px;line-height:19px;margin:0;color:#21333e}
+    .sri-anexo-count{font-size:11px;font-weight:700;color:#66747d;white-space:nowrap}
+    .sri-anexo-files{padding:8px 12px 12px}
+    .sri-anexo-file{display:flex;align-items:center;gap:11px;padding:11px 7px;border-bottom:1px solid #eef1f2}
+    .sri-anexo-file:last-child{border-bottom:0}
+    .sri-anexo-file-icon{width:30px;height:30px;border-radius:7px;background:#f4f6f7;color:#5d6b72;display:flex;align-items:center;justify-content:center;flex:none}
+    .sri-anexo-file-info{min-width:0;flex:1}
+    .sri-anexo-file-name{font-size:13px;font-weight:700;color:#21333e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sri-anexo-file-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;font-size:11px;color:#7a878d}
+    .sri-anexo-empty{padding:25px 12px;text-align:center;color:#7a878d;font-size:12px}
+    .sri-anexo-empty i{display:block;font-size:22px;margin-bottom:7px}
+    @media(max-width:800px){
+        .sri-anexos-grid{grid-template-columns:1fr}
+        .sri-anexos-header{flex-direction:column}
+    }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<main class="portal-content">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="sri-anexos-header">
+                <div class="sri-anexos-title">
+                    <div class="portal-kicker">Servicio de Rentas Internas</div>
+                    <h1>SRI - ANEXOS</h1>
+                    <p>{{ cliente.nomclient }}</p>
+                    <p class="sri-anexos-ruc">RUC: {{ cliente.ruccedcli }}</p>
+                </div>
+            </div>
+
+            <div class="sri-anexos-grid">
+                {% for tipo in tipos_anexos %}
+                <article class="sri-anexo-card">
+                    <div class="sri-anexo-card-head">
+                        <div class="sri-anexo-icon">
+                            <i class="fi {{ tipo.icono }}"></i>
+                        </div>
+                        <div class="sri-anexo-card-title">
+                            <h2>{{ tipo.nombre }}</h2>
+                        </div>
+                        <span class="sri-anexo-count">{{ tipo.total }} archivo{% if tipo.total != 1 %}s{% endif %}</span>
+                    </div>
+
+                    <div class="sri-anexo-files">
+                        {% for archivo in tipo.archivos %}
+                        <div class="sri-anexo-file">
+                            <div class="sri-anexo-file-icon">
+                                <i class="fi fi-rr-file"></i>
+                            </div>
+                            <div class="sri-anexo-file-info">
+                                <div class="sri-anexo-file-name" title="{{ archivo.nombre }}">{{ archivo.nombre }}</div>
+                                <div class="sri-anexo-file-meta">
+                                    <span>{{ archivo.extension }}</span>
+                                    <span>{{ archivo.tamano }}</span>
+                                    <span>{{ archivo.fecha|date:"d/m/Y H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="sri-anexo-empty">
+                            <i class="fi fi-rr-folder-open"></i>
+                            No existen archivos registrados.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
