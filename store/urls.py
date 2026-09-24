@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('signin/', views.do_signin, name='signin'),
     path('totalcounts/login/', admin_views.admin_login, name='admin_login'),
+    path('totalcounts/logout/', admin_views.admin_logout, name='admin_logout'),
     path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
