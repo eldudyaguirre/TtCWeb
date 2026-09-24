@@ -22,7 +22,7 @@
         <div class="admin-label">ADMINISTRACIÓN</div>
         <nav class="admin-nav">
             <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                <i class="fi fi-rr-dashboard"></i><span>Dashboard</span>
+                <i class="fi fi-rr-dashboard"></i><span>Inicio</span>
             </a>
             <a href="{% url 'admin_clientes' %}" class="{% if request.resolver_match.url_name == 'admin_clientes' or request.resolver_match.url_name == 'admin_cliente' %}active{% endif %}">
                 <i class="fi fi-rr-building"></i><span>Clientes</span>
