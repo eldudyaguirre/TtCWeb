@@ -673,3 +673,16 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
 .admin-nav-group .admin-submenu.open .admin-submenu-separator{
     display:block !important;
 }
+
+/* Botón hamburguesa móvil: sin borde ni línea blanca */
+@media (max-width:700px){
+    .admin-mobile-toggle,
+    .admin-mobile-toggle:focus,
+    .admin-mobile-toggle:active,
+    .admin-mobile-toggle:hover{
+        border:0 !important;
+        outline:none !important;
+        box-shadow:none !important;
+        -webkit-tap-highlight-color:transparent !important;
+    }
+}
