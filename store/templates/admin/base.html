@@ -164,18 +164,25 @@
     const configSubmenu = document.getElementById('adminConfigSubmenu');
 
     if (configToggle && configSubmenu) {
+        configToggle.setAttribute('aria-expanded', 'false');
+        configSubmenu.classList.remove('open');
+        configToggle.classList.remove('open');
+
         configToggle.addEventListener('click', function (event) {
             event.preventDefault();
-            const open = configToggle.getAttribute('aria-expanded') === 'true';
-            configToggle.setAttribute('aria-expanded', String(!open));
-            configSubmenu.classList.toggle('open', !open);
-            configToggle.classList.toggle('open', !open);
+            event.stopPropagation();
+
+            const isOpen = configSubmenu.classList.contains('open');
+            configSubmenu.classList.toggle('open', !isOpen);
+            configToggle.classList.toggle('open', !isOpen);
+            configToggle.setAttribute('aria-expanded', String(!isOpen));
         });
     }
 
     overlay.addEventListener('click', closeMenu);
 
     sidebar.querySelectorAll('a').forEach(function (link) {
+        if (link.id === 'adminConfigToggle') return;
         link.addEventListener('click', function () {
             if (window.innerWidth <= 700) closeMenu();
         });
