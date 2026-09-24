@@ -79,7 +79,7 @@
                         <i class="fi fi-rr-angle-small-down portal-menu-arrow"></i>
                     </button>
                     <div class="portal-submenu">
-                        <a href="#" class="portal-submenu-item">Anexos</a>
+                        <a href="{% url 'sri_anexos' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'sri_anexos' %}active{% endif %}">Anexos</a>
                         <a href="#" class="portal-submenu-item">Declaraciones</a>
                     </div>
                 </div>
