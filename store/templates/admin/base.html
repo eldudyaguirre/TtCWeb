@@ -102,8 +102,8 @@
     <main class="admin-main">
         <header class="admin-topbar">
             <div>
-                <span class="admin-topbar-kicker">Portal administrativo</span>
-                <strong>TotalCounts</strong>
+                <span class="admin-topbar-kicker">{{ admin_usuario }}</span>
+                <strong>{{ admin_nombre }}</strong>
             </div>
             <div class="admin-user">
                 <span>{{ request.user.get_username }}</span>
