@@ -43,8 +43,8 @@
 document.addEventListener('DOMContentLoaded', function(){
     const modal=document.getElementById('rolPagoModal');
     const close=document.getElementById('rolPagoModalClose');
-    const baseUrl="{% url 'rol_pago_detalle' 0 %}";
-    const pdfBaseUrl="{% url 'rol_pago_pdf' 0 %}";
+    const baseUrl="{% url 'rol_pago_detalle' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
+    const pdfBaseUrl="{% url 'rol_pago_pdf' 0 %}?anio={{ filtros.anio }}&mes={{ filtros.mes }}";
     const money=v=>Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     const set=(id,v)=>{document.getElementById(id).textContent=v;};
 
