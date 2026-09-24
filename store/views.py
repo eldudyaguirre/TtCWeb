@@ -1483,68 +1483,67 @@ def sri_anexos(request):
 
     from pathlib import Path
 
-    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli)
+    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'anexos'
     tipos = [
-        {
-            'nombre': 'Anexo Transaccional Simplificado',
-            'carpeta': 'anexos/ats',
-            'icono': 'fi-rr-document',
-        },
-        {
-            'nombre': 'Anexo Relación Dependencia',
-            'carpeta': 'anexos/relacion_dependencia',
-            'icono': 'fi-rr-users',
-        },
-        {
-            'nombre': 'Anexo Patrimonial',
-            'carpeta': 'anexos/patrimonial',
-            'icono': 'fi-rr-building',
-        },
-        {
-            'nombre': 'Anexo ICE',
-            'carpeta': 'anexos/ice',
-            'icono': 'fi-rr-box',
-        },
-        {
-            'nombre': 'Anexo ADI',
-            'carpeta': 'anexos/adi',
-            'icono': 'fi-rr-folder',
-        },
-        {
-            'nombre': 'Anexo REBEFICS',
-            'carpeta': 'anexos/rebefics',
-            'icono': 'fi-rr-file',
-        },
+        {'nombre': 'Anexo Transaccional Simplificado', 'carpeta': 'ats', 'icono': 'fi-rr-document'},
+        {'nombre': 'Anexo Relación Dependencia', 'carpeta': 'relacion_dependencia', 'icono': 'fi-rr-users'},
+        {'nombre': 'Anexo Patrimonial', 'carpeta': 'patrimonial', 'icono': 'fi-rr-building'},
+        {'nombre': 'Anexo ICE', 'carpeta': 'ice', 'icono': 'fi-rr-box'},
+        {'nombre': 'Anexo ADI', 'carpeta': 'adi', 'icono': 'fi-rr-folder'},
+        {'nombre': 'Anexo REBEFICS', 'carpeta': 'rebefics', 'icono': 'fi-rr-file'},
     ]
 
+    anios = set()
     for tipo in tipos:
         carpeta = raiz_cliente / tipo['carpeta']
-        archivos = []
-
+        grupos = []
         if carpeta.exists() and carpeta.is_dir():
-            for archivo in carpeta.iterdir():
-                if archivo.is_file():
-                    stat = archivo.stat()
-                    archivos.append({
-                        'nombre': archivo.name,
-                        'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
-                        'tamano': (
-                            f'{stat.st_size / 1024:.1f} KB'
-                            if stat.st_size < 1024 * 1024
-                            else f'{stat.st_size / (1024 * 1024):.2f} MB'
-                        ),
-                        'fecha': datetime.fromtimestamp(stat.st_mtime),
-                    })
-
-        archivos.sort(key=lambda item: item['fecha'], reverse=True)
-        tipo['archivos'] = archivos
-        tipo['total'] = len(archivos)
+            for anio_dir in carpeta.iterdir():
+                if not anio_dir.is_dir() or not anio_dir.name.isdigit():
+                    continue
+                anio = anio_dir.name
+                anios.add(anio)
+                meses = []
+                for mes_dir in sorted(anio_dir.iterdir(), key=lambda p: p.name):
+                    if not mes_dir.is_dir() or not mes_dir.name.isdigit():
+                        continue
+                    archivos = []
+                    for archivo in sorted(mes_dir.iterdir(), key=lambda p: p.name.lower()):
+                        if archivo.is_file():
+                            stat = archivo.stat()
+                            archivos.append({
+                                'nombre': archivo.name,
+                                'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
+                                'tamano': (
+                                    f'{stat.st_size / 1024:.1f} KB'
+                                    if stat.st_size < 1024 * 1024
+                                    else f'{stat.st_size / (1024 * 1024):.2f} MB'
+                                ),
+                                'fecha': datetime.fromtimestamp(stat.st_mtime),
+                            })
+                    if archivos:
+                        meses.append({
+                            'numero': mes_dir.name.zfill(2),
+                            'nombre': dict([
+                                ('01','Enero'),('02','Febrero'),('03','Marzo'),('04','Abril'),
+                                ('05','Mayo'),('06','Junio'),('07','Julio'),('08','Agosto'),
+                                ('09','Septiembre'),('10','Octubre'),('11','Noviembre'),('12','Diciembre')
+                            ]).get(mes_dir.name.zfill(2), mes_dir.name),
+                            'archivos': archivos,
+                            'total': len(archivos),
+                        })
+                if meses:
+                    meses.sort(key=lambda item: item['numero'], reverse=True)
+                    grupos.append({'anio': anio, 'meses': meses})
+        grupos.sort(key=lambda item: item['anio'], reverse=True)
+        tipo['anios'] = grupos
+        tipo['total'] = sum(m['total'] for a in grupos for m in a['meses'])
 
     return render(request, 'sri-anexos.html', {
         'cliente': cliente,
         'tipos_anexos': tipos,
+        'anios_anexos': sorted(anios, reverse=True),
     })
-
 
 @login_required
 def roles_pago(request):
