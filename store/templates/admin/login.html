@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Administración | TotalCounts</title>
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body class="admin-login-page">
+    <div class="admin-login-card">
+        <div class="admin-login-brand">
+            <img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts">
+        </div>
+        <div class="admin-login-kicker">TOTALCOUNTS</div>
+        <h1>Acceso administrativo</h1>
+        <p>Ingresa con una cuenta autorizada para administrar clientes y servicios internos.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="admin-alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'admin_login' %}">
+            {% csrf_token %}
+            <div class="admin-field">
+                <label for="{{ login_form.username.id_for_label }}">Usuario</label>
+                {{ login_form.username }}
+            </div>
+            <div class="admin-field">
+                <label for="{{ login_form.password.id_for_label }}">Contraseña</label>
+                {{ login_form.password }}
+            </div>
+            {% if login_form.non_field_errors %}
+                <div class="admin-form-error">{{ login_form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit" class="admin-primary-button">Iniciar sesión</button>
+        </form>
+
+        <a href="{% url 'home' %}" class="admin-back-link">← Volver a TotalCounts</a>
+    </div>
+</body>
+</html>
