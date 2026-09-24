@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'store.visit_middleware.WebVisitTrackingMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -180,3 +181,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://totalcounts.com.ec',
     'https://www.totalcounts.com.ec',
 ]
+
+# Salt opcional para anonimizar la IP en las estadísticas de visitas.
+VISITAS_IP_SALT = os.getenv('VISITAS_IP_SALT', SECRET_KEY)
