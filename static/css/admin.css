@@ -42,3 +42,6 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         gap:10px !important;
     }
 }
+
+.admin-line-chart{height:290px;display:flex;gap:8px;padding:14px 10px 6px}.admin-chart-y-labels{width:28px;display:flex;flex-direction:column;justify-content:space-between;padding:8px 0 29px;text-align:right;font-size:10px;color:var(--admin-muted)}.admin-chart-area{flex:1;min-width:0;display:flex;flex-direction:column}.admin-chart-area svg{width:100%;height:235px;overflow:visible}.traffic-grid-line{stroke:#e8eef0;stroke-width:1}.traffic-area-fill{fill:url(#trafficFill)}.traffic-line{fill:none;stroke:var(--admin-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.traffic-point{fill:#fff;stroke:var(--admin-accent);stroke-width:3}.admin-chart-x-labels{display:grid;grid-template-columns:repeat(7,1fr);font-size:10px;color:var(--admin-muted);text-align:center;padding-top:7px}.admin-line-chart .admin-chart-value,.admin-line-chart .admin-chart-bar,.admin-line-chart .admin-chart-column{display:none}
+@media(max-width:700px){.admin-line-chart{height:240px;padding:10px 4px}.admin-chart-area svg{height:190px}.admin-chart-y-labels{font-size:9px;width:24px}.admin-chart-x-labels{font-size:9px}.traffic-line{stroke-width:3}.traffic-point{r:4}}
