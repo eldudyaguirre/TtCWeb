@@ -7,6 +7,147 @@
     <title>{% block title %}Administración | TotalCounts{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}?v=20260924-2">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}?v=20260924-3">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
     {% block extra_head %}{% endblock %}
+</head>
+<body class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <a href="{% url 'admin_dashboard' %}">
+                <img src="{% static 'images/logosvgblanco.svg' %}" alt="TotalCounts">
+            </a>
+        </div>
+
+        <div class="admin-label">ADMINISTRACIÓN</div>
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                <i class="fi fi-rr-dashboard"></i><span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_clientes' %}" class="{% if request.resolver_match.url_name == 'admin_clientes' or request.resolver_match.url_name == 'admin_cliente' %}active{% endif %}">
+                <i class="fi fi-rr-building"></i><span>Clientes</span>
+            </a>
+            <a href="#"><i class="fi fi-rr-wallet"></i><span>Cobranza</span><small>Próximamente</small></a>
+            <a href="#"><i class="fi fi-rr-users"></i><span>Usuarios</span><small>Próximamente</small></a>
+            <a href="{% url 'sri_anexos_admin' %}"><i class="fi fi-rr-folder-open"></i><span>Anexos</span></a>
+            <a href="#"><i class="fi fi-rr-edit"></i><span>Blog y noticias</span><small>Próximamente</small></a>
+
+            <div class="admin-nav-group">
+                <button type="button" class="admin-nav-parent admin-menu-toggle" aria-expanded="false">
+                    <i class="fi fi-rr-settings"></i>
+                    <span>Configuración</span>
+                    <i class="fi fi-rr-angle-small-down admin-submenu-arrow"></i>
+                </button>
+                <div class="admin-submenu" id="adminConfigSubmenu">
+                    <a href="#" class="admin-submenu-item">Datos Usuario</a>
+                    <a href="#" class="admin-submenu-item">Cambiar Contraseña</a>
+                    <div class="admin-submenu-separator"></div>
+                    <a href="#" class="admin-submenu-item">Parámetros</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <a href="{% url 'admin_logout' %}">
+                <i class="fi fi-rr-sign-out-alt"></i><span>Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="admin-mobile-overlay" id="adminMobileOverlay"></div>
+    <button class="admin-mobile-toggle" id="adminMobileToggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <i class="fi fi-rr-menu-burger"></i>
+    </button>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div>
+                <span class="admin-topbar-kicker">{{ admin_usuario }}</span>
+                <strong>{{ admin_nombre }}</strong>
+            </div>
+            <div class="admin-user">
+                <span>{{ admin_usuario }}</span>
+                <b>{{ admin_usuario|first|upper }}</b>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="admin-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.querySelector('.admin-sidebar');
+    const mobileToggle = document.getElementById('adminMobileToggle');
+    const overlay = document.getElementById('adminMobileOverlay');
+
+    function closeMobileMenu() {
+        if (!sidebar || !mobileToggle) return;
+        sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        mobileToggle.setAttribute('aria-label', 'Abrir menú');
+        mobileToggle.innerHTML = '<i class="fi fi-rr-menu-burger"></i>';
+        document.body.classList.remove('admin-menu-open');
+    }
+
+    function openMobileMenu() {
+        if (!sidebar || !mobileToggle) return;
+        sidebar.classList.add('mobile-open');
+        if (overlay) overlay.classList.add('active');
+        mobileToggle.setAttribute('aria-expanded', 'true');
+        mobileToggle.setAttribute('aria-label', 'Cerrar menú');
+        mobileToggle.innerHTML = '<i class="fi fi-rr-cross-small"></i>';
+        document.body.classList.add('admin-menu-open');
+    }
+
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function () {
+            if (sidebar.classList.contains('mobile-open')) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeMobileMenu);
+    }
+
+    const configGroup = document.querySelector('.admin-nav-group');
+    if (configGroup) {
+        const toggle = configGroup.querySelector('.admin-menu-toggle');
+        if (toggle) {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                configGroup.classList.toggle('open');
+                toggle.setAttribute(
+                    'aria-expanded',
+                    configGroup.classList.contains('open') ? 'true' : 'false'
+                );
+            });
+        }
+    }
+
+    document.querySelectorAll('.admin-nav a, .admin-sidebar-bottom a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 700) closeMobileMenu();
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 700) {
+            closeMobileMenu();
+        }
+    });
+});
+</script>
+</body>
+</html>
