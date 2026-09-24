@@ -1599,8 +1599,25 @@ def rol_pago_pdf(request, numero):
         ('LINEABOVE',(0,13),(-1,13),0.8,colors.black),
     ]))
     elements.append(tabla)
-    elements.append(Spacer(1, 10))
-    elements.append(Paragraph(f'{nombre}    {empresa}', dato_bold))
+    # Espacio para las firmas del trabajador y del responsable de la empresa.
+    elements.append(Spacer(1, 48))
+
+    firmas = Table([
+        ['', ''],
+        [Paragraph(nombre.upper(), dato_bold), Paragraph(empresa.upper(), dato_bold)],
+        [Paragraph('TRABAJADOR', etiqueta), Paragraph('RESPONSABLE / EMPLEADOR', etiqueta)],
+    ], colWidths=[240, 240], rowHeights=[24, 14, 14])
+    firmas.setStyle(TableStyle([
+        ('LINEABOVE', (0, 0), (0, 0), 0.8, colors.black),
+        ('LINEABOVE', (1, 0), (1, 0), 0.8, colors.black),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 0),
+    ]))
+    elements.append(firmas)
     doc.build(elements)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
