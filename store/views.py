@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
