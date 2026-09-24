@@ -1,7 +1,6 @@
 """
 URL configuration for TotalCounts.
 """
-from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
@@ -10,7 +9,6 @@ from django.conf import settings
 handler404 = 'store.views.error_404'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', include('store.urls')),
 ]
 
