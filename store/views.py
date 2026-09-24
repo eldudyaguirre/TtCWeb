@@ -1407,6 +1407,208 @@ def roles_pago(request):
 
 
 @login_required
+def rol_pago_detalle(request, numero):
+    filtros, _, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return JsonResponse({'error': 'No autorizado.'}, status=403)
+
+    db = _cliente_db(filtros['cliente'])
+    where = ['TRIM("año"::text) = %s', 'numero = %s']
+    params = [filtros['anio'], numero]
+
+    if filtros['mes']:
+        where.append('TRIM(mes::text) = %s')
+        params.append(filtros['mes'])
+
+    sql = f"""
+        SELECT
+            numero,
+            TRIM(COALESCE(nombres::text, '')) AS nombres,
+            TRIM(COALESCE(cargo::text, '')) AS cargo,
+            salario,
+            dl,
+            arecibir,
+            fr,
+            he,
+            xiv,
+            xiii,
+            comisiones,
+            bonos,
+            toting,
+            ingconaporte,
+            aporte,
+            dnlprestamos,
+            fracu,
+            totegr,
+            liquido
+        FROM rolgeneral
+        WHERE {' AND '.join(where)}
+        ORDER BY numero, nombres
+        LIMIT 1
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    if row is None:
+        return JsonResponse({'error': 'Rol de pago no encontrado.'}, status=404)
+
+    def num(value):
+        try:
+            return float(value or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    return JsonResponse({
+        'numero': row[0],
+        'nombres': row[1],
+        'cargo': row[2],
+        'salario': num(row[3]),
+        'dias': row[4],
+        'arecibir': num(row[5]),
+        'fr': num(row[6]),
+        'he': num(row[7]),
+        'xiv': num(row[8]),
+        'xiii': num(row[9]),
+        'comisiones_bonos': num(row[10]) + num(row[11]),
+        'toting': num(row[12]),
+        'ingconaporte': num(row[13]),
+        'aporte': num(row[14]),
+        'dnlprestamos': num(row[15]),
+        'fracu': num(row[16]),
+        'totregr': num(row[17]),
+        'liquido': num(row[18]),
+        'empresa': str(filtros['cliente'].nomclient or '').upper(),
+        'ruc': str(filtros['cliente'].ruccedcli or ''),
+        'mes': filtros['mes_nombre'],
+        'anio': filtros['anio'],
+    })
+
+
+@login_required
+def rol_pago_pdf(request, numero):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, _, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    db = _cliente_db(filtros['cliente'])
+    where = ['TRIM("año"::text) = %s', 'numero = %s']
+    params = [filtros['anio'], numero]
+    if filtros['mes']:
+        where.append('TRIM(mes::text) = %s')
+        params.append(filtros['mes'])
+
+    sql = f"""
+        SELECT
+            numero, TRIM(COALESCE(nombres::text, '')), TRIM(COALESCE(cargo::text, '')),
+            salario, dl, arecibir, fr, he, xiv, xiii, comisiones, bonos,
+            toting, ingconaporte, aporte, dnlprestamos, fracu, totegr, liquido
+        FROM rolgeneral
+        WHERE {' AND '.join(where)}
+        ORDER BY numero, nombres
+        LIMIT 1
+    """
+    with db.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    if row is None:
+        return HttpResponse('Rol de pago no encontrado.', status=404, content_type='text/plain; charset=utf-8')
+
+    def money(value):
+        try:
+            return f'{float(value or 0):,.2f}'
+        except (TypeError, ValueError):
+            return '0.00'
+
+    empresa = str(filtros['cliente'].nomclient or '').upper()
+    ruc = str(filtros['cliente'].ruccedcli or '')
+    nombre = row[1]
+    cargo = row[2]
+    periodo = f'DEL 1 AL 31 DE {filtros["mes_nombre"].upper()} DEL {filtros["anio"]}' if filtros['mes'] else f'PERÍODO FISCAL {filtros["anio"]}'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=32, bottomMargin=32)
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle('RolIndividualTitulo', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=12, leading=14)
+    empresa_style = ParagraphStyle('RolIndividualEmpresa', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, leading=11)
+    etiqueta = ParagraphStyle('RolIndividualEtiqueta', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.5, leading=9)
+    dato = ParagraphStyle('RolIndividualDato', parent=styles['Normal'], fontName='Helvetica', fontSize=8, leading=10)
+    dato_bold = ParagraphStyle('RolIndividualDatoBold', parent=dato, fontName='Helvetica-Bold')
+    derecha = ParagraphStyle('RolIndividualDerecha', parent=dato, alignment=TA_RIGHT)
+    derecha_bold = ParagraphStyle('RolIndividualDerechaBold', parent=dato_bold, alignment=TA_RIGHT)
+
+    elements = [
+        Paragraph('ROL DE PAGOS', titulo),
+        Paragraph(empresa, empresa_style),
+        Paragraph(f'RUC: {ruc}', empresa_style),
+        Spacer(1, 10),
+    ]
+
+    info = [
+        [Paragraph('NOMBRE DEL EMPLEADO:', etiqueta), Paragraph(nombre, dato)],
+        [Paragraph('CARGO:', etiqueta), Paragraph(cargo, dato)],
+        [Paragraph('FECHA:', etiqueta), Paragraph(periodo, dato)],
+    ]
+    info_table = Table(info, colWidths=[125, 360])
+    info_table.setStyle(TableStyle([
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('LEFTPADDING',(0,0),(-1,-1),0), ('RIGHTPADDING',(0,0),(-1,-1),4),
+        ('TOPPADDING',(0,0),(-1,-1),1), ('BOTTOMPADDING',(0,0),(-1,-1),1),
+    ]))
+    elements += [info_table, Spacer(1, 8)]
+
+    resumen = [
+        ['RESUMEN', 'VALORES'],
+        ['Salario Unificado', money(row[5])],
+        ['Horas Extras', money(row[7])],
+        ['Fondo de Reserva (8.33%)', money(row[6])],
+        ['XIV Mensualizado', money(row[8])],
+        ['XIII Mensualizado', money(row[9])],
+        ['Comisiones y/o Bonos', money((row[10] or 0) + (row[11] or 0))],
+        ['', ''],
+        ['TOTAL DE INGRESOS', money(row[12])],
+        ['Aporte Personal IESS 9.45%', money(row[14])],
+        ['Fondo de Reserva Acumulado', money(row[16])],
+        ['Prestamos o Dias No Laborados', money(row[15])],
+        ['TOTAL DE EGRESOS', money(row[17])],
+        ['NETO A RECIBIR', money(row[18])],
+    ]
+    tabla = Table(resumen, colWidths=[260, 225])
+    tabla.setStyle(TableStyle([
+        ('GRID',(0,0),(-1,-2),0.5,colors.black),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('FONTNAME',(0,8),(-1,8),'Helvetica-Bold'),
+        ('FONTNAME',(0,12),(-1,12),'Helvetica-Bold'),
+        ('FONTNAME',(0,13),(-1,13),'Helvetica-Bold'),
+        ('ALIGN',(1,1),(1,-1),'RIGHT'),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
+        ('FONTSIZE',(0,0),(-1,-1),7.5),
+        ('TOPPADDING',(0,0),(-1,-1),3), ('BOTTOMPADDING',(0,0),(-1,-1),3),
+        ('LEFTPADDING',(0,0),(-1,-1),6), ('RIGHTPADDING',(0,0),(-1,-1),6),
+        ('LINEABOVE',(0,8),(-1,8),0.8,colors.black),
+        ('LINEABOVE',(0,12),(-1,12),0.8,colors.black),
+        ('LINEABOVE',(0,13),(-1,13),0.8,colors.black),
+    ]))
+    elements.append(tabla)
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(f'{nombre}    {empresa}', dato_bold))
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="rol_pago_{numero}_{filtros["mes"] or "periodo"}_{filtros["anio"]}.pdf"'
+    return response
+
+
+@login_required
 def roles_pago_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import landscape, A4
