@@ -17,3 +17,28 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
 .admin-visit-section{margin-bottom:22px}.admin-visit-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}.admin-visit-kpi{margin:0}.admin-visit-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}.admin-visits-chart{height:230px;display:flex;align-items:flex-end;gap:10px;padding:20px 8px 4px;border-bottom:1px solid var(--admin-border)}.admin-chart-column{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;min-width:0}.admin-chart-column small{font-size:10px;color:var(--admin-muted)}.admin-chart-value{font-size:10px;color:var(--admin-muted);min-height:12px}.admin-chart-bar{width:100%;max-width:38px;min-height:4px;background:var(--admin-accent);border-radius:6px 6px 2px 2px;transition:height .25s ease}.admin-visit-pages{display:flex;flex-direction:column;gap:8px}.admin-visit-page{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #edf1f2}.admin-visit-page:last-child{border-bottom:0}.admin-visit-page span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.admin-visit-page strong{font-size:13px;color:var(--admin-accent);flex:0 0 auto}
 @media(max-width:1000px){.admin-visit-kpis{grid-template-columns:repeat(2,1fr)}.admin-visit-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.admin-visit-kpis{grid-template-columns:1fr 1fr;gap:10px}.admin-visit-grid{grid-template-columns:1fr}.admin-visits-chart{height:190px;gap:5px;padding-left:2px;padding-right:2px}.admin-chart-bar{max-width:28px}.admin-chart-value{font-size:9px}.admin-chart-column small{font-size:9px}}
+
+/* Tarjetas de estadísticas: 4 por fila en escritorio */
+.admin-content .admin-visit-section .admin-visit-kpis{
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:16px !important;
+    width:100% !important;
+}
+.admin-content .admin-visit-section .admin-visit-kpi{
+    width:auto !important;
+    min-width:0 !important;
+    margin:0 !important;
+    box-sizing:border-box;
+}
+@media(max-width:1000px){
+    .admin-content .admin-visit-section .admin-visit-kpis{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+}
+@media(max-width:700px){
+    .admin-content .admin-visit-section .admin-visit-kpis{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:10px !important;
+    }
+}
