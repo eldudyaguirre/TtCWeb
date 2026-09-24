@@ -11,6 +11,54 @@
     <a href="{% url 'admin_clientes' %}" class="admin-primary-button admin-button-link">Gestionar clientes</a>
 </div>
 
+<section class="admin-visit-section">
+    <div class="admin-visit-kpis">
+        <div class="admin-kpi admin-visit-kpi"><span>Visitas hoy</span><strong>{{ visitas_hoy }}</strong><small>Páginas cargadas hoy</small></div>
+        <div class="admin-kpi admin-visit-kpi"><span>Visitantes únicos hoy</span><strong>{{ visitantes_hoy }}</strong><small>Visitantes identificados</small></div>
+        <div class="admin-kpi admin-visit-kpi"><span>Visitas este mes</span><strong>{{ visitas_mes }}</strong><small>Total acumulado</small></div>
+        <div class="admin-kpi admin-visit-kpi"><span>Mes anterior</span><strong>{{ visitas_mes_anterior }}</strong><small>Referencia mensual</small></div>
+    </div>
+
+    <div class="admin-visit-grid">
+        <section class="admin-card">
+            <div class="admin-card-header">
+                <div>
+                    <span class="admin-kicker">Tráfico</span>
+                    <h2>Últimos 7 días</h2>
+                </div>
+            </div>
+            <div class="admin-visits-chart">
+                {% for dia in grafica_visitas %}
+                    <div class="admin-chart-column">
+                        <span class="admin-chart-value">{{ dia.total }}</span>
+                        <div class="admin-chart-bar" style="--bar-height: {% if dia.total %}{{ dia.total }}{% else %}1{% endif %};"></div>
+                        <small>{{ dia.fecha|date:"d/m" }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <div class="admin-card-header">
+                <div>
+                    <span class="admin-kicker">Contenido</span>
+                    <h2>Páginas más visitadas</h2>
+                </div>
+            </div>
+            <div class="admin-visit-pages">
+                {% for pagina in paginas_mas_visitadas %}
+                    <div class="admin-visit-page">
+                        <span title="{{ pagina.pagina }}">{{ pagina.pagina }}</span>
+                        <strong>{{ pagina.total }}</strong>
+                    </div>
+                {% empty %}
+                    <div class="admin-empty">Todavía no hay visitas registradas.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</section>
+
 <section class="admin-kpis">
     <div class="admin-kpi"><span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small></div>
     <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
