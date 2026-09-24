@@ -195,3 +195,22 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         width:265px;
     }
 }
+
+/* Submenú de Configuración */
+.admin-nav-group{width:100%}
+.admin-nav-parent{width:100%;display:flex;align-items:center;gap:12px;min-height:46px;padding:12px 13px;border:0;background:transparent;color:inherit;border-radius:9px;font:inherit;text-align:left;cursor:pointer}
+.admin-nav-parent:hover,.admin-nav-parent.open{background:rgba(255,255,255,.08)}
+.admin-nav-parent>i:first-child{width:20px;flex:0 0 20px}
+.admin-nav-parent span{flex:1}
+.admin-submenu-arrow{width:auto!important;flex:0 0 auto!important;font-size:16px!important;transition:transform .2s ease}
+.admin-nav-parent.open .admin-submenu-arrow{transform:rotate(180deg)}
+.admin-submenu{display:none;margin:2px 0 5px 33px;padding:2px 0 2px 12px;border-left:1px solid rgba(255,255,255,.16)}
+.admin-submenu.open{display:block}
+.admin-submenu-item{display:flex!important;align-items:center;gap:9px!important;min-height:38px!important;padding:8px 10px!important;border-radius:7px!important;font-size:13px!important;color:rgba(255,255,255,.82)!important;text-decoration:none}
+.admin-submenu-item:hover{background:rgba(255,255,255,.07);color:#fff!important}
+.admin-submenu-item i{width:17px!important;flex:0 0 17px!important;font-size:13px!important}
+.admin-submenu-separator{height:1px;background:rgba(255,255,255,.15);margin:5px 10px}
+@media(max-width:700px){
+    .admin-nav-parent{min-height:46px;height:auto;padding:12px 13px;font-size:14px}
+    .admin-submenu{margin-left:31px}
+}
