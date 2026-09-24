@@ -89,9 +89,9 @@
             <a href="{% url 'sri_anexos_admin' %}"><i class="fi fi-rr-folder-open"></i><span>Anexos</span></a>
             <a href="#"><i class="fi fi-rr-edit"></i><span>Blog y noticias</span><small>Próximamente</small></a>
             <div class="admin-nav-group {% if request.resolver_match.url_name == 'admin_dashboard' and False %}active{% endif %}">
-                <button type="button" class="admin-nav-parent" id="adminConfigToggle" aria-expanded="false">
+                <a href="#" class="admin-nav-parent" id="adminConfigToggle" aria-expanded="false" role="button">
                     <i class="fi fi-rr-settings"></i><span>Configuración</span><i class="fi fi-rr-angle-small-down admin-submenu-arrow"></i>
-                </button>
+                </a>
                 <div class="admin-submenu" id="adminConfigSubmenu">
                     <a href="#" class="admin-submenu-item"><i class="fi fi-rr-user"></i><span>Datos Usuario</span></a>
                     <a href="#" class="admin-submenu-item"><i class="fi fi-rr-lock"></i><span>Cambiar Contraseña</span></a>
@@ -164,7 +164,8 @@
     const configSubmenu = document.getElementById('adminConfigSubmenu');
 
     if (configToggle && configSubmenu) {
-        configToggle.addEventListener('click', function () {
+        configToggle.addEventListener('click', function (event) {
+            event.preventDefault();
             const open = configToggle.getAttribute('aria-expanded') === 'true';
             configToggle.setAttribute('aria-expanded', String(!open));
             configSubmenu.classList.toggle('open', !open);
