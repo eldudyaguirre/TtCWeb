@@ -2,11 +2,16 @@ from django.urls import path
 
 from . import views
 from . import ingresos_views
+from . import admin_views
 
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('signin/', views.do_signin, name='signin'),
+    path('totalcounts/login/', admin_views.admin_login, name='admin_login'),
+    path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
+    path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
+    path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('logout/', views.do_logout, name='logout'),
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
     path('portal/parametros/', views.parametros, name='parametros'),
