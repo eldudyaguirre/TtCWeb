@@ -125,13 +125,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (configGroup) {
         const toggle = configGroup.querySelector('.admin-menu-toggle');
         if (toggle) {
+            const submenu = document.getElementById('adminConfigSubmenu');
+
             toggle.addEventListener('click', function (event) {
                 event.preventDefault();
-                configGroup.classList.toggle('open');
-                toggle.setAttribute(
-                    'aria-expanded',
-                    configGroup.classList.contains('open') ? 'true' : 'false'
-                );
+                event.stopPropagation();
+
+                const open = !configGroup.classList.contains('open');
+
+                configGroup.classList.toggle('open', open);
+                toggle.classList.toggle('open', open);
+
+                if (submenu) {
+                    submenu.classList.toggle('open', open);
+                    submenu.style.display = open ? 'block' : 'none';
+                    submenu.style.visibility = open ? 'visible' : 'hidden';
+                }
+
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
         }
     }
