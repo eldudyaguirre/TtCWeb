@@ -6,6 +6,9 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
+from django.core.files.storage import FileSystemStorage
+import re
+
 from django.shortcuts import redirect, render
 from io import BytesIO
 from datetime import datetime
@@ -13,6 +16,7 @@ from django.views.decorators.http import require_POST
 
 from .models import (
     Archivo,
+    Cliente,
     Establecimiento,
     ParametrosCliente,
     PuntoEmision,
@@ -1390,8 +1394,2347 @@ def _roles_pago_datos(request):
     }, filas, anios, meses
 
 
+@staff_member_required
+def sri_anexos_admin(request):
+    clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
+
+    tipos = [
+        ('ats', 'Anexo Transaccional Simplificado'),
+        ('relacion_dependencia', 'Anexo Relación Dependencia'),
+        ('patrimonial', 'Anexo Patrimonial'),
+        ('ice', 'Anexo ICE'),
+        ('adi', 'Anexo ADI'),
+        ('rebefics', 'Anexo REBEFICS'),
+    ]
+    meses = [
+        ('01', 'Enero'), ('02', 'Febrero'), ('03', 'Marzo'),
+        ('04', 'Abril'), ('05', 'Mayo'), ('06', 'Junio'),
+        ('07', 'Julio'), ('08', 'Agosto'), ('09', 'Septiembre'),
+        ('10', 'Octubre'), ('11', 'Noviembre'), ('12', 'Diciembre'),
+    ]
+
+    mensaje = ''
+    error = ''
+
+    if request.method == 'POST':
+        cliente_id = request.POST.get('cliente', '').strip()
+        tipo = request.POST.get('tipo', '').strip()
+        anio = request.POST.get('anio', '').strip()
+        mes = request.POST.get('mes', '').strip()
+        archivos = request.FILES.getlist('archivos')
+
+        cliente = clientes.filter(pk=cliente_id).first()
+        tipos_validos = {value for value, _ in tipos}
+        meses_validos = {value for value, _ in meses}
+
+        if not cliente:
+            error = 'Selecciona un cliente.'
+        elif tipo not in tipos_validos:
+            error = 'Selecciona un tipo de anexo válido.'
+        elif not re.fullmatch(r'20\d{2}', anio):
+            error = 'El año no es válido.'
+        elif mes not in meses_validos:
+            error = 'Selecciona un mes válido.'
+        elif not archivos:
+            error = 'Selecciona al menos un archivo.'
+        else:
+            tipo_label = dict(tipos)[tipo]
+            carpeta = (
+                settings.TOTALCOUNTS_DATA_ROOT
+                / str(cliente.ruccedcli)
+                / 'anexos'
+                / tipo
+                / anio
+                / mes
+            )
+            carpeta.mkdir(parents=True, exist_ok=True)
+
+            guardados = 0
+            for archivo in archivos:
+                nombre = re.sub(r'[^A-Za-z0-9._()\- áéíóúÁÉÍÓÚñÑ]', '_', archivo.name).strip()
+                if not nombre:
+                    nombre = 'archivo'
+                destino = carpeta / nombre
+                if destino.exists():
+                    destino = carpeta / f'{destino.stem}_{datetime.now().strftime("%Y%m%d%H%M%S%f")}{destino.suffix}'
+
+                with destino.open('wb') as salida:
+                    for chunk in archivo.chunks():
+                        salida.write(chunk)
+                guardados += 1
+
+            mensaje = f'{guardados} archivo(s) archivado(s) correctamente en {tipo_label} — {mes}/{anio}.'
+
+    return render(request, 'admin-sri-anexos.html', {
+        'clientes': clientes,
+        'tipos_anexos': tipos,
+        'meses': meses,
+        'anio_actual': datetime.now().year,
+        'mensaje': mensaje,
+        'error': error,
+    })
+
+
 @login_required
 def sri_anexos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    from pathlib import Path
+
+    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli)
+    tipos = [
+        {
+            'nombre': 'Anexo Transaccional Simplificado',
+            'carpeta': 'anexos/ats',
+            'icono': 'fi-rr-document',
+        },
+        {
+            'nombre': 'Anexo Relación Dependencia',
+            'carpeta': 'anexos/relacion_dependencia',
+            'icono': 'fi-rr-users',
+        },
+        {
+            'nombre': 'Anexo Patrimonial',
+            'carpeta': 'anexos/patrimonial',
+            'icono': 'fi-rr-building',
+        },
+        {
+            'nombre': 'Anexo ICE',
+            'carpeta': 'anexos/ice',
+            'icono': 'fi-rr-box',
+        },
+        {
+            'nombre': 'Anexo ADI',
+            'carpeta': 'anexos/adi',
+            'icono': 'fi-rr-folder',
+        },
+        {
+            'nombre': 'Anexo REBEFICS',
+            'carpeta': 'anexos/rebefics',
+            'icono': 'fi-rr-file',
+        },
+    ]
+
+    for tipo in tipos:
+        carpeta = raiz_cliente / tipo['carpeta']
+        archivos = []
+
+        if carpeta.exists() and carpeta.is_dir():
+            for archivo in carpeta.iterdir():
+                if archivo.is_file():
+                    stat = archivo.stat()
+                    archivos.append({
+                        'nombre': archivo.name,
+                        'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
+                        'tamano': (
+                            f'{stat.st_size / 1024:.1f} KB'
+                            if stat.st_size < 1024 * 1024
+                            else f'{stat.st_size / (1024 * 1024):.2f} MB'
+                        ),
+                        'fecha': datetime.fromtimestamp(stat.st_mtime),
+                    })
+
+        archivos.sort(key=lambda item: item['fecha'], reverse=True)
+        tipo['archivos'] = archivos
+        tipo['total'] = len(archivos)
+
+    return render(request, 'sri-anexos.html', {
+        'cliente': cliente,
+        'tipos_anexos': tipos,
+    })
+
+
+@login_required
+def roles_pago(request):
+    filtros, filas, anios, meses = _roles_pago_datos(request)
+    if filtros is None:
+        return redirect('portal')
+    return render(request, 'roles-pago.html', {
+        'cliente': filtros['cliente'],
+        'filtros': filtros,
+        'filas': filas,
+        'anios': anios,
+        'meses': meses,
+        'columns': ROLES_PAGO_COLUMNS,
+        'total_registros': len(filas),
+    })
+
+
+@login_required
+def rol_pago_detalle(request, numero):
+    filtros, _, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return JsonResponse({'error': 'No autorizado.'}, status=403)
+
+    db = _cliente_db(filtros['cliente'])
+    where = ['TRIM("año"::text) = %s', 'numero = %s']
+    params = [filtros['anio'], numero]
+
+    if filtros['mes']:
+        where.append('TRIM(mes::text) = %s')
+        params.append(filtros['mes'])
+
+    sql = f"""
+        SELECT
+            numero,
+            TRIM(COALESCE(nombres::text, '')) AS nombres,
+            TRIM(COALESCE(cargo::text, '')) AS cargo,
+            salario,
+            dl,
+            arecibir,
+            fr,
+            he,
+            xiv,
+            xiii,
+            comisiones,
+            bonos,
+            toting,
+            ingconaporte,
+            aporte,
+            dnlprestamos,
+            fracu,
+            totegr,
+            liquido
+        FROM rolgeneral
+        WHERE {' AND '.join(where)}
+        ORDER BY numero, nombres
+        LIMIT 1
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    if row is None:
+        return JsonResponse({'error': 'Rol de pago no encontrado.'}, status=404)
+
+    def num(value):
+        try:
+            return float(value or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    return JsonResponse({
+        'numero': row[0],
+        'nombres': row[1],
+        'cargo': row[2],
+        'salario': num(row[3]),
+        'dias': row[4],
+        'arecibir': num(row[5]),
+        'fr': num(row[6]),
+        'he': num(row[7]),
+        'xiv': num(row[8]),
+        'xiii': num(row[9]),
+        'comisiones_bonos': num(row[10]) + num(row[11]),
+        'toting': num(row[12]),
+        'ingconaporte': num(row[13]),
+        'aporte': num(row[14]),
+        'dnlprestamos': num(row[15]),
+        'fracu': num(row[16]),
+        'totregr': num(row[17]),
+        'liquido': num(row[18]),
+        'empresa': str(filtros['cliente'].nomclient or '').upper(),
+        'ruc': str(filtros['cliente'].ruccedcli or ''),
+        'mes': filtros['mes_nombre'],
+        'anio': filtros['anio'],
+    })
+
+
+@login_required
+def rol_pago_pdf(request, numero):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, _, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    db = _cliente_db(filtros['cliente'])
+    where = ['TRIM("año"::text) = %s', 'numero = %s']
+    params = [filtros['anio'], numero]
+    if filtros['mes']:
+        where.append('TRIM(mes::text) = %s')
+        params.append(filtros['mes'])
+
+    sql = f"""
+        SELECT
+            numero, TRIM(COALESCE(nombres::text, '')), TRIM(COALESCE(cargo::text, '')),
+            salario, dl, arecibir, fr, he, xiv, xiii, comisiones, bonos,
+            toting, ingconaporte, aporte, dnlprestamos, fracu, totegr, liquido
+        FROM rolgeneral
+        WHERE {' AND '.join(where)}
+        ORDER BY numero, nombres
+        LIMIT 1
+    """
+    with db.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    if row is None:
+        return HttpResponse('Rol de pago no encontrado.', status=404, content_type='text/plain; charset=utf-8')
+
+    def money(value):
+        try:
+            return f'{float(value or 0):,.2f}'
+        except (TypeError, ValueError):
+            return '0.00'
+
+    empresa = str(filtros['cliente'].nomclient or '').upper()
+    ruc = str(filtros['cliente'].ruccedcli or '')
+    nombre = row[1]
+    cargo = row[2]
+    periodo = f'DEL 1 AL 31 DE {filtros["mes_nombre"].upper()} DEL {filtros["anio"]}' if filtros['mes'] else f'PERÍODO FISCAL {filtros["anio"]}'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=32, bottomMargin=32)
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle('RolIndividualTitulo', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=12, leading=14)
+    empresa_style = ParagraphStyle('RolIndividualEmpresa', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, leading=11)
+    etiqueta = ParagraphStyle('RolIndividualEtiqueta', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.5, leading=9)
+    dato = ParagraphStyle('RolIndividualDato', parent=styles['Normal'], fontName='Helvetica', fontSize=8, leading=10)
+    dato_bold = ParagraphStyle('RolIndividualDatoBold', parent=dato, fontName='Helvetica-Bold')
+    derecha = ParagraphStyle('RolIndividualDerecha', parent=dato, alignment=TA_RIGHT)
+    derecha_bold = ParagraphStyle('RolIndividualDerechaBold', parent=dato_bold, alignment=TA_RIGHT)
+
+    elements = [
+        Paragraph('ROL DE PAGOS', titulo),
+        Paragraph(empresa, empresa_style),
+        Paragraph(f'RUC: {ruc}', empresa_style),
+        Spacer(1, 10),
+    ]
+
+    info = [
+        [Paragraph('NOMBRE DEL EMPLEADO:', etiqueta), Paragraph(nombre, dato)],
+        [Paragraph('CARGO:', etiqueta), Paragraph(cargo, dato)],
+        [Paragraph('FECHA:', etiqueta), Paragraph(periodo, dato)],
+    ]
+    info_table = Table(info, colWidths=[125, 360])
+    info_table.setStyle(TableStyle([
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('LEFTPADDING',(0,0),(-1,-1),0), ('RIGHTPADDING',(0,0),(-1,-1),4),
+        ('TOPPADDING',(0,0),(-1,-1),1), ('BOTTOMPADDING',(0,0),(-1,-1),1),
+    ]))
+    elements += [info_table, Spacer(1, 8)]
+
+    resumen = [
+        ['RESUMEN', 'VALORES'],
+        ['Salario Unificado', money(row[5])],
+        ['Horas Extras', money(row[7])],
+        ['Fondo de Reserva (8.33%)', money(row[6])],
+        ['XIV Mensualizado', money(row[8])],
+        ['XIII Mensualizado', money(row[9])],
+        ['Comisiones y/o Bonos', money((row[10] or 0) + (row[11] or 0))],
+        ['', ''],
+        ['TOTAL DE INGRESOS', money(row[12])],
+        ['Aporte Personal IESS 9.45%', money(row[14])],
+        ['Fondo de Reserva Acumulado', money(row[16])],
+        ['Prestamos o Dias No Laborados', money(row[15])],
+        ['TOTAL DE EGRESOS', money(row[17])],
+        ['NETO A RECIBIR', money(row[18])],
+    ]
+    tabla = Table(resumen, colWidths=[260, 225])
+    tabla.setStyle(TableStyle([
+        ('GRID',(0,0),(-1,-2),0.5,colors.black),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('FONTNAME',(0,8),(-1,8),'Helvetica-Bold'),
+        ('FONTNAME',(0,12),(-1,12),'Helvetica-Bold'),
+        ('FONTNAME',(0,13),(-1,13),'Helvetica-Bold'),
+        ('ALIGN',(1,1),(1,-1),'RIGHT'),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
+        ('FONTSIZE',(0,0),(-1,-1),7.5),
+        ('TOPPADDING',(0,0),(-1,-1),3), ('BOTTOMPADDING',(0,0),(-1,-1),3),
+        ('LEFTPADDING',(0,0),(-1,-1),6), ('RIGHTPADDING',(0,0),(-1,-1),6),
+        ('LINEABOVE',(0,8),(-1,8),0.8,colors.black),
+        ('LINEABOVE',(0,12),(-1,12),0.8,colors.black),
+        ('LINEABOVE',(0,13),(-1,13),0.8,colors.black),
+    ]))
+    elements.append(tabla)
+    # Espacio para las firmas del trabajador y del responsable de la empresa.
+    elements.append(Spacer(1, 48))
+
+    firmas = Table([
+        ['', ''],
+        [Paragraph(nombre.upper(), dato_bold), Paragraph(empresa.upper(), dato_bold)],
+        [Paragraph('TRABAJADOR', etiqueta), Paragraph('RESPONSABLE / EMPLEADOR', etiqueta)],
+    ], colWidths=[240, 240], rowHeights=[24, 14, 14])
+    firmas.setStyle(TableStyle([
+        # Sin líneas visibles: solo dejamos el espacio para las firmas.
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 0),
+    ]))
+    elements.append(firmas)
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="rol_pago_{numero}_{filtros["mes"] or "periodo"}_{filtros["anio"]}.pdf"'
+    return response
+
+
+@login_required
+def roles_pago_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=14,
+        rightMargin=14,
+        topMargin=18,
+        bottomMargin=18,
+    )
+
+    styles = getSampleStyleSheet()
+    encabezado = ParagraphStyle(
+        'RolEncabezado',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=5.8,
+        leading=6.5,
+        alignment=TA_CENTER,
+    )
+    encabezado_grupo = ParagraphStyle(
+        'RolGrupo',
+        parent=encabezado,
+        fontSize=6.5,
+        leading=7,
+    )
+    firma_encabezado = ParagraphStyle(
+        'RolFirma',
+        parent=encabezado,
+        fontSize=7.5,
+        leading=8.5,
+    )
+    dato = ParagraphStyle(
+        'RolDato',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=5.2,
+        leading=6,
+    )
+    dato_centro = ParagraphStyle(
+        'RolDatoCentro',
+        parent=dato,
+        alignment=TA_CENTER,
+    )
+    dato_derecha = ParagraphStyle(
+        'RolDatoDerecha',
+        parent=dato,
+        alignment=TA_RIGHT,
+    )
+    titulo = ParagraphStyle(
+        'RolTitulo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=11,
+    )
+    encabezado_info = ParagraphStyle(
+        'RolInfo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8,
+        leading=10,
+    )
+
+    cliente = filtros['cliente']
+    mes_nombre = filtros['mes_nombre'].upper()
+    periodo = (
+        f'DEL 1 AL 31 DE {mes_nombre} DEL {filtros["anio"]}'
+        if filtros['mes']
+        else f'PERÍODO FISCAL {filtros["anio"]}'
+    )
+
+    elements = [
+        Paragraph(str(cliente.nomclient).upper(), titulo),
+        Paragraph(f'RUC&nbsp;&nbsp;&nbsp;&nbsp;{cliente.ruccedcli}', encabezado_info),
+        Paragraph('RAMA DE ACTIVIDAD: ACTIVIDADES DE CONTABILIDAD', encabezado_info),
+        Paragraph(f'ROL DE PAGOS CORRESPONDIENTE A: {periodo}', encabezado_info),
+        Spacer(1, 8),
+    ]
+
+    # El formato sigue el rol entregado como referencia: encabezados agrupados
+    # para INGRESOS y EGRESOS, con una columna de firma al final.
+    headers = [
+        'N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
+        'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
+        'FONDO\nDE\nRESERVA', 'HORAS\nEXTRAS', 'DÉCIMO\nXIV',
+        'DÉCIMO\nXIII', 'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
+        'INGRESOS\nCON\nAPORTE\nIESS',
+        'APORTE\nIESS\n9.45%', 'DÍAS NO\nLABORADOS\nPRÉSTAMOS\nANTICIPOS',
+        'ACUMULACIÓN\nFONDOS DE\nRESERVA', 'TOTAL\nEGRESOS',
+        'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA',
+    ]
+
+    # Dos filas de cabecera, como en el documento de referencia.
+    top = ['N°', 'NOMBRES', 'CARGO', 'SALARIO\nMÍNIMO\nSECTORIAL',
+           'N°\nDÍAS\nTRAB.', 'SALARIO\nA\nRECIBIR',
+           'I N G R E S O S', '', '', '', '', '', '',
+           'E G R E S O S', '', '', '', '']
+    second = ['', '', '', '', '', '', 'FONDO\nDE\nRESERVA',
+              'HORAS\nEXTRAS', 'DÉCIMO\nXIV', 'DÉCIMO\nXIII',
+              'COMISIONES\nY/O\nBONOS', 'TOTAL\nINGRESOS',
+              'INGRESOS\nCON\nAPORTE\nIESS', 'APORTE\nIESS\n9.45%',
+              'DÍAS NO\nLABORADOS\nPRÉSTAMOS\nANTICIPOS',
+              'ACUMULACIÓN\nFONDOS DE\nRESERVA', 'TOTAL\nEGRESOS',
+              'TOTAL\nLÍQUIDO\nA\nRECIBIR', 'FIRMA']
+
+    top_cells = [
+        Paragraph(x.replace('\n', '<br/>'), encabezado_grupo)
+        for x in top[:-1]
+    ]
+    # FIRMA ocupa las dos filas del encabezado y se renderiza como Paragraph.
+    top_cells.append(Paragraph('FIRMA', encabezado_grupo))
+    second_cells = [
+        Paragraph(x.replace('\n', '<br/>'), encabezado) if x else ''
+        for x in second
+    ]
+    second_cells[-1] = Paragraph('FIRMA', firma_encabezado)
+
+    data = [top_cells, second_cells]
+
+    def money(value):
+        if value is None or value == '':
+            return ''
+        try:
+            return f'{float(value):,.2f}'
+        except (TypeError, ValueError):
+            return str(value)
+
+    for row in filas:
+        # rolgeneral: numero, nombres, cargo, salario, dl, arecibir, fr, he,
+        # xiv, xiii, comisiones, bonos, toting, ingconaporte, aporte,
+        # dnlprestamos, fracu, totegr, liquido
+        valores = [
+            str(row[0] or ''),
+            str(row[1] or ''),
+            str(row[2] or ''),
+            money(row[3]),
+            str(row[4] if row[4] is not None else ''),
+            money(row[5]),
+            money(row[6]),
+            money(row[7]),
+            money(row[8]),
+            money(row[9]),
+            money((row[10] or 0) + (row[11] or 0)),
+            money(row[12]),
+            money(row[13]),
+            money(row[14]),
+            money(row[15]),
+            money(row[16]),
+            money(row[17]),
+            money(row[18]),
+            '',
+        ]
+        data.append([
+            Paragraph(valor, dato_centro if i in (0, 4) else dato_derecha if i >= 3 else dato)
+            for i, valor in enumerate(valores)
+        ])
+
+    col_widths = [16, 78, 45, 40, 27, 40, 36, 32, 32, 32, 40, 36, 40, 36, 47, 39, 36, 40, 100]
+
+    table = Table(
+        data,
+        colWidths=col_widths,
+        repeatRows=2,
+        hAlign='LEFT',
+    )
+
+    style = [
+        ('GRID', (0, 0), (-1, -1), 0.55, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('SPAN', (6, 0), (12, 0)),
+        ('SPAN', (13, 0), (17, 0)),
+        ('SPAN', (0, 0), (0, 1)),
+        ('SPAN', (1, 0), (1, 1)),
+        ('SPAN', (2, 0), (2, 1)),
+        ('SPAN', (3, 0), (3, 1)),
+        ('SPAN', (4, 0), (4, 1)),
+        ('SPAN', (5, 0), (5, 1)),
+        ('FONTNAME', (18, 0), (18, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (18, 0), (18, 1), 7.5),
+        ('TEXTCOLOR', (18, 0), (18, 1), colors.black),
+        ('ALIGN', (18, 0), (18, 1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 1), 'Helvetica-Bold'),
+        ('BACKGROUND', (6, 0), (12, 0), colors.white),
+        ('BACKGROUND', (13, 0), (17, 0), colors.white),
+        ('BACKGROUND', (0, 0), (-1, 1), colors.white),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('ALIGN', (0, 2), (0, -1), 'CENTER'),
+        ('ALIGN', (3, 2), (-2, -1), 'RIGHT'),
+        ('ALIGN', (1, 2), (2, -1), 'LEFT'),
+        ('ALIGN', (18, 2), (18, -1), 'CENTER'),
+    ]
+
+    table.setStyle(TableStyle(style))
+    elements.append(table)
+
+    # El documento de referencia no incluye una fila de totales al pie.
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="rol_pago_{filtros["mes"] or "periodo"}_{filtros["anio"]}.pdf"'
+    )
+    return response
+
+@login_required
+def roles_pago_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas, _, _ = _roles_pago_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Roles de Pago'
+    ws.append([label for _, label in ROLES_PAGO_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    widths = [8, 32, 24, 14, 12, 18, 18, 14, 14, 14, 16, 14, 16, 22, 16, 20, 18, 16, 18]
+    for i, width in enumerate(widths, start=1):
+        ws.column_dimensions[chr(64 + i)].width = width
+
+    for col in range(4, 20):
+        for item in ws.iter_cols(min_col=col, max_col=col, min_row=2):
+            for cell in item:
+                cell.number_format = '#,##0.00'
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="roles_pago_{filtros["anio"]}.xlsx"'
+    return response
+
+
+TRABAJADORES_COLUMNS = [
+    ('numero', 'N°'),
+    ('cedula', 'CÉDULA'),
+    ('trabajador', 'TRABAJADOR'),
+    ('cargo', 'CARGO'),
+    ('tipojornada', 'TIPO JORNADA'),
+    ('fecentrada', 'FECHA ENTRADA'),
+    ('sueldo', 'SUELDO'),
+]
+
+
+def _trabajadores_datos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, []
+
+    sql = """
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY nombres, cedula) AS numero,
+            TRIM(cedula::text) AS cedula,
+            TRIM(nombres::text) AS trabajador,
+            TRIM(COALESCE(cargo::text, '')) AS cargo,
+            TRIM(COALESCE(tipojornada::text, '')) AS tipojornada,
+            fecentrada,
+            sueldo
+        FROM trabajadores
+        WHERE activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        ORDER BY nombres, cedula
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql)
+        filas = cursor.fetchall()
+
+    return {'cliente': cliente}, filas
+
+
+@login_required
+def trabajadores(request):
+    try:
+        filtros, filas = _trabajadores_datos(request)
+        if filtros is None:
+            return redirect('portal')
+
+        return render(request, 'trabajadores.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'total_registros': len(filas),
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en listado de trabajadores: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+
+@login_required
+def trabajador_detalle(request, cedula):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'error': 'No autorizado.'}, status=403)
+
+    sql = """
+        SELECT
+            cedula,
+            nombres,
+            sexo,
+            fecnac,
+            cargas,
+            direccion,
+            telefono,
+            activo,
+            fecentrada,
+            comisionsec,
+            cargo,
+            tipojornada,
+            sueldo,
+            codcomision,
+            fecsalida,
+            motivos,
+            fr,
+            xiv,
+            xiii,
+            notastra,
+            jn,
+            horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [cedula.strip()])
+        row = cursor.fetchone()
+
+    if row is None:
+        return JsonResponse({'error': 'Trabajador no encontrado.'}, status=404)
+
+    campos = [
+        'cedula', 'nombres', 'sexo', 'fecnac', 'cargas', 'direccion',
+        'telefono', 'activo', 'fecentrada', 'comisionsec', 'cargo',
+        'tipojornada', 'sueldo', 'codcomision', 'fecsalida', 'motivos',
+        'fr', 'xiv', 'xiii', 'notastra', 'jn', 'horaslab',
+    ]
+
+    def serializar(valor):
+        if hasattr(valor, 'isoformat'):
+            return valor.isoformat()
+        return valor
+
+    return JsonResponse({
+        campo: serializar(valor)
+        for campo, valor in zip(campos, row)
+    })
+
+
+@login_required
+def trabajador_pdf(request, cedula):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    sql = """
+        SELECT
+            cedula, nombres, sexo, fecnac, cargas, direccion, telefono,
+            activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+            codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+            jn, horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [cedula.strip()])
+        row = cursor.fetchone()
+
+    if row is None:
+        return HttpResponse('Trabajador no encontrado.', status=404, content_type='text/plain; charset=utf-8')
+
+    (
+        cedula_db, nombres, sexo, fecnac, cargas, direccion, telefono,
+        activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+        codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+        jn, horaslab
+    ) = row
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    def valor(v):
+        return '' if v is None else str(v)
+
+    def fecha(v):
+        return v.strftime('%d/%m/%Y') if v else ''
+
+    def si_no(v):
+        return 'Sí' if v else 'No'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=40,
+        rightMargin=40,
+        topMargin=35,
+        bottomMargin=35,
+    )
+
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'TrabajadorPDFTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=16,
+        leading=19,
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    subtitulo = ParagraphStyle(
+        'TrabajadorPDFSubtitulo',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=12,
+        alignment=TA_CENTER,
+        spaceAfter=10,
+    )
+    etiqueta = ParagraphStyle(
+        'TrabajadorPDFEtiqueta',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8,
+        leading=10,
+    )
+    dato = ParagraphStyle(
+        'TrabajadorPDFDato',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        leading=11,
+    )
+
+    elements = [
+        Paragraph('FICHA DEL TRABAJADOR', titulo),
+        Paragraph(f'{valor(nombres)} | CÉDULA {valor(cedula_db)}', subtitulo),
+    ]
+
+    datos = [
+        ('Cédula', cedula_db),
+        ('Nombres', nombres),
+        ('Sexo', sexo),
+        ('Fecha de nacimiento', fecha(fecnac)),
+        ('Cargas familiares', cargas),
+        ('Dirección de contacto', direccion),
+        ('Teléfono de contacto', telefono),
+        ('Estado', si_no(activo)),
+        ('Fecha de ingreso', fecha(fecentrada)),
+        ('Comisión sectorial', comisionsec),
+        ('Cargo', cargo),
+        ('Jornada laboral', tipojornada),
+        ('Horas de jornada', horaslab),
+        ('Sueldo', f'{float(sueldo or 0):,.2f}'),
+        ('Código sectorial', codcomision),
+        ('Fecha de salida', fecha(fecsalida)),
+        ('Motivos', motivos),
+        ('Acumulación F.P.', si_no(fr)),
+        ('XIV mensualizado', si_no(xiv)),
+        ('XIII mensualizado', si_no(xiii)),
+        ('Jornada nocturna', si_no(jn)),
+        ('Notas', notastra),
+    ]
+
+    data = []
+    for etiqueta_texto, dato_valor in datos:
+        data.append([
+            Paragraph(etiqueta_texto, etiqueta),
+            Paragraph(valor(dato_valor), dato),
+        ])
+
+    table = Table(data, colWidths=[145, 365])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#eef5f5')),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+    elements.append(
+        Paragraph(
+            f'{cliente.nomclient} | RUC. {cliente.ruccedcli}',
+            subtitulo,
+        )
+    )
+
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="trabajador_{cedula_db}.pdf"'
+    )
+    return response
+
+
+@login_required
+def trabajadores_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas = _trabajadores_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=25,
+        rightMargin=25,
+        topMargin=25,
+        bottomMargin=25,
+    )
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'TrabajadoresTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    cabecera = ParagraphStyle(
+        'TrabajadoresCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=11,
+        alignment=TA_CENTER,
+    )
+    tabla = ParagraphStyle(
+        'TrabajadoresTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7,
+        leading=9,
+    )
+    encabezado = ParagraphStyle(
+        'TrabajadoresEncabezado',
+        parent=tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        alignment=TA_CENTER,
+    )
+
+    elements = [
+        Paragraph('LISTADO DE TRABAJADORES', titulo),
+        Paragraph('TRABAJADORES ACTIVOS', cabecera),
+        Paragraph(
+            f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}',
+            cabecera,
+        ),
+        Spacer(1, 12),
+    ]
+
+    data = [[Paragraph(label, encabezado) for _, label in TRABAJADORES_COLUMNS]]
+    for row in filas:
+        data.append([
+            Paragraph(str(row[0]), tabla),
+            Paragraph(str(row[1] or ''), tabla),
+            Paragraph(str(row[2] or ''), tabla),
+            Paragraph(str(row[3] or ''), tabla),
+            Paragraph(str(row[4] or ''), tabla),
+            Paragraph(
+                row[5].strftime('%d/%m/%Y') if row[5] else '',
+                tabla,
+            ),
+            Paragraph(f'{float(row[6] or 0):.2f}', tabla),
+        ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[35, 85, 180, 115, 100, 90, 75],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 0), (1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (4, -1), 'LEFT'),
+        ('ALIGN', (5, 1), (6, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f'Total de trabajadores activos: {len(filas)}', tabla))
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="listado_trabajadores.pdf"'
+    return response
+
+
+@login_required
+def trabajadores_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas = _trabajadores_datos(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Trabajadores'
+    ws.append([label for _, label in TRABAJADORES_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append([
+            row[0],
+            row[1],
+            row[2],
+            row[3],
+            row[4],
+            row[5],
+            float(row[6] or 0),
+        ])
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    ws.column_dimensions['A'].width = 8
+    ws.column_dimensions['B'].width = 16
+    ws.column_dimensions['C'].width = 40
+    ws.column_dimensions['D'].width = 25
+    ws.column_dimensions['E'].width = 20
+    ws.column_dimensions['F'].width = 18
+    ws.column_dimensions['G'].width = 15
+
+    for cell in ws['F'][1:]:
+        if cell.value:
+            cell.number_format = 'DD/MM/YYYY'
+
+    for cell in ws['G'][1:]:
+        if cell.value is not None:
+            cell.number_format = '#,##0.00'
+
+    ws.append([])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="listado_trabajadores.xlsx"'
+    return response
+
+
+VENTAS_COLUMNS = [
+    ('numero', 'N°'),
+    ('cliente', 'CLIENTE'),
+    ('ruc', 'RUC'),
+    ('fecha', 'FECHA'),
+    ('factura', 'FACTURA'),
+    ('autorizacion', 'AUTORIZACION'),
+    ('base0', 'BASE0'),
+    ('baseiva', 'BASE IVA'),
+    ('iva', 'IVA'),
+    ('total', 'TOTAL'),
+    ('retiva', 'RET IVA'),
+    ('retrenta', 'RET RENTA'),
+    ('numret', 'NUM RET'),
+    ('autret', 'AUT RET'),
+]
+
+
+def _ventas_where(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return None, [], None
+
+    where = []
+    params = []
+
+    hoy = datetime.now().date()
+    primer_dia_mes = hoy.replace(day=1)
+
+    fecha_desde = request.GET.get('fecha_desde', '').strip()
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip()
+    cliente_busqueda = request.GET.get('cliente_busqueda', '').strip()
+
+    if not fecha_desde:
+        fecha_desde = primer_dia_mes.strftime('%Y-%m-%d')
+    if not fecha_hasta:
+        fecha_hasta = hoy.strftime('%Y-%m-%d')
+
+    if fecha_desde:
+        try:
+            datetime.strptime(fecha_desde, '%Y-%m-%d')
+            where.append("fecfactur::date >= %s::date")
+            params.append(fecha_desde)
+        except ValueError:
+            fecha_desde = ''
+
+    if fecha_hasta:
+        try:
+            datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            where.append("fecfactur::date < (%s::date + INTERVAL '1 day')")
+            params.append(fecha_hasta)
+        except ValueError:
+            fecha_hasta = ''
+
+    if cliente_busqueda:
+        where.append("(ruccedcli ILIKE %s OR nomcli ILIKE %s)")
+        params.extend([f'%{cliente_busqueda}%', f'%{cliente_busqueda}%'])
+
+    return " AND ".join(where) if where else "1=1", params, {
+        'cliente': cliente,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'cliente_busqueda': cliente_busqueda,
+    }
+
+
+def _ventas_base_sql():
+    return """
+        SELECT
+            v.fecfactur,
+            v.nomcli,
+            v.ruccedcli,
+            v.numfactur,
+            v.autorizacion,
+            v.basenoobj,
+            v.baseiva0,
+            v.baseiva12,
+            v.iva,
+            v.retiva,
+            v.retrenta,
+            v.numret,
+            v.autret
+        FROM ventas v
+    """
+
+
+def _ventas_query(where, params, cliente, limit=None, offset=None):
+    sql = f"""
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY fecfactur::date ASC, factura ASC) AS numero,
+            nomcli AS cliente,
+            ruccedcli AS ruc,
+            fecfactur AS fecha,
+            factura,
+            autorizacion,
+            (
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+            ) AS base0,
+            COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric AS baseiva,
+            COALESCE(NULLIF(iva::text, ''), '0')::numeric AS iva,
+            (
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ) AS total,
+            COALESCE(NULLIF(retiva::text, ''), '0')::numeric AS retiva,
+            COALESCE(NULLIF(retrenta::text, ''), '0')::numeric AS retrenta,
+            numret,
+            autret
+        FROM (
+            SELECT
+                fecfactur,
+                nomcli,
+                ruccedcli,
+                numfactur AS factura,
+                autorizacion,
+                basenoobj,
+                baseiva0,
+                baseiva12,
+                iva,
+                retiva,
+                retrenta,
+                numret,
+                autret
+            FROM ({_ventas_base_sql()}) ventas_reporte
+        ) ventas_datos
+        WHERE {where}
+        ORDER BY fecfactur::date ASC, factura ASC
+    """
+
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        params = [*params, limit, offset or 0]
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        return cursor.fetchall()
+
+
+def _ventas_resumen(where, params, cliente):
+    sql = f"""
+        SELECT
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0)
+        FROM ({_ventas_base_sql()}) ventas_reporte
+        WHERE {where}
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+
+    base0, baseiva, iva, total, retiva, retrenta = [float(x or 0) for x in row]
+    return {
+        'base0': base0,
+        'baseiva': baseiva,
+        'iva': iva,
+        'total': total,
+        'retiva': retiva,
+        'retrenta': retrenta,
+    }
+
+
+def _ventas_datos_exportacion(request):
+    where, params, filtros = _ventas_where(request)
+    if where is None:
+        return None, [], None, None
+    cliente = filtros['cliente']
+    filas = _ventas_query(where, params, cliente)
+    resumen = _ventas_resumen(where, params, cliente)
+    return filtros, filas, resumen, where
+
+
+@login_required
+def ventas(request):
+    try:
+        filtros, _, resumen, _ = _ventas_datos_exportacion(request)
+        if filtros is None:
+            return redirect('portal')
+
+        try:
+            pagina = max(1, int(request.GET.get('pagina', '1')))
+        except ValueError:
+            pagina = 1
+
+        por_pagina = 50
+        where, params, _ = _ventas_where(request)
+
+        count_sql = f"SELECT COUNT(*) FROM ({_ventas_base_sql()}) ventas_reporte WHERE {where}"
+        with _cliente_db(filtros['cliente']).cursor() as cursor:
+            cursor.execute(count_sql, params)
+            total_registros = cursor.fetchone()[0]
+
+        offset = (pagina - 1) * por_pagina
+        filas = _ventas_query(where, params, filtros['cliente'], por_pagina, offset)
+        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+
+        return render(request, 'ventas.html', {
+            'cliente': filtros['cliente'],
+            'filas': filas,
+            'resumen': resumen,
+            'filtros': filtros,
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'total_registros': total_registros,
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en reporte de facturas: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+
+@login_required
+def ventas_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas, resumen, _ = _ventas_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20,
+    )
+    styles = getSampleStyleSheet()
+
+    titulo = ParagraphStyle(
+        'VentasTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=3,
+    )
+    cabecera = ParagraphStyle(
+        'VentasCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
+        alignment=TA_CENTER,
+        spaceAfter=2,
+    )
+    tabla = ParagraphStyle(
+        'VentasTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=5.2,
+        leading=6,
+        alignment=TA_CENTER,
+        wordWrap='CJK',
+    )
+    tabla_izq = ParagraphStyle(
+        'VentasTablaIzq',
+        parent=tabla,
+        alignment=0,
+    )
+    encabezado = ParagraphStyle(
+        'VentasEncabezado',
+        parent=tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        leading=6.4,
+    )
+
+    elements = [
+        Paragraph('REPORTE DE FACTURAS', titulo),
+        Paragraph(
+            f"FACTURAS DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            cabecera,
+        ),
+        Paragraph(
+            f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",
+            cabecera,
+        ),
+        Spacer(1, 10),
+    ]
+
+    data = [[Paragraph(label, encabezado) for _, label in VENTAS_COLUMNS]]
+    for row in filas:
+        formatted = []
+        for index, value in enumerate(row):
+            if index in (1, 2, 3, 4, 5, 12, 13):
+                formatted.append(Paragraph(str(value or ''), tabla if index != 1 else tabla_izq))
+            else:
+                formatted.append(f"{float(value or 0):.2f}" if index in (6, 7, 8, 9, 10, 11) else Paragraph(str(value or ''), tabla))
+        data.append(formatted)
+
+    data.append([
+        '', '', '', '', '', '',
+        f"{resumen['base0']:.2f}",
+        f"{resumen['baseiva']:.2f}",
+        f"{resumen['iva']:.2f}",
+        f"{resumen['total']:.2f}",
+        f"{resumen['retiva']:.2f}",
+        f"{resumen['retrenta']:.2f}",
+        '', '',
+    ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[22, 105, 68, 48, 72, 76, 52, 52, 42, 52, 45, 50, 52, 60],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 5.2),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (13, -1), 'CENTER'),
+        ('ALIGN', (6, 1), (11, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_facturas.pdf"'
+    return response
+
+
+@login_required
+def ventas_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas, resumen, _ = _ventas_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Facturas'
+    ws.append([label for _, label in VENTAS_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.append([])
+    ws.append(['', '', '', '', '', '', 'RESUMEN'])
+    ws.cell(ws.max_row, 7, resumen['base0'])
+    ws.cell(ws.max_row, 8, resumen['baseiva'])
+    ws.cell(ws.max_row, 9, resumen['iva'])
+    ws.cell(ws.max_row, 10, resumen['total'])
+    ws.cell(ws.max_row, 11, resumen['retiva'])
+    ws.cell(ws.max_row, 12, resumen['retrenta'])
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+
+    widths = [7, 35, 17, 13, 25, 28, 15, 15, 13, 16, 14, 16, 18, 22]
+    for i, width in enumerate(widths, 1):
+        ws.column_dimensions[chr(64 + i)].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_facturas.xlsx"'
+    return response
+
+
+
+NOTAS_CREDITO_COLUMNS = [
+    ('numero', 'N°'),
+    ('proveedor', 'PROVEEDOR'),
+    ('ruc', 'RUC'),
+    ('tipdoc', 'TIPO DOC'),
+    ('fecha', 'FECHA'),
+    ('numdocumento', 'NUMERO DOCUMENTO'),
+    ('numaut', 'NUM AUT.'),
+    ('bases_sin_iva', 'BASES SIN IVA'),
+    ('bases_con_iva', 'BASES CON IVA'),
+    ('iva', 'IVA'),
+    ('total', 'TOTAL'),
+    ('codmod', 'COD MOD'),
+    ('documentomod', 'DOCUMENTO MODIFICADO'),
+    ('numautmod', 'NUM AUT'),
+]
+
+
+def _notas_credito_base_sql():
+    return """
+        SELECT
+            c.fecemi,
+            c.ruccedprovee,
+            c.nomprovee,
+            TRIM(c.tipcom::text) AS tipcom,
+            c.numest,
+            c.numptoemi,
+            c.numsec,
+            c.numaut,
+            c.baseimpnoobj,
+            c.baseimpiva0,
+            c.baseexenta,
+            c.baseimpiva5,
+            c.baseimpiva8,
+            c.baseimpiva12,
+            c.baseimpiva14,
+            c.baseimpiva15,
+            c.montoiva5,
+            c.montoiva8,
+            c.montoiva12,
+            c.montoiva14,
+            c.montoiva15,
+            c.codtipodoc,
+            c.numestmod,
+            c.numptoemimod,
+            c.numsecmod,
+            c.numautmod
+        FROM comprasnue c
+        WHERE TRIM(c.tipcom::text) = '04'
+    """
+
+
+def _notas_credito_query(where, params, cliente, limit=None, offset=None):
+    sql = f"""
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY fecemi::date ASC) AS numero,
+            nomprovee AS proveedor,
+            ruccedprovee AS ruc,
+            'N/C' AS tipdoc,
+            fecemi AS fecha,
+            CONCAT(numest, '-', numptoemi, '-', numsec) AS numdocumento,
+            numaut,
+            (
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+            ) AS bases_sin_iva,
+            (
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+            ) AS bases_con_iva,
+            (
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ) AS iva,
+            (
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ) AS total,
+            codtipodoc AS codmod,
+            CONCAT(numestmod, '-', numptoemimod, '-', numsecmod) AS documentomod,
+            numautmod
+        FROM ({_notas_credito_base_sql()}) notas_reporte
+        WHERE {where}
+        ORDER BY fecemi::date ASC
+    """
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        params = [*params, limit, offset or 0]
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        return cursor.fetchall()
+
+
+def _notas_credito_resumen(where, params, cliente):
+    sql = f"""
+        SELECT
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+            ), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+            ), 0)
+        FROM ({_notas_credito_base_sql()}) notas_reporte
+        WHERE {where}
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, params)
+        row=cursor.fetchone()
+    bases_sin, bases_con, iva = [float(x or 0) for x in row]
+    return {'bases_sin_iva': bases_sin, 'bases_con_iva': bases_con, 'iva': iva, 'total': bases_sin + bases_con + iva}
+
+
+def _notas_credito_datos(request):
+    where, params, filtros = _compras_where(request)
+    if where is None:
+        return None, [], None, None
+    cliente=filtros['cliente']
+    return filtros, _notas_credito_query(where, params, cliente), _notas_credito_resumen(where, params, cliente), where
+
+
+@login_required
+def notas_credito(request):
+    try:
+        filtros, _, resumen, _ = _notas_credito_datos(request)
+        if filtros is None:
+            return redirect('portal')
+        try:
+            pagina=max(1, int(request.GET.get('pagina','1')))
+        except ValueError:
+            pagina=1
+        por_pagina=50
+        where, params, _ = _compras_where(request)
+        count_sql=f"SELECT COUNT(*) FROM ({_notas_credito_base_sql()}) notas_reporte WHERE {where}"
+        with _cliente_db(filtros['cliente']).cursor() as cursor:
+            cursor.execute(count_sql, params)
+            total_registros=cursor.fetchone()[0]
+        offset=(pagina-1)*por_pagina
+        filas=_notas_credito_query(where, params, filtros['cliente'], por_pagina, offset)
+        total_paginas=max(1,(total_registros+por_pagina-1)//por_pagina)
+        return render(request,'notas-credito.html',{
+            'cliente':filtros['cliente'],'filas':filas,'resumen':resumen,'filtros':filtros,
+            'pagina':pagina,'total_paginas':total_paginas,'total_registros':total_registros,
+        })
+    except Exception as exc:
+        return HttpResponse(f"Error en reporte de notas de crédito: {type(exc).__name__}: {exc}",status=500,content_type='text/plain; charset=utf-8')
+
+
+@login_required
+def notas_credito_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    filtros, filas, resumen, _ = _notas_credito_datos(request)
+    if filtros is None: return redirect('portal')
+    buffer=BytesIO()
+    doc=SimpleDocTemplate(buffer,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
+    styles=getSampleStyleSheet()
+    titulo=ParagraphStyle('NCtitulo',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,leading=16,alignment=TA_CENTER,spaceAfter=3)
+    cab=ParagraphStyle('NCcab',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8.5,leading=11,alignment=TA_CENTER,spaceAfter=2)
+    tabla=ParagraphStyle('NCtabla',parent=styles['Normal'],fontName='Helvetica',fontSize=5.4,leading=6.2,alignment=TA_CENTER,wordWrap='CJK')
+    tabla_izq=ParagraphStyle('NCtablaIzq',parent=tabla,alignment=0)
+    enc=ParagraphStyle('NCenc',parent=tabla,fontName='Helvetica-Bold',textColor=colors.white,leading=6.5)
+    elements=[Paragraph('REPORTE DE NOTAS DE CRÉDITO',titulo),
+              Paragraph(f"NOTAS DE CRÉDITO DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",cab),
+              Paragraph(f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",cab),Spacer(1,10)]
+    data=[[Paragraph(label,enc) for _,label in NOTAS_CREDITO_COLUMNS]]
+    for row in filas:
+        vals=[]
+        for i,v in enumerate(row):
+            if i==1: vals.append(Paragraph(str(v or ''),tabla_izq))
+            elif i in (0,2,3,4,5,6,11,12,13): vals.append(Paragraph(str(v or ''),tabla))
+            else: vals.append(f"{float(v or 0):.2f}")
+        data.append(vals)
+    data.append(['','','','','','','',
+                 f"{resumen['bases_sin_iva']:.2f}",f"{resumen['bases_con_iva']:.2f}",
+                 f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",'','',''])
+    table=Table(data,repeatRows=1,colWidths=[22,105,68,38,48,72,50,54,54,42,54,42,70,55])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('FONTSIZE',(0,0),(-1,-1),5.4),
+        ('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),
+        ('ALIGN',(0,1),(0,-1),'CENTER'),('ALIGN',(2,1),(6,-1),'CENTER'),('ALIGN',(7,1),(13,-1),'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    response=HttpResponse(buffer.getvalue(),content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="reporte_notas_credito.pdf"'
+    return response
+
+
+@login_required
+def notas_credito_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    filtros, filas, resumen, _ = _notas_credito_datos(request)
+    if filtros is None: return redirect('portal')
+    wb=Workbook(); ws=wb.active; ws.title='Notas de crédito'
+    ws.append([label for _,label in NOTAS_CREDITO_COLUMNS])
+    for cell in ws[1]:
+        cell.font=Font(bold=True,color='FFFFFF'); cell.fill=PatternFill('solid',fgColor='21333E'); cell.alignment=Alignment(horizontal='center')
+    for row in filas: ws.append(list(row))
+    ws.append([])
+    ws.append(['','','','','','','RESUMEN'])
+    ws.cell(ws.max_row,8,resumen['bases_sin_iva']); ws.cell(ws.max_row,9,resumen['bases_con_iva'])
+    ws.cell(ws.max_row,10,resumen['iva']); ws.cell(ws.max_row,11,resumen['total'])
+    ws.freeze_panes='A2'; ws.auto_filter.ref=ws.dimensions
+    widths=[7,38,17,10,13,25,18,16,16,13,16,11,24,18]
+    for i,width in enumerate(widths,1): ws.column_dimensions[chr(64+i)].width=width
+    buffer=BytesIO(); wb.save(buffer)
+    response=HttpResponse(buffer.getvalue(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition']='attachment; filename="reporte_notas_credito.xlsx"'
+    return response
+
+@login_required
+def compras_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    filtros, filas, resumen, _ = _compras_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
+    styles = getSampleStyleSheet()
+
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.styles import ParagraphStyle
+
+    estilo_titulo = ParagraphStyle(
+        'ReporteComprasTitulo',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceAfter=3,
+    )
+    estilo_cabecera = ParagraphStyle(
+        'ReporteComprasCabecera',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=11,
+        alignment=TA_CENTER,
+        spaceAfter=2,
+    )
+
+    elements = [
+        Paragraph('REPORTE DE COMPRAS', estilo_titulo),
+        Paragraph(
+            f"COMPRAS DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            estilo_cabecera,
+        ),
+        Paragraph(
+            f"{filtros['cliente'].nomclient} | RUC. {filtros['cliente'].ruccedcli}",
+            estilo_cabecera,
+        ),
+        Spacer(1, 10),
+    ]
+
+    estilo_tabla = ParagraphStyle(
+        'ReporteComprasTabla',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=5.4,
+        leading=6.2,
+        alignment=TA_CENTER,
+        wordWrap='CJK',
+    )
+    estilo_tabla_izquierda = ParagraphStyle(
+        'ReporteComprasTablaIzquierda',
+        parent=estilo_tabla,
+        alignment=0,
+    )
+    estilo_encabezado_tabla = ParagraphStyle(
+        'ReporteComprasEncabezadoTabla',
+        parent=estilo_tabla,
+        fontName='Helvetica-Bold',
+        textColor=colors.white,
+        alignment=TA_CENTER,
+        leading=6.5,
+    )
+
+    data = [[Paragraph(label, estilo_encabezado_tabla) for _, label in COMPRAS_COLUMNS]]
+    for row in filas:
+        formatted = []
+        for index, value in enumerate(row):
+            if index in (1,):
+                formatted.append(Paragraph(str(value or ''), estilo_tabla_izquierda))
+            elif index in (0, 2, 3, 4, 5, 6, 12, 14):
+                formatted.append(Paragraph(str(value or ''), estilo_tabla))
+            else:
+                formatted.append(f"{float(value or 0):.2f}")
+        data.append(formatted)
+
+    data.append([
+        '', '', '', '', '', '', '',
+        f"{resumen['bases_sin_iva']:.2f}",
+        f"{resumen['bases_con_iva']:.2f}",
+        f"{resumen['iva']:.2f}",
+        f"{resumen['total']:.2f}",
+        f"{resumen['retiva']:.2f}",
+        '',
+        f"{resumen['retrenta']:.2f}",
+        '',
+    ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[22, 105, 68, 38, 48, 65, 72, 50, 50, 40, 48, 42, 38, 48, 50],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 5.4),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (2, -1), 'CENTER'),
+        ('ALIGN', (3, 1), (6, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (14, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_compras.pdf"'
+    return response
+
+
+@login_required
+def compras_excel(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    filtros, filas, resumen, _ = _compras_datos_exportacion(request)
+    if filtros is None:
+        return redirect('portal')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Compras'
+    ws.append([label for _, label in COMPRAS_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.append([])
+    ws.append(['', '', '', '', '', '', 'RESUMEN'])
+    ws.cell(ws.max_row, 8, resumen['bases_sin_iva'])
+    ws.cell(ws.max_row, 9, resumen['bases_con_iva'])
+    ws.cell(ws.max_row, 10, resumen['iva'])
+    ws.cell(ws.max_row, 11, resumen['total'])
+    ws.cell(ws.max_row, 12, resumen['retiva'])
+    ws.cell(ws.max_row, 14, resumen['retrenta'])
+
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+
+    widths = [7, 38, 17, 10, 13, 25, 18, 16, 16, 13, 16, 14, 11, 16, 18]
+    for i, width in enumerate(widths, 1):
+        ws.column_dimensions[chr(64 + i)].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_compras.xlsx"'
+    return response
+
+
+
+FACTURA_TIPOS_IDENTIFICACION = [
+    ('C', 'Cédula'),
+    ('R', 'RUC'),
+    ('P', 'Pasaporte'),
+    ('E', 'Identificación del exterior'),
+    ('F', 'Consumidor final'),
+]
+
+FACTURA_FORMAS_PAGO = [
+    ('01', 'SIN UTILIZACION DEL SISTEMA FINANCIERO'),
+    ('15', 'COMPENSACIÓN DE DEUDAS'),
+    ('16', 'TARJETA DE DÉBITO'),
+    ('17', 'DINERO ELECTRÓNICO'),
+    ('18', 'TARJETA PREPAGO'),
+    ('19', 'TARJETA DE CRÉDITO'),
+    ('20', 'OTROS CON UTILIZACION DEL SISTEMA FINANCIERO'),
+    ('21', 'ENDOSO DE TÍTULOS'),
+]
+
+FACTURA_PRODUCT_TABLES = (
+    'productos',
+    'productosservicios',
+    'productos_servicios',
+    'producto',
+    'items',
+    'inventario',
+)
+
+
+def _factura_contexto(cliente):
+    establecimientos = []
+    for establecimiento in (
+        Establecimiento.objects
+        .filter(cliente=cliente, activo=True)
+        .prefetch_related('puntos_emision')
+        .order_by('codigo')
+    ):
+        puntos = []
+        for punto in establecimiento.puntos_emision.filter(activo=True).order_by('codigo'):
+            sec = (
+                SecuencialDocumento.objects
+                .filter(
+                    punto_emision=punto,
+                    tipo_documento=SecuencialDocumento.TipoDocumento.FACTURA,
+                    activo=True,
+                )
+                .first()
+            )
+            puntos.append({
+                'id': punto.id,
+                'codigo': punto.codigo,
+                'nombre': punto.nombre,
+                'secuencial': sec.secuencial_actual if sec else None,
+                'secuencial_id': sec.id if sec else None,
+            })
+        establecimientos.append({
+            'id': establecimiento.id,
+            'codigo': establecimiento.codigo,
+            'nombre': establecimiento.nombre,
+            'direccion': establecimiento.direccion,
+            'puntos': puntos,
+        })
+
+    return establecimientos
+
+
+def _factura_buscar_cliente_datos(cliente, identificacion):
+    identificacion = (identificacion or '').strip()
+    if not identificacion:
+        return None
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                TRIM(ruccedcli::text),
+                TRIM(COALESCE(nomclient::text, '')),
+                TRIM(COALESCE(dirclient::text, '')),
+                TRIM(COALESCE(teldomcli::text, '')),
+                TRIM(COALESCE(teloficli::text, '')),
+                TRIM(COALESCE(telcelcli::text, '')),
+                TRIM(COALESCE(corelectr::text, ''))
+            FROM clientes
+            WHERE TRIM(ruccedcli::text) = %s
+            LIMIT 1
+            """,
+            [identificacion],
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    ruc = row[0] or ''
+    if len(ruc) == 13:
+        tipo = 'R'
+    elif len(ruc) == 10:
+        tipo = 'C'
+    else:
+        tipo = 'P'
+
+    telefono = next((value for value in row[3:6] if value), '')
+
+    return {
+        'identificacion': ruc,
+        'tipo_identificacion': tipo,
+        'razon_social': row[1] or '',
+        'direccion': row[2] or '',
+        'telefono': telefono,
+        'email': row[6] or '',
+    }
+
+
+def _factura_producto_config(cursor):
+    cursor.execute(
+        """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND lower(table_name) = ANY(%s)
+        ORDER BY array_position(%s, lower(table_name))
+        LIMIT 1
+        """,
+        [list(FACTURA_PRODUCT_TABLES), list(FACTURA_PRODUCT_TABLES)],
+    )
+    table_row = cursor.fetchone()
+    if not table_row:
+        return None
+
+    table_name = table_row[0]
+    cursor.execute(
+        """
+        SELECT lower(column_name)
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = %s
+        """,
+        [table_name],
+    )
+    columns = {row[0] for row in cursor.fetchall()}
+
+    def pick(*names):
+        for name in names:
+            if name in columns:
+                return name
+        return None
+
+    return {
+        'table': table_name,
+        'codigo': pick('codprod', 'codproducto', 'codigo_principal', 'codprincipal', 'codigo', 'codpro'),
+        'descripcion': pick('nomprod', 'nomproducto', 'descripcion', 'descrip', 'detalle', 'nombre'),
+        'precio': pick('pvp', 'precio', 'precio_unitario', 'valor', 'precio_venta'),
+        'iva': pick('tarifaiva', 'poriva', 'iva', 'tarifa'),
+    }
+
+
+def _factura_buscar_productos_datos(cliente, termino):
+    termino = (termino or '').strip()
+    if not termino:
+        return []
+
+    with _cliente_db(cliente).cursor() as cursor:
+        config = _factura_producto_config(cursor)
+        if not config or not config['codigo'] or not config['descripcion']:
+            return []
+
+        table = '"' + config['table'].replace('"', '""') + '"'
+        codigo = '"' + config['codigo'].replace('"', '""') + '"'
+        descripcion = '"' + config['descripcion'].replace('"', '""') + '"'
+        precio = (
+            '"' + config['precio'].replace('"', '""') + '"'
+            if config['precio'] else 'NULL'
+        )
+        iva = (
+            '"' + config['iva'].replace('"', '""') + '"'
+            if config['iva'] else 'NULL'
+        )
+
+        sql = f"""
+            SELECT
+                TRIM(COALESCE({codigo}::text, '')),
+                TRIM(COALESCE({descripcion}::text, '')),
+                {precio}::text,
+                {iva}::text
+            FROM {table}
+            WHERE (
+                {codigo}::text ILIKE %s
+                OR {descripcion}::text ILIKE %s
+            )
+            ORDER BY {descripcion}::text
+            LIMIT 20
+        """
+        like = f'%{termino}%'
+        cursor.execute(sql, [like, like])
+        rows = cursor.fetchall()
+
+    result = []
+    for row in rows:
+        try:
+            precio_valor = float(row[2]) if row[2] not in (None, '') else 0
+        except (TypeError, ValueError):
+            precio_valor = 0
+        try:
+            iva_valor = float(row[3]) if row[3] not in (None, '') else 0
+        except (TypeError, ValueError):
+            iva_valor = 0
+
+        result.append({
+            'codigo': row[0] or '',
+            'descripcion': row[1] or '',
+            'precio': precio_valor,
+            'iva': iva_valor,
+        })
+    return result
+
+
+
+
+@login_required
+def nota_credito_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    return render(
+        request,
+        'nota-credito-emitir.html',
+        {
+            'cliente': cliente,
+            'establecimientos': _factura_contexto(cliente),
+            'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+            'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+        },
+    )
+
+
+@login_required
+def nota_credito_buscar_sustento(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    numero = request.GET.get('numero', '').strip()
+    if not numero:
+        return JsonResponse({'ok': False, 'error': 'Ingrese el número del comprobante de sustento.'}, status=400)
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                TRIM(COALESCE(numfactur::text, '')),
+                fecfactur,
+                TRIM(COALESCE(ruccedcli::text, '')),
+                TRIM(COALESCE(nomcli::text, '')),
+                TRIM(COALESCE(autorizacion::text, ''))
+            FROM ventas
+            WHERE REPLACE(TRIM(COALESCE(numfactur::text, '')), '-', '') =
+                  REPLACE(%s, '-', '')
+               OR TRIM(COALESCE(numfactur::text, '')) = %s
+            ORDER BY fecfactur DESC NULLS LAST
+            LIMIT 1
+            """,
+            [numero, numero],
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return JsonResponse(
+            {'ok': False, 'error': 'No se encontró la factura de sustento en la base de datos.'},
+            status=404,
+        )
+
+    fecha = row[1].strftime('%Y-%m-%d') if row[1] else ''
+
+    return JsonResponse({
+        'ok': True,
+        'sustento': {
+            'numero': row[0] or '',
+            'fecha': fecha,
+            'identificacion': row[2] or '',
+            'razon_social': row[3] or '',
+            'autorizacion': row[4] or '',
+        },
+    })
+
+
+
+
+@login_required
+def retencion_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+    return render(request, 'retencion-emitir.html', {
+        'cliente': cliente,
+        'establecimientos': _factura_contexto(cliente),
+        'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+        'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+    })
+
+
+@login_required
+def liquidacion_compra_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+    return render(request, 'liquidacion-compra-emitir.html', {
+        'cliente': cliente,
+        'establecimientos': _factura_contexto(cliente),
+        'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+        'formas_pago': FACTURA_FORMAS_PAGO,
+        'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+    })
+
+@login_required
+def guia_remision_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    return render(
+        request,
+        'guia-remision-emitir.html',
+        {
+            'cliente': cliente,
+            'establecimientos': _factura_contexto(cliente),
+            'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+            'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+        },
+    )
+
+@login_required
+def factura_emitir(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return redirect('portal')
+
+    return render(
+        request,
+        'factura-emitir.html',
+        {
+            'cliente': cliente,
+            'establecimientos': _factura_contexto(cliente),
+            'tipos_identificacion': FACTURA_TIPOS_IDENTIFICACION,
+            'formas_pago': FACTURA_FORMAS_PAGO,
+            'fecha_emision': datetime.now().strftime('%Y-%m-%d'),
+        },
+    )
+
+
+@login_required
+def factura_buscar_cliente(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    identificacion = request.GET.get('identificacion', '').strip()
+    if not identificacion:
+        return JsonResponse({'ok': False, 'error': 'Ingrese la identificación.'}, status=400)
+
+    try:
+        datos = _factura_buscar_cliente_datos(cliente, identificacion)
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': f'No se pudo consultar el cliente: {exc}'}, status=500)
+
+    if datos is None:
+        return JsonResponse({'ok': False, 'error': 'No se encontró el cliente en la base de datos.'}, status=404)
+
+    return JsonResponse({'ok': True, 'cliente': datos})
+
+
+@login_required
+def factura_buscar_productos(request):
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        return JsonResponse({'ok': False, 'error': 'No autorizado.'}, status=403)
+
+    termino = request.GET.get('q', '').strip()
+    if len(termino) < 1:
+        return JsonResponse({'ok': True, 'productos': []})
+
+    try:
+        productos = _factura_buscar_productos_datos(cliente, termino)
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': f'No se pudo consultar productos: {exc}'}, status=500)
+
+    return JsonResponse({'ok': True, 'productos': productos})
+
+def about(request):
+    return render(request, 'about.html')
+
+
+def contactanos(request):
+    return render(request, 'contactanos.html')
+
+
+def avisos_legales(request):
+    return render(request, 'avisos-legales.html')
+
+
+def servicios(request):
+    raise Http404
+
+
+def blog(request):
+    raise Http404
+
+
+def error_404(request, exception):
+    return render(request, '404.html', status=404)
+
+
+@staff_member_required
+def template_catalog(request):
+    """Catálogo interno para revisar las plantillas del tema antes de reutilizarlas."""
+    return render(request, 'template-catalog.html', {'templates': TEMPLATE_PREVIEWS})
+
+
+@staff_member_required
+def template_preview(request, slug):
+    """Renderiza una plantilla del catálogo usando el mismo sistema de templates de Django."""
+    template_name = TEMPLATE_PREVIEWS.get(slug)
+    if template_name is None:
+        raise Http404
+    return render(request, template_name, {'preview_mode': True, 'preview_slug': slug})
+
     cliente = _cliente_portal(request)
     if cliente is None:
         return redirect('portal')
