@@ -686,3 +686,16 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         -webkit-tap-highlight-color:transparent !important;
     }
 }
+
+/* El contorno del botón de cerrar/abrir menú móvil usa el mismo color del menú */
+@media (max-width:700px){
+    .admin-mobile-toggle,
+    .admin-mobile-toggle:focus,
+    .admin-mobile-toggle:focus-visible,
+    .admin-mobile-toggle:active{
+        border: 2px solid var(--admin-dark) !important;
+        outline: 2px solid var(--admin-dark) !important;
+        outline-offset: 0 !important;
+        box-shadow: none !important;
+    }
+}
