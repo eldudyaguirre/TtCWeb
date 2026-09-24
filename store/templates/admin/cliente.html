@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ cliente.nomclient }} | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb"><a href="{% url 'admin_clientes' %}">← Clientes</a></div>
+
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Cliente seleccionado</span>
+        <h1>{{ cliente.nomclient }}</h1>
+        <p>RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+    <span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span>
+</div>
+
+<section class="admin-client-grid">
+    <article class="admin-card">
+        <span class="admin-kicker">Base de datos</span>
+        <h2>{{ db_name }}</h2>
+        <p>Base de datos asignada al RUC del cliente.</p>
+        <div class="admin-db-status {% if db_status == 'Conectada' %}online{% endif %}">
+            <span></span>{{ db_status }}
+        </div>
+    </article>
+
+    <article class="admin-card">
+        <span class="admin-kicker">Cuenta</span>
+        <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
+        <p>Saldo registrado en BDatos.</p>
+        <a href="#" class="admin-module-button">Cobranza <small>Próximamente</small></a>
+    </article>
+</section>
+
+<section class="admin-module-grid">
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-database"></i><strong>Base de datos</strong><span>Consultar y gestionar información del cliente</span></a>
+    <a href="{% url 'sri_anexos_admin' %}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-users"></i><strong>Usuarios</strong><span>Activar, desactivar y gestionar accesos</span></a>
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-wallet"></i><strong>Cobranza</strong><span>Consultar saldos y registrar pagos</span></a>
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-document"></i><strong>Facturación</strong><span>Consultar información de comprobantes</span></a>
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-settings"></i><strong>Configuración</strong><span>Parámetros y datos administrativos</span></a>
+</section>
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div><span class="admin-kicker">Usuarios</span><h2>Usuarios asignados</h2></div>
+    </div>
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th></tr></thead>
+            <tbody>
+            {% for asignacion in usuarios %}
+                <tr>
+                    <td>{{ asignacion.usuario.username }}</td>
+                    <td>{{ asignacion.usuario.email|default:"—" }}</td>
+                    <td>{{ asignacion.get_rol_display }}</td>
+                    <td><span class="admin-status {% if asignacion.activo %}active{% else %}inactive{% endif %}">{% if asignacion.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="admin-empty">No existen usuarios asignados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
