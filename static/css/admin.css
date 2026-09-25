@@ -736,3 +736,16 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         -webkit-focus-ring-color:var(--admin-dark) !important;
     }
 }
+
+/* Datos del usuario administrativo */
+.admin-user-data-card{max-width:900px}
+.admin-user-data-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e8f4f5;color:var(--admin-accent);font-weight:700;font-size:18px}
+.admin-user-data-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.admin-user-data-field{border:1px solid var(--admin-border);border-radius:12px;padding:18px;background:#fbfcfc}
+.admin-user-data-field span{display:block;color:var(--admin-muted);font-size:12px;margin-bottom:7px}
+.admin-user-data-field strong{display:block;color:var(--admin-dark);font-size:17px;font-weight:600;word-break:break-word}
+@media(max-width:700px){
+    .admin-user-data-grid{grid-template-columns:1fr;gap:12px}
+    .admin-user-data-field{padding:15px}
+    .admin-user-data-field strong{font-size:16px}
+}
