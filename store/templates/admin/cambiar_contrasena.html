@@ -2,54 +2,117 @@
 {% block title %}Cambiar contraseña | Administración TotalCounts{% endblock %}
 
 {% block content %}
-<div class="admin-page-header">
+<div class="admin-password-page-header">
     <div>
-        <span class="admin-kicker">Configuración</span>
+        <div class="admin-password-breadcrumb">
+            <span>CONFIGURACIÓN</span>
+            <i class="fi fi-rr-angle-small-right"></i>
+            <strong>CAMBIAR CONTRASEÑA</strong>
+        </div>
         <h1>Cambiar contraseña</h1>
         <p>Actualiza la contraseña de acceso a tu cuenta administrativa.</p>
     </div>
 </div>
 
-<section class="admin-card admin-password-card">
-    <div class="admin-password-heading">
-        <div class="admin-password-icon"><i class="fi fi-rr-lock"></i></div>
+<section class="admin-card admin-password-card admin-password-card-v2">
+    <div class="admin-password-heading-v2">
+        <div class="admin-password-icon-v2">
+            <i class="fi fi-rr-lock"></i>
+        </div>
         <div>
-            <span class="admin-kicker">Seguridad</span>
+            <span class="admin-kicker">SEGURIDAD</span>
             <h2>Cambiar contraseña</h2>
-            <p>Ingresa tu contraseña actual y define una nueva contraseña.</p>
         </div>
     </div>
+
+    <div class="admin-password-divider"></div>
+
+    <p class="admin-password-intro">
+        Ingresa tu contraseña actual y define una nueva contraseña para tu cuenta administrativa.
+    </p>
 
     {% if password_error %}
         <div class="admin-password-error">{{ password_error }}</div>
     {% endif %}
 
-    <form method="post" class="admin-password-form">
+    <form method="post" class="admin-password-form admin-password-form-v2">
         {% csrf_token %}
 
-        <div class="admin-password-field">
+        <div class="admin-password-field-v2">
             <label for="admin-old-password">Contraseña actual</label>
-            <input id="admin-old-password" type="password" name="old_password" autocomplete="current-password" required>
+            <div class="admin-password-input">
+                <span class="admin-password-input-icon"><i class="fi fi-rr-lock"></i></span>
+                <input id="admin-old-password" type="password" name="old_password"
+                       autocomplete="current-password"
+                       placeholder="Ingresa tu contraseña actual" required>
+                <button type="button" class="admin-password-eye" data-target="admin-old-password" aria-label="Mostrar contraseña">
+                    <i class="fi fi-rr-eye-crossed"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="admin-password-field">
+        <div class="admin-password-field-v2">
             <label for="admin-new-password">Nueva contraseña</label>
-            <input id="admin-new-password" type="password" name="new_password1" autocomplete="new-password" required>
+            <div class="admin-password-input">
+                <span class="admin-password-input-icon"><i class="fi fi-rr-key"></i></span>
+                <input id="admin-new-password" type="password" name="new_password1"
+                       autocomplete="new-password"
+                       placeholder="Ingresa tu nueva contraseña" required>
+                <button type="button" class="admin-password-eye" data-target="admin-new-password" aria-label="Mostrar contraseña">
+                    <i class="fi fi-rr-eye-crossed"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="admin-password-field">
+        <div class="admin-password-field-v2">
             <label for="admin-confirm-password">Confirmar nueva contraseña</label>
-            <input id="admin-confirm-password" type="password" name="new_password2" autocomplete="new-password" required>
+            <div class="admin-password-input">
+                <span class="admin-password-input-icon"><i class="fi fi-rr-check-circle"></i></span>
+                <input id="admin-confirm-password" type="password" name="new_password2"
+                       autocomplete="new-password"
+                       placeholder="Repite tu nueva contraseña" required>
+                <button type="button" class="admin-password-eye" data-target="admin-confirm-password" aria-label="Mostrar contraseña">
+                    <i class="fi fi-rr-eye-crossed"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="admin-password-help">
-            <strong>Recomendación:</strong> utiliza una contraseña de al menos 8 caracteres y que no uses en otros servicios.
+        <div class="admin-password-help-v2">
+            <div class="admin-password-help-icon"><i class="fi fi-rr-info"></i></div>
+            <div>
+                <strong>Recomendación:</strong> utiliza una contraseña de al menos 8 caracteres y que no uses en otros servicios.
+            </div>
         </div>
 
-        <div class="admin-password-actions">
-            <a href="{% url 'admin_datos_usuario' %}" class="admin-password-cancel">Cancelar</a>
-            <button type="submit" class="admin-primary-button">Cambiar contraseña</button>
+        <div class="admin-password-actions-v2">
+            <a href="{% url 'admin_datos_usuario' %}" class="admin-password-cancel-v2">
+                <i class="fi fi-rr-cross-small"></i>
+                <span>Cancelar</span>
+            </a>
+            <button type="submit" class="admin-primary-button admin-password-submit-v2">
+                <i class="fi fi-rr-lock"></i>
+                <span>Cambiar contraseña</span>
+            </button>
         </div>
     </form>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.admin-password-eye').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const input = document.getElementById(button.dataset.target);
+            const icon = button.querySelector('i');
+            if (!input) return;
+
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            button.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            if (icon) {
+                icon.className = visible ? 'fi fi-rr-eye-crossed' : 'fi fi-rr-eye';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
