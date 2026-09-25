@@ -6,28 +6,73 @@
     <div>
         <span class="admin-kicker">Configuración</span>
         <h1>Datos Usuario</h1>
-        <p>Información del usuario que tiene actualmente la sesión administrativa.</p>
+        <p>Información y datos personales del usuario administrativo.</p>
     </div>
 </div>
 
 <section class="admin-card admin-user-data-card">
     <div class="admin-card-header">
         <div>
-            <span class="admin-kicker">Usuario</span>
-            <h2>Datos de acceso</h2>
+            <span class="admin-kicker">Perfil administrativo</span>
+            <h2>Datos del usuario</h2>
         </div>
-        <div class="admin-user-data-avatar">{{ admin_usuario|first|upper }}</div>
+
+        <div class="admin-profile-preview">
+            {% if perfil.foto %}
+                <img src="{% url 'admin_foto_usuario' %}" alt="Foto de {{ perfil.nombres }}">
+            {% else %}
+                <div class="admin-user-data-avatar">{{ admin_usuario|first|upper }}</div>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="admin-user-data-grid">
-        <div class="admin-user-data-field">
-            <span>Nombre de usuario</span>
-            <strong>{{ admin_usuario }}</strong>
+    <form method="post" enctype="multipart/form-data" class="admin-user-data-form">
+        {% csrf_token %}
+
+        <div class="admin-user-data-grid">
+            <div class="admin-user-data-field">
+                <label>Nombre de usuario</label>
+                <input type="text" value="{{ admin_usuario }}" readonly>
+                <small>Usuario utilizado para ingresar al portal administrativo.</small>
+            </div>
+
+            <div class="admin-user-data-field">
+                <label>Nombres</label>
+                <input type="text" name="nombres" value="{{ perfil.nombres }}" maxlength="200" required>
+            </div>
+
+            <div class="admin-user-data-field">
+                <label>Dirección</label>
+                <input type="text" name="direccion" value="{{ perfil.direccion }}" maxlength="300">
+            </div>
+
+            <div class="admin-user-data-field">
+                <label>Teléfono</label>
+                <input type="text" name="telefono" value="{{ perfil.telefono }}" maxlength="30">
+            </div>
+
+            <div class="admin-user-data-field">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ perfil.email }}" maxlength="254">
+            </div>
+
+            <div class="admin-user-data-field">
+                <label>Fecha de nacimiento</label>
+                <input type="date" name="fecha_nacimiento" value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}">
+            </div>
+
+            <div class="admin-user-data-field admin-user-photo-field">
+                <label>Foto de perfil</label>
+                <input type="file" name="foto" accept="image/*">
+                <small>Selecciona una imagen para mostrarla en la barra superior.</small>
+            </div>
         </div>
-        <div class="admin-user-data-field">
-            <span>Nombres</span>
-            <strong>{{ admin_nombre }}</strong>
+
+        <div class="admin-user-data-actions">
+            <button type="submit" class="admin-primary-button">
+                Guardar datos
+            </button>
         </div>
-    </div>
+    </form>
 </section>
 {% endblock %}
