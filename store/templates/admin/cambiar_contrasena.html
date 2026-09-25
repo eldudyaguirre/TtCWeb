@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block title %}Cambiar contraseña | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Configuración</span>
+        <h1>Cambiar contraseña</h1>
+        <p>Actualiza la contraseña de acceso a tu cuenta administrativa.</p>
+    </div>
+</div>
+
+<section class="admin-card admin-password-card">
+    <div class="admin-password-heading">
+        <div class="admin-password-icon"><i class="fi fi-rr-lock"></i></div>
+        <div>
+            <span class="admin-kicker">Seguridad</span>
+            <h2>Cambiar contraseña</h2>
+            <p>Ingresa tu contraseña actual y define una nueva contraseña.</p>
+        </div>
+    </div>
+
+    {% if password_error %}
+        <div class="admin-password-error">{{ password_error }}</div>
+    {% endif %}
+
+    <form method="post" class="admin-password-form">
+        {% csrf_token %}
+
+        <div class="admin-password-field">
+            <label for="admin-old-password">Contraseña actual</label>
+            <input id="admin-old-password" type="password" name="old_password" autocomplete="current-password" required>
+        </div>
+
+        <div class="admin-password-field">
+            <label for="admin-new-password">Nueva contraseña</label>
+            <input id="admin-new-password" type="password" name="new_password1" autocomplete="new-password" required>
+        </div>
+
+        <div class="admin-password-field">
+            <label for="admin-confirm-password">Confirmar nueva contraseña</label>
+            <input id="admin-confirm-password" type="password" name="new_password2" autocomplete="new-password" required>
+        </div>
+
+        <div class="admin-password-help">
+            <strong>Recomendación:</strong> utiliza una contraseña de al menos 8 caracteres y que no uses en otros servicios.
+        </div>
+
+        <div class="admin-password-actions">
+            <a href="{% url 'admin_datos_usuario' %}" class="admin-password-cancel">Cancelar</a>
+            <button type="submit" class="admin-primary-button">Cambiar contraseña</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
