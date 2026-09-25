@@ -8,9 +8,10 @@ from django.utils import timezone
 from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from django.http import FileResponse, Http404
 from django.contrib.auth.hashers import check_password
 
-from .models import Cliente, UsuarioCliente, VisitaWeb
+from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb
 
 
 ADMIN_SESSION_KEY = 'admin_portal'
@@ -101,15 +102,64 @@ def admin_logout(request):
 
 @admin_required
 def admin_datos_usuario(request):
-    """Muestra los datos del usuario administrativo autenticado."""
+    """Muestra y permite editar los datos del usuario administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    nombre_sesion = request.session.get(ADMIN_NAME_KEY, '').strip()
+
+    perfil, _ = AdminPerfil.objects.get_or_create(
+        usuario=usuario,
+        defaults={'nombres': nombre_sesion},
+    )
+
+    if request.method == 'POST':
+        perfil.nombres = request.POST.get('nombres', '').strip()
+        perfil.direccion = request.POST.get('direccion', '').strip()
+        perfil.telefono = request.POST.get('telefono', '').strip()
+        perfil.email = request.POST.get('email', '').strip()
+
+        fecha_nacimiento = request.POST.get('fecha_nacimiento', '').strip()
+        perfil.fecha_nacimiento = fecha_nacimiento or None
+
+        nueva_foto = request.FILES.get('foto')
+        if nueva_foto:
+            perfil.foto = nueva_foto
+
+        perfil.save()
+
+        # Mantiene el nombre mostrado en la barra superior sincronizado
+        # con el nombre guardado en el perfil.
+        request.session[ADMIN_NAME_KEY] = perfil.nombres or usuario
+
+        messages.success(request, 'Datos de usuario actualizados correctamente.')
+        return redirect('admin_datos_usuario')
+
     return render(
         request,
         'admin/datos_usuario.html',
         {
-            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
-            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'admin_usuario': usuario,
+            'admin_nombre': perfil.nombres or nombre_sesion,
+            'perfil': perfil,
         },
     )
+
+
+@admin_required
+def admin_foto_usuario(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type='image/jpeg',
+        )
+    except FileNotFoundError:
+        raise Http404
 
 
 @admin_required
