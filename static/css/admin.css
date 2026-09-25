@@ -1184,3 +1184,328 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         box-sizing:border-box;
     }
 }
+
+
+/* ===== CAMBIAR CONTRASEÑA - REDISEÑO ===== */
+.admin-password-page-header{
+    margin-bottom:28px;
+}
+.admin-password-breadcrumb{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:12px;
+    color:var(--admin-accent);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.14em;
+}
+.admin-password-breadcrumb i{
+    font-size:14px;
+    color:#91a0a8;
+}
+.admin-password-breadcrumb strong{
+    color:#3f5871;
+}
+.admin-password-page-header h1{
+    margin:0 0 8px;
+    color:#172633;
+    font-size:40px;
+    line-height:1.1;
+    letter-spacing:-.02em;
+}
+.admin-password-page-header p{
+    margin:0;
+    color:#7c8993;
+    font-size:16px;
+}
+.admin-password-card-v2{
+    max-width:920px;
+    padding:32px;
+    border-radius:18px;
+    box-shadow:0 12px 35px rgba(31,45,52,.06);
+}
+.admin-password-heading-v2{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+.admin-password-icon-v2{
+    width:74px;
+    height:74px;
+    flex:0 0 74px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#e2efff;
+    color:#1760bd;
+    font-size:30px;
+}
+.admin-password-heading-v2 h2{
+    margin:6px 0 0;
+    color:#111d2c;
+    font-size:31px;
+    line-height:1.1;
+    letter-spacing:-.02em;
+}
+.admin-password-divider{
+    height:2px;
+    margin:28px 0 25px;
+    background:#dfe5e9;
+}
+.admin-password-intro{
+    margin:0 0 28px;
+    color:#30465e;
+    font-size:17px;
+    line-height:1.65;
+}
+.admin-password-form-v2{
+    max-width:none;
+}
+.admin-password-field-v2{
+    margin-bottom:22px;
+}
+.admin-password-field-v2 label{
+    display:block;
+    margin:0 0 9px;
+    color:#263d58;
+    font-size:15px;
+    font-weight:800;
+}
+.admin-password-input{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:58px;
+    border:2px solid #d7dee6;
+    border-radius:11px;
+    background:#fff;
+    overflow:hidden;
+    transition:border-color .18s ease,box-shadow .18s ease;
+}
+.admin-password-input:focus-within{
+    border-color:#1596a3;
+    box-shadow:0 0 0 4px rgba(21,150,163,.10);
+}
+.admin-password-input-icon{
+    width:58px;
+    min-width:58px;
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#304b69;
+    background:#fbfcfd;
+    border-right:1px solid #e2e7ec;
+    font-size:19px;
+}
+.admin-password-input input{
+    flex:1;
+    width:100%;
+    min-width:0;
+    height:56px;
+    border:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+    padding:0 16px;
+    background:#fff;
+    color:#263842;
+    font-size:16px;
+}
+.admin-password-input input::placeholder{
+    color:#99a6b6;
+}
+.admin-password-eye{
+    width:58px;
+    min-width:58px;
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:0;
+    border-left:1px solid #edf0f3;
+    background:#fbfcfd;
+    color:#304b69;
+    font-size:18px;
+    cursor:pointer;
+}
+.admin-password-eye:hover{
+    background:#f1f5f7;
+    color:#1596a3;
+}
+.admin-password-help-v2{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-top:28px;
+    padding:17px 20px;
+    border-left:5px solid #1596a3;
+    border-radius:10px;
+    background:#e9f8fb;
+    color:#30465e;
+    font-size:14px;
+    line-height:1.65;
+}
+.admin-password-help-v2 strong{
+    color:#1596a3;
+}
+.admin-password-help-icon{
+    width:34px;
+    height:34px;
+    min-width:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#1596a3;
+    color:#fff;
+    font-size:15px;
+}
+.admin-password-actions-v2{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:14px;
+    margin-top:28px;
+}
+.admin-password-cancel-v2{
+    min-height:52px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:0 22px;
+    border:2px solid #aebbc8;
+    border-radius:11px;
+    background:#fff;
+    color:#596b80;
+    text-decoration:none;
+    font-size:15px;
+    font-weight:800;
+}
+.admin-password-cancel-v2:hover{
+    color:#263842;
+    background:#f7f9fa;
+}
+.admin-password-submit-v2{
+    min-height:52px;
+    padding:0 26px;
+    border-radius:11px;
+    font-size:15px;
+    gap:9px;
+    box-shadow:0 5px 14px rgba(21,150,163,.20);
+}
+@media(max-width:700px){
+    .admin-password-page-header{
+        margin-bottom:20px;
+    }
+    .admin-password-breadcrumb{
+        margin-bottom:10px;
+        font-size:10px;
+    }
+    .admin-password-page-header h1{
+        font-size:34px;
+    }
+    .admin-password-page-header p{
+        font-size:15px;
+        line-height:1.45;
+    }
+    .admin-password-card-v2{
+        width:100%;
+        max-width:none;
+        padding:24px 20px;
+        border-radius:17px;
+    }
+    .admin-password-heading-v2{
+        gap:15px;
+    }
+    .admin-password-icon-v2{
+        width:58px;
+        height:58px;
+        flex-basis:58px;
+        font-size:24px;
+    }
+    .admin-password-heading-v2 h2{
+        font-size:29px;
+    }
+    .admin-password-divider{
+        margin:23px 0 22px;
+    }
+    .admin-password-intro{
+        font-size:16px;
+        line-height:1.6;
+        margin-bottom:25px;
+    }
+    .admin-password-field-v2{
+        margin-bottom:19px;
+    }
+    .admin-password-field-v2 label{
+        font-size:15px;
+        margin-bottom:8px;
+    }
+    .admin-password-input{
+        min-height:55px;
+        border-width:1.5px;
+    }
+    .admin-password-input-icon,
+    .admin-password-eye{
+        width:52px;
+        min-width:52px;
+        height:55px;
+    }
+    .admin-password-input input{
+        height:53px;
+        padding:0 12px;
+        font-size:16px;
+    }
+    .admin-password-help-v2{
+        align-items:flex-start;
+        gap:12px;
+        margin-top:22px;
+        padding:14px 14px;
+        font-size:14px;
+    }
+    .admin-password-help-icon{
+        width:31px;
+        min-width:31px;
+        height:31px;
+    }
+    .admin-password-actions-v2{
+        justify-content:stretch;
+        gap:10px;
+        margin-top:24px;
+    }
+    .admin-password-cancel-v2,
+    .admin-password-submit-v2{
+        min-height:52px;
+        padding:0 14px;
+        flex:1;
+        font-size:14px;
+    }
+}
+@media(max-width:430px){
+    .admin-password-page-header h1{
+        font-size:31px;
+    }
+    .admin-password-card-v2{
+        padding:21px 18px;
+    }
+    .admin-password-heading-v2 h2{
+        font-size:25px;
+    }
+    .admin-password-icon-v2{
+        width:52px;
+        height:52px;
+        flex-basis:52px;
+        font-size:21px;
+    }
+    .admin-password-actions-v2{
+        flex-direction:row;
+    }
+    .admin-password-cancel-v2,
+    .admin-password-submit-v2{
+        padding:0 10px;
+        font-size:13px;
+    }
+}
