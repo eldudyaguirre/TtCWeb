@@ -10,7 +10,7 @@ from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.http import FileResponse, Http404
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 
 from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb
 
@@ -141,6 +141,935 @@ def admin_datos_usuario(request):
             'admin_usuario': usuario,
             'admin_nombre': perfil.nombres or nombre_sesion,
             'perfil': perfil,
+        },
+    )
+
+
+@admin_required
+def admin_cambiar_contrasena(request):
+    """Permite cambiar la contraseña del usuario administrativo en la tabla legacy seguridad."""
+    usuario_sesion = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    error = ''
+
+    if request.method == 'POST':
+        actual = request.POST.get('old_password', '')
+        nueva = request.POST.get('new_password1', '')
+        confirmacion = request.POST.get('new_password2', '')
+
+        if not actual or not nueva or not confirmacion:
+            error = 'Completa todos los campos.'
+        elif len(nueva) < 8:
+            error = 'La nueva contraseña debe tener al menos 8 caracteres.'
+        elif nueva != confirmacion:
+            error = 'La confirmación de la nueva contraseña no coincide.'
+        else:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    '''
+                    SELECT conusuari
+                    FROM seguridad
+                    WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
+                    LIMIT 1
+                    ''',
+                    [usuario_sesion],
+                )
+                fila = cursor.fetchone()
+
+            if not fila:
+                error = 'No se encontró el usuario administrativo.'
+            else:
+                clave_actual = '' if fila[0] is None else str(fila[0])
+                if clave_actual.startswith(('pbkdf2_', 'argon2(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+, 'bcrypt(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+, 'scrypt(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+)):
+                    try:
+                        valido = check_password(actual, clave_actual)
+                    except Exception:
+                        valido = False
+                else:
+                    valido = actual == clave_actual
+
+                if not valido:
+                    error = 'La contraseña actual no es correcta.'
+                elif nueva == actual:
+                    error = 'La nueva contraseña debe ser diferente a la actual.'
+                else:
+                    # Conserva el formato legacy si la clave actual es texto plano.
+                    # Si ya usa hash Django, guarda la nueva contraseña como hash.
+                    nueva_guardada = make_password(nueva) if clave_actual.startswith(
+                        ('pbkdf2_', 'argon2(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+, 'bcrypt(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+, 'scrypt(request):
+    """Entrega la foto del perfil administrativo autenticado."""
+    usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
+    perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    if not perfil or not perfil.foto:
+        raise Http404
+
+    try:
+        return FileResponse(
+            perfil.foto.open('rb'),
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
+        )
+    except FileNotFoundError:
+        raise Http404
+
+
+@admin_required
+def admin_dashboard(request):
+    clientes_qs = Cliente.objects.all()
+    clientes = clientes_qs.order_by('nomclient')[:12]
+
+    hoy = timezone.localdate()
+    inicio_mes = hoy.replace(day=1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    visitas_hoy_qs = VisitaWeb.objects.filter(fecha_hora__date=hoy)
+    visitas_mes_qs = VisitaWeb.objects.filter(fecha_hora__date__gte=inicio_mes)
+    visitas_mes_anterior_qs = VisitaWeb.objects.filter(
+        fecha_hora__date__gte=inicio_mes_anterior,
+        fecha_hora__date__lt=inicio_mes,
+    )
+
+    inicio_grafica = hoy - timedelta(days=6)
+    visitas_grafica = (
+        VisitaWeb.objects
+        .filter(fecha_hora__date__gte=inicio_grafica, fecha_hora__date__lte=hoy)
+        .annotate(dia=TruncDate('fecha_hora'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    visitas_por_dia = {item['dia']: item['total'] for item in visitas_grafica}
+
+    grafica_visitas = [
+        {
+            'fecha': inicio_grafica + timedelta(days=i),
+            'total': visitas_por_dia.get(inicio_grafica + timedelta(days=i), 0),
+        }
+        for i in range(7)
+    ]
+
+    paginas_mas_visitadas = (
+        visitas_mes_qs
+        .values('pagina')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+
+    context = {
+        'clientes_total': clientes_qs.count(),
+        'clientes_activos': clientes_qs.filter(activo=True).count(),
+        'clientes_inactivos': clientes_qs.filter(activo=False).count(),
+        'usuarios_clientes': UsuarioCliente.objects.filter(activo=True).count(),
+        'clientes': clientes,
+        'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        'visitas_hoy': visitas_hoy_qs.count(),
+        'visitantes_hoy': visitas_hoy_qs.values('visitor_id').distinct().count(),
+        'visitas_mes': visitas_mes_qs.count(),
+        'visitas_mes_anterior': visitas_mes_anterior_qs.count(),
+        'grafica_visitas': grafica_visitas,
+        'paginas_mas_visitadas': paginas_mas_visitadas,
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        clientes = clientes.filter(
+            nomclient__icontains=query
+        ) | clientes.filter(
+            ruccedcli__icontains=query
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+        },
+    )
+
+
+@admin_required
+def admin_cliente(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    usuarios = (
+        UsuarioCliente.objects
+        .filter(cliente=cliente)
+        .select_related('usuario')
+        .order_by('usuario__username')
+    )
+
+    db_name = str(cliente.ruccedcli).strip()
+    db_status = 'No verificada'
+
+    try:
+        alias = f'cliente_{db_name}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = db_name
+            connections.databases[alias] = base
+        client_connection = connections[alias]
+        client_connection.ensure_connection()
+        db_status = 'Conectada'
+    except Exception:
+        db_status = 'No disponible'
+
+    return render(
+        request,
+        'admin/cliente.html',
+        {
+            'cliente': cliente,
+            'usuarios': usuarios,
+            'db_name': db_name,
+            'db_status': db_status,
+        },
+    )
+)
+                    ) else nueva
+
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            '''
+                            UPDATE seguridad
+                            SET conusuari = %s
+                            WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
+                            ''',
+                            [nueva_guardada, usuario_sesion],
+                        )
+
+                    messages.success(request, 'Tu contraseña fue actualizada correctamente.')
+                    return redirect('admin_cambiar_contrasena')
+
+    return render(
+        request,
+        'admin/cambiar_contrasena.html',
+        {
+            'admin_usuario': usuario_sesion,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'password_error': error,
         },
     )
 
