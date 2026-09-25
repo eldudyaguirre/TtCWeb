@@ -279,8 +279,19 @@ def admin_dashboard(request):
         for i in range(7)
     ]
 
+    # Solo mostramos páginas públicas reales del sitio. Las rutas técnicas,
+    # administrativas, del portal y solicitudes de scanners quedan fuera.
+    paginas_publicas = (
+        '/',
+        '/about/',
+        '/contactanos/',
+        '/avisos-legales/',
+        '/servicios/',
+        '/blog/',
+    )
     paginas_mas_visitadas = (
         visitas_mes_qs
+        .filter(pagina__in=paginas_publicas)
         .values('pagina')
         .annotate(total=Count('id'))
         .order_by('-total')[:8]
