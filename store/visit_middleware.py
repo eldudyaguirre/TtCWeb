@@ -38,7 +38,12 @@ class WebVisitTrackingMiddleware:
         response = self.get_response(request)
 
         path = request.path or '/'
-        if request.method != 'GET' or self._excluir(path):
+        if (
+            request.method != 'GET'
+            or self._excluir(path)
+            or response.status_code != 200
+            or request.resolver_match is None
+        ):
             return response
 
         user_agent = request.META.get('HTTP_USER_AGENT', '')
