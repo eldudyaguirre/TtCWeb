@@ -39,7 +39,7 @@
                     <i class="fi fi-rr-angle-small-down admin-submenu-arrow"></i>
                 </button>
                 <div class="admin-submenu" id="adminConfigSubmenu">
-                    <a href="#" class="admin-submenu-item">Datos Usuario</a>
+                    <a href="{% url 'admin_datos_usuario' %}" class="admin-submenu-item {% if request.resolver_match.url_name == 'admin_datos_usuario' %}active{% endif %}">Datos Usuario</a>
                     <a href="#" class="admin-submenu-item">Cambiar Contraseña</a>
                     <div class="admin-submenu-separator"></div>
                     <a href="#" class="admin-submenu-item">Parámetros</a>
