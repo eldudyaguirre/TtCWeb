@@ -718,3 +718,21 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         -webkit-tap-highlight-color:transparent !important;
     }
 }
+
+/* Última regla: el aro visible del botón debe ser exactamente el color del menú */
+@media (max-width:700px){
+    #adminMobileToggle,
+    #adminMobileToggle:hover,
+    #adminMobileToggle:focus,
+    #adminMobileToggle:focus-visible,
+    #adminMobileToggle:active{
+        border:2px solid var(--admin-dark) !important;
+        outline:2px solid var(--admin-dark) !important;
+        outline-offset:0 !important;
+        box-shadow:none !important;
+        background:var(--admin-dark) !important;
+        -webkit-appearance:none !important;
+        appearance:none !important;
+        -webkit-focus-ring-color:var(--admin-dark) !important;
+    }
+}
