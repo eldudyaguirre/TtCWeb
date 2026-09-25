@@ -179,7 +179,56 @@ def admin_cambiar_contrasena(request):
                 error = 'No se encontró el usuario administrativo.'
             else:
                 clave_actual = '' if fila[0] is None else str(fila[0])
-                if clave_actual.startswith(('pbkdf2_', 'argon2(request):
+                es_hash = clave_actual.startswith(
+                    ('pbkdf2_', 'argon2', 'bcrypt', 'scrypt')
+                )
+
+                if es_hash:
+                    try:
+                        valido = check_password(actual, clave_actual)
+                    except Exception:
+                        valido = False
+                else:
+                    valido = actual == clave_actual
+
+                if not valido:
+                    error = 'La contraseña actual no es correcta.'
+                elif nueva == actual:
+                    error = 'La nueva contraseña debe ser diferente a la actual.'
+                else:
+                    # Conserva el formato legacy si la clave actual es texto plano.
+                    # Si ya usa hash Django, guarda la nueva contraseña como hash.
+                    nueva_guardada = make_password(nueva) if es_hash else nueva
+
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            '''
+                            UPDATE seguridad
+                            SET conusuari = %s
+                            WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
+                            ''',
+                            [nueva_guardada, usuario_sesion],
+                        )
+
+                    messages.success(
+                        request,
+                        'Tu contraseña fue actualizada correctamente.',
+                    )
+                    return redirect('admin_cambiar_contrasena')
+
+    return render(
+        request,
+        'admin/cambiar_contrasena.html',
+        {
+            'admin_usuario': usuario_sesion,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'password_error': error,
+        },
+    )
+
+
+@admin_required
+def admin_foto_usuario(request):
     """Entrega la foto del perfil administrativo autenticado."""
     usuario = request.session.get(ADMIN_USERNAME_KEY, '').strip()
     perfil = AdminPerfil.objects.filter(usuario=usuario).first()
