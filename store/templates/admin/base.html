@@ -67,7 +67,11 @@
             </div>
             <div class="admin-user">
                 <span>{{ admin_usuario }}</span>
-                <b>{{ admin_usuario|first|upper }}</b>
+                {% if admin_tiene_foto %}
+                    <img class="admin-user-photo" src="{% url 'admin_foto_usuario' %}" alt="Foto de {{ admin_nombre }}">
+                {% else %}
+                    <b>{{ admin_usuario|first|upper }}</b>
+                {% endif %}
             </div>
         </header>
 
