@@ -83,6 +83,26 @@
         width:100% !important;
     }
 }
+.admin-user-data-value{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:44px;
+    box-sizing:border-box;
+    padding:9px 12px;
+    border:1px solid #d5dee2;
+    border-radius:9px;
+    background:#f1f4f5;
+    color:#74818a;
+    font-size:14px;
+    font-weight:600;
+}
+@media(max-width:700px){
+    .admin-user-data-value{
+        min-height:46px;
+        font-size:16px;
+    }
+}
 </style>
 
 <div class="admin-page-header">
@@ -112,9 +132,9 @@
         {% csrf_token %}
         <div class="admin-user-data-grid">
 
-            <div class="admin-user-data-field">
-                <label for="admin-usuario">Nombre de usuario</label>
-                <input id="admin-usuario" type="text" value="{{ admin_usuario }}" readonly>
+            <div class="admin-user-data-field admin-user-data-readonly">
+                <label>Nombre de usuario</label>
+                <div class="admin-user-data-value">{{ admin_usuario }}</div>
                 <small>Usuario utilizado para ingresar al portal administrativo.</small>
             </div>
 
