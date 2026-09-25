@@ -2,6 +2,87 @@
 {% block title %}Cambiar contraseña | Administración TotalCounts{% endblock %}
 
 {% block content %}
+<style>
+.admin-password-form-v2 .admin-password-input{
+    display:flex !important;
+    align-items:stretch !important;
+    width:100% !important;
+    height:56px !important;
+    min-height:56px !important;
+    border:1px solid #cfd8df !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+    background:#fff !important;
+    box-sizing:border-box !important;
+}
+.admin-password-form-v2 .admin-password-input-icon{
+    flex:0 0 50px !important;
+    width:50px !important;
+    height:54px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border:0 !important;
+    border-right:1px solid #e1e6ea !important;
+    background:#fff !important;
+    color:#30465e !important;
+    box-sizing:border-box !important;
+}
+.admin-password-form-v2 .admin-password-input input{
+    flex:1 1 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    height:54px !important;
+    margin:0 !important;
+    padding:0 12px !important;
+    border:0 !important;
+    outline:none !important;
+    box-shadow:none !important;
+    background:#fff !important;
+    box-sizing:border-box !important;
+    font-size:16px !important;
+}
+.admin-password-form-v2 .admin-password-eye{
+    flex:0 0 50px !important;
+    width:50px !important;
+    height:54px !important;
+    margin:0 !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border:0 !important;
+    border-left:1px solid #e1e6ea !important;
+    outline:none !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+    background:#fff !important;
+    color:#30465e !important;
+    appearance:none !important;
+    -webkit-appearance:none !important;
+}
+.admin-password-form-v2 .admin-password-eye:hover{
+    background:#f5f8f9 !important;
+}
+@media(max-width:700px){
+    .admin-password-form-v2 .admin-password-input{
+        height:54px !important;
+        min-height:54px !important;
+    }
+    .admin-password-form-v2 .admin-password-input-icon,
+    .admin-password-form-v2 .admin-password-eye{
+        flex-basis:48px !important;
+        width:48px !important;
+        height:52px !important;
+    }
+    .admin-password-form-v2 .admin-password-input input{
+        height:52px !important;
+        font-size:16px !important;
+    }
+}
+</style>
+
+
 <div class="admin-password-page-header">
     <div>
         <div class="admin-password-breadcrumb">
