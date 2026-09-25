@@ -1,4 +1,6 @@
 from .services.acceso import validar_acceso_cliente
+from django.db import OperationalError
+
 from .models import AdminPerfil, UsuarioCliente
 
 
@@ -35,7 +37,12 @@ def admin_perfil(request):
     usuario = request.session.get('admin_username', '').strip()
     perfil = None
     if usuario:
-        perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+        try:
+            perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+        except OperationalError:
+            # Permite que el portal siga funcionando mientras la migración
+            # de AdminPerfil aún no haya sido aplicada en el servidor.
+            perfil = None
 
     return {
         'admin_usuario': usuario,
