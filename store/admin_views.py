@@ -215,6 +215,17 @@ def admin_cambiar_contrasena(request):
                     return redirect('admin_cambiar_contrasena')
 
 
+    return render(
+        request,
+        'admin/cambiar_contrasena.html',
+        {
+            'admin_usuario': usuario_sesion,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'password_error': error,
+        },
+    )
+
+
 @admin_required
 def admin_foto_usuario(request):
     """Entrega la foto del perfil administrativo autenticado."""
