@@ -12,6 +12,7 @@ urlpatterns = [
     path('totalcounts/logout/', admin_views.admin_logout, name='admin_logout'),
     path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
+    path('totalcounts/datos-usuario/', admin_views.admin_datos_usuario, name='admin_datos_usuario'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('logout/', views.do_logout, name='logout'),
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
