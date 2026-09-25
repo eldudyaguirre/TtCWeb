@@ -7,3 +7,5 @@ from .parametros import Establecimiento, ParametrosCliente, PuntoEmision, Secuen
 from .usuario_cliente import UsuarioCliente
 
 from .visita import VisitaWeb
+
+from .admin_perfil import AdminPerfil
