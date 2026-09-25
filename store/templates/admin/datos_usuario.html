@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% block title %}Datos Usuario | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Configuración</span>
+        <h1>Datos Usuario</h1>
+        <p>Información del usuario que tiene actualmente la sesión administrativa.</p>
+    </div>
+</div>
+
+<section class="admin-card admin-user-data-card">
+    <div class="admin-card-header">
+        <div>
+            <span class="admin-kicker">Usuario</span>
+            <h2>Datos de acceso</h2>
+        </div>
+        <div class="admin-user-data-avatar">{{ admin_usuario|first|upper }}</div>
+    </div>
+
+    <div class="admin-user-data-grid">
+        <div class="admin-user-data-field">
+            <span>Nombre de usuario</span>
+            <strong>{{ admin_usuario }}</strong>
+        </div>
+        <div class="admin-user-data-field">
+            <span>Nombres</span>
+            <strong>{{ admin_nombre }}</strong>
+        </div>
+    </div>
+</section>
+{% endblock %}
