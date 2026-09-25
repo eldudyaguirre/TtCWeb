@@ -100,6 +100,19 @@ def admin_logout(request):
 
 
 @admin_required
+def admin_datos_usuario(request):
+    """Muestra los datos del usuario administrativo autenticado."""
+    return render(
+        request,
+        'admin/datos_usuario.html',
+        {
+            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+        },
+    )
+
+
+@admin_required
 def admin_dashboard(request):
     clientes_qs = Cliente.objects.all()
     clientes = clientes_qs.order_by('nomclient')[:12]
