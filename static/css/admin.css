@@ -1000,3 +1000,43 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         width:100% !important;
     }
 }
+
+
+/* Cerrar sesión dentro del menú principal */
+.admin-nav .admin-logout-menu{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    width:100% !important;
+    min-height:46px !important;
+    margin:10px 0 0 !important;
+    padding:12px 13px !important;
+    box-sizing:border-box !important;
+    border-top:1px solid rgba(255,255,255,.12) !important;
+    border-radius:9px !important;
+    color:#dce7ea !important;
+    background:transparent !important;
+    text-decoration:none !important;
+    font-size:14px !important;
+}
+.admin-nav .admin-logout-menu i{
+    width:20px !important;
+    min-width:20px !important;
+    text-align:center !important;
+}
+.admin-nav .admin-logout-menu:hover{
+    background:rgba(255,255,255,.10) !important;
+    color:#fff !important;
+}
+@media(max-width:700px){
+    .admin-nav .admin-logout-menu{
+        min-height:46px !important;
+        margin:8px 0 0 !important;
+        padding:12px 13px !important;
+        font-size:14px !important;
+    }
+    .admin-nav .admin-logout-menu i{
+        width:18px !important;
+        min-width:18px !important;
+    }
+}
