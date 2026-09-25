@@ -1,4 +1,5 @@
 from functools import wraps
+import mimetypes
 
 from django.contrib import messages
 from django.db import connection, connections
@@ -156,7 +157,7 @@ def admin_foto_usuario(request):
     try:
         return FileResponse(
             perfil.foto.open('rb'),
-            content_type='image/jpeg',
+            content_type=mimetypes.guess_type(perfil.foto.name)[0] or 'application/octet-stream',
         )
     except FileNotFoundError:
         raise Http404
