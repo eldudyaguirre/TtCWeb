@@ -2,6 +2,89 @@
 {% block title %}Datos Usuario | Administración TotalCounts{% endblock %}
 
 {% block content %}
+<style>
+/* Estilos exclusivos de Datos Usuario */
+.admin-user-data-form .admin-user-data-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:16px !important;
+}
+.admin-user-data-form .admin-user-data-field{
+    display:block !important;
+    width:100% !important;
+    box-sizing:border-box !important;
+    padding:16px !important;
+    border:1px solid #e2e8eb !important;
+    border-radius:12px !important;
+    background:#fbfcfc !important;
+}
+.admin-user-data-form .admin-user-data-field label{
+    display:block !important;
+    width:100% !important;
+    margin:0 0 8px !important;
+    padding:0 !important;
+    font-size:13px !important;
+    line-height:1.3 !important;
+    font-weight:700 !important;
+    color:#74818a !important;
+}
+.admin-user-data-form .admin-user-data-field input{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    margin:0 !important;
+    height:44px !important;
+    min-height:44px !important;
+    padding:9px 12px !important;
+    border:1px solid #d5dee2 !important;
+    border-radius:9px !important;
+    background:#fff !important;
+    font-size:14px !important;
+    color:#263842 !important;
+}
+.admin-user-data-form .admin-user-data-field small{
+    display:block !important;
+    width:100% !important;
+    margin:7px 0 0 !important;
+    font-size:11px !important;
+    line-height:1.4 !important;
+    color:#74818a !important;
+}
+.admin-user-data-actions{
+    display:flex !important;
+    justify-content:flex-end !important;
+    margin-top:20px !important;
+}
+@media(max-width:700px){
+    .admin-user-data-form .admin-user-data-grid{
+        display:grid !important;
+        grid-template-columns:1fr !important;
+        gap:12px !important;
+    }
+    .admin-user-data-form .admin-user-data-field{
+        width:100% !important;
+        padding:14px !important;
+    }
+    .admin-user-data-form .admin-user-data-field label{
+        font-size:13px !important;
+    }
+    .admin-user-data-form .admin-user-data-field input{
+        width:100% !important;
+        height:46px !important;
+        min-height:46px !important;
+        font-size:16px !important;
+    }
+    .admin-user-data-actions{
+        display:block !important;
+    }
+    .admin-user-data-actions .admin-primary-button{
+        display:flex !important;
+        width:100% !important;
+    }
+}
+</style>
+
 <div class="admin-page-header">
     <div>
         <span class="admin-kicker">Configuración</span>
