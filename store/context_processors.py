@@ -38,6 +38,8 @@ def admin_perfil(request):
         perfil = AdminPerfil.objects.filter(usuario=usuario).first()
 
     return {
+        'admin_usuario': usuario,
+        'admin_nombre': (perfil.nombres if perfil and perfil.nombres else request.session.get('admin_name', '')),
         'admin_perfil': perfil,
         'admin_tiene_foto': bool(perfil and perfil.foto),
     }
