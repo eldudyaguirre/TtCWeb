@@ -1509,3 +1509,119 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         font-size:13px;
     }
 }
+
+
+/* ===== AJUSTE FINAL MOBILE: CAMBIAR CONTRASEÑA ===== */
+.admin-password-form-v2 .admin-password-field-v2{
+    width:100% !important;
+}
+.admin-password-form-v2 .admin-password-input{
+    display:grid !important;
+    grid-template-columns:58px minmax(0,1fr) 58px !important;
+    align-items:stretch !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:58px !important;
+    min-height:58px !important;
+    box-sizing:border-box !important;
+    border:2px solid #d7dee6 !important;
+    border-radius:11px !important;
+    overflow:hidden !important;
+    background:#fff !important;
+}
+.admin-password-form-v2 .admin-password-input-icon{
+    width:auto !important;
+    min-width:0 !important;
+    height:56px !important;
+    border:0 !important;
+    border-right:1px solid #e2e7ec !important;
+    background:#fbfcfd !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+}
+.admin-password-form-v2 .admin-password-input input{
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:56px !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 14px !important;
+    border:0 !important;
+    border-radius:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+    background:#fff !important;
+    box-sizing:border-box !important;
+    font-size:16px !important;
+}
+.admin-password-form-v2 .admin-password-eye{
+    display:flex !important;
+    width:auto !important;
+    min-width:0 !important;
+    height:56px !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-left:1px solid #e2e7ec !important;
+    border-radius:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+    background:#fbfcfd !important;
+    appearance:none !important;
+    -webkit-appearance:none !important;
+    align-items:center !important;
+    justify-content:center !important;
+}
+.admin-password-form-v2 .admin-password-eye:focus,
+.admin-password-form-v2 .admin-password-eye:active{
+    outline:0 !important;
+    box-shadow:none !important;
+}
+.admin-password-form-v2 .admin-password-help-v2{
+    width:100% !important;
+    box-sizing:border-box !important;
+}
+.admin-password-form-v2 .admin-password-actions-v2{
+    width:100% !important;
+    box-sizing:border-box !important;
+}
+@media(max-width:700px){
+    .admin-password-card-v2{
+        overflow:hidden !important;
+    }
+    .admin-password-form-v2 .admin-password-input{
+        grid-template-columns:50px minmax(0,1fr) 50px !important;
+        height:55px !important;
+        min-height:55px !important;
+        border-width:1.5px !important;
+    }
+    .admin-password-form-v2 .admin-password-input-icon,
+    .admin-password-form-v2 .admin-password-eye{
+        height:53px !important;
+    }
+    .admin-password-form-v2 .admin-password-input input{
+        height:53px !important;
+        font-size:16px !important;
+        padding:0 11px !important;
+    }
+}
+@media(max-width:430px){
+    .admin-password-card-v2{
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+    .admin-password-form-v2 .admin-password-input{
+        grid-template-columns:46px minmax(0,1fr) 46px !important;
+    }
+    .admin-password-form-v2 .admin-password-input-icon,
+    .admin-password-form-v2 .admin-password-eye{
+        height:53px !important;
+    }
+    .admin-password-form-v2 .admin-password-input input{
+        padding:0 9px !important;
+        font-size:15px !important;
+    }
+}
