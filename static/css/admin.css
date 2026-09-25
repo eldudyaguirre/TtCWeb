@@ -699,3 +699,22 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         box-shadow: none !important;
     }
 }
+
+/* Corrección definitiva: botón móvil sin aro/borde blanco del navegador */
+@media (max-width:700px){
+    #adminMobileToggle,
+    #adminMobileToggle:hover,
+    #adminMobileToggle:focus,
+    #adminMobileToggle:focus-visible,
+    #adminMobileToggle:active{
+        -webkit-appearance:none !important;
+        appearance:none !important;
+        border:0 !important;
+        outline:0 !important;
+        outline-color:transparent !important;
+        box-shadow:none !important;
+        background:var(--admin-dark) !important;
+        color:#fff !important;
+        -webkit-tap-highlight-color:transparent !important;
+    }
+}
