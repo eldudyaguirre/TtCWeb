@@ -1,5 +1,5 @@
 from .services.acceso import validar_acceso_cliente
-from .models import UsuarioCliente
+from .models import AdminPerfil, UsuarioCliente
 
 
 def acceso_cliente(request):
@@ -28,4 +28,16 @@ def acceso_cliente(request):
         'acceso_restringido': not permitido,
         'motivo_acceso': motivo,
         'detalle_acceso': detalle,
+    }
+
+
+def admin_perfil(request):
+    usuario = request.session.get('admin_username', '').strip()
+    perfil = None
+    if usuario:
+        perfil = AdminPerfil.objects.filter(usuario=usuario).first()
+
+    return {
+        'admin_perfil': perfil,
+        'admin_tiene_foto': bool(perfil and perfil.foto),
     }
