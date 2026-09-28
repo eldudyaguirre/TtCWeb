@@ -365,7 +365,7 @@ def admin_contrasenas(request):
     pestanas = [
         {
             'dia': dia,
-            'clientes': clientes_qs.filter(diadeclaracion=dia),
+            'clientes': clientes_qs.filter(diadeclaracion=str(dia)),
         }
         for dia in dias
     ]
