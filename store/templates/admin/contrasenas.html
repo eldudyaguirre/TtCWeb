@@ -1,0 +1,184 @@
+{% extends "admin/base.html" %}
+{% block title %}Contraseñas | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-passwords-page">
+    <div class="admin-page-header admin-passwords-header">
+        <div>
+            <span class="admin-kicker">Administración</span>
+            <h1>Contraseñas</h1>
+            <p>Credenciales registradas de los clientes activos, organizadas según su día de declaración.</p>
+        </div>
+    </div>
+
+    <form method="get" class="admin-passwords-search">
+        <div class="admin-passwords-search-box">
+            <i class="fi fi-rr-search"></i>
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Buscar por RUC o nombre del cliente"
+                autocomplete="off"
+            >
+            {% if query %}
+                <a href="{% url 'admin_contrasenas' %}" class="admin-passwords-search-clear" title="Limpiar búsqueda">
+                    <i class="fi fi-rr-cross-small"></i>
+                </a>
+            {% endif %}
+        </div>
+        <button type="submit" class="admin-primary-button">
+            <i class="fi fi-rr-search"></i>
+            Buscar
+        </button>
+    </form>
+
+    <section class="admin-card admin-passwords-card">
+        <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
+            {% for dia in dias_declaracion %}
+                <button
+                    type="button"
+                    class="admin-passwords-tab{% if forloop.first %} active{% endif %}"
+                    data-passwords-tab="{{ dia }}"
+                    role="tab"
+                    aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                >
+                    {{ dia }}
+                    <span>{{ clientes_por_dia|get_item:dia|length }}</span>
+                </button>
+            {% endfor %}
+        </div>
+
+        {% for dia in dias_declaracion %}
+            <div
+                class="admin-passwords-panel{% if forloop.first %} active{% endif %}"
+                data-passwords-panel="{{ dia }}"
+                role="tabpanel"
+            >
+                <div class="admin-passwords-panel-head">
+                    <div>
+                        <span class="admin-kicker">Día de declaración</span>
+                        <h2>Clientes del {{ dia }}</h2>
+                    </div>
+                    <span class="admin-passwords-count">{{ clientes_por_dia|get_item:dia|length }} clientes</span>
+                </div>
+
+                <div class="admin-table-wrap admin-passwords-table-wrap">
+                    <table class="admin-table admin-passwords-table">
+                        <thead>
+                            <tr>
+                                <th>RUC</th>
+                                <th>Nombres</th>
+                                <th>TipDec</th>
+                                <th>SRI</th>
+                                <th>CedIESS</th>
+                                <th>IESS</th>
+                                <th>MRLSUT</th>
+                                <th>MRLSAL</th>
+                                <th>SUPERCIAS</th>
+                                <th>Domestica</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cliente in clientes_por_dia|get_item:dia %}
+                                <tr>
+                                    <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
+                                    <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
+                                    <td>{{ cliente.semensual|default:"—" }}</td>
+                                    <td><span class="admin-password-value">{{ cliente.clavesri|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.cediess|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.claveiess|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.mrlcon|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.mrlsal|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.clavesuper|default:"—" }}</span></td>
+                                    <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
+                                    <td class="admin-passwords-actions-cell">
+                                        <div class="admin-passwords-action">
+                                            <button
+                                                type="button"
+                                                class="admin-passwords-action-button"
+                                                aria-label="Acciones para {{ cliente.nomclient }}"
+                                                aria-expanded="false"
+                                            >
+                                                <i class="fi fi-rr-menu-dots"></i>
+                                            </button>
+                                            <div class="admin-passwords-action-menu">
+                                                <span><i class="fi fi-rr-clock"></i> Opciones próximamente</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="11" class="admin-empty">
+                                        {% if query %}
+                                            No se encontraron clientes del día {{ dia }} para "{{ query }}".
+                                        {% else %}
+                                            No existen clientes activos con día de declaración {{ dia }}.
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('[data-passwords-tab]');
+    const panels = document.querySelectorAll('[data-passwords-panel]');
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            const dia = tab.getAttribute('data-passwords-tab');
+
+            tabs.forEach(function (item) {
+                const active = item === tab;
+                item.classList.toggle('active', active);
+                item.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+
+            panels.forEach(function (panel) {
+                panel.classList.toggle(
+                    'active',
+                    panel.getAttribute('data-passwords-panel') === dia
+                );
+            });
+        });
+    });
+
+    document.querySelectorAll('.admin-passwords-action-button').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.stopPropagation();
+
+            const action = button.closest('.admin-passwords-action');
+            const wasOpen = action.classList.contains('open');
+
+            document.querySelectorAll('.admin-passwords-action.open').forEach(function (item) {
+                item.classList.remove('open');
+                const itemButton = item.querySelector('.admin-passwords-action-button');
+                if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
+            });
+
+            if (!wasOpen) {
+                action.classList.add('open');
+                button.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.admin-passwords-action.open').forEach(function (item) {
+            item.classList.remove('open');
+            const itemButton = item.querySelector('.admin-passwords-action-button');
+            if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
+        });
+    });
+});
+</script>
+{% endblock %}
