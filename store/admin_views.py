@@ -553,6 +553,7 @@ def admin_cliente(request, ruc):
 
     db_name = str(cliente.ruccedcli).strip()
     db_status = 'No verificada'
+    conciliacion = {'anio': 0, 'anios': [], 'meses': [], 'totales': {'ventas': 0, 'compras': 0, 'retrenta': 0, 'retiva': 0}}
 
     try:
         alias = f'cliente_{db_name}'
@@ -563,6 +564,7 @@ def admin_cliente(request, ruc):
         client_connection = connections[alias]
         client_connection.ensure_connection()
         db_status = 'Conectada'
+        conciliacion = _admin_conciliacion_cliente(cliente, request.GET.get('anio'))
     except Exception:
         db_status = 'No disponible'
 
@@ -574,5 +576,6 @@ def admin_cliente(request, ruc):
             'usuarios': usuarios,
             'db_name': db_name,
             'db_status': db_status,
+            'conciliacion': conciliacion,
         },
     )
