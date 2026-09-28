@@ -545,6 +545,21 @@ def _admin_conciliacion_cliente(cliente, anio=None):
 
 def admin_cliente(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
+
+    if request.method == 'POST' and request.POST.get('accion') == 'guardar_datos_cliente':
+        cliente.dirclient = request.POST.get('dirclient', '').strip()
+        cliente.teldomcli = request.POST.get('teldomcli', '').strip()
+        cliente.teloficli = request.POST.get('teloficli', '').strip()
+        cliente.telcelcli = request.POST.get('telcelcli', '').strip()
+        cliente.corelectr = request.POST.get('corelectr', '').strip()
+        cliente.ocuclient = request.POST.get('ocuclient', '').strip()
+        cliente.save(update_fields=[
+            'dirclient', 'teldomcli', 'teloficli',
+            'telcelcli', 'corelectr', 'ocuclient',
+        ])
+        messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+        return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
     usuarios = (
         UsuarioCliente.objects
         .filter(cliente=cliente)
