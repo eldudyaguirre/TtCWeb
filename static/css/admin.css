@@ -2614,3 +2614,22 @@ button.admin-new-client-button:focus{
         margin:7px 10px;
     }
 }
+
+
+/* Separadores visibles entre grupos del menú */
+.admin-nav a.admin-nav-separated-after{
+    position:relative;
+    margin-bottom:10px !important;
+}
+.admin-nav a.admin-nav-separated-after::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-6px;
+    height:1px;
+    background:rgba(255,255,255,.20);
+}
+.admin-nav > .admin-nav-separator{
+    display:none !important;
+}
