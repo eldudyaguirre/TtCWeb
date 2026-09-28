@@ -337,7 +337,16 @@ def admin_contrasenas_editar(request, ruc):
     for campo in campos:
         setattr(cliente, campo, request.POST.get(campo, '').strip())
 
-    cliente.save(update_fields=campos)
+    tipdec = request.POST.get('tipdec', '').strip().upper()
+    if tipdec in ('MENSUAL', 'SEMESTRAL', 'ANUAL'):
+        # El campo existente en el modelo es semensual (TipDec).
+        cliente.semensual = tipdec
+
+    campos_guardar = list(campos)
+    if tipdec in ('MENSUAL', 'SEMESTRAL', 'ANUAL'):
+        campos_guardar.append('semensual')
+
+    cliente.save(update_fields=campos_guardar)
 
     messages.success(
         request,
