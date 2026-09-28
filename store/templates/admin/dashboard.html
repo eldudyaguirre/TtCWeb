@@ -48,6 +48,8 @@
     <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
     <div class="admin-kpi"><span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small></div>
     <div class="admin-kpi"><span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small></div>
+    <div class="admin-kpi"><span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small></div>
+    <div class="admin-kpi"><span>Saldo por facturar</span><strong>$ {{ saldo_por_facturar|floatformat:2 }}</strong><small>Prefacturas pendientes</small></div>
 </section>
 
 
