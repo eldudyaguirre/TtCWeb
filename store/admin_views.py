@@ -362,17 +362,19 @@ def admin_contrasenas(request):
     clientes_qs = clientes_qs.order_by('nomclient')
 
     dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
-    clientes_por_dia = {
-        dia: clientes_qs.filter(diadeclaracion=dia)
+    pestanas = [
+        {
+            'dia': dia,
+            'clientes': clientes_qs.filter(diadeclaracion=dia),
+        }
         for dia in dias
-    }
+    ]
 
     return render(
         request,
         'admin/contrasenas.html',
         {
-            'clientes_por_dia': clientes_por_dia,
-            'dias_declaracion': dias,
+            'pestanas': pestanas,
             'query': query,
             'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
