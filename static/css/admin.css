@@ -2371,3 +2371,38 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         font-size:14px !important;
     }
 }
+
+
+/* ===== COMBO TIPO DE DECLARACION - MODULO CONTRASEÑAS ===== */
+.admin-passwords-filter-select{
+    box-sizing:border-box !important;
+    height:46px !important;
+    min-height:46px !important;
+    width:150px !important;
+    padding:0 34px 0 12px !important;
+    border:1px solid #d5dee2 !important;
+    border-radius:9px !important;
+    background:#fff !important;
+    color:var(--admin-text) !important;
+    font-family:inherit !important;
+    font-size:14px !important;
+    font-weight:500 !important;
+    line-height:44px !important;
+    outline:none !important;
+    cursor:pointer !important;
+}
+.admin-passwords-filter-select:hover{
+    border-color:#b9cbd0 !important;
+}
+.admin-passwords-filter-select:focus{
+    border-color:var(--admin-accent) !important;
+    box-shadow:0 0 0 3px rgba(21,150,163,.10) !important;
+}
+@media(max-width:700px){
+    .admin-passwords-filter-select{
+        width:100% !important;
+        height:46px !important;
+        min-height:46px !important;
+        font-size:14px !important;
+    }
+}
