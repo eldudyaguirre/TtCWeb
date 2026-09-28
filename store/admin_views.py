@@ -440,7 +440,6 @@ def admin_contrasenas(request):
     )
 
 
-@admin_required
 def _admin_conciliacion_cliente(cliente, anio=None):
     """Obtiene la conciliación mensual de ventas, compras y retenciones del cliente."""
     db_name = str(cliente.ruccedcli).strip()
