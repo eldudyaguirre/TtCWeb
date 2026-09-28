@@ -497,7 +497,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT EXTRACT(YEAR FROM (
                     CASE
                         WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}'
-                            THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY')
+                            THEN CASE WHEN SPLIT_PART(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') END
                         WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}'
                             THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD')
                         ELSE NULL
@@ -507,7 +507,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT EXTRACT(YEAR FROM (
                     CASE
                         WHEN TRIM(fecemi::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}'
-                            THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY')
+                            THEN CASE WHEN SPLIT_PART(TRIM(fecemi::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY') END
                         WHEN TRIM(fecemi::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}'
                             THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'YYYY-MM-DD')
                         ELSE NULL
@@ -535,7 +535,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT generate_series(1, 12) AS mes
             ),
             ventas_mes AS (
-                SELECT EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer AS mes,
+                SELECT EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN CASE WHEN SPLIT_PART(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') END WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer AS mes,
                        COALESCE(SUM(
                            COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
@@ -545,11 +545,11 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                        COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
                        COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
                 FROM ventas
-                WHERE EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer = %s
+                WHERE EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN CASE WHEN SPLIT_PART(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') END WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer = %s
                 GROUP BY 1
             ),
             compras_mes AS (
-                SELECT EXTRACT(MONTH FROM (CASE WHEN TRIM(fecemi::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY') WHEN TRIM(fecemi::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer AS mes,
+                SELECT EXTRACT(MONTH FROM (CASE WHEN TRIM(fecemi::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN CASE WHEN SPLIT_PART(TRIM(fecemi::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY') END WHEN TRIM(fecemi::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer AS mes,
                        COALESCE(SUM(
                            COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric +
@@ -567,7 +567,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                        ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM(tipcom::text) IN ('01', '02')
-                  AND EXTRACT(YEAR FROM (CASE WHEN TRIM(fecemi::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY') WHEN TRIM(fecemi::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer = %s
+                  AND EXTRACT(YEAR FROM (CASE WHEN TRIM(fecemi::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN CASE WHEN SPLIT_PART(TRIM(fecemi::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'MM/DD/YYYY') END WHEN TRIM(fecemi::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecemi::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer = %s
                 GROUP BY 1
             )
             SELECT m.mes,
