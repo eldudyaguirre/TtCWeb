@@ -122,14 +122,14 @@
         <h2>RÉGIMEN GENERAL</h2>
         <div class="admin-conciliacion-summary-row"><span>TOTAL VENTAS</span><strong>$ {{ conciliacion.totales.ventas|floatformat:2 }}</strong></div>
         <div class="admin-conciliacion-summary-row"><span>COMPRAS</span><strong>$ {{ conciliacion.totales.compras|floatformat:2 }}</strong></div>
-        <div class="admin-conciliacion-summary-row"><span>RESULTADO VENTAS - COMPRAS</span><strong>$ {{ conciliacion.totales.ventas|add:conciliacion.totales.compras|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>RESULTADO VENTAS - COMPRAS</span><strong>$ {{ conciliacion.totales.resultado|floatformat:2 }}</strong></div>
     </article>
     <article class="admin-card">
         <span class="admin-kicker">Retenciones del período</span>
         <h2>RETENCIONES</h2>
         <div class="admin-conciliacion-summary-row"><span>RETENCIONES RENTA</span><strong>$ {{ conciliacion.totales.retrenta|floatformat:2 }}</strong></div>
         <div class="admin-conciliacion-summary-row"><span>RETENCIONES IVA</span><strong>$ {{ conciliacion.totales.retiva|floatformat:2 }}</strong></div>
-        <div class="admin-conciliacion-summary-row"><span>TOTAL RETENCIONES</span><strong>$ {{ conciliacion.totales.retrenta|add:conciliacion.totales.retiva|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>TOTAL RETENCIONES</span><strong>$ {{ conciliacion.totales.retenciones|floatformat:2 }}</strong></div>
     </article>
 </section>
 
