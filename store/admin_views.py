@@ -539,8 +539,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                        COALESCE(SUM(
                            COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
-                           COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
-                           COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                           COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
                        ), 0) AS ventas,
                        COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
                        COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
@@ -559,7 +558,6 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                            COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric +
-                           COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric +
                            COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric +
                            COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric +
                            COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric +
