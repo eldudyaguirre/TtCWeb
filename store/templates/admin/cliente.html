@@ -179,13 +179,137 @@
 </section>
 
 <section class="admin-module-grid">
-    <a href="#" class="admin-module-card"><i class="fi fi-rr-database"></i><strong>Base de datos</strong><span>Consultar y gestionar información del cliente</span></a>
+    <button type="button" class="admin-module-card admin-datos-cliente-trigger" id="adminDatosClienteTrigger">
+    <i class="fi fi-rr-database"></i><strong>Base de datos</strong><span>Consultar y gestionar información del cliente</span>
+</button>
     <a href="{% url 'sri_anexos_admin' %}?ruc={{ cliente.ruccedcli }}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-users"></i><strong>Usuarios</strong><span>Activar, desactivar y gestionar accesos</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-wallet"></i><strong>Cobranza</strong><span>Consultar saldos y registrar pagos</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-document"></i><strong>Facturación</strong><span>Consultar información de comprobantes</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-settings"></i><strong>Configuración</strong><span>Parámetros y datos administrativos</span></a>
 </section>
+
+
+<div class="admin-modal" id="adminDatosClienteModal" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-admin-modal-close></div>
+    <div class="admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="adminDatosClienteTitle">
+        <div class="admin-modal-header">
+            <div>
+                <span class="admin-kicker">Información del cliente</span>
+                <h2 id="adminDatosClienteTitle">DATOS BÁSICOS</h2>
+            </div>
+            <button type="button" class="admin-modal-close" data-admin-modal-close aria-label="Cerrar">×</button>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="guardar_datos_cliente">
+
+            <div class="admin-modal-grid">
+                <div class="admin-modal-field">
+                    <label>RUC / C.I.</label>
+                    <input type="text" value="{{ cliente.ruccedcli }}" readonly>
+                </div>
+                <div class="admin-modal-field">
+                    <label>Nombre / Razón social</label>
+                    <input type="text" value="{{ cliente.nomclient }}" readonly>
+                </div>
+
+                <div class="admin-modal-field admin-modal-field-full">
+                    <label for="cliente-direccion">Dirección</label>
+                    <input id="cliente-direccion" name="dirclient" type="text" value="{{ cliente.dirclient|default:'' }}">
+                </div>
+
+                <div class="admin-modal-field">
+                    <label for="cliente-telefono">Teléfono</label>
+                    <input id="cliente-telefono" name="teldomcli" type="text" value="{{ cliente.teldomcli|default:'' }}">
+                </div>
+                <div class="admin-modal-field">
+                    <label for="cliente-celular">Celular</label>
+                    <input id="cliente-celular" name="telcelcli" type="text" value="{{ cliente.telcelcli|default:'' }}">
+                </div>
+
+                <div class="admin-modal-field">
+                    <label for="cliente-oficina">Teléfono oficina</label>
+                    <input id="cliente-oficina" name="teloficli" type="text" value="{{ cliente.teloficli|default:'' }}">
+                </div>
+                <div class="admin-modal-field">
+                    <label for="cliente-email">Email</label>
+                    <input id="cliente-email" name="corelectr" type="email" value="{{ cliente.corelectr|default:'' }}">
+                </div>
+
+                <div class="admin-modal-field admin-modal-field-full">
+                    <label for="cliente-actividad">Actividad económica</label>
+                    <input id="cliente-actividad" name="ocuclient" type="text" value="{{ cliente.ocuclient|default:'' }}">
+                </div>
+            </div>
+
+            <div class="admin-modal-actions">
+                <button type="submit" class="admin-modal-save">
+                    <i class="fi fi-rr-disk"></i> Guardar datos
+                </button>
+                <button type="button" class="admin-modal-sri">
+                    <i class="fi fi-rr-refresh"></i> Actualizar con el SRI
+                </button>
+            </div>
+            <p class="admin-modal-note">La actualización con el SRI se habilitará cuando conectemos la API del servidor.</p>
+        </form>
+    </div>
+</div>
+
+<style>
+.admin-datos-cliente-trigger{
+    width:100%;
+    border:1px solid var(--admin-border);
+    cursor:pointer;
+    text-align:left;
+    font-family:inherit;
+}
+.admin-datos-cliente-trigger:hover{border-color:#1596a3;box-shadow:0 8px 20px rgba(22,52,65,.06)}
+.admin-modal{display:none;position:fixed;inset:0;z-index:10000}
+.admin-modal.open{display:flex;align-items:center;justify-content:center;padding:20px}
+.admin-modal-backdrop{position:absolute;inset:0;background:rgba(20,35,44,.58);backdrop-filter:blur(2px)}
+.admin-modal-dialog{position:relative;width:min(720px,100%);max-height:90vh;overflow-y:auto;background:#fff;border:1px solid #dce5e8;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.admin-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:20px}
+.admin-modal-header h2{margin:4px 0 0;color:var(--admin-dark);font-size:24px}
+.admin-modal-close{width:36px;height:36px;border:0;border-radius:50%;background:#f1f5f6;color:#263842;font-size:25px;line-height:1;cursor:pointer}
+.admin-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.admin-modal-field{display:flex;flex-direction:column;gap:6px}
+.admin-modal-field-full{grid-column:1/-1}
+.admin-modal-field label{font-size:11px;font-weight:800;text-transform:uppercase;color:#66747d}
+.admin-modal-field input{width:100%;box-sizing:border-box;height:42px;border:1px solid #d5dee2;border-radius:8px;padding:0 12px;background:#fff;color:#21333e;font-family:inherit;font-size:13px;outline:none}
+.admin-modal-field input:focus{border-color:#1596a3;box-shadow:0 0 0 3px rgba(21,150,163,.1)}
+.admin-modal-field input[readonly]{background:#f3f6f7;color:#6d777d;cursor:not-allowed}
+.admin-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.admin-modal-save,.admin-modal-sri{height:42px;border-radius:8px;padding:0 16px;border:1px solid #1596a3;font-family:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.admin-modal-save{background:#1596a3;color:#fff}
+.admin-modal-sri{background:#fff;color:#1596a3}
+.admin-modal-sri:disabled{opacity:.7}
+.admin-modal-note{margin:10px 0 0;color:#7b878d;font-size:11px;text-align:right}
+@media(max-width:700px){
+    .admin-modal.open{padding:12px}
+    .admin-modal-dialog{padding:18px;border-radius:14px;max-height:92vh}
+    .admin-modal-grid{grid-template-columns:1fr;gap:12px}
+    .admin-modal-field-full{grid-column:auto}
+    .admin-modal-header h2{font-size:21px}
+    .admin-modal-actions{flex-direction:column}
+    .admin-modal-save,.admin-modal-sri{width:100%;justify-content:center}
+    .admin-modal-note{text-align:center}
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const modal=document.getElementById('adminDatosClienteModal');
+    const trigger=document.getElementById('adminDatosClienteTrigger');
+    if(!modal || !trigger) return;
+    const close=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';};
+    const open=()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';};
+    trigger.addEventListener('click',open);
+    modal.querySelectorAll('[data-admin-modal-close]').forEach(el=>el.addEventListener('click',close));
+    document.addEventListener('keydown',function(e){if(e.key==='Escape' && modal.classList.contains('open')) close();});
+});
+</script>
 
 <section class="admin-card">
     <div class="admin-card-header">
