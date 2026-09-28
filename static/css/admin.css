@@ -2177,3 +2177,14 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         margin-top:12px !important;
     }
 }
+
+
+/* Más separación entre ADMINISTRACIÓN e Inicio */
+.admin-label + .admin-nav{
+    margin-top:22px !important;
+}
+@media(max-width:700px){
+    .admin-label + .admin-nav{
+        margin-top:22px !important;
+    }
+}
