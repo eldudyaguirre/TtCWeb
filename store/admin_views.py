@@ -554,8 +554,23 @@ def admin_cliente(request, ruc):
 
     db_name = str(cliente.ruccedcli).strip()
     db_status = 'No verificada'
-    conciliacion = {'anio': 0, 'anios': [], 'meses': [], 'totales': {'ventas': 0, 'compras': 0, 'retrenta': 0, 'retiva': 0}}
+    db_error = ''
+    conciliacion = {
+        'anio': 0,
+        'anios': [],
+        'meses': [],
+        'totales': {
+            'ventas': 0,
+            'compras': 0,
+            'retrenta': 0,
+            'retiva': 0,
+            'resultado': 0,
+            'retenciones': 0,
+        },
+    }
 
+    # La conexión y la consulta de conciliación se manejan por separado.
+    # Un error en una consulta no debe hacer aparecer la base como desconectada.
     try:
         alias = f'cliente_{db_name}'
         if alias not in connections.databases:
@@ -565,9 +580,15 @@ def admin_cliente(request, ruc):
         client_connection = connections[alias]
         client_connection.ensure_connection()
         db_status = 'Conectada'
-        conciliacion = _admin_conciliacion_cliente(cliente, request.GET.get('anio'))
-    except Exception:
+    except Exception as exc:
         db_status = 'No disponible'
+        db_error = str(exc)
+
+    if db_status == 'Conectada':
+        try:
+            conciliacion = _admin_conciliacion_cliente(cliente, request.GET.get('anio'))
+        except Exception as exc:
+            db_error = f'Error consultando datos: {exc}'
 
     return render(
         request,
@@ -577,6 +598,7 @@ def admin_cliente(request, ruc):
             'usuarios': usuarios,
             'db_name': db_name,
             'db_status': db_status,
+            'db_error': db_error,
             'conciliacion': conciliacion,
         },
     )
