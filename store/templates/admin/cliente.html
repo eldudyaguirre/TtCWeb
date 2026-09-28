@@ -63,6 +63,46 @@
  .admin-conciliacion-year{justify-content:space-between}
  .admin-conciliacion-year select{flex:1}
  .admin-conciliacion-summary{grid-template-columns:1fr}
+
+ /* La conciliación se adapta al ancho del teléfono sin scroll horizontal */
+ .admin-conciliacion-wrap{overflow-x:visible;width:100%}
+ .admin-conciliacion-table{
+     width:100%;
+     min-width:0;
+     table-layout:fixed;
+ }
+ .admin-conciliacion-table th,
+ .admin-conciliacion-table td{
+     padding:7px 4px;
+     font-size:10px;
+ }
+ .admin-conciliacion-table th{
+     font-size:9px;
+     line-height:1.15;
+     padding:9px 3px;
+ }
+ .admin-conciliacion-table th:first-child,
+ .admin-conciliacion-table td:first-child{
+     width:19%;
+ }
+ .admin-conciliacion-table th:not(:first-child),
+ .admin-conciliacion-table td:not(:first-child){
+     width:20.25%;
+ }
+ .admin-conciliacion-table td:first-child{
+     white-space:nowrap;
+     font-size:10px;
+ }
+ .admin-conciliacion-table td:not(:first-child){
+     white-space:nowrap;
+ }
+ .admin-conciliacion-table .money:before{
+     float:none;
+     margin-right:2px;
+ }
+ .admin-conciliacion-table tfoot td:not(:first-child){
+     font-size:10px;
+ }
 }
 </style>
 
