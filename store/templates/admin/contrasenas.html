@@ -137,6 +137,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const term = searchInput.value.trim().toLowerCase();
 
+        if (term) {
+            // Al buscar, se muestran TODOS los paneles para que la búsqueda
+            // sea realmente global sobre todos los clientes activos.
+            panels.forEach(function (panel) {
+                panel.classList.add('active');
+            });
+        } else {
+            // Sin búsqueda se mantiene el funcionamiento normal por pestañas.
+            const activeTab = document.querySelector('[data-passwords-tab].active');
+            const diaActivo = activeTab
+                ? activeTab.getAttribute('data-passwords-tab')
+                : null;
+
+            panels.forEach(function (panel) {
+                panel.classList.toggle(
+                    'active',
+                    panel.getAttribute('data-passwords-panel') === diaActivo
+                );
+            });
+        }
+
         document.querySelectorAll('[data-passwords-row]').forEach(function (row) {
             const text = (row.getAttribute('data-search-text') || '').toLowerCase();
             row.style.display = !term || text.includes(term) ? '' : 'none';
@@ -153,14 +174,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 item.setAttribute('aria-selected', active ? 'true' : 'false');
             });
 
+            if (searchInput && searchInput.value.trim()) {
+                filterAllRows();
+                return;
+            }
+
             panels.forEach(function (panel) {
                 panel.classList.toggle(
                     'active',
                     panel.getAttribute('data-passwords-panel') === dia
                 );
             });
-
-            filterAllRows();
         });
     });
 
