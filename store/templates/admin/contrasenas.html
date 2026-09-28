@@ -35,32 +35,32 @@
 
     <section class="admin-card admin-passwords-card">
         <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
-            {% for dia in dias_declaracion %}
+            {% for pestana in pestanas %}
                 <button
                     type="button"
                     class="admin-passwords-tab{% if forloop.first %} active{% endif %}"
-                    data-passwords-tab="{{ dia }}"
+                    data-passwords-tab="{{ pestana.dia }}"
                     role="tab"
                     aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
                 >
-                    {{ dia }}
-                    <span>{{ clientes_por_dia|get_item:dia|length }}</span>
+                    {{ pestana.dia }}
+                    <span>{{ pestana.clientes|length }}</span>
                 </button>
             {% endfor %}
         </div>
 
-        {% for dia in dias_declaracion %}
+        {% for pestana in pestanas %}
             <div
                 class="admin-passwords-panel{% if forloop.first %} active{% endif %}"
-                data-passwords-panel="{{ dia }}"
+                data-passwords-panel="{{ pestana.dia }}"
                 role="tabpanel"
             >
                 <div class="admin-passwords-panel-head">
                     <div>
                         <span class="admin-kicker">Día de declaración</span>
-                        <h2>Clientes del {{ dia }}</h2>
+                        <h2>Clientes del {{ pestana.dia }}</h2>
                     </div>
-                    <span class="admin-passwords-count">{{ clientes_por_dia|get_item:dia|length }} clientes</span>
+                    <span class="admin-passwords-count">{{ pestana.clientes|length }} clientes</span>
                 </div>
 
                 <div class="admin-table-wrap admin-passwords-table-wrap">
@@ -81,7 +81,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for cliente in clientes_por_dia|get_item:dia %}
+                            {% for cliente in pestana.clientes %}
                                 <tr>
                                     <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
                                     <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
@@ -113,9 +113,9 @@
                                 <tr>
                                     <td colspan="11" class="admin-empty">
                                         {% if query %}
-                                            No se encontraron clientes del día {{ dia }} para "{{ query }}".
+                                            No se encontraron clientes del día {{ pestana.dia }} para "{{ query }}".
                                         {% else %}
-                                            No existen clientes activos con día de declaración {{ dia }}.
+                                            No existen clientes activos con día de declaración {{ pestana.dia }}.
                                         {% endif %}
                                     </td>
                                 </tr>
