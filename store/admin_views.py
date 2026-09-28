@@ -376,20 +376,31 @@ def admin_contrasenas_toggle_activo(request, ruc):
 def admin_clientes(request):
     query = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
+    dia = request.GET.get('dia', 'todos').strip() or 'todos'
+    tipdec = request.GET.get('tipdec', '').strip()
 
     clientes = Cliente.objects.all().order_by('nomclient')
 
     if query:
+        from django.db.models import Q
         clientes = clientes.filter(
-            nomclient__icontains=query
-        ) | clientes.filter(
-            ruccedcli__icontains=query
+            Q(nomclient__icontains=query) |
+            Q(ruccedcli__icontains=query)
         )
 
     if estado == 'activos':
         clientes = clientes.filter(activo=True)
     elif estado == 'inactivos':
         clientes = clientes.filter(activo=False)
+
+    if dia != 'todos':
+        clientes = clientes.filter(diadeclaracion=dia)
+
+    if tipdec:
+        clientes = clientes.filter(tipdec__iexact=tipdec)
+
+    dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
+    tipos_dec = ('MENSUAL', 'SEMESTRAL', 'ANUAL')
 
     return render(
         request,
@@ -398,6 +409,10 @@ def admin_clientes(request):
             'clientes': clientes,
             'query': query,
             'estado': estado,
+            'dia': dia,
+            'tipdec': tipdec,
+            'dias': dias,
+            'tipos_dec': tipos_dec,
         },
     )
 
