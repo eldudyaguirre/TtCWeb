@@ -2455,3 +2455,32 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         width:82px;
     }
 }
+
+
+/* ===== COMBO TIPDEC - POPUP EDITAR CONTRASEÑAS ===== */
+.admin-passwords-edit-field #editTipDec{
+    width:100% !important;
+    height:44px !important;
+    min-height:44px !important;
+    box-sizing:border-box !important;
+    padding:0 38px 0 12px !important;
+    border:1px solid #d6e0e3 !important;
+    border-radius:9px !important;
+    background:#fff !important;
+    color:#314953 !important;
+    font-family:inherit !important;
+    font-size:13px !important;
+    font-weight:500 !important;
+    line-height:44px !important;
+    outline:none !important;
+    cursor:pointer !important;
+    appearance:auto !important;
+    -webkit-appearance:auto !important;
+}
+.admin-passwords-edit-field #editTipDec:hover{
+    border-color:#b9cbd0 !important;
+}
+.admin-passwords-edit-field #editTipDec:focus{
+    border-color:var(--admin-accent) !important;
+    box-shadow:0 0 0 3px rgba(21,150,163,.10) !important;
+}
