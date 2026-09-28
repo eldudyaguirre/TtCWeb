@@ -44,7 +44,6 @@
                     aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
                 >
                     {{ pestana.dia }}
-                    <span>{{ pestana.clientes|length }}</span>
                 </button>
             {% endfor %}
         </div>
@@ -60,7 +59,6 @@
                         <span class="admin-kicker">Día de declaración</span>
                         <h2>Clientes del {{ pestana.dia }}</h2>
                     </div>
-                    <span class="admin-passwords-count">{{ pestana.clientes|length }} clientes</span>
                 </div>
 
                 <div class="admin-table-wrap admin-passwords-table-wrap">
@@ -82,7 +80,7 @@
                         </thead>
                         <tbody>
                             {% for cliente in pestana.clientes %}
-                                <tr>
+                                <tr data-passwords-row data-search-text="{{ cliente.ruccedcli }} {{ cliente.nomclient }}">
                                     <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
                                     <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
                                     <td>{{ cliente.semensual|default:"—" }}</td>
@@ -113,7 +111,7 @@
                                 <tr>
                                     <td colspan="11" class="admin-empty">
                                         {% if query %}
-                                            No se encontraron clientes del día {{ pestana.dia }} para "{{ query }}".
+                                            No se encontraron clientes activos para "{{ query }}".
                                         {% else %}
                                             No existen clientes activos con día de declaración {{ pestana.dia }}.
                                         {% endif %}
@@ -132,6 +130,18 @@
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('[data-passwords-tab]');
     const panels = document.querySelectorAll('[data-passwords-panel]');
+    const searchInput = document.querySelector('.admin-passwords-search-box input');
+
+    function filterAllRows() {
+        if (!searchInput) return;
+
+        const term = searchInput.value.trim().toLowerCase();
+
+        document.querySelectorAll('[data-passwords-row]').forEach(function (row) {
+            const text = (row.getAttribute('data-search-text') || '').toLowerCase();
+            row.style.display = !term || text.includes(term) ? '' : 'none';
+        });
+    }
 
     tabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
@@ -149,8 +159,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     panel.getAttribute('data-passwords-panel') === dia
                 );
             });
+
+            filterAllRows();
         });
     });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterAllRows);
+    }
 
     document.querySelectorAll('.admin-passwords-action-button').forEach(function (button) {
         button.addEventListener('click', function (event) {
@@ -179,6 +195,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
         });
     });
+
+    filterAllRows();
 });
 </script>
 {% endblock %}
