@@ -1398,6 +1398,8 @@ def _roles_pago_datos(request):
 @admin_required
 def sri_anexos_admin(request):
     clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
+    ruc_retorno = request.GET.get('ruc', '').strip()
+    cliente_retorno = clientes.filter(pk=ruc_retorno).first() if ruc_retorno else None
 
     tipos = [
         ('ats', 'Anexo Transaccional Simplificado'),
@@ -1468,6 +1470,7 @@ def sri_anexos_admin(request):
 
     return render(request, 'admin-sri-anexos.html', {
         'clientes': clientes,
+        'cliente_retorno': cliente_retorno,
         'tipos_anexos': tipos,
         'meses': meses,
         'anio_actual': datetime.now().year,
