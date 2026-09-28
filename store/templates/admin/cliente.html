@@ -21,6 +21,11 @@
         <div class="admin-db-status {% if db_status == 'Conectada' %}online{% endif %}">
             <span></span>{{ db_status }}
         </div>
+        {% if db_error %}
+        <div style="margin-top:10px;font-size:11px;line-height:1.4;color:#b23b3b;">
+            {{ db_error }}
+        </div>
+        {% endif %}
     </article>
 
     <article class="admin-card">
