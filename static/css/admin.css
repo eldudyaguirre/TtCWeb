@@ -2427,3 +2427,31 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     border-color:var(--admin-accent);
     box-shadow:0 0 0 3px rgba(21,150,163,.10);
 }
+
+
+/* ===== CONTRASEÑAS: acceso permanente a ACCIONES en escritorio ===== */
+@media(min-width:701px){
+    .admin-passwords-table-wrap{
+        overflow-x:auto;
+        overflow-y:visible;
+        scrollbar-width:auto;
+    }
+
+    .admin-passwords-table th:last-child,
+    .admin-passwords-table td:last-child{
+        position:sticky;
+        right:0;
+        z-index:4;
+        background:#fff;
+        box-shadow:-5px 0 10px rgba(31,45,52,.06);
+    }
+
+    .admin-passwords-table th:last-child{
+        z-index:5;
+    }
+
+    .admin-passwords-actions-cell{
+        min-width:82px;
+        width:82px;
+    }
+}
