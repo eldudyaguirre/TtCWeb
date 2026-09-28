@@ -245,7 +245,6 @@ def admin_foto_usuario(request):
         raise Http404
 
 
-@admin_required
 def _admin_dashboard_saldos():
     """Obtiene los saldos globales que se muestran en el panel administrativo."""
     cuentas_por_cobrar = Cliente.objects.aggregate(total=__import__('django.db.models', fromlist=['Sum']).Sum('salcuenta'))['total'] or 0
