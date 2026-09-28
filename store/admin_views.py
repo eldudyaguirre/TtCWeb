@@ -539,6 +539,8 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         })
 
     totales = {campo: sum((m[campo] for m in meses), 0) for campo in ('ventas','compras','retrenta','retiva')}
+    totales['resultado'] = totales['ventas'] - totales['compras']
+    totales['retenciones'] = totales['retrenta'] + totales['retiva']
     return {'anio': anio, 'anios': anios, 'meses': meses, 'totales': totales}
 
 
