@@ -1894,3 +1894,244 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         min-width:1320px;
     }
 }
+
+
+/* ===== POPUP Y ACCIONES - MÓDULO CONTRASEÑAS ===== */
+.admin-passwords-action-menu{
+    min-width:205px;
+    padding:6px;
+}
+.admin-passwords-action-item{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:9px 10px;
+    border:0;
+    border-radius:7px;
+    background:transparent;
+    text-decoration:none;
+    font:inherit;
+    font-size:12px;
+    font-weight:700;
+    text-align:left;
+    cursor:pointer;
+}
+.admin-passwords-action-item:hover{
+    background:#f5f8f9;
+}
+.admin-passwords-action-item i{
+    font-size:13px;
+}
+.admin-passwords-action-danger{
+    color:#d33b3b;
+}
+.admin-passwords-action-danger:hover{
+    color:#c32626;
+    background:#fff4f4;
+}
+.admin-passwords-action-success{
+    color:#22945a;
+}
+.admin-passwords-action-success:hover{
+    color:#167747;
+    background:#effaf4;
+}
+.admin-passwords-modal{
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    display:none;
+}
+.admin-passwords-modal.open{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.admin-passwords-modal-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(19,31,38,.58);
+    backdrop-filter:blur(2px);
+}
+.admin-passwords-modal-dialog{
+    position:relative;
+    z-index:1;
+    width:min(900px, calc(100vw - 32px));
+    max-height:calc(100vh - 40px);
+    overflow:auto;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 24px 70px rgba(15,28,35,.28);
+}
+.admin-passwords-modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    padding:24px 26px 18px;
+    border-bottom:1px solid var(--admin-border);
+}
+.admin-passwords-modal-header h2{
+    margin:5px 0 4px;
+    color:var(--admin-dark);
+    font-size:22px;
+}
+.admin-passwords-modal-header p{
+    margin:0;
+    color:var(--admin-muted);
+    font-size:13px;
+}
+.admin-passwords-modal-close{
+    width:38px;
+    height:38px;
+    flex:0 0 38px;
+    border:1px solid #dce4e7;
+    border-radius:9px;
+    background:#fff;
+    color:#687982;
+    cursor:pointer;
+    font-size:18px;
+}
+.admin-passwords-modal-close:hover{
+    color:#d33b3b;
+    border-color:#efb8b8;
+    background:#fff6f6;
+}
+#passwordEditForm{
+    padding:22px 26px 24px;
+}
+.admin-passwords-modal-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:16px;
+}
+.admin-passwords-readonly,
+.admin-passwords-edit-field{
+    min-width:0;
+}
+.admin-passwords-readonly label,
+.admin-passwords-edit-field label{
+    display:block;
+    margin-bottom:6px;
+    color:#536872;
+    font-size:12px;
+    font-weight:800;
+}
+.admin-passwords-readonly input,
+.admin-passwords-edit-field input{
+    width:100%;
+    height:44px;
+    padding:0 12px;
+    border:1px solid #d6e0e3;
+    border-radius:9px;
+    box-sizing:border-box;
+    color:#314953;
+    background:#fff;
+    outline:none;
+    font-size:13px;
+}
+.admin-passwords-readonly input{
+    background:#f4f7f8;
+    color:#687982;
+}
+.admin-passwords-edit-field input:focus{
+    border-color:#79bdc5;
+    box-shadow:0 0 0 3px rgba(21,150,163,.10);
+}
+.admin-passwords-modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid var(--admin-border);
+}
+.admin-password-print-button{
+    min-height:46px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border:1px solid #d6e0e3;
+    border-radius:9px;
+    background:#fff;
+    color:#526771;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+}
+.admin-password-print-button:hover{
+    background:#f5f8f9;
+    color:var(--admin-accent);
+}
+.password-modal-open{
+    overflow:hidden;
+}
+@media(max-width:700px){
+    .admin-passwords-modal-dialog{
+        width:calc(100vw - 20px);
+        max-height:calc(100vh - 20px);
+        border-radius:15px;
+    }
+    .admin-passwords-modal-header{
+        padding:20px 18px 15px;
+    }
+    #passwordEditForm{
+        padding:18px;
+    }
+    .admin-passwords-modal-grid{
+        grid-template-columns:1fr;
+        gap:13px;
+    }
+    .admin-passwords-modal-actions{
+        flex-wrap:wrap;
+    }
+    .admin-passwords-modal-actions button{
+        flex:1;
+        min-width:120px;
+    }
+}
+
+/* Impresión: solamente el contenido de edición de contraseñas. */
+@media print{
+    body *{
+        visibility:hidden !important;
+    }
+    #passwordEditModal,
+    #passwordEditModal *{
+        visibility:visible !important;
+    }
+    #passwordEditModal{
+        position:absolute !important;
+        inset:0 !important;
+        display:block !important;
+        background:#fff !important;
+    }
+    .admin-passwords-modal-backdrop,
+    .admin-passwords-modal-close,
+    .admin-passwords-modal-actions{
+        display:none !important;
+    }
+    .admin-passwords-modal-dialog{
+        width:100% !important;
+        max-height:none !important;
+        overflow:visible !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+    }
+    .admin-passwords-modal-header{
+        padding:0 0 15px !important;
+    }
+    #passwordEditForm{
+        padding:20px 0 !important;
+    }
+    .admin-passwords-readonly input,
+    .admin-passwords-edit-field input{
+        border:1px solid #999 !important;
+        background:#fff !important;
+        color:#111 !important;
+    }
+}
