@@ -22,48 +22,49 @@
                 </a>
             {% endif %}
         </div>
+
+        <select name="tipdec" class="admin-passwords-filter-select">
+            <option value="">Todos los tipos</option>
+            {% for tipo in tipos_dec %}
+                <option value="{{ tipo }}" {% if tipdec == tipo %}selected{% endif %}>{{ tipo }}</option>
+            {% endfor %}
+        </select>
+
         <button type="submit" class="admin-primary-button">
             <i class="fi fi-rr-search"></i> Buscar
         </button>
     </form>
 
     <section class="admin-card admin-passwords-card">
-        {% if query %}
-            <div class="admin-passwords-panel active">
-                <div class="admin-passwords-panel-head">
-                    <div>
-                        <span class="admin-kicker">Búsqueda global</span>
-                        <h2>Resultados para "{{ query }}"</h2>
-                    </div>
-                </div>
-                {% include "admin/_contrasenas_tabla.html" with clientes=clientes_busqueda %}
-            </div>
-        {% else %}
-            <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
-                {% for pestana in pestanas %}
-                    <button type="button"
-                            class="admin-passwords-tab{% if forloop.first %} active{% endif %}"
-                            data-passwords-tab="{{ pestana.dia }}"
-                            role="tab"
-                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-                        {{ pestana.dia }}
-                    </button>
-                {% endfor %}
-            </div>
-
-            {% for pestana in pestanas %}
-                <div class="admin-passwords-panel{% if forloop.first %} active{% endif %}"
-                     data-passwords-panel="{{ pestana.dia }}" role="tabpanel">
-                    <div class="admin-passwords-panel-head">
-                        <div>
-                            <span class="admin-kicker">Día de declaración</span>
-                            <h2>Clientes del {{ pestana.dia }}</h2>
-                        </div>
-                    </div>
-                    {% include "admin/_contrasenas_tabla.html" with clientes=pestana.clientes dia=pestana.dia %}
-                </div>
+        <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
+            <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}{% if tipdec %}tipdec={{ tipdec|urlencode }}{% endif %}"
+               class="admin-passwords-tab{% if dia == 'todos' %} active{% endif %}">TODOS</a>
+            {% for dia_item in dias %}
+                <a href="?dia={{ dia_item }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if tipdec %}&tipdec={{ tipdec|urlencode }}{% endif %}"
+                   class="admin-passwords-tab{% if dia == dia_item|stringformat:'s' %} active{% endif %}">
+                    {{ dia_item }}
+                </a>
             {% endfor %}
-        {% endif %}
+        </div>
+
+        <div class="admin-passwords-panel active">
+            <div class="admin-passwords-panel-head">
+                <div>
+                    <span class="admin-kicker">
+                        {% if dia == 'todos' %}Todos los días de declaración{% else %}Día de declaración{% endif %}
+                    </span>
+                    <h2>
+                        {% if dia == 'todos' %}
+                            Todos los clientes
+                        {% else %}
+                            Clientes del {{ dia }}
+                        {% endif %}
+                        {% if tipdec %} · {{ tipdec }}{% endif %}
+                    </h2>
+                </div>
+            </div>
+            {% include "admin/_contrasenas_tabla.html" with clientes=clientes dia=dia %}
+        </div>
     </section>
 </div>
 
