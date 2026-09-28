@@ -2188,3 +2188,121 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         margin-top:22px !important;
     }
 }
+
+
+/* ===== TABLA DE CLIENTES - RESPONSIVE ===== */
+.admin-clientes-table td:nth-child(1){
+    white-space:nowrap;
+}
+.admin-clientes-table td:nth-child(2){
+    min-width:220px;
+}
+.admin-clientes-table td:nth-child(3){
+    white-space:nowrap;
+}
+.admin-clientes-table td:nth-child(6){
+    white-space:nowrap;
+}
+
+@media(max-width:700px){
+    .admin-clientes-table{
+        min-width:0 !important;
+        width:100% !important;
+        table-layout:fixed;
+    }
+
+    .admin-clientes-table th,
+    .admin-clientes-table td{
+        box-sizing:border-box;
+    }
+
+    /* En móvil dejamos únicamente RUC, cliente y gestionar.
+       Correo, estado y saldo se mantienen en la ficha del cliente. */
+    .admin-clientes-table th:nth-child(3),
+    .admin-clientes-table td:nth-child(3),
+    .admin-clientes-table th:nth-child(4),
+    .admin-clientes-table td:nth-child(4),
+    .admin-clientes-table th:nth-child(5),
+    .admin-clientes-table td:nth-child(5){
+        display:none;
+    }
+
+    .admin-clientes-table th:nth-child(1),
+    .admin-clientes-table td:nth-child(1){
+        width:31%;
+    }
+
+    .admin-clientes-table th:nth-child(2),
+    .admin-clientes-table td:nth-child(2){
+        width:auto;
+        min-width:0;
+    }
+
+    .admin-clientes-table th:nth-child(6),
+    .admin-clientes-table td:nth-child(6){
+        width:86px;
+        text-align:center;
+    }
+
+    .admin-clientes-table td{
+        padding:13px 7px;
+        vertical-align:middle;
+        overflow-wrap:anywhere;
+    }
+
+    .admin-clientes-table td:nth-child(1){
+        font-size:11px;
+        letter-spacing:-.15px;
+    }
+
+    .admin-clientes-table td:nth-child(2){
+        white-space:normal;
+        line-height:1.3;
+    }
+
+    .admin-clientes-table td:nth-child(2) strong{
+        display:block;
+        font-size:12px;
+        overflow-wrap:anywhere;
+    }
+
+    .admin-clientes-table .admin-table-action{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:34px;
+        padding:7px 8px;
+        border:1px solid #d5e4e7;
+        border-radius:8px;
+        background:#f7fbfb;
+        font-size:11px;
+        line-height:1.1;
+        white-space:nowrap;
+    }
+
+    .admin-clientes-table .admin-empty{
+        display:table-cell !important;
+    }
+}
+
+@media(max-width:380px){
+    .admin-clientes-table th:nth-child(1),
+    .admin-clientes-table td:nth-child(1){
+        width:34%;
+    }
+
+    .admin-clientes-table th:nth-child(6),
+    .admin-clientes-table td:nth-child(6){
+        width:78px;
+    }
+
+    .admin-clientes-table td{
+        padding-left:5px;
+        padding-right:5px;
+    }
+
+    .admin-clientes-table .admin-table-action{
+        padding:6px 5px;
+        font-size:10px;
+    }
+}
