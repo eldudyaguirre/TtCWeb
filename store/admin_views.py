@@ -421,6 +421,8 @@ def admin_clientes(request):
 def admin_contrasenas(request):
     """Listado administrativo de clientes activos y sus credenciales tributarias/laborales."""
     query = request.GET.get('q', '').strip()
+    dia = request.GET.get('dia', 'todos').strip() or 'todos'
+    tipdec = request.GET.get('tipdec', '').strip()
 
     clientes_qs = Cliente.objects.filter(activo=True)
 
@@ -431,24 +433,35 @@ def admin_contrasenas(request):
             Q(ruccedcli__icontains=query)
         )
 
+    if dia != 'todos':
+        clientes_qs = clientes_qs.filter(diadeclaracion=str(dia))
+
+    if tipdec:
+        clientes_qs = clientes_qs.filter(semensual__iexact=tipdec)
+
     clientes_qs = clientes_qs.order_by('nomclient')
 
     dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
-    pestanas = [
-        {
-            'dia': dia,
-            'clientes': clientes_qs.filter(diadeclaracion=str(dia)),
-        }
-        for dia in dias
-    ]
+    tipos_dec = ('MENSUAL', 'SEMESTRAL', 'ANUAL')
 
     return render(
         request,
         'admin/contrasenas.html',
         {
-            'pestanas': pestanas,
+            'clientes': clientes_qs,
+            'pestanas': [
+                {
+                    'dia': dia_item,
+                    'clientes': clientes_qs.filter(diadeclaracion=str(dia_item)),
+                }
+                for dia_item in dias
+            ],
             'clientes_busqueda': clientes_qs if query else Cliente.objects.none(),
             'query': query,
+            'dia': dia,
+            'tipdec': tipdec,
+            'dias': dias,
+            'tipos_dec': tipos_dec,
             'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
         },
