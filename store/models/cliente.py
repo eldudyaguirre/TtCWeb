@@ -9,7 +9,7 @@ class Cliente(models.Model):
 
     ruccedcli = models.CharField(max_length=255, primary_key=True, db_column='ruccedcli')
     nomclient = models.CharField(max_length=255, blank=True, db_column='nomclient')
-    diadeclaracion = models.IntegerField(null=True, blank=True, db_column='diadeclaracion')
+    diadeclaracion = models.CharField(max_length=10, blank=True, db_column='diadeclaracion')
     semensual = models.CharField(max_length=255, blank=True, db_column='semensual')
     dirclient = models.CharField(max_length=255, blank=True, db_column='dirclient')
     ocuclient = models.CharField(max_length=255, blank=True, db_column='ocuclient')
