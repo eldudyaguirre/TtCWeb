@@ -441,6 +441,107 @@ def admin_contrasenas(request):
 
 
 @admin_required
+def _admin_conciliacion_cliente(cliente, anio=None):
+    """Obtiene la conciliación mensual de ventas, compras y retenciones del cliente."""
+    db_name = str(cliente.ruccedcli).strip()
+    alias = f'cliente_{db_name}'
+    if alias not in connections.databases:
+        base = settings.DATABASES['default'].copy()
+        base['NAME'] = db_name
+        connections.databases[alias] = base
+
+    db = connections[alias]
+
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT anio FROM (
+                SELECT EXTRACT(YEAR FROM fecfactur)::integer AS anio FROM ventas
+                UNION
+                SELECT EXTRACT(YEAR FROM fecemi)::integer AS anio FROM comprasnue
+            ) periodos
+            WHERE anio IS NOT NULL
+            ORDER BY anio DESC
+        """)
+        anios = [int(row[0]) for row in cursor.fetchall()]
+
+    if not anios:
+        return {'anio': anio or 0, 'anios': [], 'meses': [], 'totales': {'ventas': 0, 'compras': 0, 'retrenta': 0, 'retiva': 0}}
+
+    try:
+        anio = int(anio)
+    except (TypeError, ValueError):
+        anio = anios[0]
+    if anio not in anios:
+        anio = anios[0]
+
+    with db.cursor() as cursor:
+        cursor.execute("""
+            WITH meses AS (
+                SELECT generate_series(1, 12) AS mes
+            ),
+            ventas_mes AS (
+                SELECT EXTRACT(MONTH FROM fecfactur)::integer AS mes,
+                       COALESCE(SUM(
+                           COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                       ), 0) AS ventas,
+                       COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
+                       COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
+                FROM ventas
+                WHERE EXTRACT(YEAR FROM fecfactur)::integer = %s
+                GROUP BY 1
+            ),
+            compras_mes AS (
+                SELECT EXTRACT(MONTH FROM fecemi)::integer AS mes,
+                       COALESCE(SUM(
+                           COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric +
+                           COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                       ), 0) AS compras
+                FROM comprasnue
+                WHERE TRIM(tipcom::text) IN ('01', '02')
+                  AND EXTRACT(YEAR FROM fecemi)::integer = %s
+                GROUP BY 1
+            )
+            SELECT m.mes,
+                   COALESCE(v.ventas, 0),
+                   COALESCE(c.compras, 0),
+                   COALESCE(v.retrenta, 0),
+                   COALESCE(v.retiva, 0)
+            FROM meses m
+            LEFT JOIN ventas_mes v ON v.mes = m.mes
+            LEFT JOIN compras_mes c ON c.mes = m.mes
+            ORDER BY m.mes
+        """, [anio, anio])
+        rows = cursor.fetchall()
+
+    nombres = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE']
+    meses = []
+    for mes, ventas, compras, retrenta, retiva in rows:
+        meses.append({
+            'nombre': nombres[int(mes) - 1],
+            'ventas': ventas or 0,
+            'compras': compras or 0,
+            'retrenta': retrenta or 0,
+            'retiva': retiva or 0,
+        })
+
+    totales = {campo: sum((m[campo] for m in meses), 0) for campo in ('ventas','compras','retrenta','retiva')}
+    return {'anio': anio, 'anios': anios, 'meses': meses, 'totales': totales}
+
+
 def admin_cliente(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     usuarios = (
