@@ -33,7 +33,7 @@
             <div class="admin-anexos-header">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
                     <div class="portal-kicker">Administración</div>
-                    <a href="{% url 'admin_dashboard' %}" class="admin-anexos-back">
+                    <a href="{% if cliente_retorno %}{% url 'admin_cliente' cliente_retorno.ruccedcli %}#conciliacion{% else %}{% url 'admin_dashboard' %}{% endif %}" class="admin-anexos-back">
                         <i class="fi fi-rr-arrow-left"></i>
                         Volver al administrador
                     </a>
@@ -57,7 +57,7 @@
                         <select id="admin-cliente" name="cliente" required>
                             <option value="">Seleccionar cliente...</option>
                             {% for cliente in clientes %}
-                            <option value="{{ cliente.pk }}">{{ cliente.nomclient }} — {{ cliente.ruccedcli }}</option>
+                            <option value="{{ cliente.pk }}" {% if cliente_retorno and cliente.pk == cliente_retorno.pk %}selected{% endif %}>{{ cliente.nomclient }} — {{ cliente.ruccedcli }}</option>
                             {% endfor %}
                         </select>
                     </div>
