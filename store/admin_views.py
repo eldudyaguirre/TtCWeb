@@ -247,41 +247,28 @@ def admin_foto_usuario(request):
 
 def _admin_dashboard_saldos():
     """Obtiene los saldos globales que se muestran en el panel administrativo."""
-    cuentas_por_cobrar = Cliente.objects.aggregate(total=__import__('django.db.models', fromlist=['Sum']).Sum('salcuenta'))['total'] or 0
+    cuentas_por_cobrar = (
+        Cliente.objects.aggregate(
+            total=__import__('django.db.models', fromlist=['Sum']).Sum('salcuenta')
+        )['total'] or 0
+    )
 
-    # Prefactura pertenece a la base maestra BDatos. Como su estructura legacy
-    # puede variar, detectamos una columna monetaria conocida antes de sumar.
-    saldo_prefacturas = 0
+    # Los valores pendientes de facturar se encuentran en la tabla
+    # prefactura de la base maestra y se calculan sumando preitefac.
+    saldo_por_facturar = 0
     try:
-        candidatos = (
-            'salprefactura', 'saldoprefactura', 'valprefactura',
-            'valpre', 'valpref', 'valor', 'valtotal', 'total', 'saldo'
-        )
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT column_name
-                FROM information_schema.columns
-                WHERE table_schema = 'public'
-                  AND table_name = 'prefactura'
-                  AND data_type IN ('smallint','integer','bigint','numeric','decimal','real','double precision')
-                ORDER BY ordinal_position
-            """)
-            columnas = {str(row[0]).lower(): str(row[0]) for row in cursor.fetchall()}
-
-            columna = next((columnas[nombre] for nombre in candidatos if nombre in columnas), None)
-            if columna:
-                cursor.execute(
-                    f'SELECT COALESCE(SUM("{columna}"), 0) FROM prefactura'
-                )
-                saldo_prefacturas = cursor.fetchone()[0] or 0
+            cursor.execute(
+                "SELECT COALESCE(SUM(preitefac), 0) FROM prefactura"
+            )
+            saldo_por_facturar = cursor.fetchone()[0] or 0
     except Exception:
-        saldo_prefacturas = 0
+        saldo_por_facturar = 0
 
     return {
         'cuentas_por_cobrar': cuentas_por_cobrar,
-        'saldo_por_facturar': saldo_prefacturas,
+        'saldo_por_facturar': saldo_por_facturar,
     }
-
 
 def admin_dashboard(request):
     clientes_qs = Cliente.objects.all()
