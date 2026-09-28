@@ -14,13 +14,8 @@
     <form method="get" class="admin-passwords-search">
         <div class="admin-passwords-search-box">
             <i class="fi fi-rr-search"></i>
-            <input
-                type="text"
-                name="q"
-                value="{{ query }}"
-                placeholder="Buscar por RUC o nombre del cliente"
-                autocomplete="off"
-            >
+            <input type="text" name="q" value="{{ query }}"
+                   placeholder="Buscar por RUC o nombre del cliente" autocomplete="off">
             {% if query %}
                 <a href="{% url 'admin_contrasenas' %}" class="admin-passwords-search-clear" title="Limpiar búsqueda">
                     <i class="fi fi-rr-cross-small"></i>
@@ -28,36 +23,19 @@
             {% endif %}
         </div>
         <button type="submit" class="admin-primary-button">
-            <i class="fi fi-rr-search"></i>
-            Buscar
+            <i class="fi fi-rr-search"></i> Buscar
         </button>
     </form>
 
     <section class="admin-card admin-passwords-card">
-        <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
-            {% for pestana in pestanas %}
-                <button
-                    type="button"
-                    class="admin-passwords-tab{% if forloop.first %} active{% endif %}"
-                    data-passwords-tab="{{ pestana.dia }}"
-                    role="tab"
-                    aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-                >
-                    {{ pestana.dia }}
-                </button>
-            {% endfor %}
-        </div>
 
-        {% for pestana in pestanas %}
-            <div
-                class="admin-passwords-panel{% if forloop.first %} active{% endif %}"
-                data-passwords-panel="{{ pestana.dia }}"
-                role="tabpanel"
-            >
+        {% if query %}
+            {# La búsqueda global siempre muestra un único listado. #}
+            <div class="admin-passwords-panel active">
                 <div class="admin-passwords-panel-head">
                     <div>
-                        <span class="admin-kicker">Día de declaración</span>
-                        <h2>Clientes del {{ pestana.dia }}</h2>
+                        <span class="admin-kicker">Búsqueda global</span>
+                        <h2>Resultados para "{{ query }}"</h2>
                     </div>
                 </div>
 
@@ -65,22 +43,14 @@
                     <table class="admin-table admin-passwords-table">
                         <thead>
                             <tr>
-                                <th>RUC</th>
-                                <th>Nombres</th>
-                                <th>TipDec</th>
-                                <th>SRI</th>
-                                <th>CedIESS</th>
-                                <th>IESS</th>
-                                <th>MRLSUT</th>
-                                <th>MRLSAL</th>
-                                <th>SUPERCIAS</th>
-                                <th>Domestica</th>
-                                <th>Acciones</th>
+                                <th>RUC</th><th>Nombres</th><th>TipDec</th><th>SRI</th>
+                                <th>CedIESS</th><th>IESS</th><th>MRLSUT</th><th>MRLSAL</th>
+                                <th>SUPERCIAS</th><th>Domestica</th><th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for cliente in pestana.clientes %}
-                                <tr data-passwords-row data-search-text="{{ cliente.ruccedcli }} {{ cliente.nomclient }}">
+                            {% for cliente in clientes_busqueda %}
+                                <tr>
                                     <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
                                     <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
                                     <td>{{ cliente.semensual|default:"—" }}</td>
@@ -93,12 +63,8 @@
                                     <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
                                     <td class="admin-passwords-actions-cell">
                                         <div class="admin-passwords-action">
-                                            <button
-                                                type="button"
-                                                class="admin-passwords-action-button"
-                                                aria-label="Acciones para {{ cliente.nomclient }}"
-                                                aria-expanded="false"
-                                            >
+                                            <button type="button" class="admin-passwords-action-button"
+                                                    aria-label="Acciones para {{ cliente.nomclient }}" aria-expanded="false">
                                                 <i class="fi fi-rr-menu-dots"></i>
                                             </button>
                                             <div class="admin-passwords-action-menu">
@@ -108,78 +74,99 @@
                                     </td>
                                 </tr>
                             {% empty %}
-                                <tr>
-                                    <td colspan="11" class="admin-empty">
-                                        {% if query %}
-                                            No se encontraron clientes activos para "{{ query }}".
-                                        {% else %}
-                                            No existen clientes activos con día de declaración {{ pestana.dia }}.
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                                <tr><td colspan="11" class="admin-empty">
+                                    No se encontraron clientes activos para "{{ query }}".
+                                </td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
-        {% endfor %}
+
+        {% else %}
+            <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
+                {% for pestana in pestanas %}
+                    <button type="button"
+                            class="admin-passwords-tab{% if forloop.first %} active{% endif %}"
+                            data-passwords-tab="{{ pestana.dia }}"
+                            role="tab"
+                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                        {{ pestana.dia }}
+                    </button>
+                {% endfor %}
+            </div>
+
+            {% for pestana in pestanas %}
+                <div class="admin-passwords-panel{% if forloop.first %} active{% endif %}"
+                     data-passwords-panel="{{ pestana.dia }}" role="tabpanel">
+                    <div class="admin-passwords-panel-head">
+                        <div>
+                            <span class="admin-kicker">Día de declaración</span>
+                            <h2>Clientes del {{ pestana.dia }}</h2>
+                        </div>
+                    </div>
+
+                    <div class="admin-table-wrap admin-passwords-table-wrap">
+                        <table class="admin-table admin-passwords-table">
+                            <thead>
+                                <tr>
+                                    <th>RUC</th><th>Nombres</th><th>TipDec</th><th>SRI</th>
+                                    <th>CedIESS</th><th>IESS</th><th>MRLSUT</th><th>MRLSAL</th>
+                                    <th>SUPERCIAS</th><th>Domestica</th><th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cliente in pestana.clientes %}
+                                    <tr>
+                                        <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
+                                        <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
+                                        <td>{{ cliente.semensual|default:"—" }}</td>
+                                        <td><span class="admin-password-value">{{ cliente.clavesri|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.cediess|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.claveiess|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.mrlcon|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.mrlsal|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.clavesuper|default:"—" }}</span></td>
+                                        <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
+                                        <td class="admin-passwords-actions-cell">
+                                            <div class="admin-passwords-action">
+                                                <button type="button" class="admin-passwords-action-button"
+                                                        aria-label="Acciones para {{ cliente.nomclient }}" aria-expanded="false">
+                                                    <i class="fi fi-rr-menu-dots"></i>
+                                                </button>
+                                                <div class="admin-passwords-action-menu">
+                                                    <span><i class="fi fi-rr-clock"></i> Opciones próximamente</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="11" class="admin-empty">
+                                        No existen clientes activos con día de declaración {{ pestana.dia }}.
+                                    </td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
     </section>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const tabs = document.querySelectorAll('[data-passwords-tab]');
-    const panels = document.querySelectorAll('[data-passwords-panel]');
-    const searchInput = document.querySelector('.admin-passwords-search-box input');
-
-    function filterAllRows() {
-        if (!searchInput) return;
-
-        const term = searchInput.value.trim().toLowerCase();
-
-        if (term) {
-            // Al buscar, se muestran TODOS los paneles para que la búsqueda
-            // sea realmente global sobre todos los clientes activos.
-            panels.forEach(function (panel) {
-                panel.classList.add('active');
-            });
-        } else {
-            // Sin búsqueda se mantiene el funcionamiento normal por pestañas.
-            const activeTab = document.querySelector('[data-passwords-tab].active');
-            const diaActivo = activeTab
-                ? activeTab.getAttribute('data-passwords-tab')
-                : null;
-
-            panels.forEach(function (panel) {
-                panel.classList.toggle(
-                    'active',
-                    panel.getAttribute('data-passwords-panel') === diaActivo
-                );
-            });
-        }
-
-        document.querySelectorAll('[data-passwords-row]').forEach(function (row) {
-            const text = (row.getAttribute('data-search-text') || '').toLowerCase();
-            row.style.display = !term || text.includes(term) ? '' : 'none';
-        });
-    }
-
-    tabs.forEach(function (tab) {
+    document.querySelectorAll('[data-passwords-tab]').forEach(function (tab) {
         tab.addEventListener('click', function () {
             const dia = tab.getAttribute('data-passwords-tab');
 
-            tabs.forEach(function (item) {
+            document.querySelectorAll('[data-passwords-tab]').forEach(function (item) {
                 const active = item === tab;
                 item.classList.toggle('active', active);
                 item.setAttribute('aria-selected', active ? 'true' : 'false');
             });
 
-            if (searchInput && searchInput.value.trim()) {
-                filterAllRows();
-                return;
-            }
-
-            panels.forEach(function (panel) {
+            document.querySelectorAll('[data-passwords-panel]').forEach(function (panel) {
                 panel.classList.toggle(
                     'active',
                     panel.getAttribute('data-passwords-panel') === dia
@@ -187,10 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
-
-    if (searchInput) {
-        searchInput.addEventListener('input', filterAllRows);
-    }
 
     document.querySelectorAll('.admin-passwords-action-button').forEach(function (button) {
         button.addEventListener('click', function (event) {
@@ -219,8 +202,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
         });
     });
-
-    filterAllRows();
 });
 </script>
 {% endblock %}
