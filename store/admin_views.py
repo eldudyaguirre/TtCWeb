@@ -316,6 +316,62 @@ def admin_dashboard(request):
 
 
 @admin_required
+def admin_contrasenas_editar(request, ruc):
+    """Edita únicamente las credenciales del cliente desde el módulo Contraseñas."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+
+    if request.method != 'POST':
+        return redirect('admin_contrasenas')
+
+    campos = (
+        'clavesri',
+        'cediess',
+        'claveiess',
+        'mrlcon',
+        'mrlsal',
+        'clavesuper',
+        'iessdomestica',
+    )
+
+    for campo in campos:
+        setattr(cliente, campo, request.POST.get(campo, '').strip())
+
+    cliente.save(update_fields=campos)
+
+    messages.success(
+        request,
+        f'Las contraseñas de {cliente.nomclient} fueron actualizadas correctamente.',
+    )
+
+    query = request.POST.get('q', '').strip()
+    url = redirect('admin_contrasenas')
+    if query:
+        url['Location'] += f'?q={query}'
+    return url
+
+
+@admin_required
+def admin_contrasenas_toggle_activo(request, ruc):
+    """Activa o desactiva un cliente desde el módulo Contraseñas."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+
+    if request.method != 'POST':
+        return redirect('admin_contrasenas')
+
+    cliente.activo = not bool(cliente.activo)
+    cliente.save(update_fields=['activo'])
+
+    estado = 'activado' if cliente.activo else 'desactivado'
+    messages.success(request, f'El cliente {cliente.nomclient} fue {estado} correctamente.')
+
+    query = request.POST.get('q', '').strip()
+    url = redirect('admin_contrasenas')
+    if query:
+        url['Location'] += f'?q={query}'
+    return url
+
+
+@admin_required
 def admin_clientes(request):
     query = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
