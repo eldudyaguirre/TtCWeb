@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
+from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.http import FileResponse, Http404
@@ -346,7 +347,7 @@ def admin_contrasenas_editar(request, ruc):
     query = request.POST.get('q', '').strip()
     url = redirect('admin_contrasenas')
     if query:
-        url['Location'] += f'?q={query}'
+        url['Location'] += '?' + urlencode({'q': query})
     return url
 
 
