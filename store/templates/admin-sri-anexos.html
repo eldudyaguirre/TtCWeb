@@ -33,7 +33,7 @@
             <div class="admin-anexos-header">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
                     <div class="portal-kicker">Administración</div>
-                    <a href="{% if cliente_retorno %}{% url 'admin_cliente' cliente_retorno.ruccedcli %}#conciliacion{% else %}{% url 'admin_dashboard' %}{% endif %}" class="admin-anexos-back">
+                    <a href="{% if cliente_retorno %}{% url 'admin_cliente' cliente_retorno.ruccedcli %}#conciliacion{% else %}{% if cliente_retorno %}{% url 'admin_cliente' cliente_retorno.ruccedcli %}#conciliacion{% else %}{% url 'admin_dashboard' %}{% endif %}{% endif %}" class="admin-anexos-back">
                         <i class="fi fi-rr-arrow-left"></i>
                         Volver al administrador
                     </a>
