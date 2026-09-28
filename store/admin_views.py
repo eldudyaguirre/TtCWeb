@@ -424,12 +424,14 @@ def admin_contrasenas(request):
     dia = request.GET.get('dia', 'todos').strip() or 'todos'
     tipdec = request.GET.get('tipdec', '').strip()
 
-    # En Contraseñas se muestran activos e inactivos para permitir gestionarlos.
-    clientes_qs = Cliente.objects.all()
+    # Al entrar se muestran únicamente clientes activos.
+    # Cuando se realiza una búsqueda, se consulta toda la base de datos,
+    # incluyendo clientes inactivos.
+    clientes_qs = Cliente.objects.filter(activo=True)
 
     if query:
         from django.db.models import Q
-        clientes_qs = clientes_qs.filter(
+        clientes_qs = Cliente.objects.all().filter(
             Q(nomclient__icontains=query) |
             Q(ruccedcli__icontains=query)
         )
