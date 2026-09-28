@@ -375,6 +375,7 @@ def admin_contrasenas(request):
         'admin/contrasenas.html',
         {
             'pestanas': pestanas,
+            'clientes_busqueda': clientes_qs if query else Cliente.objects.none(),
             'query': query,
             'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
