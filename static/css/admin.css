@@ -1625,3 +1625,272 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         font-size:15px !important;
     }
 }
+
+
+/* ===== MÓDULO CONTRASEÑAS ===== */
+.admin-passwords-header{
+    margin-bottom:20px;
+}
+.admin-passwords-header h1{
+    margin-bottom:6px;
+}
+.admin-passwords-search{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+}
+.admin-passwords-search-box{
+    position:relative;
+    display:flex;
+    align-items:center;
+    flex:1;
+    min-width:0;
+    max-width:620px;
+    height:46px;
+    background:#fff;
+    border:1px solid #d5dee2;
+    border-radius:9px;
+    overflow:hidden;
+}
+.admin-passwords-search-box > i{
+    width:46px;
+    min-width:46px;
+    text-align:center;
+    color:var(--admin-muted);
+    font-size:15px;
+}
+.admin-passwords-search-box input{
+    width:100%;
+    min-width:0;
+    height:44px;
+    border:0;
+    outline:0;
+    background:#fff;
+    color:var(--admin-text);
+    padding:0 8px 0 0;
+    font-size:14px;
+}
+.admin-passwords-search-clear{
+    width:38px;
+    min-width:38px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#8a979f;
+    text-decoration:none;
+}
+.admin-passwords-search-clear:hover{
+    color:var(--admin-accent);
+}
+.admin-passwords-search > .admin-primary-button{
+    min-height:46px;
+    gap:8px;
+}
+.admin-passwords-card{
+    padding:0;
+    overflow:visible;
+}
+.admin-passwords-tabs{
+    display:flex;
+    gap:4px;
+    padding:14px 14px 0;
+    overflow-x:auto;
+    border-bottom:1px solid var(--admin-border);
+    scrollbar-width:thin;
+}
+.admin-passwords-tab{
+    position:relative;
+    flex:0 0 62px;
+    min-height:48px;
+    border:0;
+    border-bottom:3px solid transparent;
+    border-radius:8px 8px 0 0;
+    background:transparent;
+    color:#6f7d86;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:800;
+    padding:7px 6px 8px;
+}
+.admin-passwords-tab span{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:20px;
+    height:20px;
+    margin-left:4px;
+    padding:0 5px;
+    border-radius:10px;
+    background:#eef3f4;
+    color:#74818a;
+    font-size:10px;
+    vertical-align:middle;
+}
+.admin-passwords-tab:hover{
+    color:var(--admin-accent);
+    background:#f6fafb;
+}
+.admin-passwords-tab.active{
+    color:var(--admin-accent);
+    border-bottom-color:var(--admin-accent);
+    background:#f8fbfb;
+}
+.admin-passwords-tab.active span{
+    background:#e4f5f7;
+    color:var(--admin-accent);
+}
+.admin-passwords-panel{
+    display:none;
+}
+.admin-passwords-panel.active{
+    display:block;
+}
+.admin-passwords-panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:20px 20px 14px;
+}
+.admin-passwords-panel-head h2{
+    margin:4px 0 0;
+    font-size:18px;
+    color:var(--admin-dark);
+}
+.admin-passwords-count{
+    color:var(--admin-muted);
+    font-size:12px;
+    white-space:nowrap;
+}
+.admin-passwords-table-wrap{
+    width:100%;
+}
+.admin-passwords-table{
+    min-width:1420px;
+}
+.admin-passwords-table th{
+    white-space:nowrap;
+}
+.admin-passwords-table td{
+    vertical-align:middle;
+    white-space:nowrap;
+}
+.admin-passwords-ruc{
+    font-family:Consolas,monospace;
+    font-size:12px!important;
+    font-weight:700;
+    color:#344e5c;
+}
+.admin-passwords-name{
+    min-width:240px;
+    white-space:normal!important;
+}
+.admin-passwords-name strong{
+    color:var(--admin-dark);
+    font-size:13px;
+}
+.admin-password-value{
+    display:inline-block;
+    min-width:54px;
+    color:#405563;
+    font-family:Consolas,monospace;
+    font-size:12px;
+}
+.admin-passwords-actions-cell{
+    width:62px;
+    text-align:center!important;
+    position:relative;
+}
+.admin-passwords-action{
+    position:relative;
+    display:inline-block;
+}
+.admin-passwords-action-button{
+    width:34px;
+    height:34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #d9e2e5;
+    border-radius:8px;
+    background:#fff;
+    color:#62747e;
+    cursor:pointer;
+}
+.admin-passwords-action-button:hover,
+.admin-passwords-action.open .admin-passwords-action-button{
+    color:var(--admin-accent);
+    border-color:#9fd2d7;
+    background:#f4fbfc;
+}
+.admin-passwords-action-menu{
+    position:absolute;
+    z-index:30;
+    top:40px;
+    right:0;
+    display:none;
+    min-width:190px;
+    padding:6px;
+    border:1px solid var(--admin-border);
+    border-radius:9px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(31,45,52,.14);
+}
+.admin-passwords-action.open .admin-passwords-action-menu{
+    display:block;
+}
+.admin-passwords-action-menu span{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 10px;
+    color:var(--admin-muted);
+    font-size:12px;
+    white-space:nowrap;
+}
+.admin-passwords-action-menu i{
+    color:var(--admin-accent);
+}
+@media(max-width:700px){
+    .admin-passwords-search{
+        flex-direction:column;
+        align-items:stretch;
+        gap:8px;
+    }
+    .admin-passwords-search-box{
+        max-width:none;
+        width:100%;
+    }
+    .admin-passwords-search > .admin-primary-button{
+        width:100%;
+    }
+    .admin-passwords-card{
+        border-radius:11px;
+        overflow:hidden;
+    }
+    .admin-passwords-tabs{
+        padding:10px 8px 0;
+        gap:2px;
+    }
+    .admin-passwords-tab{
+        flex-basis:62px;
+        min-height:46px;
+        font-size:14px;
+    }
+    .admin-passwords-panel-head{
+        padding:16px 14px 12px;
+    }
+    .admin-passwords-panel-head h2{
+        font-size:17px;
+    }
+    .admin-passwords-table-wrap{
+        margin:0;
+        padding:0 12px 12px;
+        overflow-x:auto;
+    }
+    .admin-passwords-table{
+        min-width:1320px;
+    }
+}
