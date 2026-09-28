@@ -2142,3 +2142,14 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         color:#111 !important;
     }
 }
+
+
+/* Separación entre el título ADMINISTRACIÓN y el primer enlace del menú */
+.admin-label{
+    margin-bottom:8px;
+}
+@media(max-width:700px){
+    .admin-label{
+        margin-bottom:8px !important;
+    }
+}
