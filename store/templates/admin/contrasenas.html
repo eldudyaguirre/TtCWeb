@@ -28,9 +28,7 @@
     </form>
 
     <section class="admin-card admin-passwords-card">
-
         {% if query %}
-            {# La búsqueda global siempre muestra un único listado. #}
             <div class="admin-passwords-panel active">
                 <div class="admin-passwords-panel-head">
                     <div>
@@ -38,51 +36,8 @@
                         <h2>Resultados para "{{ query }}"</h2>
                     </div>
                 </div>
-
-                <div class="admin-table-wrap admin-passwords-table-wrap">
-                    <table class="admin-table admin-passwords-table">
-                        <thead>
-                            <tr>
-                                <th>RUC</th><th>Nombres</th><th>TipDec</th><th>SRI</th>
-                                <th>CedIESS</th><th>IESS</th><th>MRLSUT</th><th>MRLSAL</th>
-                                <th>SUPERCIAS</th><th>Domestica</th><th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for cliente in clientes_busqueda %}
-                                <tr>
-                                    <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
-                                    <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
-                                    <td>{{ cliente.semensual|default:"—" }}</td>
-                                    <td><span class="admin-password-value">{{ cliente.clavesri|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.cediess|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.claveiess|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.mrlcon|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.mrlsal|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.clavesuper|default:"—" }}</span></td>
-                                    <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
-                                    <td class="admin-passwords-actions-cell">
-                                        <div class="admin-passwords-action">
-                                            <button type="button" class="admin-passwords-action-button"
-                                                    aria-label="Acciones para {{ cliente.nomclient }}" aria-expanded="false">
-                                                <i class="fi fi-rr-menu-dots"></i>
-                                            </button>
-                                            <div class="admin-passwords-action-menu">
-                                                <span><i class="fi fi-rr-clock"></i> Opciones próximamente</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr><td colspan="11" class="admin-empty">
-                                    No se encontraron clientes activos para "{{ query }}".
-                                </td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                {% include "admin/_contrasenas_tabla.html" with clientes=clientes_busqueda %}
             </div>
-
         {% else %}
             <div class="admin-passwords-tabs" role="tablist" aria-label="Día de declaración">
                 {% for pestana in pestanas %}
@@ -105,57 +60,179 @@
                             <h2>Clientes del {{ pestana.dia }}</h2>
                         </div>
                     </div>
-
-                    <div class="admin-table-wrap admin-passwords-table-wrap">
-                        <table class="admin-table admin-passwords-table">
-                            <thead>
-                                <tr>
-                                    <th>RUC</th><th>Nombres</th><th>TipDec</th><th>SRI</th>
-                                    <th>CedIESS</th><th>IESS</th><th>MRLSUT</th><th>MRLSAL</th>
-                                    <th>SUPERCIAS</th><th>Domestica</th><th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for cliente in pestana.clientes %}
-                                    <tr>
-                                        <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
-                                        <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
-                                        <td>{{ cliente.semensual|default:"—" }}</td>
-                                        <td><span class="admin-password-value">{{ cliente.clavesri|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.cediess|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.claveiess|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.mrlcon|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.mrlsal|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.clavesuper|default:"—" }}</span></td>
-                                        <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
-                                        <td class="admin-passwords-actions-cell">
-                                            <div class="admin-passwords-action">
-                                                <button type="button" class="admin-passwords-action-button"
-                                                        aria-label="Acciones para {{ cliente.nomclient }}" aria-expanded="false">
-                                                    <i class="fi fi-rr-menu-dots"></i>
-                                                </button>
-                                                <div class="admin-passwords-action-menu">
-                                                    <span><i class="fi fi-rr-clock"></i> Opciones próximamente</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr><td colspan="11" class="admin-empty">
-                                        No existen clientes activos con día de declaración {{ pestana.dia }}.
-                                    </td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                    {% include "admin/_contrasenas_tabla.html" with clientes=pestana.clientes dia=pestana.dia %}
                 </div>
             {% endfor %}
         {% endif %}
     </section>
 </div>
 
+<div id="passwordEditModal" class="admin-passwords-modal" aria-hidden="true">
+    <div class="admin-passwords-modal-backdrop" data-close-password-modal></div>
+    <div class="admin-passwords-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="passwordEditTitle">
+        <div class="admin-passwords-modal-header">
+            <div>
+                <span class="admin-kicker">Editar credenciales</span>
+                <h2 id="passwordEditTitle">Contraseñas del cliente</h2>
+                <p id="passwordEditSubtitle"></p>
+            </div>
+            <button type="button" class="admin-passwords-modal-close" data-close-password-modal aria-label="Cerrar">
+                <i class="fi fi-rr-cross-small"></i>
+            </button>
+        </div>
+
+        <form id="passwordEditForm" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="q" value="{{ query }}">
+
+            <div class="admin-passwords-modal-grid">
+                <div class="admin-passwords-readonly">
+                    <label>RUC</label>
+                    <input id="editRuc" type="text" readonly>
+                </div>
+                <div class="admin-passwords-readonly">
+                    <label>Nombres</label>
+                    <input id="editNombre" type="text" readonly>
+                </div>
+                <div class="admin-passwords-readonly">
+                    <label>TipDec</label>
+                    <input id="editTipDec" type="text" readonly>
+                </div>
+
+                <div class="admin-passwords-edit-field">
+                    <label for="editSri">SRI</label>
+                    <input id="editSri" name="clavesri" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editCedIess">CedIESS</label>
+                    <input id="editCedIess" name="cediess" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editIess">IESS</label>
+                    <input id="editIess" name="claveiess" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editMrlcon">MRLSUT</label>
+                    <input id="editMrlcon" name="mrlcon" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editMrlsal">MRLSAL</label>
+                    <input id="editMrlsal" name="mrlsal" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editSuper">SUPERCIAS</label>
+                    <input id="editSuper" name="clavesuper" type="text">
+                </div>
+                <div class="admin-passwords-edit-field">
+                    <label for="editDomestica">Domestica</label>
+                    <input id="editDomestica" name="iessdomestica" type="text">
+                </div>
+            </div>
+
+            <div class="admin-passwords-modal-actions">
+                <button type="button" class="admin-password-cancel-v2" data-close-password-modal>
+                    Cancelar
+                </button>
+                <button type="button" class="admin-password-print-button" id="printPasswordData">
+                    <i class="fi fi-rr-print"></i> Imprimir
+                </button>
+                <button type="submit" class="admin-primary-button">
+                    <i class="fi fi-rr-disk"></i> Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('passwordEditModal');
+    const form = document.getElementById('passwordEditForm');
+
+    function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('password-modal-open');
+    }
+
+    function openEdit(button) {
+        const d = button.dataset;
+
+        document.getElementById('editRuc').value = d.ruc || '';
+        document.getElementById('editNombre').value = d.nombre || '';
+        document.getElementById('editTipDec').value = d.tipdec || '';
+        document.getElementById('editSri').value = d.sri || '';
+        document.getElementById('editCedIess').value = d.cediess || '';
+        document.getElementById('editIess').value = d.iess || '';
+        document.getElementById('editMrlcon').value = d.mrlcon || '';
+        document.getElementById('editMrlsal').value = d.mrlsal || '';
+        document.getElementById('editSuper').value = d.supercias || '';
+        document.getElementById('editDomestica').value = d.domestica || '';
+
+        form.action = d.editUrl;
+        document.getElementById('passwordEditTitle').textContent = 'Contraseñas de ' + (d.nombre || '');
+        document.getElementById('passwordEditSubtitle').textContent = 'RUC: ' + (d.ruc || '');
+
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('password-modal-open');
+        setTimeout(function () {
+            document.getElementById('editSri').focus();
+        }, 50);
+    }
+
+    document.querySelectorAll('.admin-passwords-edit-button').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.stopPropagation();
+            closeActionMenus();
+            openEdit(button);
+        });
+    });
+
+    document.querySelectorAll('.admin-passwords-toggle-form').forEach(function (toggleForm) {
+        toggleForm.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+    });
+
+    document.querySelectorAll('[data-close-password-modal]').forEach(function (element) {
+        element.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('open')) {
+            closeModal();
+        }
+    });
+
+    function closeActionMenus() {
+        document.querySelectorAll('.admin-passwords-action.open').forEach(function (item) {
+            item.classList.remove('open');
+            const itemButton = item.querySelector('.admin-passwords-action-button');
+            if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    document.querySelectorAll('.admin-passwords-action-button').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.stopPropagation();
+
+            const action = button.closest('.admin-passwords-action');
+            const wasOpen = action.classList.contains('open');
+
+            closeActionMenus();
+
+            if (!wasOpen) {
+                action.classList.add('open');
+                button.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    document.addEventListener('click', function () {
+        closeActionMenus();
+    });
+
     document.querySelectorAll('[data-passwords-tab]').forEach(function (tab) {
         tab.addEventListener('click', function () {
             const dia = tab.getAttribute('data-passwords-tab');
@@ -175,32 +252,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.admin-passwords-action-button').forEach(function (button) {
-        button.addEventListener('click', function (event) {
-            event.stopPropagation();
-
-            const action = button.closest('.admin-passwords-action');
-            const wasOpen = action.classList.contains('open');
-
-            document.querySelectorAll('.admin-passwords-action.open').forEach(function (item) {
-                item.classList.remove('open');
-                const itemButton = item.querySelector('.admin-passwords-action-button');
-                if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
-            });
-
-            if (!wasOpen) {
-                action.classList.add('open');
-                button.setAttribute('aria-expanded', 'true');
-            }
-        });
-    });
-
-    document.addEventListener('click', function () {
-        document.querySelectorAll('.admin-passwords-action.open').forEach(function (item) {
-            item.classList.remove('open');
-            const itemButton = item.querySelector('.admin-passwords-action-button');
-            if (itemButton) itemButton.setAttribute('aria-expanded', 'false');
-        });
+    document.getElementById('printPasswordData').addEventListener('click', function () {
+        window.print();
     });
 });
 </script>
