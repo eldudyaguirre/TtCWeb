@@ -1400,6 +1400,8 @@ def sri_anexos_admin(request):
     clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
     ruc_retorno = request.GET.get('ruc', '').strip()
     cliente_retorno = clientes.filter(pk=ruc_retorno).first() if ruc_retorno else None
+    ruc_retorno = request.GET.get('ruc', '').strip()
+    cliente_retorno = clientes.filter(pk=ruc_retorno).first() if ruc_retorno else None
 
     tipos = [
         ('ats', 'Anexo Transaccional Simplificado'),
