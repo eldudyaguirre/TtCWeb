@@ -454,9 +454,9 @@ def _admin_conciliacion_cliente(cliente, anio=None):
     with db.cursor() as cursor:
         cursor.execute("""
             SELECT DISTINCT anio FROM (
-                SELECT EXTRACT(YEAR FROM fecfactur)::integer AS anio FROM ventas
+                SELECT EXTRACT(YEAR FROM fecfactur::date)::integer AS anio FROM ventas
                 UNION
-                SELECT EXTRACT(YEAR FROM fecemi)::integer AS anio FROM comprasnue
+                SELECT EXTRACT(YEAR FROM fecemi::date)::integer AS anio FROM comprasnue
             ) periodos
             WHERE anio IS NOT NULL
             ORDER BY anio DESC
@@ -479,7 +479,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT generate_series(1, 12) AS mes
             ),
             ventas_mes AS (
-                SELECT EXTRACT(MONTH FROM fecfactur)::integer AS mes,
+                SELECT EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
                        COALESCE(SUM(
                            COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
@@ -489,11 +489,11 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                        COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
                        COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
                 FROM ventas
-                WHERE EXTRACT(YEAR FROM fecfactur)::integer = %s
+                WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
                 GROUP BY 1
             ),
             compras_mes AS (
-                SELECT EXTRACT(MONTH FROM fecemi)::integer AS mes,
+                SELECT EXTRACT(MONTH FROM fecemi::date)::integer AS mes,
                        COALESCE(SUM(
                            COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric +
                            COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric +
@@ -511,7 +511,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                        ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM(tipcom::text) IN ('01', '02')
-                  AND EXTRACT(YEAR FROM fecemi)::integer = %s
+                  AND EXTRACT(YEAR FROM fecemi::date)::integer = %s
                 GROUP BY 1
             )
             SELECT m.mes,
