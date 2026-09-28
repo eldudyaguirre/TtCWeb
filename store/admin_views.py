@@ -346,6 +346,41 @@ def admin_clientes(request):
 
 
 @admin_required
+def admin_contrasenas(request):
+    """Listado administrativo de clientes activos y sus credenciales tributarias/laborales."""
+    query = request.GET.get('q', '').strip()
+
+    clientes_qs = Cliente.objects.filter(activo=True)
+
+    if query:
+        from django.db.models import Q
+        clientes_qs = clientes_qs.filter(
+            Q(nomclient__icontains=query) |
+            Q(ruccedcli__icontains=query)
+        )
+
+    clientes_qs = clientes_qs.order_by('nomclient')
+
+    dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
+    clientes_por_dia = {
+        dia: clientes_qs.filter(diadeclaracion=dia)
+        for dia in dias
+    }
+
+    return render(
+        request,
+        'admin/contrasenas.html',
+        {
+            'clientes_por_dia': clientes_por_dia,
+            'dias_declaracion': dias,
+            'query': query,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        },
+    )
+
+
+@admin_required
 def admin_cliente(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     usuarios = (
