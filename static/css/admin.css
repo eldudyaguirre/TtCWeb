@@ -2517,3 +2517,51 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     border-color:#1596a3 !important;
     box-shadow:0 0 0 3px rgba(21,150,163,.10) !important;
 }
+
+
+/* ===== BOTON NUEVO CLIENTE ===== */
+.admin-clientes-page-header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+}
+.admin-new-client-button{
+    flex:0 0 auto;
+    min-height:44px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border:1px solid var(--admin-accent);
+    border-radius:9px;
+    background:var(--admin-accent);
+    color:#fff;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:800;
+    line-height:1;
+    box-sizing:border-box;
+    transition:.18s ease;
+}
+.admin-new-client-button:hover{
+    background:#117f8b;
+    border-color:#117f8b;
+    color:#fff;
+    transform:translateY(-1px);
+    box-shadow:0 5px 14px rgba(21,150,163,.18);
+}
+.admin-new-client-button i{
+    font-size:13px;
+}
+@media(max-width:700px){
+    .admin-clientes-page-header{
+        align-items:stretch;
+        flex-direction:column;
+        gap:12px;
+    }
+    .admin-new-client-button{
+        width:100%;
+    }
+}
