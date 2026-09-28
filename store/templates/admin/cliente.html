@@ -31,6 +31,108 @@
     </article>
 </section>
 
+
+<style>
+.admin-conciliacion{margin-top:20px}
+.admin-conciliacion-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:14px}
+.admin-conciliacion-head h2{margin:4px 0 0;font-size:20px;color:var(--admin-dark)}
+.admin-conciliacion-year{display:flex;align-items:center;gap:8px}
+.admin-conciliacion-year label{font-size:12px;color:var(--admin-muted);font-weight:700}
+.admin-conciliacion-year select{height:40px;border:1px solid #d5dee2;border-radius:8px;background:#fff;padding:0 34px 0 11px;font-weight:700;color:var(--admin-dark)}
+.admin-conciliacion-wrap{overflow-x:auto}
+.admin-conciliacion-table{width:100%;min-width:720px;border-collapse:collapse;background:#fff}
+.admin-conciliacion-table th{background:#e9e9e9;color:#17232a;font-size:11px;text-transform:uppercase;text-align:center;padding:10px 8px;border:1px solid #aeb4b7}
+.admin-conciliacion-table td{font-size:12px;padding:7px 8px;border:1px solid #b8bec1;color:#263842}
+.admin-conciliacion-table td:first-child{text-align:left;font-weight:600}
+.admin-conciliacion-table td:not(:first-child){text-align:right;white-space:nowrap}
+.admin-conciliacion-table .money:before{content:'$ ';float:left;color:#263842}
+.admin-conciliacion-table tfoot td{font-weight:800;color:#c81924;background:#fff}
+.admin-conciliacion-table tfoot td:not(:first-child){font-size:13px}
+.admin-conciliacion-summary{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.admin-conciliacion-summary .admin-card{margin-bottom:0}
+.admin-conciliacion-summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #edf1f2;font-size:13px}
+.admin-conciliacion-summary-row:last-child{border-bottom:0;font-weight:800}
+.admin-conciliacion-summary-row strong{white-space:nowrap}
+@media(max-width:700px){
+ .admin-conciliacion-head{align-items:stretch;flex-direction:column;gap:10px}
+ .admin-conciliacion-year{justify-content:space-between}
+ .admin-conciliacion-year select{flex:1}
+ .admin-conciliacion-summary{grid-template-columns:1fr}
+}
+</style>
+
+<section class="admin-card admin-conciliacion">
+    <div class="admin-conciliacion-head">
+        <div>
+            <span class="admin-kicker">Conciliación tributaria</span>
+            <h2>CONCILIACIÓN DE ENERO A DICIEMBRE {{ conciliacion.anio }}</h2>
+        </div>
+        {% if conciliacion.anios %}
+        <form method="get" class="admin-conciliacion-year">
+            <label for="conciliacion-anio">Año</label>
+            <select id="conciliacion-anio" name="anio" onchange="this.form.submit()">
+                {% for anio in conciliacion.anios %}
+                <option value="{{ anio }}" {% if anio == conciliacion.anio %}selected{% endif %}>{{ anio }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="admin-conciliacion-wrap">
+        <table class="admin-conciliacion-table">
+            <thead>
+                <tr>
+                    <th>MES</th>
+                    <th>VENTAS</th>
+                    <th>COMPRAS</th>
+                    <th>RETENCIONES<br>RENTA</th>
+                    <th>RETENCIONES<br>IVA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mes in conciliacion.meses %}
+                <tr>
+                    <td>{{ mes.nombre }}</td>
+                    <td class="money">{{ mes.ventas|floatformat:2 }}</td>
+                    <td class="money">{{ mes.compras|floatformat:2 }}</td>
+                    <td class="money">{{ mes.retrenta|floatformat:2 }}</td>
+                    <td class="money">{{ mes.retiva|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;padding:18px">No existen movimientos para este período.</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>TOTAL</td>
+                    <td class="money">{{ conciliacion.totales.ventas|floatformat:2 }}</td>
+                    <td class="money">{{ conciliacion.totales.compras|floatformat:2 }}</td>
+                    <td class="money">{{ conciliacion.totales.retrenta|floatformat:2 }}</td>
+                    <td class="money">{{ conciliacion.totales.retiva|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>
+
+<section class="admin-conciliacion-summary">
+    <article class="admin-card">
+        <span class="admin-kicker">Resumen del ejercicio</span>
+        <h2>RÉGIMEN GENERAL</h2>
+        <div class="admin-conciliacion-summary-row"><span>TOTAL VENTAS</span><strong>$ {{ conciliacion.totales.ventas|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>COMPRAS</span><strong>$ {{ conciliacion.totales.compras|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>RESULTADO VENTAS - COMPRAS</span><strong>$ {{ conciliacion.totales.ventas|add:conciliacion.totales.compras|floatformat:2 }}</strong></div>
+    </article>
+    <article class="admin-card">
+        <span class="admin-kicker">Retenciones del período</span>
+        <h2>RETENCIONES</h2>
+        <div class="admin-conciliacion-summary-row"><span>RETENCIONES RENTA</span><strong>$ {{ conciliacion.totales.retrenta|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>RETENCIONES IVA</span><strong>$ {{ conciliacion.totales.retiva|floatformat:2 }}</strong></div>
+        <div class="admin-conciliacion-summary-row"><span>TOTAL RETENCIONES</span><strong>$ {{ conciliacion.totales.retrenta|add:conciliacion.totales.retiva|floatformat:2 }}</strong></div>
+    </article>
+</section>
+
 <section class="admin-module-grid">
     <a href="#" class="admin-module-card"><i class="fi fi-rr-database"></i><strong>Base de datos</strong><span>Consultar y gestionar información del cliente</span></a>
     <a href="{% url 'sri_anexos_admin' %}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
