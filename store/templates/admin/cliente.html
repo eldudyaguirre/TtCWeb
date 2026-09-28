@@ -140,7 +140,7 @@
 
 <section class="admin-module-grid">
     <a href="#" class="admin-module-card"><i class="fi fi-rr-database"></i><strong>Base de datos</strong><span>Consultar y gestionar información del cliente</span></a>
-    <a href="{% url 'sri_anexos_admin' %}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
+    <a href="{% url 'sri_anexos_admin' %}?ruc={{ cliente.ruccedcli }}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-users"></i><strong>Usuarios</strong><span>Activar, desactivar y gestionar accesos</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-wallet"></i><strong>Cobranza</strong><span>Consultar saldos y registrar pagos</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-document"></i><strong>Facturación</strong><span>Consultar información de comprobantes</span></a>
