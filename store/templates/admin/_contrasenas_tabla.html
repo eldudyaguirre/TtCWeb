@@ -1,0 +1,89 @@
+{% if clientes %}
+<div class="admin-table-wrap admin-passwords-table-wrap">
+    <table class="admin-table admin-passwords-table">
+        <thead>
+            <tr>
+                <th>RUC</th><th>Nombres</th><th>TipDec</th><th>SRI</th>
+                <th>CedIESS</th><th>IESS</th><th>MRLSUT</th><th>MRLSAL</th>
+                <th>SUPERCIAS</th><th>Domestica</th><th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td class="admin-passwords-ruc">{{ cliente.ruccedcli }}</td>
+                    <td class="admin-passwords-name"><strong>{{ cliente.nomclient }}</strong></td>
+                    <td>{{ cliente.semensual|default:"—" }}</td>
+                    <td><span class="admin-password-value">{{ cliente.clavesri|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.cediess|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.claveiess|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.mrlcon|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.mrlsal|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.clavesuper|default:"—" }}</span></td>
+                    <td><span class="admin-password-value">{{ cliente.iessdomestica|default:"—" }}</span></td>
+                    <td class="admin-passwords-actions-cell">
+                        <div class="admin-passwords-action">
+                            <button type="button" class="admin-passwords-action-button"
+                                    aria-label="Acciones para {{ cliente.nomclient }}" aria-expanded="false">
+                                <i class="fi fi-rr-menu-dots"></i>
+                            </button>
+                            <div class="admin-passwords-action-menu">
+                                <button type="button" class="admin-passwords-action-item admin-passwords-edit-button"
+                                    data-ruc="{{ cliente.ruccedcli }}"
+                                    data-nombre="{{ cliente.nomclient }}"
+                                    data-tipdec="{{ cliente.semensual }}"
+                                    data-sri="{{ cliente.clavesri }}"
+                                    data-cediess="{{ cliente.cediess }}"
+                                    data-iess="{{ cliente.claveiess }}"
+                                    data-mrlcon="{{ cliente.mrlcon }}"
+                                    data-mrlsal="{{ cliente.mrlsal }}"
+                                    data-supercias="{{ cliente.clavesuper }}"
+                                    data-domestica="{{ cliente.iessdomestica }}"
+                                    data-edit-url="{% url 'admin_contrasenas_editar' cliente.ruccedcli %}">
+                                    <i class="fi fi-rr-edit"></i> Editar
+                                </button>
+
+                                <form method="post"
+                                      action="{% url 'admin_contrasenas_toggle_activo' cliente.ruccedcli %}"
+                                      class="admin-passwords-toggle-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="q" value="{{ request.GET.q|default:'' }}">
+                                    {% if cliente.activo %}
+                                        <button type="submit" class="admin-passwords-action-item admin-passwords-action-danger">
+                                            <i class="fi fi-rr-cross-circle"></i> Desactivar
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="admin-passwords-action-item admin-passwords-action-success">
+                                            <i class="fi fi-rr-check-circle"></i> Activar
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="11" class="admin-empty">
+                        {% if query %}
+                            No se encontraron clientes activos para "{{ query }}".
+                        {% else %}
+                            No existen clientes activos con día de declaración {{ dia }}.
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="admin-table-wrap admin-passwords-table-wrap">
+    <table class="admin-table admin-passwords-table">
+        <tbody>
+            <tr><td colspan="11" class="admin-empty">
+                {% if query %}No se encontraron clientes activos para "{{ query }}".{% else %}No existen registros.{% endif %}
+            </td></tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
