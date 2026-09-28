@@ -2166,3 +2166,14 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
         margin-bottom:0 !important;
     }
 }
+
+
+/* Separación visible entre ADMINISTRACIÓN y el primer elemento del menú */
+.admin-label + .admin-nav{
+    margin-top:12px !important;
+}
+@media(max-width:700px){
+    .admin-label + .admin-nav{
+        margin-top:12px !important;
+    }
+}
