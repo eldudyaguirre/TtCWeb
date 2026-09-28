@@ -67,6 +67,8 @@
                     <td colspan="11" class="admin-empty">
                         {% if query %}
                             No se encontraron clientes activos para "{{ query }}".
+                        {% elif dia == 'todos' %}
+                            No existen clientes activos con los filtros seleccionados.
                         {% else %}
                             No existen clientes activos con día de declaración {{ dia }}.
                         {% endif %}
