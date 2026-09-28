@@ -95,9 +95,13 @@
                     <label>Nombres</label>
                     <input id="editNombre" type="text" readonly>
                 </div>
-                <div class="admin-passwords-readonly">
-                    <label>TipDec</label>
-                    <input id="editTipDec" type="text" readonly>
+                <div class="admin-passwords-edit-field">
+                    <label for="editTipDec">TipDec</label>
+                    <select id="editTipDec" name="tipdec">
+                        <option value="MENSUAL">MENSUAL</option>
+                        <option value="SEMESTRAL">SEMESTRAL</option>
+                        <option value="ANUAL">ANUAL</option>
+                    </select>
                 </div>
 
                 <div class="admin-passwords-edit-field">
@@ -161,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('editRuc').value = d.ruc || '';
         document.getElementById('editNombre').value = d.nombre || '';
-        document.getElementById('editTipDec').value = d.tipdec || '';
+        document.getElementById('editTipDec').value = (d.tipdec || '').toUpperCase();
         document.getElementById('editSri').value = d.sri || '';
         document.getElementById('editCedIess').value = d.cediess || '';
         document.getElementById('editIess').value = d.iess || '';
