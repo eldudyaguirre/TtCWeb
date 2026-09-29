@@ -736,6 +736,125 @@ def _admin_compras_filtros(request):
 
 
 @admin_required
+def admin_ventas(request, ruc):
+    from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_ventas_filtros(request)
+    try:
+        base = _ventas_base_sql()
+        with _cliente_db(cliente).cursor() as cursor:
+            cursor.execute(f"SELECT COUNT(*) FROM ({base}) ventas_reporte WHERE {where}", params)
+            total_registros = cursor.fetchone()[0]
+        try:
+            pagina = max(1, int(request.GET.get('pagina','1')))
+        except ValueError:
+            pagina = 1
+        por_pagina = 50
+        filas = _ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
+        resumen = _ventas_resumen(where, params.copy(), cliente)
+        total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
+    except Exception as exc:
+        return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
+    return render(request, 'admin/ventas.html', {
+        'cliente': cliente, 'filas': filas, 'resumen': resumen, 'filtros': filtros,
+        'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
+        'ventas_columns': VENTAS_COLUMNS,
+    })
+
+
+def _admin_ventas_filtros(request):
+    hoy = timezone.localdate()
+    primer_dia = hoy.replace(day=1)
+    desde = request.GET.get('fecha_desde','').strip() or primer_dia.strftime('%Y-%m-%d')
+    hasta = request.GET.get('fecha_hasta','').strip() or hoy.strftime('%Y-%m-%d')
+    cliente_busqueda = request.GET.get('cliente_busqueda','').strip()
+    where=[]; params=[]
+    try:
+        datetime.strptime(desde,'%Y-%m-%d'); where.append('fecfactur::date >= %s::date'); params.append(desde)
+    except ValueError: desde=''
+    try:
+        datetime.strptime(hasta,'%Y-%m-%d'); where.append("fecfactur::date < (%s::date + INTERVAL '1 day')"); params.append(hasta)
+    except ValueError: hasta=''
+    if cliente_busqueda:
+        where.append('(ruccedcli ILIKE %s OR nomcli ILIKE %s)')
+        params.extend([f'%{cliente_busqueda}%',f'%{cliente_busqueda}%'])
+    return (' AND '.join(where) if where else '1=1'), params, {'fecha_desde':desde,'fecha_hasta':hasta,'cliente_busqueda':cliente_busqueda}
+
+
+@admin_required
+def admin_ventas_excel(request, ruc):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from .views import _cliente_db, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
+    cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
+    filas=_ventas_query(where,params.copy(),cliente); resumen=_ventas_resumen(where,params.copy(),cliente)
+    wb=Workbook(); ws=wb.active; ws.title='Ventas'
+    ws.append([x[1] for x in VENTAS_COLUMNS])
+    for cell in ws[1]: cell.font=Font(bold=True,color='FFFFFF'); cell.fill=PatternFill('solid',fgColor='21333E'); cell.alignment=Alignment(horizontal='center')
+    for row in filas: ws.append(list(row))
+    ws.append([]); ws.append(['','','','','','RESUMEN',resumen['base0'],resumen['baseiva'],resumen['iva'],resumen['total'],resumen['retiva'],resumen['retrenta']])
+    buffer=BytesIO(); wb.save(buffer)
+    response=HttpResponse(buffer.getvalue(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); response['Content-Disposition']='attachment; filename="ventas_administrativo.xlsx"'; return response
+
+
+@admin_required
+def admin_ventas_pdf(request, ruc):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape,A4
+    from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Paragraph,Spacer
+    from .views import _ventas_query,_ventas_resumen,VENTAS_COLUMNS
+    cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
+    filas=_ventas_query(where,params.copy(),cliente); resumen=_ventas_resumen(where,params.copy(),cliente)
+    buf=BytesIO(); doc=SimpleDocTemplate(buf,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
+    styles=getSampleStyleSheet(); title=ParagraphStyle('avt',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,alignment=TA_CENTER)
+    head=ParagraphStyle('avh',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8,alignment=TA_CENTER)
+    cell=ParagraphStyle('avc',parent=styles['Normal'],fontSize=5.4,leading=6,alignment=TA_CENTER)
+    data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
+    for row in filas:
+        data.append([Paragraph(str(v or ''),cell) if i in (0,1,2,3,4,5,12,13) else f'{float(v or 0):.2f}' for i,v in enumerate(row)])
+    data.append(['','','','','','',f"{resumen['base0']:.2f}",f"{resumen['baseiva']:.2f}",f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",f"{resumen['retiva']:.2f}",f"{resumen['retrenta']:.2f}",''])
+    table=Table(data,repeatRows=1,colWidths=[22,105,68,48,72,76,52,52,42,52,45,50,52,60])
+    table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),('ALIGN',(0,0),(-1,-1),'CENTER'),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5'))]))
+    doc.build([Paragraph('REPORTE DE VENTAS',title),Paragraph(f"VENTAS DESDE {filtros['fecha_desde']} A {filtros['fecha_hasta']}",head),Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}",head),Spacer(1,10),table])
+    response=HttpResponse(buf.getvalue(),content_type='application/pdf'); response['Content-Disposition']='attachment; filename="ventas_administrativo.pdf"'; return response
+
+
+@admin_required
+def admin_ventas_editar(request, ruc):
+    from .views import _cliente_db
+    cliente=get_object_or_404(Cliente,pk=ruc)
+    numfactur=(request.POST.get('numfactur') if request.method=='POST' else request.GET.get('numfactur','')).strip()
+    db=_cliente_db(cliente)
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='ventas' ORDER BY ordinal_position")
+            cols=[x[0] for x in cur.fetchall()]
+            if 'numfactur' not in cols: return JsonResponse({'ok':False,'error':'El campo numfactur no existe en ventas.'},status=500)
+            wanted=['fecfactur','numfactur','autorizacion','basenoobj','baseiva0','baseiva12','iva','retiva','retrenta','numret','autret','codret']
+            select=[x for x in wanted if x in cols]
+            cur.execute(f'SELECT {",".join(chr(34)+x+chr(34) for x in select)} FROM ventas WHERE "numfactur"::text=%s LIMIT 1',[numfactur])
+            row=cur.fetchone()
+            if not row: return JsonResponse({'ok':False,'error':f'No se encontró la factura {numfactur}.'},status=404)
+            data=dict(zip(select,row))
+            if request.method=='GET':
+                for k,v in data.items(): data[k]='' if v is None else (v.isoformat() if hasattr(v,'isoformat') else str(v))
+                return JsonResponse({'ok':True,'venta':data})
+            editable=[x for x in ['fecfactur','autorizacion','basenoobj','baseiva0','baseiva12','iva','retiva','retrenta','numret','autret','codret'] if x in cols and x in request.POST]
+            vals={x:(request.POST.get(x,'').strip() or None) for x in editable}
+            if not vals: return JsonResponse({'ok':False,'error':'No hay cambios para guardar.'},status=400)
+            sets=', '.join(f'"{x}"=%s' for x in vals)
+            cur.execute(f'UPDATE ventas SET {sets} WHERE "numfactur"::text=%s',[*vals.values(),numfactur])
+            db.commit()
+            return JsonResponse({'ok':True})
+    except Exception as exc:
+        try: db.rollback()
+        except Exception: pass
+        return JsonResponse({'ok':False,'error':f'Error actualizando venta: {type(exc).__name__}: {exc}'},status=500)
+
+
+@admin_required
 def admin_compras(request, ruc):
     from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen
 
