@@ -700,6 +700,491 @@ def admin_documentacion(request, ruc):
     )
 
 
+def _admin_compras_filtros(request):
+    hoy = timezone.localdate()
+    primer_dia_mes = hoy.replace(day=1)
+    fecha_desde = request.GET.get('fecha_desde', '').strip() or primer_dia_mes.strftime('%Y-%m-%d')
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip() or hoy.strftime('%Y-%m-%d')
+    proveedor = request.GET.get('proveedor', '').strip()
+
+    where = []
+    params = []
+    try:
+        datetime.strptime(fecha_desde, '%Y-%m-%d')
+        where.append('fecemi::date >= %s::date')
+        params.append(fecha_desde)
+    except ValueError:
+        fecha_desde = ''
+
+    try:
+        datetime.strptime(fecha_hasta, '%Y-%m-%d')
+        where.append("fecemi::date < (%s::date + INTERVAL '1 day')")
+        params.append(fecha_hasta)
+    except ValueError:
+        fecha_hasta = ''
+
+    if proveedor:
+        where.append('(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)')
+        params.extend([f'%{proveedor}%', f'%{proveedor}%'])
+
+    return (' AND '.join(where) if where else '1=1'), params, {
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'proveedor': proveedor,
+    }
+
+
+@admin_required
+def admin_compras(request, ruc):
+    from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_compras_filtros(request)
+    db = _cliente_db(cliente)
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(
+                f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where}",
+                params,
+            )
+            total_registros = cursor.fetchone()[0]
+    except Exception as exc:
+        return HttpResponse(f'Error consultando compras: {type(exc).__name__}: {exc}', status=500,
+                            content_type='text/plain; charset=utf-8')
+
+    try:
+        pagina = max(1, int(request.GET.get('pagina', '1')))
+    except (TypeError, ValueError):
+        pagina = 1
+
+    por_pagina = 50
+    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+    pagina = min(pagina, total_paginas)
+    offset = (pagina - 1) * por_pagina
+
+    try:
+        filas = _compras_query(where, params.copy(), cliente, por_pagina, offset)
+        resumen = _compras_resumen(where, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(f'Error consultando compras: {type(exc).__name__}: {exc}', status=500,
+                            content_type='text/plain; charset=utf-8')
+
+    return render(request, 'admin/compras.html', {
+        'cliente': cliente,
+        'filas': filas,
+        'resumen': resumen,
+        'filtros': filtros,
+        'pagina': pagina,
+        'total_paginas': total_paginas,
+        'total_registros': total_registros,
+    })
+
+
+@admin_required
+def admin_compras_excel(request, ruc):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen, COMPRAS_COLUMNS
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_compras_filtros(request)
+    filas = _compras_query(where, params.copy(), cliente)
+    resumen = _compras_resumen(where, params.copy(), cliente)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Compras'
+    ws.append([label for _, label in COMPRAS_COLUMNS])
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+    for row in filas:
+        ws.append(list(row))
+
+    ws.append([])
+    ws.append(['', '', '', '', '', '', '', 'RESUMEN',
+               resumen['bases_sin_iva'], resumen['bases_con_iva'], resumen['iva'],
+               resumen['total'], resumen['retiva'], '', resumen['retrenta'], ''])
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+
+    widths = [7, 38, 17, 10, 13, 25, 18, 16, 16, 13, 16, 13, 11, 16, 18]
+    for i, width in enumerate(widths, 1):
+        from openpyxl.utils import get_column_letter
+        ws.column_dimensions[get_column_letter(i)].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="compras_administrativo.xlsx"'
+    return response
+
+
+@admin_required
+def admin_compras_pdf(request, ruc):
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from .views import _compras_query, _compras_resumen, COMPRAS_COLUMNS
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_compras_filtros(request)
+    filas = _compras_query(where, params.copy(), cliente)
+    resumen = _compras_resumen(where, params.copy(), cliente)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=18, rightMargin=18, topMargin=18, bottomMargin=18)
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle('AdminComprasPDFTitulo', parent=styles['Title'], fontName='Helvetica-Bold',
+                            fontSize=14, leading=16, alignment=TA_CENTER, spaceAfter=3)
+    cab = ParagraphStyle('AdminComprasPDFCab', parent=styles['Normal'], fontName='Helvetica-Bold',
+                         fontSize=8, leading=10, alignment=TA_CENTER)
+    tabla = ParagraphStyle('AdminComprasPDFTabla', parent=styles['Normal'], fontName='Helvetica',
+                           fontSize=5, leading=5.8, alignment=TA_CENTER, wordWrap='CJK')
+    izq = ParagraphStyle('AdminComprasPDFIzq', parent=tabla, alignment=0)
+    enc = ParagraphStyle('AdminComprasPDFEnc', parent=tabla, fontName='Helvetica-Bold',
+                         textColor=colors.white, leading=6)
+
+    elements = [
+        Paragraph('REPORTE DE COMPRAS - ADMINISTRATIVO', titulo),
+        Paragraph(f"DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}", cab),
+        Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}", cab),
+        Spacer(1, 8),
+    ]
+
+    data = [[Paragraph(label, enc) for _, label in COMPRAS_COLUMNS]]
+    for row in filas:
+        values = []
+        for i, value in enumerate(row):
+            if i in (1, 2, 3, 4, 5, 6, 12, 14):
+                values.append(Paragraph(str(value or ''), izq if i == 1 else tabla))
+            else:
+                values.append(Paragraph(f"{float(value or 0):.2f}", tabla))
+        data.append(values)
+
+    data.append(['', '', '', '', '', '', '', f"{resumen['bases_sin_iva']:.2f}",
+                 f"{resumen['bases_con_iva']:.2f}", f"{resumen['iva']:.2f}",
+                 f"{resumen['total']:.2f}", f"{resumen['retiva']:.2f}", '',
+                 f"{resumen['retrenta']:.2f}", ''])
+
+    table = Table(data, repeatRows=1,
+                  colWidths=[22, 105, 65, 38, 48, 70, 70, 50, 50, 40, 50, 42, 38, 48, 52])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (11, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="compras_administrativo.pdf"'
+    return response
+
+
+@admin_required
+def admin_clientes(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    dia = request.GET.get('dia', 'todos').strip() or 'todos'
+    tipdec = request.GET.get('tipdec', '').strip()
+
+    clientes = Cliente.objects.all().order_by('nomclient')
+
+    if query:
+        from django.db.models import Q
+        clientes = clientes.filter(
+            Q(nomclient__icontains=query) |
+            Q(ruccedcli__icontains=query)
+        )
+
+    if estado == 'activos':
+        clientes = clientes.filter(activo=True)
+    elif estado == 'inactivos':
+        clientes = clientes.filter(activo=False)
+
+    if dia != 'todos':
+        clientes = clientes.filter(diadeclaracion=dia)
+
+    if tipdec:
+        clientes = clientes.filter(tipdec__iexact=tipdec)
+
+    dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
+    tipos_dec = ('MENSUAL', 'SEMESTRAL', 'ANUAL')
+
+    return render(
+        request,
+        'admin/clientes.html',
+        {
+            'clientes': clientes,
+            'query': query,
+            'estado': estado,
+            'dia': dia,
+            'tipdec': tipdec,
+            'dias': dias,
+            'tipos_dec': tipos_dec,
+        },
+    )
+
+
+@admin_required
+def admin_suscriptores(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    suscriptores = Suscriptor.objects.all()
+
+    if query:
+        from django.db.models import Q
+        suscriptores = suscriptores.filter(
+            Q(nombre__icontains=query) |
+            Q(email__icontains=query)
+        )
+
+    if estado == 'activos':
+        suscriptores = suscriptores.filter(activo=True)
+    elif estado == 'inactivos':
+        suscriptores = suscriptores.filter(activo=False)
+
+    return render(
+        request,
+        'admin/suscriptores.html',
+        {
+            'suscriptores': suscriptores,
+            'query': query,
+            'estado': estado,
+            'suscriptores_total': Suscriptor.objects.count(),
+            'suscriptores_activos': Suscriptor.objects.filter(activo=True).count(),
+        },
+    )
+
+
+@admin_required
+def admin_contrasenas(request):
+    """Listado administrativo de clientes activos y sus credenciales tributarias/laborales."""
+    query = request.GET.get('q', '').strip()
+    dia = request.GET.get('dia', 'todos').strip() or 'todos'
+    tipdec = request.GET.get('tipdec', '').strip()
+
+    # Al entrar se muestran únicamente clientes activos.
+    # Cuando se realiza una búsqueda, se consulta toda la base de datos,
+    # incluyendo clientes inactivos.
+    clientes_qs = Cliente.objects.filter(activo=True)
+
+    if query:
+        from django.db.models import Q
+        clientes_qs = Cliente.objects.all().filter(
+            Q(nomclient__icontains=query) |
+            Q(ruccedcli__icontains=query)
+        )
+
+    if dia != 'todos':
+        clientes_qs = clientes_qs.filter(diadeclaracion=str(dia))
+
+    if tipdec:
+        clientes_qs = clientes_qs.filter(semensual__iexact=tipdec)
+
+    clientes_qs = clientes_qs.order_by('nomclient')
+
+    dias = (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
+    tipos_dec = ('MENSUAL', 'SEMESTRAL', 'ANUAL')
+
+    return render(
+        request,
+        'admin/contrasenas.html',
+        {
+            'clientes': clientes_qs,
+            'pestanas': [
+                {
+                    'dia': dia_item,
+                    'clientes': clientes_qs.filter(diadeclaracion=str(dia_item)),
+                }
+                for dia_item in dias
+            ],
+            'clientes_busqueda': clientes_qs if query else Cliente.objects.none(),
+            'query': query,
+            'dia': dia,
+            'tipdec': tipdec,
+            'dias': dias,
+            'tipos_dec': tipos_dec,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        },
+    )
+
+
+def _admin_conciliacion_cliente(cliente, anio=None):
+    """Obtiene la conciliación mensual usando exclusivamente mes y anio."""
+    db_name = str(cliente.ruccedcli).strip()
+    alias = f'cliente_{db_name}'
+    if alias not in connections.databases:
+        base = settings.DATABASES['default'].copy()
+        base['NAME'] = db_name
+        connections.databases[alias] = base
+
+    db = connections[alias]
+
+    # Los períodos se obtienen de los campos mes/anio, no de las fechas.
+    # Esto evita interpretar erróneamente valores como 09/01/2026.
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT "año"
+            FROM (
+                SELECT "año" FROM ventas
+                UNION
+                SELECT "año" FROM comprasnue
+            ) periodos
+            WHERE "año" IS NOT NULL
+              AND TRIM("año"::text) <> ''
+            ORDER BY "año" DESC
+        """)
+        anios = []
+        for row in cursor.fetchall():
+            try:
+                anios.append(int(str(row[0]).strip()))
+            except (TypeError, ValueError):
+                continue
+
+    if not anios:
+        return {
+            'anio': anio or 0,
+            'anios': [],
+            'meses': [],
+            'mes_final_nombre': '',
+            'totales': {
+                'ventas': 0,
+                'compras': 0,
+                'retrenta': 0,
+                'retiva': 0,
+                'resultado': 0,
+                'retenciones': 0,
+            },
+        }
+
+    try:
+        anio = int(anio)
+    except (TypeError, ValueError):
+        anio = anios[0]
+
+    if anio not in anios:
+        anio = anios[0]
+
+    with db.cursor() as cursor:
+        cursor.execute("""
+            WITH meses AS (
+                SELECT generate_series(1, 12) AS mes
+            ),
+            ventas_mes AS (
+                SELECT
+                    TRIM(mes::text)::integer AS mes,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                    ), 0) AS ventas,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(retrenta::text, ''), '0')::numeric
+                    ), 0) AS retrenta,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(retiva::text, ''), '0')::numeric
+                    ), 0) AS retiva
+                FROM ventas
+                WHERE TRIM("año"::text) = %s
+                  AND TRIM(mes::text) ~ '^\d{1,2}$'
+                  AND TRIM(mes::text)::integer BETWEEN 1 AND 12
+                GROUP BY TRIM(mes::text)::integer
+            ),
+            compras_mes AS (
+                SELECT
+                    TRIM(mes::text)::integer AS mes,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                    ), 0) AS compras
+                FROM comprasnue
+                WHERE TRIM("año"::text) = %s
+                  AND TRIM(mes::text) ~ '^\d{1,2}$'
+                  AND TRIM(mes::text)::integer BETWEEN 1 AND 12
+                  AND TRIM(tipcom::text) IN ('01', '02')
+                GROUP BY TRIM(mes::text)::integer
+            )
+            SELECT
+                m.mes,
+                COALESCE(v.ventas, 0),
+                COALESCE(c.compras, 0),
+                COALESCE(v.retrenta, 0),
+                COALESCE(v.retiva, 0)
+            FROM meses m
+            LEFT JOIN ventas_mes v ON v.mes = m.mes
+            LEFT JOIN compras_mes c ON c.mes = m.mes
+            ORDER BY m.mes
+        """, [str(anio), str(anio)])
+        rows = cursor.fetchall()
+
+    nombres = [
+        'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+        'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ]
+
+    meses = []
+    for mes, ventas, compras, retrenta, retiva in rows:
+        meses.append({
+            'nombre': nombres[int(mes) - 1],
+            'ventas': ventas or 0,
+            'compras': compras or 0,
+            'retrenta': retrenta or 0,
+            'retiva': retiva or 0,
+        })
+
+    # Siempre se muestran los 12 meses. Los meses sin registros quedan en cero.
+    totales = {
+        campo: sum((m[campo] for m in meses), 0)
+        for campo in ('ventas', 'compras', 'retrenta', 'retiva')
+    }
+    totales['resultado'] = totales['ventas'] - totales['compras']
+    totales['retenciones'] = totales['retrenta'] + totales['retiva']
+
+    return {
+        'anio': anio,
+        'anios': anios,
+        'meses': meses,
+        'mes_final_nombre': 'DICIEMBRE',
+        'totales': totales,
+    }
+
+
+@admin_required
+def admin_documentacion(request, ruc):
+    """Muestra las categorías de documentación disponibles para el cliente."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    return render(
+        request,
+        'admin/documentacion.html',
+        {
+            'cliente': cliente,
+            'db_name': str(cliente.ruccedcli).strip(),
+        },
+    )
+
+
 @admin_required
 def admin_compras(request, ruc):
     """Reporte de compras del cliente para el módulo administrativo."""
