@@ -411,7 +411,6 @@
         font-size:11px;
     }
 }
-<style>
 .admin-compras-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .admin-compras-tool{height:38px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;text-decoration:none;font-size:11px;font-weight:800;box-sizing:border-box}
 .admin-compras-excel{background:#fff;border:1px solid #79b98d;color:#287c43}
@@ -429,8 +428,7 @@
 .admin-compras-row-menu button:hover{background:#f3f8f9}
 .admin-compras-row-menu .admin-compras-row-delete:hover{color:#b33b3b}
 @media(max-width:900px){.admin-compras-toolbar{align-items:flex-start;flex-direction:column}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
-</style>
-<script>
+
 document.addEventListener('click',function(e){
     const button=e.target.closest('.admin-compras-menu-button');
     document.querySelectorAll('.admin-compras-row-actions.open').forEach(function(el){
@@ -454,5 +452,4 @@ document.querySelector('.admin-compras-new')?.addEventListener('click',function(
     alert('La creación de facturas administrativas se habilitará para el cliente '+this.dataset.ruc+'.');
 });
 </script>
-</style>
 {% endblock %}
