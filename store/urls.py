@@ -7,6 +7,7 @@ from . import admin_views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('suscribirse/', views.newsletter_subscribe, name='newsletter_subscribe'),
     path('signin/', views.do_signin, name='signin'),
     path('totalcounts/login/', admin_views.admin_login, name='admin_login'),
     path('totalcounts/logout/', admin_views.admin_logout, name='admin_logout'),
