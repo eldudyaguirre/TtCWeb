@@ -23,6 +23,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/', admin_views.admin_compras, name='admin_compras'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/compras/editar/', admin_views.admin_compras_editar, name='admin_compras_editar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/excel/', admin_views.admin_compras_excel, name='admin_compras_excel'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/pdf/', admin_views.admin_compras_pdf, name='admin_compras_pdf'),
     path('logout/', views.do_logout, name='logout'),
