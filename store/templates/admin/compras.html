@@ -79,9 +79,7 @@
                 {% for row in filas %}
                 <tr>
                     {% for value in row %}
-                        {% if forloop.counter0 == 0 %}
-                            {# numcompra: identificador interno, no se muestra #}
-                        {% elif forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 7 or forloop.counter0 == 13 or forloop.counter0 == 15 %}
+                        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
                             <td>{{ value }}</td>
                         {% else %}
                             <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
@@ -92,7 +90,7 @@
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
-                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.0|escapejs }}" data-documento="{{ row.6|escapejs }}" data-autorizacion="{{ row.7|escapejs }}">
+                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.15|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
