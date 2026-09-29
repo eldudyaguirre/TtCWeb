@@ -589,10 +589,20 @@ def _admin_conciliacion_cliente(cliente, anio=None):
     if anio not in anios:
         anio = anios[0]
 
+    # Para el año en curso solo se consideran meses cerrados.
+    # Por ejemplo, si estamos en septiembre, la conciliación llega hasta agosto
+    # y cualquier movimiento registrado en septiembre-diciembre queda fuera.
+    # Para años anteriores se consideran los 12 meses.
+    hoy = timezone.localdate()
+    if anio == hoy.year:
+        mes_hasta = max(hoy.month - 1, 0)
+    else:
+        mes_hasta = 12
+
     with db.cursor() as cursor:
         cursor.execute("""
             WITH meses AS (
-                SELECT generate_series(1, 12) AS mes
+                SELECT generate_series(1, %s) AS mes
             ),
             ventas_mes AS (
                 SELECT EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}' THEN CASE WHEN SPLIT_PART(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'DD/MM/YYYY') ELSE TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'MM/DD/YYYY') END WHEN TRIM(fecfactur::text) ~ '^\\d{4}-\\d{1,2}-\\d{1,2}' THEN TO_DATE(SUBSTRING(TRIM(fecfactur::text) FROM 1 FOR 10), 'YYYY-MM-DD') ELSE NULL END))::integer AS mes,
@@ -637,7 +647,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             LEFT JOIN ventas_mes v ON v.mes = m.mes
             LEFT JOIN compras_mes c ON c.mes = m.mes
             ORDER BY m.mes
-        """, [anio, anio])
+        """, [mes_hasta, anio, anio])
         rows = cursor.fetchall()
 
     nombres = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE']
@@ -651,14 +661,16 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             'retiva': retiva or 0,
         })
 
-    # No mostrar meses futuros/sin movimientos al final del ejercicio.
-    # La conciliación debe terminar en el último mes que realmente tiene datos.
-    while meses and all(
-        (mes[campo] or 0) == 0
-        for campo in ('ventas', 'compras', 'retrenta', 'retiva')
-        for mes in [meses[-1]]
-    ):
-        meses.pop()
+    # En el año actual ya limitamos la consulta al último mes cerrado.
+    # Para años anteriores eliminamos únicamente los meses finales sin movimientos,
+    # para no mostrar meses posteriores al último período con datos.
+    if anio != hoy.year:
+        while meses and all(
+            (mes[campo] or 0) == 0
+            for campo in ('ventas', 'compras', 'retrenta', 'retiva')
+            for mes in [meses[-1]]
+        ):
+            meses.pop()
 
     totales = {campo: sum((m[campo] for m in meses), 0) for campo in ('ventas','compras','retrenta','retiva')}
     totales['resultado'] = totales['ventas'] - totales['compras']
