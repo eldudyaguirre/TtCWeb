@@ -6102,69 +6102,6 @@ def about(request):
     return render(request, 'about.html')
 
 
-def contactanos(request):
-    if request.method == 'POST':
-        if request.POST.get('website', '').strip():
-            return redirect('contactanos')
-
-        nombre = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        telefono = request.POST.get('phone', '').strip()
-        tema = request.POST.get('info', '').strip()
-        mensaje = request.POST.get('message', '').strip()
-
-        temas_validos = {
-            'Consulta Tributaria',
-            'Consulta Contable',
-            'Consulta Laboral',
-            'Consulta Seguridad Laboral',
-            'Consulta Legal',
-            'Tramites y Requerimientos',
-            'Otros',
-        }
-
-        if not nombre or not email or not tema or not mensaje:
-            messages.error(request, 'Complete los campos obligatorios antes de enviar el mensaje.')
-            return redirect('contactanos')
-
-        if tema not in temas_validos:
-            messages.error(request, 'Seleccione un tema válido para su consulta.')
-            return redirect('contactanos')
-
-        cuerpo = (
-            f'Nuevo mensaje desde el formulario de Contactanos de TotalCounts.\\n\\n'
-            f'Nombre: {nombre}\\n'
-            f'Email: {email}\\n'
-            f'Celular: {telefono or "No indicado"}\\n'
-            f'Tema: {tema}\\n\\n'
-            f'Mensaje:\\n{mensaje}'
-        )
-
-        try:
-            correo = EmailMessage(
-                subject=f'[TotalCounts] {tema} - {nombre}',
-                body=cuerpo,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[settings.CONTACT_FORM_RECIPIENT],
-                reply_to=[email],
-            )
-            correo.send(fail_silently=False)
-        except Exception:
-            messages.error(
-                request,
-                'No fue posible enviar el mensaje en este momento. Inténtelo nuevamente.'
-            )
-            return redirect('contactanos')
-
-        messages.success(
-            request,
-            'Mensaje enviado correctamente. Nos pondremos en contacto con usted.'
-        )
-        return redirect('contactanos')
-
-    return render(request, 'contactanos.html')
-
-
 def avisos_legales(request):
     return render(request, 'avisos-legales.html')
 
