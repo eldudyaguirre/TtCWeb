@@ -6,11 +6,11 @@ from django.db import connection, connections
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.contrib.auth.hashers import check_password, make_password
 
 from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
@@ -698,6 +698,99 @@ def admin_documentacion(request, ruc):
             'db_name': str(cliente.ruccedcli).strip(),
         },
     )
+
+
+@admin_required
+def admin_compras(request, ruc):
+    """Reporte de compras del cliente para el módulo administrativo."""
+    from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where = []
+    params = []
+
+    hoy = timezone.localdate()
+    primer_dia_mes = hoy.replace(day=1)
+    fecha_desde = request.GET.get('fecha_desde', '').strip()
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip()
+    proveedor = request.GET.get('proveedor', '').strip()
+
+    if not fecha_desde:
+        fecha_desde = primer_dia_mes.strftime('%Y-%m-%d')
+    if not fecha_hasta:
+        fecha_hasta = hoy.strftime('%Y-%m-%d')
+
+    if fecha_desde:
+        try:
+            datetime.strptime(fecha_desde, '%Y-%m-%d')
+            where.append('fecemi::date >= %s::date')
+            params.append(fecha_desde)
+        except ValueError:
+            fecha_desde = ''
+
+    if fecha_hasta:
+        try:
+            datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            where.append("fecemi::date < (%s::date + INTERVAL '1 day')")
+            params.append(fecha_hasta)
+        except ValueError:
+            fecha_hasta = ''
+
+    if proveedor:
+        where.append('(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)')
+        params.extend([f'%{proveedor}%', f'%{proveedor}%'])
+
+    where_sql = ' AND '.join(where) if where else '1=1'
+    db = _cliente_db(cliente)
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(
+                f"SELECT COUNT(*) FROM ({_compras_base_sql()}) compras_reporte WHERE {where_sql}",
+                params,
+            )
+            total_registros = cursor.fetchone()[0]
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando compras: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    try:
+        pagina = max(1, int(request.GET.get('pagina', '1')))
+    except (TypeError, ValueError):
+        pagina = 1
+
+    por_pagina = 50
+    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+    if pagina > total_paginas:
+        pagina = total_paginas
+    offset = (pagina - 1) * por_pagina
+
+    try:
+        filas = _compras_query(where_sql, params.copy(), cliente, por_pagina, offset)
+        resumen = _compras_resumen(where_sql, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando compras: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    return render(request, 'admin/compras.html', {
+        'cliente': cliente,
+        'filas': filas,
+        'resumen': resumen,
+        'filtros': {
+            'fecha_desde': fecha_desde,
+            'fecha_hasta': fecha_hasta,
+            'proveedor': proveedor,
+        },
+        'pagina': pagina,
+        'total_paginas': total_paginas,
+        'total_registros': total_registros,
+    })
 
 def admin_cliente(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
