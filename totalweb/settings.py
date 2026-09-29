@@ -185,3 +185,15 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Salt opcional para anonimizar la IP en las estadísticas de visitas.
 VISITAS_IP_SALT = os.getenv('VISITAS_IP_SALT', SECRET_KEY)
+
+
+# Configuración del formulario público de contacto.
+# Define EMAIL_HOST_PASSWORD en el archivo .env de producción.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-mail.outlook.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'totalcounts@hotmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').strip().lower() in ('1', 'true', 'yes', 'on')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+CONTACT_FORM_RECIPIENT = os.getenv('CONTACT_FORM_RECIPIENT', 'totalcounts@hotmail.com')
