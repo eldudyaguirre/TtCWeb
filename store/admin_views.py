@@ -822,7 +822,7 @@ def admin_compras_editar(request, ruc):
             'error': f'Error consultando estructura de comprasnue: {type(exc).__name__}: {exc}'
         }, status=500)
 
-        if not columnas:
+    if not columnas:
         return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
     
     cols = set(columnas)
