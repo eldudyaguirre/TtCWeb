@@ -9,3 +9,5 @@ from .usuario_cliente import UsuarioCliente
 from .visita import VisitaWeb
 
 from .admin_perfil import AdminPerfil
+
+from .suscriptor import Suscriptor
