@@ -769,7 +769,24 @@ def admin_compras(request, ruc):
         # Separamos el identificador interno del contenido visual del reporte.
         # Así el HTML nunca depende de la posición de numcompra dentro de la fila.
         filas = [
-            {'datos': fila[:-1], 'numcompra': fila[-1]}
+            {
+                'numero': fila[0],
+                'proveedor': fila[1],
+                'ruc': fila[2],
+                'tipcom': fila[3],
+                'fecha': fila[4],
+                'numfactura': fila[5],
+                'numaut': fila[6],
+                'bases_sin_iva': fila[7],
+                'bases_con_iva': fila[8],
+                'iva': fila[9],
+                'total': fila[10],
+                'retiva': fila[11],
+                'codret': fila[12],
+                'retrenta': fila[13],
+                'numret': fila[14],
+                'numcompra': fila[15],
+            }
             for fila in filas_raw
         ]
         resumen = _compras_resumen(where, params.copy(), cliente)
