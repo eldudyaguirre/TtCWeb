@@ -792,7 +792,15 @@ def admin_compras_editar(request, ruc):
     documento = request.POST.get('documento', '').strip() if request.method == 'POST' else request.GET.get('documento', '').strip()
 
     try:
-        db = _cliente_db(cliente)
+        # Conexión local al PostgreSQL de la base del cliente.
+        # Se construye aquí para que el módulo administrativo no dependa
+        # de la función privada de views.py.
+        alias = f'cliente_{cliente.ruccedcli}'
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = cliente.ruccedcli
+            connections.databases[alias] = base
+        db = connections[alias]
     except Exception as exc:
         return JsonResponse({
             'ok': False,
