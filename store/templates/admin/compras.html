@@ -92,7 +92,7 @@
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
-                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.15|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row|last|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
