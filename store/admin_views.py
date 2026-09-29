@@ -836,7 +836,7 @@ def admin_compras_editar(request, ruc):
     cols = set(columnas)
     # Identifica, sin asumir un nombre único, los campos usados por instalaciones antiguas.
     mes_col = next((x for x in ('mesdeclaracion','mesdeclara','mesdec','mes_declaracion','mes') if x in cols), None)
-    anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano') if x in cols), None)
+    anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano','año') if x in cols), None)
     
     select_cols = [
         'numcompra','fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
