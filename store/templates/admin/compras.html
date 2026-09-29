@@ -78,13 +78,21 @@
             <tbody>
                 {% for row in filas %}
                 <tr>
-                    {% for value in row.datos %}
-                        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
-                            <td>{{ value }}</td>
-                        {% else %}
-                            <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
-                        {% endif %}
-                    {% endfor %}
+                    <td>{{ row.numero }}</td>
+                    <td>{{ row.proveedor }}</td>
+                    <td>{{ row.ruc }}</td>
+                    <td>{{ row.tipcom }}</td>
+                    <td>{{ row.fecha }}</td>
+                    <td>{{ row.numfactura }}</td>
+                    <td>{{ row.numaut }}</td>
+                    <td class="admin-compras-number">{{ row.bases_sin_iva|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.bases_con_iva|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.iva|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.total|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.retiva|floatformat:2 }}</td>
+                    <td>{{ row.codret }}</td>
+                    <td class="admin-compras-number">{{ row.retrenta|floatformat:2 }}</td>
+                    <td>{{ row.numret }}</td>
                     <td class="admin-compras-row-actions">
                         <button type="button" class="admin-compras-menu-button" title="Acciones">
                             <i class="fi fi-rr-menu-dots"></i>
@@ -92,15 +100,15 @@
                         <div class="admin-compras-row-menu">
                             <button type="button" class="admin-compras-row-edit"
                                     data-numcompra="{{ row.numcompra|escapejs }}"
-                                    data-proveedor-ruc="{{ row.datos.2|escapejs }}"
-                                    data-documento="{{ row.datos.5|escapejs }}"
-                                    data-autorizacion="{{ row.datos.6|escapejs }}">
+                                    data-proveedor-ruc="{{ row.ruc|escapejs }}"
+                                    data-documento="{{ row.numfactura|escapejs }}"
+                                    data-autorizacion="{{ row.numaut|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete"
                                     data-numcompra="{{ row.numcompra|escapejs }}"
-                                    data-documento="{{ row.datos.5|escapejs }}"
-                                    data-autorizacion="{{ row.datos.6|escapejs }}">
+                                    data-documento="{{ row.numfactura|escapejs }}"
+                                    data-autorizacion="{{ row.numaut|escapejs }}">
                                 <i class="fi fi-rr-trash"></i> Eliminar
                             </button>
                         </div>
@@ -111,7 +119,7 @@
                     <td colspan="16" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
                 </tr>
                 {% endfor %}
-            </tbody>     </table>
+            </tbody> </table>
     </div>
 
     <div class="admin-compras-summary">
