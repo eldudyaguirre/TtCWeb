@@ -72,7 +72,7 @@
                     <th>COD RET</th>
                     <th>RET RENTA</th>
                     <th>NUM RET.</th>
-                    <th class="admin-compras-actions-head">ACCIONES</th>
+                    <th class="admin-compras-numcompra-hidden">NUMCOMPRA</th><th class="admin-compras-actions-head">ACCIONES</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,13 +93,14 @@
                     <td>{{ row.codret }}</td>
                     <td class="admin-compras-number">{{ row.retrenta|floatformat:2 }}</td>
                     <td>{{ row.numret }}</td>
+                    <td class="admin-compras-numcompra-hidden">{{ row.numcompra }}</td>
                     <td class="admin-compras-row-actions">
                         <button type="button" class="admin-compras-menu-button" title="Acciones">
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
                             <button type="button" class="admin-compras-row-edit"
-                                    data-numcompra="{{ row.numcompra|escapejs }}"
+                                    data-numcompra=""
                                     data-proveedor-ruc="{{ row.ruc|escapejs }}"
                                     data-documento="{{ row.numfactura|escapejs }}"
                                     data-autorizacion="{{ row.numaut|escapejs }}">
@@ -433,7 +434,7 @@
 .admin-compras-new:hover{background:#117f8b;color:#fff}
 .admin-compras-excel:hover,.admin-compras-pdf:hover{background:#f7fafb}
 .admin-compras-actions-head{min-width:85px}
-.admin-compras-row-actions{position:relative!important;min-width:70px;text-align:center!important}
+.admin-compras-numcompra-hidden{display:none !important;}.admin-compras-row-actions{position:relative!important;min-width:70px;text-align:center!important}
 .admin-compras-menu-button{width:32px;height:32px;border:1px solid #d5dee2;border-radius:7px;background:#fff;color:#526771;cursor:pointer}
 .admin-compras-menu-button:hover{border-color:#1596a3;color:#1596a3}
 .admin-compras-row-menu{display:none;position:absolute;right:6px;top:42px;z-index:20;min-width:120px;padding:5px;border:1px solid #d9e2e5;border-radius:8px;background:#fff;box-shadow:0 8px 24px rgba(33,51,62,.14)}
@@ -457,7 +458,9 @@ document.addEventListener('click',function(e){
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
         const baseUrl="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}";
-        const numcompra=(btn.dataset.numcompra || '').trim();
+        const fila=btn.closest('tr');
+        const celdaNumcompra=fila ? fila.querySelector('.admin-compras-numcompra-hidden') : null;
+        const numcompra=(celdaNumcompra ? celdaNumcompra.textContent : '').trim();
         const proveedorRuc=(btn.dataset.proveedorRuc || '').trim();
         const documento=(btn.dataset.documento || '').trim();
         const query='?numcompra='+encodeURIComponent(numcompra)+'&proveedor_ruc='+encodeURIComponent(proveedorRuc)+'&documento='+encodeURIComponent(documento);
