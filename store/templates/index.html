@@ -96,6 +96,35 @@
         <link rel="stylesheet" href="{% static 'css/default.css' %}">
         <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}?v=20260924">
 
+        <style>
+            .newsletter-subscribe-form .newsletter-consent label {
+                display:flex;
+                align-items:flex-start;
+                gap:10px;
+                width:100%;
+                color:rgba(255,255,255,.78);
+                font-size:.82rem;
+                line-height:1.45;
+                cursor:pointer;
+            }
+            .newsletter-subscribe-form .newsletter-consent input[type="checkbox"] {
+                flex:0 0 auto;
+                width:18px;
+                height:18px;
+                margin-top:1px;
+                accent-color:#00a6a6;
+            }
+            .newsletter-subscribe-form .primary-button {
+                border:1px solid #058283;
+                cursor:pointer;
+            }
+            @media (max-width:576px) {
+                .newsletter-subscribe-form .newsletter-consent label {
+                    font-size:.78rem;
+                }
+            }
+        </style>
+
         <!-- ==============================================
         Theme Color
         =============================================== -->
@@ -805,6 +834,14 @@
             </div>
         </section>
 
+        {% if messages %}
+            <div class="container" style="position:relative;z-index:5;">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mt-3 mb-3">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <!-- Subscribe -->
         <section id="subscribe" class="section-6 odd subscribe">
             <div class="container smaller">
@@ -815,23 +852,22 @@
                         <p>Siga de cerca y reciba contenido sobre nuestra empresa y las novedades de las leyes actuales.</p>
                     </div>
                     <div class="col-12 col-md-6">
-                        <form action="#" id="nexgen-subscribe" class="row m-auto items">
-                            <input type="hidden" name="section" value="nexgen_subscribe">
-
-                            <input type="hidden" name="reCAPTCHA">
-                            <!-- Remove this field if you want to disable recaptcha -->
-
+                        <form method="post" action="{% url 'newsletter_subscribe' %}" class="row m-auto items newsletter-subscribe-form">
+                            {% csrf_token %}
                             <div class="col-12 mt-0 input-group align-self-center item">
-                                <input type="text" name="name" class="form-control field-name" placeholder="Nombre">
+                                <input type="text" name="name" class="form-control" placeholder="Nombre">
                             </div>
                             <div class="col-12 input-group align-self-center item">
-                                <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="col-12 input-group align-self-center item newsletter-consent">
+                                <label>
+                                    <input type="checkbox" name="consentimiento" value="1" required>
+                                    <span>Acepto recibir noticias, novedades, información y comunicaciones de TotalCounts.</span>
+                                </label>
                             </div>
                             <div class="col-12 input-group align-self-center item">
-                                <a data-aos="zoom-in" class="btn primary-button">SUSCRIBIRME</a>
-                            </div>
-                            <div class="col-12 item">
-                                <span class="form-alert mt-3 mb-0"></span>
+                                <button type="submit" class="btn primary-button">SUSCRIBIRME</button>
                             </div>
                         </form>
                     </div>
