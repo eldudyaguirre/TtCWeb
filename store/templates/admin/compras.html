@@ -149,6 +149,103 @@
     {% endif %}
 </section>
 
+<div id="compraEditModal" class="admin-compras-modal" aria-hidden="true">
+    <div class="admin-compras-modal-backdrop" data-close-compra></div>
+    <div class="admin-compras-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="compraEditTitle">
+        <div class="admin-compras-modal-header">
+            <div>
+                <small>Edición administrativa</small>
+                <h2 id="compraEditTitle">Editar compra</h2>
+            </div>
+            <button type="button" class="admin-compras-modal-close" data-close-compra>&times;</button>
+        </div>
+        <form id="compraEditForm" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="numcompra" id="editCompraNumcompra">
+            <input type="hidden" name="proveedor_ruc" id="editCompraRucHidden">
+            <input type="hidden" name="documento" id="editCompraDocumentoHidden">
+            <input type="hidden" name="autorizacion" id="editCompraAutorizacionHidden">
+
+            <div class="admin-compras-modal-grid">
+                <div>
+                    <label>RUC proveedor</label>
+                    <input type="text" id="editCompraRuc" readonly>
+                </div>
+                <div class="wide">
+                    <label>Proveedor</label>
+                    <input type="text" id="editCompraProveedor" readonly>
+                </div>
+                <div>
+                    <label>Número de factura</label>
+                    <input type="text" id="editCompraFactura" readonly>
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecemi" id="editCompraFecha">
+                </div>
+                <div>
+                    <label>Tipo comprobante</label>
+                    <select name="tipcom" id="editCompraTipo">
+                        <option value="01">Factura</option>
+                        <option value="02">Nota de venta</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Número autorización</label>
+                    <input type="text" name="numaut" id="editCompraAutorizacion">
+                </div>
+
+                <div class="wide section-title"><div class="admin-compras-section-title">Declaración</div></div>
+                <div>
+                    <label>Mes declaración</label>
+                    <select name="mes_declaracion" id="edit_mes_declaracion">
+                        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Año declaración</label>
+                    <input type="number" name="anio_declaracion" id="edit_anio_declaracion" min="2000" max="2100">
+                </div>
+
+                <div class="wide"><div class="admin-compras-section-title">Subtotales</div></div>
+                <div><label>Subtotal sin IVA / no objeto</label><input type="number" step="0.01" name="baseimpnoobj" id="edit_baseimpnoobj"></div>
+                <div><label>Subtotal IVA 0%</label><input type="number" step="0.01" name="baseimpiva0" id="edit_baseimpiva0"></div>
+                <div><label>Subtotal exento</label><input type="number" step="0.01" name="baseexenta" id="edit_baseexenta"></div>
+                <div><label>Subtotal IVA 5%</label><input type="number" step="0.01" name="baseimpiva5" id="edit_baseimpiva5"></div>
+                <div><label>IVA 5% calculado</label><input type="text" id="calc_iva5" readonly value="0.00"></div>
+                <div><label>Subtotal IVA 8%</label><input type="number" step="0.01" name="baseimpiva8" id="edit_baseimpiva8"></div>
+                <div><label>IVA 8% calculado</label><input type="text" id="calc_iva8" readonly value="0.00"></div>
+                <div><label>Subtotal IVA 12%</label><input type="number" step="0.01" name="baseimpiva12" id="edit_baseimpiva12"></div>
+                <div><label>IVA 12% calculado</label><input type="text" id="calc_iva12" readonly value="0.00"></div>
+                <div><label>Subtotal IVA 14%</label><input type="number" step="0.01" name="baseimpiva14" id="edit_baseimpiva14"></div>
+                <div><label>IVA 14% calculado</label><input type="text" id="calc_iva14" readonly value="0.00"></div>
+                <div><label>Subtotal IVA 15%</label><input type="number" step="0.01" name="baseimpiva15" id="edit_baseimpiva15"></div>
+                <div><label>IVA 15% calculado</label><input type="text" id="calc_iva15" readonly value="0.00"></div>
+                <div><label>Total calculado</label><input type="text" id="editCompraTotal" readonly value="0.00"></div>
+
+                <div class="wide"><div class="admin-compras-section-title">Retenciones</div></div>
+                <div><label>Retención IVA 10%</label><input type="number" step="0.01" name="retencioniva10" id="edit_retencioniva10"></div>
+                <div><label>Retención IVA 20%</label><input type="number" step="0.01" name="retencioniva20" id="edit_retencioniva20"></div>
+                <div><label>Retención IVA 30%</label><input type="number" step="0.01" name="retencioniva30" id="edit_retencioniva30"></div>
+                <div><label>Retención IVA 70%</label><input type="number" step="0.01" name="retencioniva70" id="edit_retencioniva70"></div>
+                <div><label>Retención IVA 100%</label><input type="number" step="0.01" name="retencioniva100" id="edit_retencioniva100"></div>
+                <div><label>Código retención renta</label><input type="text" name="codret" id="edit_codret"></div>
+                <div><label>Valor retención renta</label><input type="number" step="0.01" name="valret" id="edit_valret"></div>
+                <div><label>N° establecimiento ret.</label><input type="text" name="numestret" id="edit_numestret"></div>
+                <div><label>N° punto emisión ret.</label><input type="text" name="numptoemiret" id="edit_numptoemiret"></div>
+                <div><label>N° secuencial ret.</label><input type="text" name="numsecret" id="edit_numsecret"></div>
+            </div>
+            <div class="admin-compras-modal-actions">
+                <button type="button" class="admin-compras-tool admin-compras-clear" data-close-compra>Cancelar</button>
+                <button type="submit" class="admin-compras-tool admin-compras-new">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
 .admin-report-count{
     display:inline-flex;
@@ -481,12 +578,14 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
             const x=data.compra;
             const money=v=>(v===null || v===undefined || v==='')?'':Number(v).toFixed(2);
             document.getElementById('compraEditModal').classList.add('open');
-            document.getElementById('editCompraDocumento').value=btn.dataset.documento;
             document.getElementById('editCompraNumcompra').value=numcompra;
-            document.getElementById('editCompraAutorizacion').value=x.numaut || '';
             document.getElementById('editCompraRuc').value=x.ruccedprovee || '';
+            document.getElementById('editCompraRucHidden').value=x.ruccedprovee || '';
             document.getElementById('editCompraProveedor').value=x.nomprovee || '';
             document.getElementById('editCompraFactura').value=btn.dataset.documento;
+            document.getElementById('editCompraDocumentoHidden').value=btn.dataset.documento;
+            document.getElementById('editCompraAutorizacion').value=x.numaut || '';
+            document.getElementById('editCompraAutorizacionHidden').value=x.numaut || '';
             document.getElementById('editCompraFecha').value=(x.fecemi || '').slice(0,10);
             document.getElementById('editCompraTipo').value=(x.tipcom || '01').toString().trim();
             if(document.getElementById('edit_numaut')) document.getElementById('edit_numaut').value=x.numaut || '';
