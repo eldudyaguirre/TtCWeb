@@ -601,8 +601,8 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
             document.getElementById('edit_anio_declaracion').value=anio;
             recalcularCompra();
         }catch(error){
-            console.error(error);
-            alert('No se pudo cargar la compra.');
+            console.error('ERROR EDITAR COMPRA:', error);
+            alert('Error al preparar la edición: ' + (error && error.message ? error.message : error));
         }
     });
 });
