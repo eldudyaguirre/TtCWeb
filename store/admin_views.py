@@ -816,6 +816,13 @@ def admin_compras_editar(request, ruc):
             ORDER BY ordinal_position
         """)
         columnas = [r[0] for r in cursor.fetchall()]
+    except Exception as exc:
+        return JsonResponse({
+            'ok': False,
+            'error': f'Error consultando estructura de comprasnue: {type(exc).__name__}: {exc}'
+        }, status=500)
+
+    try:
         if not columnas:
             return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
 
