@@ -22,6 +22,7 @@ urlpatterns = [
     path('totalcounts/foto-usuario/', admin_views.admin_foto_usuario, name='admin_foto_usuario'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/compras/', admin_views.admin_compras, name='admin_compras'),
     path('logout/', views.do_logout, name='logout'),
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
     path('portal/parametros/', views.parametros, name='parametros'),
