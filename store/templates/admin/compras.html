@@ -441,8 +441,38 @@ document.addEventListener('click',function(e){
     if(button){button.closest('.admin-compras-row-actions').classList.toggle('open');}
 });
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
-    btn.addEventListener('click',function(){
-        alert('La edición de compras se habilitará sobre el comprobante seleccionado.');
+    btn.addEventListener('click', async function(){
+        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?documento="+encodeURIComponent(btn.dataset.documento)+"&autorizacion="+encodeURIComponent(btn.dataset.autorizacion || '');
+        try{
+            const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+            const data=await response.json();
+            if(!data.ok){alert(data.error || 'No se pudo cargar la compra.');return;}
+            const x=data.compra;
+            const money=v=>(v===null || v===undefined || v==='')?'':Number(v).toFixed(2);
+            document.getElementById('compraEditModal').classList.add('open');
+            document.getElementById('editCompraDocumento').value=btn.dataset.documento;
+            document.getElementById('editCompraAutorizacion').value=x.numaut || '';
+            document.getElementById('editCompraRuc').value=x.ruccedprovee || '';
+            document.getElementById('editCompraProveedor').value=x.nomprovee || '';
+            document.getElementById('editCompraFactura').value=btn.dataset.documento;
+            document.getElementById('editCompraFecha').value=(x.fecemi || '').slice(0,10);
+            document.getElementById('editCompraTipo').value=(x.tipcom || '01').toString().trim();
+            if(document.getElementById('edit_numaut')) document.getElementById('edit_numaut').value=x.numaut || '';
+            ['baseimpnoobj','baseimpiva0','baseexenta','baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15'].forEach(function(k){
+                const el=document.getElementById('edit_'+k); if(el) el.value=money(x[k]);
+            });
+            ['retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100','valret','numestret','numptoemiret','numsecret','codret'].forEach(function(k){
+                const el=document.getElementById('edit_'+k); if(el) el.value=x[k] || '';
+            });
+            const mes=data.compra._mes_col ? (x[data.compra._mes_col] || '') : '';
+            const anio=data.compra._anio_col ? (x[data.compra._anio_col] || '') : '';
+            document.getElementById('edit_mes_declaracion').value=String(mes);
+            document.getElementById('edit_anio_declaracion').value=anio;
+            recalcularCompra();
+        }catch(error){
+            console.error(error);
+            alert('No se pudo cargar la compra.');
+        }
     });
 });
 
