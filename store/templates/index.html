@@ -889,41 +889,38 @@
                         </div>
                         <div class="row">
                             <div class="col-12 p-0">
-                                <form action="{% static 'php/form.php' %}" id="nexgen-simple-form" class="nexgen-simple-form">
-                                    <input type="hidden" name="section" value="nexgen_form">
-
+                                <form method="post" action="{% url 'contactanos' %}" class="nexgen-simple-form" novalidate>
+                                    {% csrf_token %}
+                                    <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true">
 
                                     <div class="row form-group-margin">
                                         <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                            <input type="text" name="name" class="form-control field-name" placeholder="Nombrte">
+                                            <input type="text" name="name" class="form-control field-name" placeholder="Nombre" required>
                                         </div>
                                         <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                            <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                                            <input type="email" name="email" class="form-control field-email" placeholder="Email" required>
                                         </div>
                                         <div class="col-12 col-md-6 m-0 p-2 input-group">
                                             <input type="text" name="phone" class="form-control field-phone" placeholder="Celular">
                                         </div>
                                         <div class="col-12 col-md-6 m-0 p-2 input-group">
                                             <i class="icon-arrow-down mr-3"></i>
-                                            <select name="info" class="form-control field-info">
+                                            <select name="info" class="form-control field-info" required>
                                                 <option value="" selected disabled>Más Info</option>
-                                                <option>Control Tributario</option>
-                                                <option>Recursos Humanos</option>
-                                                <option>Auditorías</option>
-                                                <option>Consultoría Legal</option>
-                                                <option>Devoluciones</option>
-                                                <option>Reglamentos y Seg. Ocupacional</option>
-                                                <option>Otros</option>
+                                                <option value="Consulta Tributaria">Consulta Tributaria</option>
+                                                <option value="Consulta Contable">Consulta Contable</option>
+                                                <option value="Consulta Laboral">Consulta Laboral</option>
+                                                <option value="Consulta Seguridad Laboral">Consulta Seguridad Laboral</option>
+                                                <option value="Consulta Legal">Consulta Legal</option>
+                                                <option value="Tramites y Requerimientos">Tramites y Requerimientos</option>
+                                                <option value="Otros">Otros</option>
                                             </select>
                                         </div>
                                         <div class="col-12 m-0 p-2 input-group">
-                                            <textarea name="message" class="form-control field-message" placeholder="Mensaje"></textarea>
-                                        </div>
-                                        <div class="col-12 col-12 m-0 p-2 input-group">
-                                            <span class="form-alert"></span>
+                                            <textarea name="message" class="form-control field-message" placeholder="Mensaje" required></textarea>
                                         </div>
                                         <div class="col-12 input-group m-0 p-2">
-                                            <a class="btn primary-button">ENVIAR</a>
+                                            <button type="submit" class="btn primary-button">ENVIAR</button>
                                         </div>
                                     </div>
                                 </form>
