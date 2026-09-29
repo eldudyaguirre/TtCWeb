@@ -823,8 +823,15 @@ def admin_compras_editar(request, ruc):
         where = '"numcompra"::text=%s'
         params = [numcompra]
 
-        cursor.execute(f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1', params)
-        row = cursor.fetchone()
+        try:
+            cursor.execute(
+                f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1',
+                params
+            )
+            row = cursor.fetchone()
+        except Exception as exc:
+            db.rollback()
+            return JsonResponse({'ok': False, 'error': f'Error consultando la compra: {type(exc).__name__}: {exc}'}, status=500)
         if not row:
             return JsonResponse({'ok': False, 'error': 'No se encontró la compra seleccionada.'}, status=404)
 
