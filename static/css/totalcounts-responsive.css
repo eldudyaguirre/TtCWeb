@@ -682,3 +682,24 @@ iframe {
         color: #ffffff !important;
     }
 }
+
+
+/* Home: keep the "Entérate" highlight visible on mobile like the desktop version. */
+@media (max-width: 767px) {
+    body #subscribe h2 .featured {
+        position: relative !important;
+        display: inline-block !important;
+        background: rgba(0, 166, 166, 0.22) !important;
+        border-radius: 4px !important;
+    }
+
+    body #subscribe h2 .featured::before {
+        background-color: #00a6a6 !important;
+        opacity: 0.45 !important;
+    }
+
+    body #subscribe h2 .featured span {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+}
