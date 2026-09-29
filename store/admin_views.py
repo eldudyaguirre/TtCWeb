@@ -791,8 +791,24 @@ def admin_compras_editar(request, ruc):
     proveedor_ruc = request.POST.get('proveedor_ruc', '').strip() if request.method == 'POST' else request.GET.get('proveedor_ruc', '').strip()
     documento = request.POST.get('documento', '').strip() if request.method == 'POST' else request.GET.get('documento', '').strip()
 
-    db = _cliente_db(cliente)
-    with db.cursor() as cursor:
+    try:
+        db = _cliente_db(cliente)
+    except Exception as exc:
+        return JsonResponse({
+            'ok': False,
+            'error': f'Error conectando a la base del cliente: {type(exc).__name__}: {exc}'
+        }, status=500)
+
+    try:
+        cursor_ctx = db.cursor()
+        cursor = cursor_ctx.__enter__()
+    except Exception as exc:
+        return JsonResponse({
+            'ok': False,
+            'error': f'Error abriendo cursor de compras: {type(exc).__name__}: {exc}'
+        }, status=500)
+
+    try:
         cursor.execute("""
             SELECT column_name
             FROM information_schema.columns
