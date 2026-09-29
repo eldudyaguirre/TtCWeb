@@ -6,7 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -3786,22 +3786,54 @@ def contactanos(request):
             messages.error(request, 'Selecciona un tema válido.')
         else:
             try:
+                celular_final = celular or 'No indicado'
                 cuerpo = (
-                    'Nuevo mensaje desde el formulario de Contactanos\n\n'
+                    'TOTALCOUNTS - MENSAJE DESDE LA WEB\n'
+                    '==================================\n\n'
                     f'Nombres: {nombre}\n'
-                    f'Email: {email}\n'
-                    f'Celular: {celular or "No indicado"}\n'
+                    f'Correo electrónico: {email}\n'
+                    f'Celular: {celular_final}\n'
                     f'Tema: {tema}\n\n'
-                    'Mensaje:\n'
-                    f'{mensaje}'
+                    'MENSAJE\n'
+                    '-------\n'
+                    f'{mensaje}\n\n'
+                    '----------------------------------\n'
+                    'Enviado desde totalcounts.com.ec'
                 )
-                correo = EmailMessage(
-                    subject=f'[TotalCounts] {tema} - {nombre}',
+
+                import html
+                html_body = f'''
+                    <div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;color:#26343a;">
+                        <div style="background:#16313d;padding:20px 24px;border-radius:8px 8px 0 0;">
+                            <div style="font-size:20px;font-weight:700;color:#ffffff;">TOTALCOUNTS</div>
+                            <div style="font-size:13px;color:#b9d8dc;margin-top:4px;">Mensaje recibido desde la página web</div>
+                        </div>
+                        <div style="border:1px solid #e1e7e9;border-top:0;padding:24px;background:#ffffff;">
+                            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                                <tr><td style="padding:8px 0;font-weight:700;width:170px;">Nombres</td><td style="padding:8px 0;">{html.escape(nombre)}</td></tr>
+                                <tr><td style="padding:8px 0;font-weight:700;">Correo electrónico</td><td style="padding:8px 0;">{html.escape(email)}</td></tr>
+                                <tr><td style="padding:8px 0;font-weight:700;">Celular</td><td style="padding:8px 0;">{html.escape(celular_final)}</td></tr>
+                                <tr><td style="padding:8px 0;font-weight:700;">Tema</td><td style="padding:8px 0;">{html.escape(tema)}</td></tr>
+                            </table>
+                            <div style="margin-top:22px;padding-top:18px;border-top:1px solid #e1e7e9;">
+                                <div style="font-weight:700;margin-bottom:10px;">Mensaje</div>
+                                <div style="background:#f5f7f8;border-radius:6px;padding:16px;white-space:pre-wrap;line-height:1.55;">{html.escape(mensaje)}</div>
+                            </div>
+                            <div style="margin-top:22px;font-size:12px;color:#718087;">
+                                Enviado desde totalcounts.com.ec
+                            </div>
+                        </div>
+                    </div>
+                '''
+
+                correo = EmailMultiAlternatives(
+                    subject=f'[TotalCounts-Web] {tema} - {nombre}',
                     body=cuerpo,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[settings.CONTACT_FORM_RECIPIENT],
                     reply_to=[email],
                 )
+                correo.attach_alternative(html_body, 'text/html')
                 correo.send(fail_silently=False)
                 messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
                 return redirect('contactanos')
