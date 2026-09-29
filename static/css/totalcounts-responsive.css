@@ -615,3 +615,70 @@ iframe {
         background-image: none !important;
     }
 }
+
+
+/* Contactanos: mobile form fields must remain readable over the hero photo. */
+@media (max-width: 767px) {
+    body #slider.hero .nexgen-simple-form .form-control,
+    body #slider.hero .nexgen-simple-form input.form-control,
+    body #slider.hero .nexgen-simple-form select.form-control,
+    body #slider.hero .nexgen-simple-form textarea.form-control {
+        position: relative;
+        z-index: 4 !important;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: rgba(20, 27, 31, 0.88) !important;
+        background-color: rgba(20, 27, 31, 0.88) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.28) !important;
+        border-radius: 6px !important;
+        -webkit-text-fill-color: #ffffff !important;
+        text-shadow: none !important;
+        opacity: 1 !important;
+    }
+
+    body #slider.hero .nexgen-simple-form input.form-control,
+    body #slider.hero .nexgen-simple-form select.form-control {
+        height: 54px !important;
+        min-height: 54px !important;
+    }
+
+    body #slider.hero .nexgen-simple-form textarea.form-control {
+        min-height: 150px !important;
+        resize: vertical;
+        padding-top: 14px !important;
+    }
+
+    body #slider.hero .nexgen-simple-form .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.78) !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.78) !important;
+    }
+
+    body #slider.hero .nexgen-simple-form select.form-control {
+        color: rgba(255, 255, 255, 0.82) !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.82) !important;
+    }
+
+    body #slider.hero .nexgen-simple-form select.form-control option {
+        background: #21333e !important;
+        color: #ffffff !important;
+    }
+
+    body #slider.hero .nexgen-simple-form .form-control:focus {
+        border-color: #00a6a6 !important;
+        box-shadow: 0 0 0 2px rgba(0, 166, 166, 0.22) !important;
+        outline: none !important;
+    }
+
+    body #slider.hero .nexgen-simple-form .input-group {
+        position: relative;
+        z-index: 4;
+    }
+
+    body #slider.hero .nexgen-simple-form .icon-arrow-down {
+        z-index: 6;
+        color: #ffffff !important;
+    }
+}
