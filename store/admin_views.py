@@ -651,10 +651,26 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             'retiva': retiva or 0,
         })
 
+    # No mostrar meses futuros/sin movimientos al final del ejercicio.
+    # La conciliación debe terminar en el último mes que realmente tiene datos.
+    while meses and all(
+        (mes[campo] or 0) == 0
+        for campo in ('ventas', 'compras', 'retrenta', 'retiva')
+        for mes in [meses[-1]]
+    ):
+        meses.pop()
+
     totales = {campo: sum((m[campo] for m in meses), 0) for campo in ('ventas','compras','retrenta','retiva')}
     totales['resultado'] = totales['ventas'] - totales['compras']
     totales['retenciones'] = totales['retrenta'] + totales['retiva']
-    return {'anio': anio, 'anios': anios, 'meses': meses, 'totales': totales}
+    mes_final_nombre = meses[-1]['nombre'] if meses else ''
+    return {
+        'anio': anio,
+        'anios': anios,
+        'meses': meses,
+        'mes_final_nombre': mes_final_nombre,
+        'totales': totales,
+    }
 
 
 def admin_cliente(request, ruc):
