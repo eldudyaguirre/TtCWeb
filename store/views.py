@@ -23,6 +23,7 @@ from .models import (
     PuntoEmision,
     SecuencialDocumento,
     UsuarioCliente,
+    Suscriptor,
 )
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 from .services.archivos import eliminar_archivo, guardar_archivo
@@ -54,6 +55,57 @@ TEMPLATE_PREVIEWS = {
 
 def home(request):
     return render(request, 'index.html')
+
+
+def newsletter_subscribe(request):
+    if request.method != 'POST':
+        return redirect('home')
+
+    nombre = request.POST.get('name', '').strip()
+    email = request.POST.get('email', '').strip().lower()
+    consentimiento = request.POST.get('consentimiento') == '1'
+
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+
+    if not email:
+        messages.error(request, 'Ingresa tu correo electrónico.')
+        return redirect('home')
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        messages.error(request, 'Ingresa un correo electrónico válido.')
+        return redirect('home')
+
+    if not consentimiento:
+        messages.error(request, 'Debes aceptar recibir información y comunicaciones de TotalCounts.')
+        return redirect('home')
+
+    suscriptor = Suscriptor.objects.filter(email__iexact=email).first()
+    if suscriptor:
+        if suscriptor.activo:
+            messages.info(request, 'Este correo ya está registrado para recibir nuestras novedades.')
+        else:
+            suscriptor.activo = True
+            suscriptor.consentimiento_marketing = True
+            suscriptor.save(update_fields=['activo', 'consentimiento_marketing', 'actualizado_en'])
+            messages.success(request, 'Tu suscripción fue reactivada correctamente.')
+        return redirect('home')
+
+    Suscriptor.objects.create(
+        email=email,
+        nombre=nombre,
+        activo=True,
+        consentimiento_marketing=True,
+        origen='WEB',
+    )
+
+    messages.success(
+        request,
+        '¡Listo! Te has registrado para recibir noticias y novedades de TotalCounts.',
+    )
+    return redirect('home')
 
 
 def do_signin(request):
