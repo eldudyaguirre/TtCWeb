@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.contrib.auth.hashers import check_password, make_password
 
 from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
@@ -780,6 +780,109 @@ def admin_compras(request, ruc):
         'total_paginas': total_paginas,
         'total_registros': total_registros,
     })
+
+
+@admin_required
+def admin_compras_editar(request, ruc):
+    """Carga y actualiza una compra desde el módulo administrativo."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    documento = request.POST.get('documento', '').strip() if request.method == 'POST' else request.GET.get('documento', '').strip()
+    autorizacion = request.POST.get('autorizacion', '').strip() if request.method == 'POST' else request.GET.get('autorizacion', '').strip()
+    if not documento:
+        return JsonResponse({'ok': False, 'error': 'No se recibió el número de factura.'}, status=400)
+
+    partes = documento.split('-')
+    if len(partes) != 3:
+        return JsonResponse({'ok': False, 'error': 'Número de factura inválido.'}, status=400)
+    numest, numptoemi, numsec = [p.strip() for p in partes]
+
+    db = _cliente_db(cliente)
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema='public' AND table_name='comprasnue'
+            ORDER BY ordinal_position
+        """)
+        columnas = [r[0] for r in cursor.fetchall()]
+        if not columnas:
+            return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
+
+        cols = set(columnas)
+        # Identifica, sin asumir un nombre único, los campos usados por instalaciones antiguas.
+        mes_col = next((x for x in ('mesdeclaracion','mesdeclara','mesdec','mes_declaracion','mes') if x in cols), None)
+        anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano') if x in cols), None)
+
+        select_cols = [
+            'fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
+            'baseimpnoobj','baseimpiva0','baseexenta','baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
+            'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
+            'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
+            'codret','valret','numestret','numptoemiret','numsecret'
+        ]
+        select_cols = [x for x in select_cols if x in cols]
+        if mes_col: select_cols.append(mes_col)
+        if anio_col: select_cols.append(anio_col)
+
+        where = '"numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
+        params = [numest, numptoemi, numsec]
+        if autorizacion and 'numaut' in cols:
+            where += ' AND "numaut"::text=%s'
+            params.append(autorizacion)
+
+        cursor.execute(f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1', params)
+        row = cursor.fetchone()
+        if not row:
+            return JsonResponse({'ok': False, 'error': 'No se encontró la compra seleccionada.'}, status=404)
+
+        data = dict(zip(select_cols, row))
+        if request.method == 'GET':
+            for k, v in list(data.items()):
+                if hasattr(v, 'isoformat'):
+                    data[k] = v.isoformat()
+                elif v is None:
+                    data[k] = ''
+                else:
+                    data[k] = str(v)
+            data['_mes_col'] = mes_col or ''
+            data['_anio_col'] = anio_col or ''
+            return JsonResponse({'ok': True, 'compra': data})
+
+        editable = [
+            'fecemi','tipcom','numaut','baseimpnoobj','baseimpiva0','baseexenta',
+            'baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
+            'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
+            'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
+            'codret','valret','numestret','numptoemiret','numsecret'
+        ]
+        values = {}
+        for field in editable:
+            if field in cols and field in request.POST:
+                values[field] = request.POST.get(field, '').strip() or None
+        # IVA se recalcula en servidor a partir de los subtotales.
+        tasas = {'baseimpiva5': ('montoiva5', 0.05), 'baseimpiva8': ('montoiva8', 0.08),
+                 'baseimpiva12': ('montoiva12', 0.12), 'baseimpiva14': ('montoiva14', 0.14),
+                 'baseimpiva15': ('montoiva15', 0.15)}
+        for base, (iva, tasa) in tasas.items():
+            if base in cols:
+                try:
+                    base_val = float(values.get(base) or 0)
+                    values[iva] = round(base_val * tasa, 2)
+                except (TypeError, ValueError):
+                    values[iva] = 0
+
+        if mes_col and 'mes_declaracion' in request.POST:
+            values[mes_col] = request.POST.get('mes_declaracion') or None
+        if anio_col and 'anio_declaracion' in request.POST:
+            values[anio_col] = request.POST.get('anio_declaracion') or None
+
+        if not values:
+            return JsonResponse({'ok': False, 'error': 'No hay cambios para guardar.'}, status=400)
+
+        sets = ', '.join(f'"{k}"=%s' for k in values)
+        cursor.execute(f'UPDATE comprasnue SET {sets} WHERE {where}', [*values.values(), *params])
+        db.commit()
+        return JsonResponse({'ok': True, 'message': 'Compra actualizada correctamente.'})
 
 
 @admin_required
