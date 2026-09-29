@@ -456,7 +456,12 @@ document.addEventListener('click',function(e){
 });
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
-        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra || '');
+        const baseUrl="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}";
+        const numcompra=(btn.dataset.numcompra || '').trim();
+        const proveedorRuc=(btn.dataset.proveedorRuc || '').trim();
+        const documento=(btn.dataset.documento || '').trim();
+        const query='?numcompra='+encodeURIComponent(numcompra)+'&proveedor_ruc='+encodeURIComponent(proveedorRuc)+'&documento='+encodeURIComponent(documento);
+        const url=baseUrl+query;
         try{
             const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
             const data=await response.json();
