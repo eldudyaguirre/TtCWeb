@@ -765,7 +765,13 @@ def admin_compras(request, ruc):
     offset = (pagina - 1) * por_pagina
 
     try:
-        filas = _compras_query(where, params.copy(), cliente, por_pagina, offset, include_numcompra=True)
+        filas_raw = _compras_query(where, params.copy(), cliente, por_pagina, offset, include_numcompra=True)
+        # Separamos el identificador interno del contenido visual del reporte.
+        # Así el HTML nunca depende de la posición de numcompra dentro de la fila.
+        filas = [
+            {'datos': fila[:-1], 'numcompra': fila[-1]}
+            for fila in filas_raw
+        ]
         resumen = _compras_resumen(where, params.copy(), cliente)
     except Exception as exc:
         return HttpResponse(f'Error consultando compras: {type(exc).__name__}: {exc}', status=500,
