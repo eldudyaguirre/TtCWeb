@@ -6,6 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
+from django.core.mail import EmailMessage
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -3707,6 +3708,54 @@ def about(request):
 
 
 def contactanos(request):
+    if request.method == 'POST':
+        if request.POST.get('website', '').strip():
+            return redirect('contactanos')
+
+        nombre = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        celular = request.POST.get('phone', '').strip()
+        tema = request.POST.get('info', '').strip()
+        mensaje = request.POST.get('message', '').strip()
+
+        temas_validos = {
+            'Consulta Tributaria',
+            'Consulta Contable',
+            'Consulta Laboral',
+            'Consulta Seguridad Laboral',
+            'Consulta Legal',
+            'Tramites y Requerimientos',
+            'Otros',
+        }
+
+        if not nombre or not email or not tema or not mensaje:
+            messages.error(request, 'Completa nombres, email, tema y mensaje antes de enviar.')
+        elif tema not in temas_validos:
+            messages.error(request, 'Selecciona un tema válido.')
+        else:
+            try:
+                cuerpo = (
+                    'Nuevo mensaje desde el formulario de Contactanos\n\n'
+                    f'Nombres: {nombre}\n'
+                    f'Email: {email}\n'
+                    f'Celular: {celular or "No indicado"}\n'
+                    f'Tema: {tema}\n\n'
+                    'Mensaje:\n'
+                    f'{mensaje}'
+                )
+                correo = EmailMessage(
+                    subject=f'[TotalCounts] {tema} - {nombre}',
+                    body=cuerpo,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.CONTACT_FORM_RECIPIENT],
+                    reply_to=[email],
+                )
+                correo.send(fail_silently=False)
+                messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
+                return redirect('contactanos')
+            except Exception:
+                messages.error(request, 'No se pudo enviar el mensaje en este momento. Intenta nuevamente o contáctanos por WhatsApp.')
+
     return render(request, 'contactanos.html')
 
 
