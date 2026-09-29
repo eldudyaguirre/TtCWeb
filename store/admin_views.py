@@ -788,8 +788,9 @@ def admin_compras_editar(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     numcompra = request.POST.get('numcompra', '').strip() if request.method == 'POST' else request.GET.get('numcompra', '').strip()
     autorizacion = request.POST.get('autorizacion', '').strip() if request.method == 'POST' else request.GET.get('autorizacion', '').strip()
-    if not numcompra:
-        return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
+    proveedor_ruc = request.POST.get('proveedor_ruc', '').strip() if request.method == 'POST' else request.GET.get('proveedor_ruc', '').strip()
+    documento = request.POST.get('documento', '').strip() if request.method == 'POST' else request.GET.get('documento', '').strip()
+
     db = _cliente_db(cliente)
     with db.cursor() as cursor:
         cursor.execute("""
@@ -820,8 +821,18 @@ def admin_compras_editar(request, ruc):
 
         if 'numcompra' not in cols:
             return JsonResponse({'ok': False, 'error': 'El campo numcompra no existe en comprasnue.'}, status=500)
-        where = '"numcompra"::text=%s'
-        params = [numcompra]
+        if numcompra:
+            where = '"numcompra"::text=%s'
+            params = [numcompra]
+        elif proveedor_ruc and documento:
+            partes = documento.split('-')
+            if len(partes) != 3:
+                return JsonResponse({'ok': False, 'error': 'Número de factura inválido.'}, status=400)
+            numest, numptoemi, numsec = [p.strip() for p in partes]
+            where = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
+            params = [proveedor_ruc, numest, numptoemi, numsec]
+        else:
+            return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
 
         try:
             cursor.execute(
