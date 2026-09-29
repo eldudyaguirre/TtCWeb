@@ -1,0 +1,394 @@
+{% extends "admin/base.html" %}
+{% block title %}Compras | {{ cliente.nomclient }}{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb">
+    <a href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}">← Documentación</a>
+</div>
+
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Documentación · Compras</span>
+        <h1>REPORTE DE COMPRAS</h1>
+        <p>{{ cliente.nomclient }} | RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+    <span class="admin-report-count">{{ total_registros }} registros</span>
+</div>
+
+<section class="admin-card admin-compras-card">
+    <form method="get" class="admin-compras-filters">
+        <div class="admin-compras-field">
+            <label for="admin-compras-desde">Fecha desde</label>
+            <input type="date" id="admin-compras-desde" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+        </div>
+        <div class="admin-compras-field">
+            <label for="admin-compras-hasta">Fecha hasta</label>
+            <input type="date" id="admin-compras-hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+        </div>
+        <div class="admin-compras-field admin-compras-provider">
+            <label for="admin-compras-proveedor">Proveedor</label>
+            <input type="search" id="admin-compras-proveedor" name="proveedor" value="{{ filtros.proveedor }}" placeholder="Nombre o RUC del proveedor">
+        </div>
+        <div class="admin-compras-actions">
+            <button type="submit" class="admin-compras-search"><i class="fi fi-rr-search"></i> Buscar</button>
+            <a href="{% url 'admin_compras' ruc=cliente.ruccedcli %}" class="admin-compras-clear">Limpiar</a>
+        </div>
+    </form>
+
+    <div class="admin-compras-toolbar">
+        <div>
+            <span class="admin-kicker">Período consultado</span>
+            <strong>{{ filtros.fecha_desde }} → {{ filtros.fecha_hasta }}</strong>
+        </div>
+        <div class="admin-compras-admin-note">
+            <i class="fi fi-rr-shield-check"></i>
+            Vista administrativa
+        </div>
+    </div>
+
+    <div class="admin-compras-table-wrap">
+        <table class="admin-compras-table">
+            <thead>
+                <tr>
+                    <th>N°</th>
+                    <th>PROVEEDOR</th>
+                    <th>RUC</th>
+                    <th>TIP COM</th>
+                    <th>FECHA</th>
+                    <th>NUMERO FACTURA</th>
+                    <th>NUM AUT.</th>
+                    <th>BASES SIN IVA</th>
+                    <th>BASES CON IVA</th>
+                    <th>IVA</th>
+                    <th>TOTAL</th>
+                    <th>RET IVA</th>
+                    <th>COD RET</th>
+                    <th>RET RENTA</th>
+                    <th>NUM RET.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in filas %}
+                <tr>
+                    {% for value in row %}
+                        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
+                            <td>{{ value }}</td>
+                        {% else %}
+                            <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="15" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-compras-summary">
+        <div class="admin-compras-summary-title">Resumen del período</div>
+        <div class="admin-compras-summary-grid">
+            <div><span>Bases sin IVA</span><strong>$ {{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
+            <div><span>Bases con IVA</span><strong>$ {{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
+            <div><span>IVA</span><strong>$ {{ resumen.iva|floatformat:2 }}</strong></div>
+            <div class="admin-compras-total"><span>Total</span><strong>$ {{ resumen.total|floatformat:2 }}</strong></div>
+            <div><span>Ret IVA</span><strong>$ {{ resumen.retiva|floatformat:2 }}</strong></div>
+            <div><span>Ret Renta</span><strong>$ {{ resumen.retrenta|floatformat:2 }}</strong></div>
+        </div>
+    </div>
+
+    {% if total_paginas > 1 %}
+    <div class="admin-compras-pagination">
+        {% if pagina > 1 %}
+        <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}&pagina={{ pagina|add:'-1' }}">‹ Anterior</a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        <strong>Página {{ pagina }} de {{ total_paginas }}</strong>
+        {% if pagina < total_paginas %}
+        <a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}&pagina={{ pagina|add:'1' }}">Siguiente ›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.admin-report-count{
+    display:inline-flex;
+    align-items:center;
+    min-height:36px;
+    padding:0 12px;
+    border:1px solid #d9e4e7;
+    border-radius:9px;
+    background:#fff;
+    color:var(--admin-muted);
+    font-size:12px;
+    font-weight:800;
+}
+.admin-compras-card{
+    margin-top:20px;
+    padding:20px;
+}
+.admin-compras-filters{
+    display:grid;
+    grid-template-columns:180px 180px minmax(220px,1fr) auto;
+    gap:12px;
+    align-items:end;
+}
+.admin-compras-field label{
+    display:block;
+    margin-bottom:6px;
+    color:var(--admin-muted);
+    font-size:11px;
+    font-weight:800;
+}
+.admin-compras-field input{
+    width:100%;
+    height:42px;
+    box-sizing:border-box;
+    border:1px solid #d5dee2;
+    border-radius:8px;
+    background:#fff;
+    color:var(--admin-dark);
+    padding:0 11px;
+    font:inherit;
+    font-size:13px;
+    outline:none;
+}
+.admin-compras-field input:focus{
+    border-color:var(--admin-accent);
+    box-shadow:0 0 0 3px rgba(21,150,163,.10);
+}
+.admin-compras-actions{
+    display:flex;
+    gap:8px;
+}
+.admin-compras-search,
+.admin-compras-clear{
+    height:42px;
+    padding:0 15px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:800;
+    text-decoration:none;
+    cursor:pointer;
+    box-sizing:border-box;
+}
+.admin-compras-search{
+    border:1px solid #1596a3;
+    background:#1596a3;
+    color:#fff;
+}
+.admin-compras-search:hover{
+    background:#117f8b;
+    color:#fff;
+}
+.admin-compras-clear{
+    border:1px solid #d5dee2;
+    background:#fff;
+    color:#526771;
+}
+.admin-compras-clear:hover{
+    color:var(--admin-accent);
+    border-color:#9fc9ce;
+}
+.admin-compras-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin:20px 0 12px;
+    padding-top:18px;
+    border-top:1px solid var(--admin-border);
+}
+.admin-compras-toolbar strong{
+    display:block;
+    margin-top:3px;
+    color:var(--admin-dark);
+    font-size:13px;
+}
+.admin-compras-admin-note{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    color:#228b5b;
+    font-size:11px;
+    font-weight:800;
+}
+.admin-compras-table-wrap{
+    overflow:auto;
+    border:1px solid #d8e0e3;
+    border-radius:10px;
+}
+.admin-compras-table{
+    width:100%;
+    min-width:1450px;
+    border-collapse:collapse;
+    background:#fff;
+}
+.admin-compras-table th{
+    position:sticky;
+    top:0;
+    z-index:2;
+    padding:10px 8px;
+    background:#21333e;
+    color:#fff;
+    border:1px solid #3b4d56;
+    font-size:10px;
+    text-align:center;
+    white-space:nowrap;
+}
+.admin-compras-table td{
+    padding:8px;
+    border:1px solid #e1e7e9;
+    color:#344852;
+    font-size:11px;
+    white-space:nowrap;
+}
+.admin-compras-table tbody tr:hover{
+    background:#f7fbfb;
+}
+.admin-compras-table td:nth-child(2){
+    min-width:230px;
+}
+.admin-compras-table td:not(:nth-child(2)){
+    text-align:center;
+}
+.admin-compras-table .admin-compras-number{
+    text-align:right !important;
+}
+.admin-compras-empty{
+    padding:24px !important;
+    text-align:center !important;
+    color:var(--admin-muted) !important;
+}
+.admin-compras-summary{
+    margin-top:18px;
+    padding:18px;
+    border:1px solid #dce5e7;
+    border-radius:11px;
+    background:#f7fafb;
+}
+.admin-compras-summary-title{
+    margin-bottom:12px;
+    color:var(--admin-dark);
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+}
+.admin-compras-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+}
+.admin-compras-summary-grid > div{
+    min-height:64px;
+    padding:12px;
+    box-sizing:border-box;
+    border:1px solid #e0e7e9;
+    border-radius:9px;
+    background:#fff;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+}
+.admin-compras-summary-grid span{
+    color:var(--admin-muted);
+    font-size:10px;
+    font-weight:700;
+}
+.admin-compras-summary-grid strong{
+    color:var(--admin-dark);
+    font-size:14px;
+}
+.admin-compras-summary-grid .admin-compras-total{
+    border-color:#1596a3;
+    background:#eef9fa;
+}
+.admin-compras-pagination{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-top:18px;
+    color:var(--admin-muted);
+    font-size:12px;
+}
+.admin-compras-pagination a{
+    display:inline-flex;
+    min-height:36px;
+    padding:0 12px;
+    align-items:center;
+    border:1px solid #d5dee2;
+    border-radius:8px;
+    background:#fff;
+    color:#526771;
+    text-decoration:none;
+    font-weight:800;
+}
+.admin-compras-pagination a:hover{
+    color:var(--admin-accent);
+    border-color:#9fc9ce;
+}
+@media(max-width:900px){
+    .admin-compras-filters{
+        grid-template-columns:1fr 1fr;
+    }
+    .admin-compras-provider{
+        grid-column:1 / -1;
+    }
+    .admin-compras-actions{
+        grid-column:1 / -1;
+    }
+    .admin-compras-search,
+    .admin-compras-clear{
+        flex:1;
+    }
+    .admin-compras-summary-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+@media(max-width:700px){
+    .admin-report-count{
+        align-self:flex-start;
+    }
+    .admin-compras-card{
+        padding:13px;
+        border-radius:11px;
+    }
+    .admin-compras-filters{
+        grid-template-columns:1fr;
+        gap:10px;
+    }
+    .admin-compras-provider,
+    .admin-compras-actions{
+        grid-column:auto;
+    }
+    .admin-compras-actions{
+        width:100%;
+    }
+    .admin-compras-table-wrap{
+        margin:0 -1px;
+    }
+    .admin-compras-summary{
+        padding:12px;
+    }
+    .admin-compras-summary-grid{
+        grid-template-columns:1fr 1fr;
+    }
+    .admin-compras-summary-grid strong{
+        font-size:13px;
+    }
+    .admin-compras-pagination{
+        font-size:11px;
+    }
+}
+</style>
+{% endblock %}
