@@ -727,9 +727,11 @@ def _compras_base_sql():
     """
 
 
-def _compras_query(where, params, cliente, limit=None, offset=None):
+def _compras_query(where, params, cliente, limit=None, offset=None, include_numcompra=False):
+    identificador = 'numcompra,' if include_numcompra else ''
     sql = f"""
         SELECT
+            {identificador}
             ROW_NUMBER() OVER (ORDER BY fecemi::date ASC) AS numero,
             nomprovee AS proveedor,
             ruccedprovee AS ruc,
