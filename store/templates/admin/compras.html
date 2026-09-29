@@ -473,7 +473,7 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
             const money=v=>(v===null || v===undefined || v==='')?'':Number(v).toFixed(2);
             document.getElementById('compraEditModal').classList.add('open');
             document.getElementById('editCompraDocumento').value=btn.dataset.documento;
-            document.getElementById('editCompraNumcompra').value=btn.dataset.numcompra;
+            document.getElementById('editCompraNumcompra').value=numcompra;
             document.getElementById('editCompraAutorizacion').value=x.numaut || '';
             document.getElementById('editCompraRuc').value=x.ruccedprovee || '';
             document.getElementById('editCompraProveedor').value=x.nomprovee || '';
