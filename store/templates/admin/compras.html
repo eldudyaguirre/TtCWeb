@@ -448,7 +448,7 @@ document.addEventListener('click',function(e){
 });
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
-        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra || '')+"&proveedor_ruc="+encodeURIComponent(btn.dataset.proveedorRuc || '')+"&documento="+encodeURIComponent(btn.dataset.documento || '');
+        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra || '');
         try{
             const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
             const data=await response.json();
