@@ -325,7 +325,9 @@
                                     </h1>
                                     
                                     <!-- Action -->
-                                    <form action="php/form.php" id="nexgen-simple-form" class="nexgen-simple-form">
+                                    <form method="post" action="{% url 'contactanos' %}" id="nexgen-simple-form" class="nexgen-simple-form" novalidate>
+                                        {% csrf_token %}
+                                        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
                                         <input type="hidden" name="section" value="nexgen_form">
     
                                         <input type="hidden" name="reCAPTCHA">
@@ -354,17 +356,26 @@
                                                     <option>Otros</option>
                                                 </select>
                                             </div>
-                                            <!--<div class="col-12 m-0 p-2 input-group" >
-                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" ></textarea>
-                                            </div>-->
+                                            <div class="col-12 m-0 p-2 input-group">
+                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" rows="4" required></textarea>
+                                            </div>
                                             <div class="col-12 col-12 m-0 pl-md-2">
                                                 <span class="form-alert"></span>
                                             </div>
+                                            {% if messages %}
+                                                <div class="col-12 m-0 px-2">
+                                                    {% for message in messages %}
+                                                        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} mt-2 mb-0" role="alert">
+                                                            {{ message }}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
                                             
                                             <!-- Action -->
                                             <div class="col-12 input-group m-0 p-2 buttons">
                                                 <div class="d-sm-inline-flex">
-                                                    <a class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</a>
+                                                    <button type="submit" class="mt-4 mt-sm-0 btn primary-button">CONTACTANOS</button>
                                                     <!--<a href="#single" class="smooth-anchor mt-4 mt-sm-0 ml-sm-3 btn outline-button">READ MORE</a>-->
                                                 </div>
                                             </div>
