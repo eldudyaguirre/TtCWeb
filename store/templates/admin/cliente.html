@@ -110,7 +110,7 @@
     <div class="admin-conciliacion-head">
         <div>
             <span class="admin-kicker">Conciliación tributaria</span>
-            <h2>CONCILIACIÓN DE ENERO A DICIEMBRE {{ conciliacion.anio }}</h2>
+            <h2>CONCILIACIÓN DE ENERO A{% if conciliacion.mes_final_nombre %} {{ conciliacion.mes_final_nombre }}{% endif %} {{ conciliacion.anio }}</h2>
         </div>
         {% if conciliacion.anios %}
         <form method="get" class="admin-conciliacion-year">
