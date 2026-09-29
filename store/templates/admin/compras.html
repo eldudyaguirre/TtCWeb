@@ -100,7 +100,7 @@
                         </button>
                         <div class="admin-compras-row-menu">
                             <button type="button" class="admin-compras-row-edit"
-                                    data-numcompra=""
+                                    data-numcompra="{{ row.15|escapejs }}"
                                     data-proveedor-ruc="{{ row.2|escapejs }}"
                                     data-documento="{{ row.5|escapejs }}"
                                     data-autorizacion="{{ row.6|escapejs }}">
@@ -458,8 +458,7 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
         const baseUrl="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}";
         const fila=btn.closest('tr');
-        const celdaNumcompra=fila ? fila.querySelector('.admin-compras-numcompra-hidden') : null;
-        const numcompra=(celdaNumcompra ? celdaNumcompra.textContent : '').trim();
+        const numcompra=(btn.dataset.numcompra || '').trim();
         const proveedorRuc=(btn.dataset.proveedorRuc || '').trim();
         const documento=(btn.dataset.documento || '').trim();
         const query='?numcompra='+encodeURIComponent(numcompra)+'&proveedor_ruc='+encodeURIComponent(proveedorRuc)+'&documento='+encodeURIComponent(documento);
