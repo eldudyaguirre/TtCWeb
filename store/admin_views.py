@@ -770,6 +770,7 @@ def admin_compras(request, ruc):
         # Así el HTML nunca depende de la posición de numcompra dentro de la fila.
         filas = [
             {
+                'datos': fila[:15],
                 'numero': fila[0],
                 'proveedor': fila[1],
                 'ruc': fila[2],
