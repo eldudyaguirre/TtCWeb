@@ -465,9 +465,20 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
         const query='?numcompra='+encodeURIComponent(numcompra)+'&proveedor_ruc='+encodeURIComponent(proveedorRuc)+'&documento='+encodeURIComponent(documento);
         const url=baseUrl+query;
         try{
-            const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
-            const data=await response.json();
-            if(!data.ok){alert(data.error || 'No se pudo cargar la compra.');return;}
+            const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'},cache:'no-store'});
+            const raw=await response.text();
+            let data;
+            try{
+                data=JSON.parse(raw);
+            }catch(parseError){
+                console.error('Respuesta al cargar compra:', response.status, raw);
+                alert('Error al cargar la compra. HTTP '+response.status+'\\n\\n'+raw.substring(0,1000));
+                return;
+            }
+            if(!response.ok || !data.ok){
+                alert(data.error || ('No se pudo cargar la compra. HTTP '+response.status));
+                return;
+            }
             const x=data.compra;
             const money=v=>(v===null || v===undefined || v==='')?'':Number(v).toFixed(2);
             document.getElementById('compraEditModal').classList.add('open');
