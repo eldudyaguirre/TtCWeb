@@ -92,7 +92,7 @@
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
-                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.15|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.15|escapejs }}" data-proveedor-ruc="{{ row.2|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
@@ -444,7 +444,7 @@ document.addEventListener('click',function(e){
 });
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
-        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra);
+        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra || '')+"&proveedor_ruc="+encodeURIComponent(btn.dataset.proveedorRuc || '')+"&documento="+encodeURIComponent(btn.dataset.documento || '');
         try{
             const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
             const data=await response.json();
