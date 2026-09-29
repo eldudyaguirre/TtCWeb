@@ -325,7 +325,7 @@
                                     </h1>
                                     
                                     <!-- Action -->
-                                    <form method="post" action="{% url 'contactanos' %}" id="nexgen-simple-form" class="nexgen-simple-form" novalidate>
+                                    <form method="post" action="{% url 'contactanos' %}" class="nexgen-simple-form" novalidate>
                                         {% csrf_token %}
                                         <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
                                         <input type="hidden" name="section" value="nexgen_form">
