@@ -6,7 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -3786,7 +3786,10 @@ def contactanos(request):
             messages.error(request, 'Selecciona un tema válido.')
         else:
             try:
+                import html
+
                 celular_final = celular or 'No indicado'
+
                 cuerpo = (
                     'TOTALCOUNTS - MENSAJE DESDE LA WEB\n'
                     '==================================\n\n'
@@ -3801,7 +3804,6 @@ def contactanos(request):
                     'Enviado desde totalcounts.com.ec'
                 )
 
-                import html
                 html_body = f'''
                     <div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;color:#26343a;">
                         <div style="background:#16313d;padding:20px 24px;border-radius:8px 8px 0 0;">
@@ -3826,15 +3828,16 @@ def contactanos(request):
                     </div>
                 '''
 
-                send_mail(
+                correo = EmailMultiAlternatives(
                     subject=f'[TotalCounts-Web] {tema} - {nombre}',
-                    message=cuerpo,
+                    body=cuerpo,
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[settings.CONTACT_FORM_RECIPIENT],
-                    fail_silently=False,
-                    html_message=html_body,
+                    to=[settings.CONTACT_FORM_RECIPIENT],
                     reply_to=[email],
                 )
+                correo.attach_alternative(html_body, 'text/html')
+                correo.send(fail_silently=False)
+
                 messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
                 return redirect('contactanos')
             except Exception as exc:
@@ -3846,8 +3849,6 @@ def contactanos(request):
                 )
 
     return render(request, 'contactanos.html')
-
-
 def avisos_legales(request):
     return render(request, 'avisos-legales.html')
 
