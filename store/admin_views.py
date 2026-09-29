@@ -557,12 +557,12 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         cursor.execute("""
             SELECT DISTINCT anio
             FROM (
-                SELECT anio FROM ventas
+                SELECT "año" FROM ventas
                 UNION
-                SELECT anio FROM comprasnue
+                SELECT "año" FROM comprasnue
             ) periodos
-            WHERE anio IS NOT NULL
-              AND TRIM(anio::text) <> ''
+            WHERE "año" IS NOT NULL
+              AND TRIM("año"::text) <> ''
             ORDER BY anio DESC
         """)
         anios = []
@@ -616,7 +616,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                         COALESCE(NULLIF(retiva::text, ''), '0')::numeric
                     ), 0) AS retiva
                 FROM ventas
-                WHERE TRIM(anio::text) = %s
+                WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                 GROUP BY TRIM(mes::text)::integer
@@ -635,7 +635,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                         COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
                     ), 0) AS compras
                 FROM comprasnue
-                WHERE TRIM(anio::text) = %s
+                WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                   AND TRIM(tipcom::text) IN ('01', '02')
