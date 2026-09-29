@@ -40,9 +40,16 @@
             <span class="admin-kicker">Período consultado</span>
             <strong>{{ filtros.fecha_desde }} → {{ filtros.fecha_hasta }}</strong>
         </div>
-        <div class="admin-compras-admin-note">
-            <i class="fi fi-rr-shield-check"></i>
-            Vista administrativa
+        <div class="admin-compras-toolbar-actions">
+            <a href="{% url 'admin_compras_excel' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}" class="admin-compras-tool admin-compras-excel">
+                <i class="fi fi-rr-file-excel"></i> Excel
+            </a>
+            <a href="{% url 'admin_compras_pdf' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&proveedor={{ filtros.proveedor|urlencode }}" class="admin-compras-tool admin-compras-pdf" target="_blank">
+                <i class="fi fi-rr-file-pdf"></i> PDF
+            </a>
+            <a href="#" class="admin-compras-tool admin-compras-new" data-ruc="{{ cliente.ruccedcli }}" onclick="return false;">
+                <i class="fi fi-rr-plus"></i> Nueva factura
+            </a>
         </div>
     </div>
 
@@ -65,6 +72,7 @@
                     <th>COD RET</th>
                     <th>RET RENTA</th>
                     <th>NUM RET.</th>
+                    <th class="admin-compras-actions-head">ACCIONES</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,10 +85,23 @@
                             <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
                         {% endif %}
                     {% endfor %}
+                    <td class="admin-compras-row-actions">
+                        <button type="button" class="admin-compras-menu-button" title="Acciones">
+                            <i class="fi fi-rr-menu-dots"></i>
+                        </button>
+                        <div class="admin-compras-row-menu">
+                            <button type="button" class="admin-compras-row-edit" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                                <i class="fi fi-rr-edit"></i> Editar
+                            </button>
+                            <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                                <i class="fi fi-rr-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="15" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
+                    <td colspan="16" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -390,5 +411,48 @@
         font-size:11px;
     }
 }
+<style>
+.admin-compras-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin-compras-tool{height:38px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;text-decoration:none;font-size:11px;font-weight:800;box-sizing:border-box}
+.admin-compras-excel{background:#fff;border:1px solid #79b98d;color:#287c43}
+.admin-compras-pdf{background:#fff;border:1px solid #d9a0a0;color:#b33b3b}
+.admin-compras-new{background:#1596a3;border:1px solid #1596a3;color:#fff}
+.admin-compras-new:hover{background:#117f8b;color:#fff}
+.admin-compras-excel:hover,.admin-compras-pdf:hover{background:#f7fafb}
+.admin-compras-actions-head{min-width:85px}
+.admin-compras-row-actions{position:relative!important;min-width:70px;text-align:center!important}
+.admin-compras-menu-button{width:32px;height:32px;border:1px solid #d5dee2;border-radius:7px;background:#fff;color:#526771;cursor:pointer}
+.admin-compras-menu-button:hover{border-color:#1596a3;color:#1596a3}
+.admin-compras-row-menu{display:none;position:absolute;right:6px;top:42px;z-index:20;min-width:120px;padding:5px;border:1px solid #d9e2e5;border-radius:8px;background:#fff;box-shadow:0 8px 24px rgba(33,51,62,.14)}
+.admin-compras-row-actions.open .admin-compras-row-menu{display:flex;flex-direction:column}
+.admin-compras-row-menu button{display:flex;align-items:center;gap:7px;width:100%;padding:8px 9px;border:0;border-radius:6px;background:#fff;color:#344852;font:inherit;font-size:11px;font-weight:700;text-align:left;cursor:pointer}
+.admin-compras-row-menu button:hover{background:#f3f8f9}
+.admin-compras-row-menu .admin-compras-row-delete:hover{color:#b33b3b}
+@media(max-width:900px){.admin-compras-toolbar{align-items:flex-start;flex-direction:column}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
+</style>
+<script>
+document.addEventListener('click',function(e){
+    const button=e.target.closest('.admin-compras-menu-button');
+    document.querySelectorAll('.admin-compras-row-actions.open').forEach(function(el){
+        if(!button || el!==button.closest('.admin-compras-row-actions')) el.classList.remove('open');
+    });
+    if(button){button.closest('.admin-compras-row-actions').classList.toggle('open');}
+});
+document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
+    btn.addEventListener('click',function(){
+        alert('La edición de compras se habilitará sobre el comprobante seleccionado.');
+    });
+});
+document.querySelectorAll('.admin-compras-row-delete').forEach(function(btn){
+    btn.addEventListener('click',function(){
+        if(confirm('¿Deseas eliminar el comprobante '+btn.dataset.documento+'?')){
+            alert('La eliminación se habilitará sobre el comprobante seleccionado.');
+        }
+    });
+});
+document.querySelector('.admin-compras-new')?.addEventListener('click',function(){
+    alert('La creación de facturas administrativas se habilitará para el cliente '+this.dataset.ruc+'.');
+});
+</script>
 </style>
 {% endblock %}
