@@ -78,22 +78,22 @@
             <tbody>
                 {% for row in filas %}
                 <tr>
-                    <td>{{ row.numero }}</td>
-                    <td>{{ row.proveedor }}</td>
-                    <td>{{ row.ruc }}</td>
-                    <td>{{ row.tipcom }}</td>
-                    <td>{{ row.fecha }}</td>
-                    <td>{{ row.numfactura }}</td>
-                    <td>{{ row.numaut }}</td>
-                    <td class="admin-compras-number">{{ row.bases_sin_iva|floatformat:2 }}</td>
-                    <td class="admin-compras-number">{{ row.bases_con_iva|floatformat:2 }}</td>
-                    <td class="admin-compras-number">{{ row.iva|floatformat:2 }}</td>
-                    <td class="admin-compras-number">{{ row.total|floatformat:2 }}</td>
-                    <td class="admin-compras-number">{{ row.retiva|floatformat:2 }}</td>
-                    <td>{{ row.codret }}</td>
-                    <td class="admin-compras-number">{{ row.retrenta|floatformat:2 }}</td>
-                    <td>{{ row.numret }}</td>
-                    <td class="admin-compras-numcompra-hidden">{{ row.numcompra }}</td>
+                    <td>{{ row.0 }}</td>
+                    <td>{{ row.1 }}</td>
+                    <td>{{ row.2 }}</td>
+                    <td>{{ row.3 }}</td>
+                    <td>{{ row.4 }}</td>
+                    <td>{{ row.5 }}</td>
+                    <td>{{ row.6 }}</td>
+                    <td class="admin-compras-number">{{ row.7|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.8|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.9|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.10|floatformat:2 }}</td>
+                    <td class="admin-compras-number">{{ row.11|floatformat:2 }}</td>
+                    <td>{{ row.12 }}</td>
+                    <td class="admin-compras-number">{{ row.13|floatformat:2 }}</td>
+                    <td>{{ row.14 }}</td>
+                    <td class="admin-compras-numcompra-hidden">{{ row.15 }}</td>
                     <td class="admin-compras-row-actions">
                         <button type="button" class="admin-compras-menu-button" title="Acciones">
                             <i class="fi fi-rr-menu-dots"></i>
@@ -101,26 +101,24 @@
                         <div class="admin-compras-row-menu">
                             <button type="button" class="admin-compras-row-edit"
                                     data-numcompra=""
-                                    data-proveedor-ruc="{{ row.ruc|escapejs }}"
-                                    data-documento="{{ row.numfactura|escapejs }}"
-                                    data-autorizacion="{{ row.numaut|escapejs }}">
+                                    data-proveedor-ruc="{{ row.2|escapejs }}"
+                                    data-documento="{{ row.5|escapejs }}"
+                                    data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete"
-                                    data-numcompra="{{ row.numcompra|escapejs }}"
-                                    data-documento="{{ row.numfactura|escapejs }}"
-                                    data-autorizacion="{{ row.numaut|escapejs }}">
+                                    data-numcompra="{{ row.15|escapejs }}"
+                                    data-documento="{{ row.5|escapejs }}"
+                                    data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-trash"></i> Eliminar
                             </button>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="16" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
-                </tr>
+                <tr><td colspan="17" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td></tr>
                 {% endfor %}
-            </tbody> </table>
+            </tbody>able>
     </div>
 
     <div class="admin-compras-summary">
