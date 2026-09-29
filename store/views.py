@@ -6,7 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import Http404, HttpResponse, JsonResponse
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -3826,19 +3826,24 @@ def contactanos(request):
                     </div>
                 '''
 
-                correo = EmailMultiAlternatives(
+                send_mail(
                     subject=f'[TotalCounts-Web] {tema} - {nombre}',
-                    body=cuerpo,
+                    message=cuerpo,
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[settings.CONTACT_FORM_RECIPIENT],
+                    recipient_list=[settings.CONTACT_FORM_RECIPIENT],
+                    fail_silently=False,
+                    html_message=html_body,
                     reply_to=[email],
                 )
-                correo.attach_alternative(html_body, 'text/html')
-                correo.send(fail_silently=False)
                 messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
                 return redirect('contactanos')
-            except Exception:
-                messages.error(request, 'No se pudo enviar el mensaje en este momento. Intenta nuevamente o contáctanos por WhatsApp.')
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).exception('Error enviando formulario web de Contactanos')
+                messages.error(
+                    request,
+                    f'No se pudo enviar el mensaje. Revise la configuración SMTP del servidor. ({type(exc).__name__})'
+                )
 
     return render(request, 'contactanos.html')
 
