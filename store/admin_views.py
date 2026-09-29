@@ -859,16 +859,29 @@ def admin_compras_editar(request, ruc):
             return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
 
         try:
-            cursor.execute(
-                f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1',
-                params
-            )
+            select_sql = f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1'
+            cursor.execute(select_sql, params)
             row = cursor.fetchone()
+
+            if not row and numcompra and proveedor_ruc and documento:
+                partes = documento.split('-')
+                if len(partes) == 3:
+                    numest, numptoemi, numsec = [p.strip() for p in partes]
+                    where_fallback = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
+                    params_fallback = [proveedor_ruc, numest, numptoemi, numsec]
+                    cursor.execute(
+                        f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where_fallback} LIMIT 1',
+                        params_fallback
+                    )
+                    row = cursor.fetchone()
         except Exception as exc:
             db.rollback()
             return JsonResponse({'ok': False, 'error': f'Error consultando la compra: {type(exc).__name__}: {exc}'}, status=500)
         if not row:
-            return JsonResponse({'ok': False, 'error': 'No se encontró la compra seleccionada.'}, status=404)
+            return JsonResponse({
+                'ok': False,
+                'error': f'No se encontró la compra. numcompra recibido: {numcompra or "(vacío)"}; RUC: {proveedor_ruc or "(vacío)"}; factura: {documento or "(vacía)"}'
+            }, status=404)
 
         data = dict(zip(select_cols, row))
         if request.method == 'GET':
