@@ -765,7 +765,7 @@ def admin_compras(request, ruc):
     offset = (pagina - 1) * por_pagina
 
     try:
-        filas = _compras_query(where, params.copy(), cliente, por_pagina, offset)
+        filas = _compras_query(where, params.copy(), cliente, por_pagina, offset, include_numcompra=True)
         resumen = _compras_resumen(where, params.copy(), cliente)
     except Exception as exc:
         return HttpResponse(f'Error consultando compras: {type(exc).__name__}: {exc}', status=500,
@@ -786,16 +786,10 @@ def admin_compras(request, ruc):
 def admin_compras_editar(request, ruc):
     """Carga y actualiza una compra desde el módulo administrativo."""
     cliente = get_object_or_404(Cliente, pk=ruc)
-    documento = request.POST.get('documento', '').strip() if request.method == 'POST' else request.GET.get('documento', '').strip()
+    numcompra = request.POST.get('numcompra', '').strip() if request.method == 'POST' else request.GET.get('numcompra', '').strip()
     autorizacion = request.POST.get('autorizacion', '').strip() if request.method == 'POST' else request.GET.get('autorizacion', '').strip()
-    if not documento:
-        return JsonResponse({'ok': False, 'error': 'No se recibió el número de factura.'}, status=400)
-
-    partes = documento.split('-')
-    if len(partes) != 3:
-        return JsonResponse({'ok': False, 'error': 'Número de factura inválido.'}, status=400)
-    numest, numptoemi, numsec = [p.strip() for p in partes]
-
+    if not numcompra:
+        return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
     db = _cliente_db(cliente)
     with db.cursor() as cursor:
         cursor.execute("""
@@ -814,7 +808,7 @@ def admin_compras_editar(request, ruc):
         anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano') if x in cols), None)
 
         select_cols = [
-            'fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
+            'numcompra','fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
             'baseimpnoobj','baseimpiva0','baseexenta','baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
             'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
             'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
@@ -824,11 +818,10 @@ def admin_compras_editar(request, ruc):
         if mes_col: select_cols.append(mes_col)
         if anio_col: select_cols.append(anio_col)
 
-        where = '"numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
-        params = [numest, numptoemi, numsec]
-        if autorizacion and 'numaut' in cols:
-            where += ' AND "numaut"::text=%s'
-            params.append(autorizacion)
+        if 'numcompra' not in cols:
+            return JsonResponse({'ok': False, 'error': 'El campo numcompra no existe en comprasnue.'}, status=500)
+        where = '"numcompra"::text=%s'
+        params = [numcompra]
 
         cursor.execute(f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1', params)
         row = cursor.fetchone()
