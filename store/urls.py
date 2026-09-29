@@ -21,6 +21,7 @@ urlpatterns = [
     path('totalcounts/cambiar-contrasena/', admin_views.admin_cambiar_contrasena, name='admin_cambiar_contrasena'),
     path('totalcounts/foto-usuario/', admin_views.admin_foto_usuario, name='admin_foto_usuario'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
     path('logout/', views.do_logout, name='logout'),
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
     path('portal/parametros/', views.parametros, name='parametros'),
