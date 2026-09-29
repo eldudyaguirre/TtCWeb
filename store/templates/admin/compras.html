@@ -78,10 +78,8 @@
             <tbody>
                 {% for row in filas %}
                 <tr>
-                    {% for value in row %}
-                        {% if forloop.counter0 == 15 %}
-                            {# numcompra: identificador interno, no se muestra #}
-                        {% elif forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
+                    {% for value in row.datos %}
+                        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
                             <td>{{ value }}</td>
                         {% else %}
                             <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
@@ -92,10 +90,17 @@
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
-                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.15|escapejs }}" data-proveedor-ruc="{{ row.2|escapejs }}" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                            <button type="button" class="admin-compras-row-edit"
+                                    data-numcompra="{{ row.numcompra|escapejs }}"
+                                    data-proveedor-ruc="{{ row.datos.2|escapejs }}"
+                                    data-documento="{{ row.datos.5|escapejs }}"
+                                    data-autorizacion="{{ row.datos.6|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
-                            <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                            <button type="button" class="admin-compras-row-delete"
+                                    data-numcompra="{{ row.numcompra|escapejs }}"
+                                    data-documento="{{ row.datos.5|escapejs }}"
+                                    data-autorizacion="{{ row.datos.6|escapejs }}">
                                 <i class="fi fi-rr-trash"></i> Eliminar
                             </button>
                         </div>
@@ -106,8 +111,7 @@
                     <td colspan="16" class="admin-compras-empty">No existen compras para los filtros seleccionados.</td>
                 </tr>
                 {% endfor %}
-            </tbody>
-        </table>
+            </tbody>     </table>
     </div>
 
     <div class="admin-compras-summary">
