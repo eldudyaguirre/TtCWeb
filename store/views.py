@@ -691,6 +691,7 @@ def _compras_where(request):
 def _compras_base_sql():
     return """
         SELECT
+            c.numcompra,
             c.fecemi,
             c.ruccedprovee,
             c.nomprovee,
