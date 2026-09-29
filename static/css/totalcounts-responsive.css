@@ -703,3 +703,13 @@ iframe {
         z-index: 2 !important;
     }
 }
+
+
+/* Homepage - áreas de trabajo: todas las tarjetas con la misma altura en escritorio. */
+@media (min-width: 768px) {
+    body.home #services.offers .items .item .card {
+        height: 238px !important;
+        min-height: 238px !important;
+        box-sizing: border-box !important;
+    }
+}
