@@ -79,7 +79,9 @@
                 {% for row in filas %}
                 <tr>
                     {% for value in row %}
-                        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 12 or forloop.counter0 == 14 %}
+                        {% if forloop.counter0 == 0 %}
+                            {# numcompra: identificador interno, no se muestra #}
+                        {% elif forloop.counter0 == 1 or forloop.counter0 == 2 or forloop.counter0 == 3 or forloop.counter0 == 4 or forloop.counter0 == 5 or forloop.counter0 == 6 or forloop.counter0 == 7 or forloop.counter0 == 13 or forloop.counter0 == 15 %}
                             <td>{{ value }}</td>
                         {% else %}
                             <td class="admin-compras-number">{{ value|floatformat:2 }}</td>
@@ -90,7 +92,7 @@
                             <i class="fi fi-rr-menu-dots"></i>
                         </button>
                         <div class="admin-compras-row-menu">
-                            <button type="button" class="admin-compras-row-edit" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
+                            <button type="button" class="admin-compras-row-edit" data-numcompra="{{ row.0|escapejs }}" data-documento="{{ row.6|escapejs }}" data-autorizacion="{{ row.7|escapejs }}">
                                 <i class="fi fi-rr-edit"></i> Editar
                             </button>
                             <button type="button" class="admin-compras-row-delete" data-documento="{{ row.5|escapejs }}" data-autorizacion="{{ row.6|escapejs }}">
@@ -442,7 +444,7 @@ document.addEventListener('click',function(e){
 });
 document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click', async function(){
-        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?documento="+encodeURIComponent(btn.dataset.documento)+"&autorizacion="+encodeURIComponent(btn.dataset.autorizacion || '');
+        const url="{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}?numcompra="+encodeURIComponent(btn.dataset.numcompra);
         try{
             const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
             const data=await response.json();
@@ -451,6 +453,7 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
             const money=v=>(v===null || v===undefined || v==='')?'':Number(v).toFixed(2);
             document.getElementById('compraEditModal').classList.add('open');
             document.getElementById('editCompraDocumento').value=btn.dataset.documento;
+            document.getElementById('editCompraNumcompra').value=btn.dataset.numcompra;
             document.getElementById('editCompraAutorizacion').value=x.numaut || '';
             document.getElementById('editCompraRuc').value=x.ruccedprovee || '';
             document.getElementById('editCompraProveedor').value=x.nomprovee || '';
