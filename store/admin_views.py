@@ -685,6 +685,20 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'totales': totales,
     }
 
+
+@admin_required
+def admin_documentacion(request, ruc):
+    """Muestra las categorías de documentación disponibles para el cliente."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    return render(
+        request,
+        'admin/documentacion.html',
+        {
+            'cliente': cliente,
+            'db_name': str(cliente.ruccedcli).strip(),
+        },
+    )
+
 def admin_cliente(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
 
