@@ -429,6 +429,7 @@
 .admin-compras-row-menu .admin-compras-row-delete:hover{color:#b33b3b}
 @media(max-width:900px){.admin-compras-toolbar{align-items:flex-start;flex-direction:column}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
 
+.admin-compras-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:15px}.admin-compras-modal.open{display:flex}.admin-compras-modal-backdrop{position:absolute;inset:0;background:rgba(20,31,38,.62);backdrop-filter:blur(2px)}.admin-compras-modal-dialog{position:relative;z-index:1;width:min(1050px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(15,28,35,.28)}.admin-compras-modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #e2e8eb}.admin-compras-modal-header h2{margin:5px 0 0;color:#21333e;font-size:20px}.admin-compras-modal-close{width:36px;height:36px;border:1px solid #d5dee2;border-radius:8px;background:#fff;font-size:22px;cursor:pointer}.admin-compras-modal-dialog form{padding:20px 24px}.admin-compras-modal-dialog label{display:block;margin-bottom:5px;color:#526771;font-size:11px;font-weight:800}.admin-compras-modal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.admin-compras-modal-grid>div{min-width:0}.admin-compras-modal-grid .wide{grid-column:1/-1}.admin-compras-modal-dialog input,.admin-compras-modal-dialog select{width:100%;height:40px;box-sizing:border-box;border:1px solid #d5dee2;border-radius:8px;padding:0 10px;background:#fff;color:#314953;font:inherit;font-size:13px}.admin-compras-modal-dialog input:focus,.admin-compras-modal-dialog select:focus{outline:none;border-color:#1596a3;box-shadow:0 0 0 3px rgba(21,150,163,.1)}.admin-compras-modal-dialog input[readonly]{background:#f2f5f6;color:#718089}.admin-compras-modal-dialog small{display:block;margin-top:4px;color:#1596a3;font-size:10px;font-weight:700}.admin-compras-section-title{padding:9px 0;border-bottom:1px solid #dfe7e9;color:#21333e;font-size:12px;font-weight:900;text-transform:uppercase}.admin-compras-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:15px;border-top:1px solid #e2e8eb}.admin-compras-modal-actions button{border:0;cursor:pointer}@media(max-width:700px){.admin-compras-modal{padding:8px}.admin-compras-modal-dialog{width:100%;max-height:96vh}.admin-compras-modal-header{padding:16px}.admin-compras-modal-dialog form{padding:16px}.admin-compras-modal-grid{grid-template-columns:1fr}.admin-compras-modal-grid .wide{grid-column:auto}.admin-compras-modal-actions{flex-direction:column}.admin-compras-modal-actions button{width:100%}}
 </style>
 
 <script>
@@ -443,6 +444,19 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
     btn.addEventListener('click',function(){
         alert('La edición de compras se habilitará sobre el comprobante seleccionado.');
     });
+});
+
+function recalcularCompra(){
+    const tasas={5:.05,8:.08,12:.12,14:.14,15:.15}; let bases=0, iva=0;
+    Object.keys(tasas).forEach(function(t){const base=Number(document.getElementById('edit_baseimpiva'+t)?.value||0);const val=base*tasas[t];document.getElementById('calc_iva'+t).textContent=val.toFixed(2);bases+=base;iva+=val;});
+    ['baseimpnoobj','baseimpiva0','baseexenta'].forEach(function(k){bases+=Number(document.getElementById('edit_'+k)?.value||0)});
+    document.getElementById('editCompraTotal').value=(bases+iva).toFixed(2);
+}
+document.querySelectorAll('#compraEditForm input').forEach(function(el){el.addEventListener('input',recalcularCompra)});
+document.querySelectorAll('[data-close-compra]').forEach(function(el){el.addEventListener('click',function(){document.getElementById('compraEditModal').classList.remove('open')})});
+document.getElementById('compraEditForm').addEventListener('submit',async function(e){
+ e.preventDefault(); const form=e.currentTarget; const fd=new FormData(form);
+ try{const r=await fetch("{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}",{method:'POST',body:fd,headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value||'', 'X-Requested-With':'XMLHttpRequest'}}); const d=await r.json(); if(!d.ok){alert(d.error||'No se pudo guardar.');return} alert('Compra actualizada correctamente.'); location.reload();}catch(e){alert('No se pudo guardar la compra.')}
 });
 document.querySelectorAll('.admin-compras-row-delete').forEach(function(btn){
     btn.addEventListener('click',function(){
