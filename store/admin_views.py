@@ -555,7 +555,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
     # Esto evita interpretar erróneamente valores como 09/01/2026.
     with db.cursor() as cursor:
         cursor.execute("""
-            SELECT DISTINCT anio
+            SELECT DISTINCT "año"
             FROM (
                 SELECT "año" FROM ventas
                 UNION
@@ -563,7 +563,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             ) periodos
             WHERE "año" IS NOT NULL
               AND TRIM("año"::text) <> ''
-            ORDER BY anio DESC
+            ORDER BY "año" DESC
         """)
         anios = []
         for row in cursor.fetchall():
