@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% block title %}Suscriptores | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Comunicación</span>
+        <h1>Suscriptores</h1>
+        <p>Personas que autorizaron recibir noticias, novedades e información de TotalCounts.</p>
+    </div>
+</div>
+
+<section class="admin-kpis">
+    <div class="admin-kpi">
+        <span>Total suscriptores</span>
+        <strong>{{ suscriptores_total }}</strong>
+        <small>Registros almacenados</small>
+    </div>
+    <div class="admin-kpi">
+        <span>Suscriptores activos</span>
+        <strong>{{ suscriptores_activos }}</strong>
+        <small>Autorizados para comunicaciones</small>
+    </div>
+</section>
+
+<form method="get" class="admin-filters">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por nombre o correo">
+    <select name="estado">
+        <option value="">Todos los estados</option>
+        <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+        <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+    </select>
+    <button type="submit" class="admin-secondary-button">Buscar</button>
+</form>
+
+<section class="admin-card">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Origen</th>
+                    <th>Registro</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for suscriptor in suscriptores %}
+                <tr>
+                    <td><strong>{{ suscriptor.nombre|default:"Sin nombre" }}</strong></td>
+                    <td>{{ suscriptor.email }}</td>
+                    <td>{{ suscriptor.origen }}</td>
+                    <td>{{ suscriptor.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <span class="admin-status {% if suscriptor.activo %}active{% else %}inactive{% endif %}">
+                            {% if suscriptor.activo %}ACTIVO{% else %}INACTIVO{% endif %}
+                        </span>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="admin-empty">No hay suscriptores registrados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
