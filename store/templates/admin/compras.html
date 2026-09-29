@@ -609,7 +609,7 @@ document.querySelectorAll('.admin-compras-row-edit').forEach(function(btn){
 
 function recalcularCompra(){
     const tasas={5:.05,8:.08,12:.12,14:.14,15:.15}; let bases=0, iva=0;
-    Object.keys(tasas).forEach(function(t){const base=Number(document.getElementById('edit_baseimpiva'+t)?.value||0);const val=base*tasas[t];document.getElementById('calc_iva'+t).textContent=val.toFixed(2);bases+=base;iva+=val;});
+    Object.keys(tasas).forEach(function(t){const base=Number(document.getElementById('edit_baseimpiva'+t)?.value||0);const val=base*tasas[t];document.getElementById('calc_iva'+t).value=val.toFixed(2);bases+=base;iva+=val;});
     ['baseimpnoobj','baseimpiva0','baseexenta'].forEach(function(k){bases+=Number(document.getElementById('edit_'+k)?.value||0)});
     document.getElementById('editCompraTotal').value=(bases+iva).toFixed(2);
 }
