@@ -822,113 +822,113 @@ def admin_compras_editar(request, ruc):
             'error': f'Error consultando estructura de comprasnue: {type(exc).__name__}: {exc}'
         }, status=500)
 
-    if not columnas:
-    return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
-
-cols = set(columnas)
-# Identifica, sin asumir un nombre único, los campos usados por instalaciones antiguas.
-mes_col = next((x for x in ('mesdeclaracion','mesdeclara','mesdec','mes_declaracion','mes') if x in cols), None)
-anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano') if x in cols), None)
-
-select_cols = [
-    'numcompra','fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
-    'baseimpnoobj','baseimpiva0','baseexenta','baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
-    'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
-    'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
-    'codret','valret','numestret','numptoemiret','numsecret'
-]
-select_cols = [x for x in select_cols if x in cols]
-if mes_col: select_cols.append(mes_col)
-if anio_col: select_cols.append(anio_col)
-
-if 'numcompra' not in cols:
-    return JsonResponse({'ok': False, 'error': 'El campo numcompra no existe en comprasnue.'}, status=500)
-if numcompra:
-    where = '"numcompra"::text=%s'
-    params = [numcompra]
-elif proveedor_ruc and documento:
-    partes = documento.split('-')
-    if len(partes) != 3:
-        return JsonResponse({'ok': False, 'error': 'Número de factura inválido.'}, status=400)
-    numest, numptoemi, numsec = [p.strip() for p in partes]
-    where = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
-    params = [proveedor_ruc, numest, numptoemi, numsec]
-else:
-    return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
-
-try:
-    select_sql = f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1'
-    cursor.execute(select_sql, params)
-    row = cursor.fetchone()
-
-    if not row and numcompra and proveedor_ruc and documento:
+        if not columnas:
+        return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
+    
+    cols = set(columnas)
+    # Identifica, sin asumir un nombre único, los campos usados por instalaciones antiguas.
+    mes_col = next((x for x in ('mesdeclaracion','mesdeclara','mesdec','mes_declaracion','mes') if x in cols), None)
+    anio_col = next((x for x in ('aniodeclaracion','aniodeclara','aniodec','anio_declaracion','anio','ano') if x in cols), None)
+    
+    select_cols = [
+        'numcompra','fecemi','ruccedprovee','nomprovee','tipcom','numest','numptoemi','numsec','numaut',
+        'baseimpnoobj','baseimpiva0','baseexenta','baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
+        'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
+        'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
+        'codret','valret','numestret','numptoemiret','numsecret'
+    ]
+    select_cols = [x for x in select_cols if x in cols]
+    if mes_col: select_cols.append(mes_col)
+    if anio_col: select_cols.append(anio_col)
+    
+    if 'numcompra' not in cols:
+        return JsonResponse({'ok': False, 'error': 'El campo numcompra no existe en comprasnue.'}, status=500)
+    if numcompra:
+        where = '"numcompra"::text=%s'
+        params = [numcompra]
+    elif proveedor_ruc and documento:
         partes = documento.split('-')
-        if len(partes) == 3:
-            numest, numptoemi, numsec = [p.strip() for p in partes]
-            where_fallback = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
-            params_fallback = [proveedor_ruc, numest, numptoemi, numsec]
-            cursor.execute(
-                f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where_fallback} LIMIT 1',
-                params_fallback
-            )
-            row = cursor.fetchone()
-except Exception as exc:
-    db.rollback()
-    return JsonResponse({'ok': False, 'error': f'Error consultando la compra: {type(exc).__name__}: {exc}'}, status=500)
-if not row:
-    return JsonResponse({
-        'ok': False,
-        'error': f'No se encontró la compra. numcompra recibido: {numcompra or "(vacío)"}; RUC: {proveedor_ruc or "(vacío)"}; factura: {documento or "(vacía)"}'
-    }, status=404)
-
-data = dict(zip(select_cols, row))
-if request.method == 'GET':
-    for k, v in list(data.items()):
-        if hasattr(v, 'isoformat'):
-            data[k] = v.isoformat()
-        elif v is None:
-            data[k] = ''
-        else:
-            data[k] = str(v)
-    data['_mes_col'] = mes_col or ''
-    data['_anio_col'] = anio_col or ''
-    return JsonResponse({'ok': True, 'compra': data})
-
-editable = [
-    'fecemi','tipcom','numaut','baseimpnoobj','baseimpiva0','baseexenta',
-    'baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
-    'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
-    'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
-    'codret','valret','numestret','numptoemiret','numsecret'
-]
-values = {}
-for field in editable:
-    if field in cols and field in request.POST:
-        values[field] = request.POST.get(field, '').strip() or None
-# IVA se recalcula en servidor a partir de los subtotales.
-tasas = {'baseimpiva5': ('montoiva5', 0.05), 'baseimpiva8': ('montoiva8', 0.08),
-         'baseimpiva12': ('montoiva12', 0.12), 'baseimpiva14': ('montoiva14', 0.14),
-         'baseimpiva15': ('montoiva15', 0.15)}
-for base, (iva, tasa) in tasas.items():
-    if base in cols:
-        try:
-            base_val = float(values.get(base) or 0)
-            values[iva] = round(base_val * tasa, 2)
-        except (TypeError, ValueError):
-            values[iva] = 0
-
-if mes_col and 'mes_declaracion' in request.POST:
-    values[mes_col] = request.POST.get('mes_declaracion') or None
-if anio_col and 'anio_declaracion' in request.POST:
-    values[anio_col] = request.POST.get('anio_declaracion') or None
-
-if not values:
-    return JsonResponse({'ok': False, 'error': 'No hay cambios para guardar.'}, status=400)
-
-sets = ', '.join(f'"{k}"=%s' for k in values)
-cursor.execute(f'UPDATE comprasnue SET {sets} WHERE {where}', [*values.values(), *params])
-db.commit()
-return JsonResponse({'ok': True, 'message': 'Compra actualizada correctamente.'})
+        if len(partes) != 3:
+            return JsonResponse({'ok': False, 'error': 'Número de factura inválido.'}, status=400)
+        numest, numptoemi, numsec = [p.strip() for p in partes]
+        where = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
+        params = [proveedor_ruc, numest, numptoemi, numsec]
+    else:
+        return JsonResponse({'ok': False, 'error': 'No se recibió el identificador de la compra.'}, status=400)
+    
+    try:
+        select_sql = f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where} LIMIT 1'
+        cursor.execute(select_sql, params)
+        row = cursor.fetchone()
+    
+        if not row and numcompra and proveedor_ruc and documento:
+            partes = documento.split('-')
+            if len(partes) == 3:
+                numest, numptoemi, numsec = [p.strip() for p in partes]
+                where_fallback = '"ruccedprovee"::text=%s AND "numest"::text=%s AND "numptoemi"::text=%s AND "numsec"::text=%s'
+                params_fallback = [proveedor_ruc, numest, numptoemi, numsec]
+                cursor.execute(
+                    f'SELECT {", ".join(chr(34)+x+chr(34) for x in select_cols)} FROM comprasnue WHERE {where_fallback} LIMIT 1',
+                    params_fallback
+                )
+                row = cursor.fetchone()
+    except Exception as exc:
+        db.rollback()
+        return JsonResponse({'ok': False, 'error': f'Error consultando la compra: {type(exc).__name__}: {exc}'}, status=500)
+    if not row:
+        return JsonResponse({
+            'ok': False,
+            'error': f'No se encontró la compra. numcompra recibido: {numcompra or "(vacío)"}; RUC: {proveedor_ruc or "(vacío)"}; factura: {documento or "(vacía)"}'
+        }, status=404)
+    
+    data = dict(zip(select_cols, row))
+    if request.method == 'GET':
+        for k, v in list(data.items()):
+            if hasattr(v, 'isoformat'):
+                data[k] = v.isoformat()
+            elif v is None:
+                data[k] = ''
+            else:
+                data[k] = str(v)
+        data['_mes_col'] = mes_col or ''
+        data['_anio_col'] = anio_col or ''
+        return JsonResponse({'ok': True, 'compra': data})
+    
+    editable = [
+        'fecemi','tipcom','numaut','baseimpnoobj','baseimpiva0','baseexenta',
+        'baseimpiva5','baseimpiva8','baseimpiva12','baseimpiva14','baseimpiva15',
+        'montoiva5','montoiva8','montoiva12','montoiva14','montoiva15',
+        'retencioniva10','retencioniva20','retencioniva30','retencioniva70','retencioniva100',
+        'codret','valret','numestret','numptoemiret','numsecret'
+    ]
+    values = {}
+    for field in editable:
+        if field in cols and field in request.POST:
+            values[field] = request.POST.get(field, '').strip() or None
+    # IVA se recalcula en servidor a partir de los subtotales.
+    tasas = {'baseimpiva5': ('montoiva5', 0.05), 'baseimpiva8': ('montoiva8', 0.08),
+             'baseimpiva12': ('montoiva12', 0.12), 'baseimpiva14': ('montoiva14', 0.14),
+             'baseimpiva15': ('montoiva15', 0.15)}
+    for base, (iva, tasa) in tasas.items():
+        if base in cols:
+            try:
+                base_val = float(values.get(base) or 0)
+                values[iva] = round(base_val * tasa, 2)
+            except (TypeError, ValueError):
+                values[iva] = 0
+    
+    if mes_col and 'mes_declaracion' in request.POST:
+        values[mes_col] = request.POST.get('mes_declaracion') or None
+    if anio_col and 'anio_declaracion' in request.POST:
+        values[anio_col] = request.POST.get('anio_declaracion') or None
+    
+    if not values:
+        return JsonResponse({'ok': False, 'error': 'No hay cambios para guardar.'}, status=400)
+    
+    sets = ', '.join(f'"{k}"=%s' for k in values)
+    cursor.execute(f'UPDATE comprasnue SET {sets} WHERE {where}', [*values.values(), *params])
+    db.commit()
+    return JsonResponse({'ok': True, 'message': 'Compra actualizada correctamente.'})
 
 
 @admin_required
