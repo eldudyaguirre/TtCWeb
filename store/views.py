@@ -728,10 +728,8 @@ def _compras_base_sql():
 
 
 def _compras_query(where, params, cliente, limit=None, offset=None, include_numcompra=False):
-    identificador = 'numcompra,' if include_numcompra else ''
     sql = f"""
         SELECT
-            {identificador}
             ROW_NUMBER() OVER (ORDER BY fecemi::date ASC) AS numero,
             nomprovee AS proveedor,
             ruccedprovee AS ruc,
@@ -787,6 +785,7 @@ def _compras_query(where, params, cliente, limit=None, offset=None, include_numc
             codret,
             COALESCE(NULLIF(valret::text, ''), '0')::numeric AS retrenta,
             CONCAT(numestret, '-', numptoemiret, '-', numsecret) AS numret
+            {', numcompra' if include_numcompra else ''}
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
         ORDER BY fecemi::date ASC
