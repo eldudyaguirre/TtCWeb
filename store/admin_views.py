@@ -13,7 +13,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from django.contrib.auth.hashers import check_password, make_password
 
-from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb
+from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
 
 
 ADMIN_SESSION_KEY = 'admin_portal'
@@ -450,6 +450,38 @@ def admin_clientes(request):
             'tipdec': tipdec,
             'dias': dias,
             'tipos_dec': tipos_dec,
+        },
+    )
+
+
+@admin_required
+def admin_suscriptores(request):
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+
+    suscriptores = Suscriptor.objects.all()
+
+    if query:
+        from django.db.models import Q
+        suscriptores = suscriptores.filter(
+            Q(nombre__icontains=query) |
+            Q(email__icontains=query)
+        )
+
+    if estado == 'activos':
+        suscriptores = suscriptores.filter(activo=True)
+    elif estado == 'inactivos':
+        suscriptores = suscriptores.filter(activo=False)
+
+    return render(
+        request,
+        'admin/suscriptores.html',
+        {
+            'suscriptores': suscriptores,
+            'query': query,
+            'estado': estado,
+            'suscriptores_total': Suscriptor.objects.count(),
+            'suscriptores_activos': Suscriptor.objects.filter(activo=True).count(),
         },
     )
 
