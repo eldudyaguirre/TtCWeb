@@ -41,11 +41,18 @@
             <div>
                 <label for="mes"><strong>Mes</strong></label>
                 <select id="mes" name="mes" class="form-control" required>
-                    {% for n,nombre in "1,ENERO;2,FEBRERO;3,MARZO;4,ABRIL;5,MAYO;6,JUNIO;7,JULIO;8,AGOSTO;9,SEPTIEMBRE;10,OCTUBRE;11,NOVIEMBRE;12,DICIEMBRE"|cut:" "|split:";" %}
-                    {% endfor %}
-                    {% for n in "1,2,3,4,5,6,7,8,9,10,11,12"|split:"," %}
-                    <option value="{{ n }}" {% if mes == n %}selected{% endif %}>{{ n }}</option>
-                    {% endfor %}
+                    <option value="1" {% if mes == "1" %}selected{% endif %}>ENERO</option>
+                    <option value="2" {% if mes == "2" %}selected{% endif %}>FEBRERO</option>
+                    <option value="3" {% if mes == "3" %}selected{% endif %}>MARZO</option>
+                    <option value="4" {% if mes == "4" %}selected{% endif %}>ABRIL</option>
+                    <option value="5" {% if mes == "5" %}selected{% endif %}>MAYO</option>
+                    <option value="6" {% if mes == "6" %}selected{% endif %}>JUNIO</option>
+                    <option value="7" {% if mes == "7" %}selected{% endif %}>JULIO</option>
+                    <option value="8" {% if mes == "8" %}selected{% endif %}>AGOSTO</option>
+                    <option value="9" {% if mes == "9" %}selected{% endif %}>SEPTIEMBRE</option>
+                    <option value="10" {% if mes == "10" %}selected{% endif %}>OCTUBRE</option>
+                    <option value="11" {% if mes == "11" %}selected{% endif %}>NOVIEMBRE</option>
+                    <option value="12" {% if mes == "12" %}selected{% endif %}>DICIEMBRE</option>
                 </select>
             </div>
             <div>
@@ -72,11 +79,11 @@
     <h2 style="margin-top:0;">Resultado</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
         <div><strong>RUC</strong><br>{{ resultado.ruc }}</div>
-        <div><strong>Procesadas</strong><br>{{ resultado.procesadas }}</div>
-        <div><strong>Nuevas</strong><br>{{ resultado.nuevas }}</div>
+        <div><strong>Procesadas</strong><br>{{ resultado.sri }}</div>
+        <div><strong>Nuevas</strong><br>{{ resultado.guardadas }}</div>
     </div>
-    {% if resultado.duplicadas is not None %}
-    <p style="margin-top:16px;"><strong>Ya existentes:</strong> {{ resultado.duplicadas }}</p>
+    {% if resultado.ya_existentes is not None %}
+    <p style="margin-top:16px;"><strong>Ya existentes:</strong> {{ resultado.ya_existentes }}</p>
     {% endif %}
 </div>
 {% endif %}
