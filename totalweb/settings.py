@@ -197,3 +197,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').strip().lower() in ('1', 'true', 'yes', 'on')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 CONTACT_FORM_RECIPIENT = os.getenv('CONTACT_FORM_RECIPIENT', 'totalcountscuenca@gmail.com')
+
+# Integración interna con Conta. Estos valores viven solo en el servidor.
+CONTA_URL = os.getenv('CONTA_URL', 'http://127.0.0.1:2408')
+CONTA_INTERNAL_TOKEN = os.getenv('CONTA_INTERNAL_TOKEN', '')
