@@ -1682,4 +1682,3 @@ def admin_conta(request):
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
         },
     )
-\n
