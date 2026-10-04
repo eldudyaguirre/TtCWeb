@@ -74,6 +74,22 @@
     </form>
 </div>
 
+<div class="admin-card" style="padding:24px; margin-top:20px;">
+    <h2 style="margin-top:0;">Asistente Conta</h2>
+    <p>Consulta información tributaria y administrativa desde el mismo login del administrador.</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="chat">
+        <textarea name="mensaje" class="form-control" rows="4" placeholder="Ej.: ¿Cuántas compras tuvo el cliente 0102045275001 en agosto de 2026?" required></textarea>
+        <button type="submit" class="btn btn-primary" style="margin-top:14px;">Consultar a Conta</button>
+    </form>
+    {% if respuesta_ia %}
+    <div style="margin-top:20px;padding:18px;border-radius:10px;background:#f4f7f8;white-space:pre-wrap;">
+        {{ respuesta_ia.respuesta|default:respuesta_ia }}
+    </div>
+    {% endif %}
+</div>
+
 {% if resultado %}
 <div class="admin-card" style="padding:24px; margin-top:20px;">
     <h2 style="margin-top:0;">Resultado</h2>
