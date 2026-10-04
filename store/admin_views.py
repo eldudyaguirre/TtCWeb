@@ -1567,7 +1567,7 @@ def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
         method='POST',
     )
     try:
-        with request.urlopen(req, timeout=300) as response:
+        with request.urlopen(req, timeout=20) as response:
             return json.loads(response.read().decode('utf-8'))
     except error.HTTPError as exc:
         body = exc.read().decode('utf-8', errors='replace')
@@ -1579,6 +1579,41 @@ def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
     except error.URLError as exc:
         raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
 
+
+
+
+def _conta_sri_status(usuario, job_id):
+    """Consulta el estado de un trabajo SRI ya iniciado en Conta."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    req = request.Request(
+        f'{base_url}/api/v1/admin/sri/compras/estado/{job_id}',
+        headers={
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='GET',
+    )
+    try:
+        with request.urlopen(req, timeout=10) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
 
 
 def _conta_chat(usuario, mensaje, conversation_id='admin'):
@@ -1618,6 +1653,24 @@ def _conta_chat(usuario, mensaje, conversation_id='admin'):
 
 
 @admin_required
+def admin_conta_sri_status(request):
+    """Endpoint AJAX del panel para consultar trabajos SRI en segundo plano."""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+    job_id = request.GET.get('job_id', '').strip()
+    if not job_id:
+        return JsonResponse({'error': 'Falta job_id.'}, status=400)
+    try:
+        resultado = _conta_sri_status(
+            usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+            job_id=job_id,
+        )
+        return JsonResponse(resultado)
+    except RuntimeError as exc:
+        return JsonResponse({'error': str(exc)}, status=502)
+
+
+@admin_required
 def admin_conta(request):
     """Panel de Conta dentro del administrador autenticado de TotalCounts."""
     from datetime import datetime
@@ -1633,6 +1686,7 @@ def admin_conta(request):
         mes = str(datetime.now().month)
 
     resultado = None
+    sri_job = None
     respuesta_ia = None
     error = ''
 
@@ -1663,7 +1717,8 @@ def admin_conta(request):
                     mes=int(mes),
                     tipo_comprobante=int(request.POST.get('tipo_comprobante', '1')),
                 )
-                messages.success(request, 'La sincronización fue procesada por Conta.')
+                sri_job = resultado.get('job_id')
+                messages.success(request, 'La sincronización fue iniciada en segundo plano.')
             except (ValueError, RuntimeError) as exc:
                 error = str(exc)
 
@@ -1676,6 +1731,7 @@ def admin_conta(request):
             'anio': anio,
             'mes': mes,
             'resultado': resultado,
+            'sri_job': sri_job,
             'respuesta_ia': respuesta_ia,
             'error': error,
             'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
