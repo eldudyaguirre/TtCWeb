@@ -1537,3 +1537,96 @@ def admin_cliente(request, ruc):
             'conciliacion': conciliacion,
         },
     )
+
+
+def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
+    """Llama a Conta desde el servidor; el navegador nunca recibe el secreto."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    payload = json.dumps({
+        'ruc': ruc, 'anio': int(anio), 'mes': int(mes),
+        'tipo_comprobante': int(tipo_comprobante),
+    }).encode('utf-8')
+
+    req = request.Request(
+        f'{base_url}/api/v1/admin/sri/compras/sincronizar',
+        data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='POST',
+    )
+    try:
+        with request.urlopen(req, timeout=300) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
+
+
+@admin_required
+def admin_conta(request):
+    """Panel de Conta dentro del administrador autenticado de TotalCounts."""
+    from datetime import datetime
+
+    clientes = Cliente.objects.filter(activo=True).order_by('nomclient')
+    ruc = request.POST.get('ruc', '').strip() if request.method == 'POST' else request.GET.get('ruc', '').strip()
+    anio = request.POST.get('anio', '').strip() if request.method == 'POST' else request.GET.get('anio', '').strip()
+    mes = request.POST.get('mes', '').strip() if request.method == 'POST' else request.GET.get('mes', '').strip()
+
+    if not anio:
+        anio = str(datetime.now().year)
+    if not mes:
+        mes = str(datetime.now().month)
+
+    resultado = None
+    error = ''
+
+    if request.method == 'POST' and request.POST.get('accion') == 'sincronizar_compras':
+        cliente = clientes.filter(ruccedcli=ruc).first()
+        if cliente is None:
+            error = 'Seleccione un cliente activo válido.'
+        else:
+            try:
+                resultado = _conta_sincronizar_compras(
+                    usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+                    ruc=str(cliente.ruccedcli).strip(),
+                    anio=int(anio),
+                    mes=int(mes),
+                    tipo_comprobante=int(request.POST.get('tipo_comprobante', '1')),
+                )
+                messages.success(request, 'La sincronización fue procesada por Conta.')
+            except (ValueError, RuntimeError) as exc:
+                error = str(exc)
+
+    return render(
+        request,
+        'admin/conta.html',
+        {
+            'clientes': clientes,
+            'ruc': ruc,
+            'anio': anio,
+            'mes': mes,
+            'resultado': resultado,
+            'error': error,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        },
+    )
+\n
