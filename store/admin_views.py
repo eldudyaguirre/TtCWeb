@@ -1580,6 +1580,43 @@ def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
         raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
 
 
+
+def _conta_chat(usuario, mensaje, conversation_id='admin'):
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    payload = json.dumps({'mensaje': mensaje, 'conversation_id': conversation_id or 'admin'}).encode('utf-8')
+    req = request.Request(
+        f'{base_url}/api/v1/admin/chat',
+        data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='POST',
+    )
+    try:
+        with request.urlopen(req, timeout=180) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
+
+
 @admin_required
 def admin_conta(request):
     """Panel de Conta dentro del administrador autenticado de TotalCounts."""
@@ -1596,9 +1633,24 @@ def admin_conta(request):
         mes = str(datetime.now().month)
 
     resultado = None
+    respuesta_ia = None
     error = ''
 
-    if request.method == 'POST' and request.POST.get('accion') == 'sincronizar_compras':
+    if request.method == 'POST' and request.POST.get('accion') == 'chat':
+        mensaje = request.POST.get('mensaje', '').strip()
+        if not mensaje:
+            error = 'Escriba una consulta para Conta.'
+        else:
+            try:
+                respuesta_ia = _conta_chat(
+                    usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+                    mensaje=mensaje,
+                    conversation_id=request.session.session_key or 'admin',
+                )
+            except RuntimeError as exc:
+                error = str(exc)
+
+    elif request.method == 'POST' and request.POST.get('accion') == 'sincronizar_compras':
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
             error = 'Seleccione un cliente activo válido.'
@@ -1624,6 +1676,7 @@ def admin_conta(request):
             'anio': anio,
             'mes': mes,
             'resultado': resultado,
+            'respuesta_ia': respuesta_ia,
             'error': error,
             'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
