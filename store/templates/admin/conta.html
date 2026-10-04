@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+{% block title %}Conta | Administración TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Inteligencia y automatización</span>
+        <h1>Conta</h1>
+        <p>Asistente tributario y motor de sincronización de TotalCounts.</p>
+    </div>
+</div>
+
+<div class="admin-card" style="padding:24px; margin-top:20px;">
+    <h2 style="margin-top:0;">Sincronización SRI</h2>
+    <p>Selecciona un cliente y período para que Conta consulte los comprobantes recibidos en el SRI.</p>
+
+    {% if error %}
+    <div class="admin-message" style="margin-bottom:16px;">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="sincronizar_compras">
+
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;align-items:end;">
+            <div>
+                <label for="ruc"><strong>Cliente</strong></label>
+                <select id="ruc" name="ruc" class="form-control" required>
+                    <option value="">Seleccione un cliente...</option>
+                    {% for cliente in clientes %}
+                    <option value="{{ cliente.ruccedcli }}" {% if ruc == cliente.ruccedcli|stringformat:"s" %}selected{% endif %}>
+                        {{ cliente.nomclient }} — {{ cliente.ruccedcli }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="anio"><strong>Año</strong></label>
+                <input id="anio" name="anio" type="number" min="2000" max="2100" value="{{ anio }}" class="form-control" required>
+            </div>
+            <div>
+                <label for="mes"><strong>Mes</strong></label>
+                <select id="mes" name="mes" class="form-control" required>
+                    {% for n,nombre in "1,ENERO;2,FEBRERO;3,MARZO;4,ABRIL;5,MAYO;6,JUNIO;7,JULIO;8,AGOSTO;9,SEPTIEMBRE;10,OCTUBRE;11,NOVIEMBRE;12,DICIEMBRE"|cut:" "|split:";" %}
+                    {% endfor %}
+                    {% for n in "1,2,3,4,5,6,7,8,9,10,11,12"|split:"," %}
+                    <option value="{{ n }}" {% if mes == n %}selected{% endif %}>{{ n }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="tipo_comprobante"><strong>Tipo</strong></label>
+                <select id="tipo_comprobante" name="tipo_comprobante" class="form-control">
+                    <option value="1">Facturas</option>
+                    <option value="2">Liquidaciones de compra</option>
+                    <option value="3">Notas de crédito</option>
+                    <option value="4">Notas de débito</option>
+                    <option value="6">Guías de remisión</option>
+                    <option value="7">Retenciones</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:18px;">
+            Sincronizar con SRI
+        </button>
+    </form>
+</div>
+
+{% if resultado %}
+<div class="admin-card" style="padding:24px; margin-top:20px;">
+    <h2 style="margin-top:0;">Resultado</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <div><strong>RUC</strong><br>{{ resultado.ruc }}</div>
+        <div><strong>Procesadas</strong><br>{{ resultado.procesadas }}</div>
+        <div><strong>Nuevas</strong><br>{{ resultado.nuevas }}</div>
+    </div>
+    {% if resultado.duplicadas is not None %}
+    <p style="margin-top:16px;"><strong>Ya existentes:</strong> {{ resultado.duplicadas }}</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
