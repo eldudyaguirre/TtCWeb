@@ -31,6 +31,9 @@
             <a href="{% url 'admin_contrasenas' %}" class="admin-nav-separated-after {% if request.resolver_match.url_name == 'admin_contrasenas' %}active{% endif %}">
                 <i class="fi fi-rr-key"></i><span>Contraseñas</span>
             </a>
+            <a href="{% url 'admin_conta' %}" class="{% if request.resolver_match.url_name == 'admin_conta' %}active{% endif %}">
+                <i class="fi fi-rr-brain"></i><span>Conta</span>
+            </a>
             <div class="admin-nav-separator"></div>
             <a href="#"><i class="fi fi-rr-receipt"></i><span>Facturación</span></a>
             <a href="#" class="admin-nav-separated-after"><i class="fi fi-rr-wallet"></i><span>Cobranza</span><small>Próximamente</small></a>
