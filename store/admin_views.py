@@ -879,26 +879,7 @@ def admin_ventas(request, ruc):
         total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
     except Exception as exc:
         return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
-    from types import SimpleNamespace
-    filas_template = [
-        SimpleNamespace(
-            numero=row[0],
-            cliente=row[1],
-            ruc=row[2],
-            fecha=row[3],
-            factura=row[4],
-            autorizacion=row[5],
-            base0=row[6],
-            baseiva=row[7],
-            iva=row[8],
-            total=row[9],
-            retiva=row[10],
-            retrenta=row[11],
-            numret=row[12],
-            autret=row[13],
-        )
-        for row in filas
-    ]
+    filas_template = filas
 
     return render(request, 'admin/ventas.html', {
         'cliente': cliente, 'filas': filas_template, 'resumen': resumen, 'filtros': filtros,
