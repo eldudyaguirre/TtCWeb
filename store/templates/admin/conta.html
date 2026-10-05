@@ -12,7 +12,7 @@
 
 <div class="admin-card" style="padding:24px; margin-top:20px;">
     <h2 style="margin-top:0;">Sincronización SRI</h2>
-    <p>Selecciona un cliente y período para que Conta consulte los comprobantes recibidos en el SRI.</p>
+    <p>Selecciona un cliente y período para que Conta consulte comprobantes recibidos o emitidos en el SRI.</p>
 
     {% if error %}
     <div class="admin-message" style="margin-bottom:16px;">{{ error }}</div>
@@ -20,7 +20,7 @@
 
     <form method="post">
         {% csrf_token %}
-        <input type="hidden" name="accion" value="sincronizar_compras">
+        <input type="hidden" name="accion" id="sri-accion" value="sincronizar_compras">
 
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;align-items:end;">
             <div>
@@ -68,9 +68,14 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:18px;">
-            Sincronizar con SRI
-        </button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_compras';">
+                🛒 Sincronizar compras recibidas
+            </button>
+            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_ventas';">
+                🧾 Sincronizar ventas emitidas
+            </button>
+        </div>
     </form>
 </div>
 
