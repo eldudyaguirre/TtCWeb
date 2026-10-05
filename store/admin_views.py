@@ -36,16 +36,6 @@ def _admin_required(request):
     return request.session.get(ADMIN_SESSION_KEY, False)
 
 
-def _admin_cliente_db(cliente):
-    """Obtiene directamente la conexión a la base PostgreSQL del cliente."""
-    alias = f"cliente_{cliente.ruccedcli}"
-    if alias not in connections.databases:
-        base = settings.DATABASES['default'].copy()
-        base['NAME'] = str(cliente.ruccedcli)
-        connections.databases[alias] = base
-    return connections[alias]
-
-
 def admin_login(request):
     if request.session.get(ADMIN_SESSION_KEY):
         return redirect('admin_dashboard')
@@ -734,7 +724,7 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
-        """Lee los importes originales de ventas y los calcula en Python."""
+    """Lee los importes originales de ventas y los calcula en Python."""
     sql = f"""
         SELECT
             v.nomcli,
@@ -825,7 +815,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
 
     return filas
 def _admin_ventas_resumen(where, params, cliente):
-        """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
+    """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
     sql = f"""
         SELECT
             v.basenoobj, v.baseiva0,
@@ -847,7 +837,7 @@ def _admin_ventas_resumen(where, params, cliente):
 
     base0 = baseiva = iva = total = retiva = retrenta = 0.0
 
-    with _admin_cliente_db(cliente).cursor() as cursor:
+    with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
         for row in cursor.fetchall():
             b0 = numero(row[0]) + numero(row[1])
@@ -871,12 +861,12 @@ def _admin_ventas_resumen(where, params, cliente):
 
 
 @admin_required
-def admin_ventas_legacy_1(request, ruc):
+def admin_ventas(request, ruc):
     from .views import VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
-        with _admin_cliente_db(cliente).cursor() as cursor:
+        with _cliente_db(cliente).cursor() as cursor:
             cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
         try:
@@ -2014,7 +2004,7 @@ def _admin_compras_filtros(request):
 
 
 @admin_required
-def admin_ventas_legacy_2(request, ruc):
+def admin_ventas(request, ruc):
     from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
@@ -3024,42 +3014,31 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import _cliente_db, VENTAS_COLUMNS
+    from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
-        with _admin_cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
+        base = _ventas_base_sql()
+        with _cliente_db(cliente).cursor() as cursor:
+            cursor.execute(f"SELECT COUNT(*) FROM ({base}) ventas_reporte WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
-
         try:
-            pagina = max(1, int(request.GET.get('pagina', '1')))
-        except (TypeError, ValueError):
+            pagina = max(1, int(request.GET.get('pagina','1')))
+        except ValueError:
             pagina = 1
-
         por_pagina = 50
-        filas = _admin_ventas_query(
-            where, params.copy(), cliente, por_pagina, (pagina - 1) * por_pagina
-        )
-        resumen = _admin_ventas_resumen(where, params.copy(), cliente)
-        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+        filas = _ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
+        resumen = _ventas_resumen(where, params.copy(), cliente)
+        total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
     except Exception as exc:
-        return HttpResponse(
-            f"Error en reporte de ventas: {type(exc).__name__}: {exc}",
-            status=500,
-            content_type='text/plain; charset=utf-8',
-        )
-
+        return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
     return render(request, 'admin/ventas.html', {
-        'cliente': cliente,
-        'filas': filas,
-        'resumen': resumen,
-        'filtros': filtros,
-        'pagina': pagina,
-        'total_paginas': total_paginas,
-        'total_registros': total_registros,
+        'cliente': cliente, 'filas': filas, 'resumen': resumen, 'filtros': filtros,
+        'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
         'ventas_columns': VENTAS_COLUMNS,
     })
+
+
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
@@ -3992,45 +3971,3 @@ def admin_conta(request):
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
         },
     )
-
-
-def admin_ventas_reporte(request, ruc):
-    """Reporte administrativo de ventas. Implementación única y aislada."""
-    if not request.session.get(ADMIN_SESSION_KEY):
-        return redirect('admin_login')
-
-    from .views import VENTAS_COLUMNS
-    cliente = get_object_or_404(Cliente, pk=ruc)
-    where, params, filtros = _admin_ventas_filtros(request)
-
-    try:
-        with _admin_cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM public.ventas v WHERE {where}", params)
-            total_registros = cursor.fetchone()[0]
-
-        try:
-            pagina = max(1, int(request.GET.get('pagina', '1')))
-        except (TypeError, ValueError):
-            pagina = 1
-
-        por_pagina = 50
-        filas = _admin_ventas_query(where, list(params), cliente, por_pagina, (pagina - 1) * por_pagina)
-        resumen = _admin_ventas_resumen(where, list(params), cliente)
-        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
-
-        return render(request, 'admin/ventas.html', {
-            'cliente': cliente,
-            'filas': filas,
-            'resumen': resumen,
-            'filtros': filtros,
-            'pagina': pagina,
-            'total_paginas': total_paginas,
-            'total_registros': total_registros,
-            'ventas_columns': VENTAS_COLUMNS,
-        })
-    except Exception as exc:
-        return HttpResponse(
-            f"Error en reporte de ventas: {type(exc).__name__}: {exc}",
-            status=500,
-            content_type='text/plain; charset=utf-8',
-        )
