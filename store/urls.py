@@ -14,6 +14,7 @@ urlpatterns = [
     path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('totalcounts/conta/', admin_views.admin_conta, name='admin_conta'),
     path('totalcounts/conta/sri/status/', admin_views.admin_conta_sri_status, name='admin_conta_sri_status'),
+    path('totalcounts/conta/sri/cancelar/', admin_views.admin_conta_sri_cancelar, name='admin_conta_sri_cancelar'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
     path('totalcounts/suscriptores/', admin_views.admin_suscriptores, name='admin_suscriptores'),
     path('totalcounts/contrasenas/', admin_views.admin_contrasenas, name='admin_contrasenas'),
