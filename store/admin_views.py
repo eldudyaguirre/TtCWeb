@@ -862,28 +862,26 @@ def _admin_ventas_resumen(where, params, cliente):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import _cliente_db, VENTAS_COLUMNS
-    from .views import VENTAS_COLUMNS
+    from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
+        base = _ventas_base_sql()
         with _cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
+            cursor.execute(f"SELECT COUNT(*) FROM ({base}) ventas_reporte WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
         try:
             pagina = max(1, int(request.GET.get('pagina','1')))
         except ValueError:
             pagina = 1
         por_pagina = 50
-        filas = _admin_ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
-        resumen = _admin_ventas_resumen(where, params.copy(), cliente)
+        filas = _ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
+        resumen = _ventas_resumen(where, params.copy(), cliente)
         total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
     except Exception as exc:
         return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
-    filas_template = filas
-
     return render(request, 'admin/ventas.html', {
-        'cliente': cliente, 'filas': filas_template, 'resumen': resumen, 'filtros': filtros,
+        'cliente': cliente, 'filas': filas, 'resumen': resumen, 'filtros': filtros,
         'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
         'ventas_columns': VENTAS_COLUMNS,
     })
@@ -897,13 +895,13 @@ def _admin_ventas_filtros(request):
     cliente_busqueda = request.GET.get('cliente_busqueda','').strip()
     where=[]; params=[]
     try:
-        datetime.strptime(desde,'%Y-%m-%d'); where.append('v.fecfactur::date >= %s::date'); params.append(desde)
+        datetime.strptime(desde,'%Y-%m-%d'); where.append('fecfactur::date >= %s::date'); params.append(desde)
     except ValueError: desde=''
     try:
-        datetime.strptime(hasta,'%Y-%m-%d'); where.append("v.fecfactur::date < (%s::date + INTERVAL '1 day')"); params.append(hasta)
+        datetime.strptime(hasta,'%Y-%m-%d'); where.append("fecfactur::date < (%s::date + INTERVAL '1 day')"); params.append(hasta)
     except ValueError: hasta=''
     if cliente_busqueda:
-        where.append('(v.ruccedcli ILIKE %s OR v.nomcli ILIKE %s)')
+        where.append('(ruccedcli ILIKE %s OR nomcli ILIKE %s)')
         params.extend([f'%{cliente_busqueda}%',f'%{cliente_busqueda}%'])
     return (' AND '.join(where) if where else '1=1'), params, {'fecha_desde':desde,'fecha_hasta':hasta,'cliente_busqueda':cliente_busqueda}
 
