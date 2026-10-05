@@ -1656,6 +1656,40 @@ def _conta_sri_status(usuario, job_id):
         raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
 
 
+def _conta_sri_cancelar(usuario, job_id):
+    """Solicita a Conta detener un trabajo SRI."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    req = request.Request(
+        f'{base_url}/api/v1/admin/sri/cancelar/{job_id}',
+        headers={
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='POST',
+    )
+    try:
+        with request.urlopen(req, timeout=10) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}')
+
+
 def _conta_chat(usuario, mensaje, conversation_id='admin'):
     import json
     import os
@@ -1690,6 +1724,24 @@ def _conta_chat(usuario, mensaje, conversation_id='admin'):
         raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
     except error.URLError as exc:
         raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
+
+
+@admin_required
+def admin_conta_sri_cancelar(request):
+    """Solicita la cancelación de un trabajo SRI en Conta."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+    job_id = request.POST.get('job_id', '').strip()
+    if not job_id:
+        return JsonResponse({'error': 'Falta job_id.'}, status=400)
+    try:
+        resultado = _conta_sri_cancelar(
+            usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+            job_id=job_id,
+        )
+        return JsonResponse(resultado)
+    except RuntimeError as exc:
+        return JsonResponse({'error': str(exc)}, status=502)
 
 
 @admin_required
