@@ -89,6 +89,9 @@
         <div><strong>Nuevas guardadas</strong><br><span id="sri-guardadas">0</span></div>
         <div><strong>Errores</strong><br><span id="sri-errores">0</span></div>
     </div>
+    <button id="sri-cancelar" type="button" class="btn btn-danger" style="margin-top:18px;">
+        ⏹ Detener sincronización
+    </button>
 </div>
 
 <div class="admin-card" style="padding:24px; margin-top:20px;">
@@ -132,6 +135,38 @@
     const existentes = document.getElementById("sri-existentes");
     const guardadas = document.getElementById("sri-guardadas");
     const errores = document.getElementById("sri-errores");
+    const cancelar = document.getElementById("sri-cancelar");
+    const cancelarUrl = "{% url 'admin_conta_sri_cancelar' %}";
+    let cancelando = false;
+
+    cancelar.addEventListener("click", async function () {
+        if (cancelando) return;
+        cancelando = true;
+        cancelar.disabled = true;
+        cancelar.textContent = "⏳ Deteniendo...";
+
+        try {
+            const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+            const response = await fetch(cancelarUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                    "X-CSRFToken": csrf,
+                    "Accept": "application/json"
+                },
+                body: "job_id=" + encodeURIComponent(jobId)
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "No se pudo cancelar.");
+            estado.textContent = "⏹ Cancelado";
+            mensaje.textContent = "La sincronización fue detenida por el usuario.";
+        } catch (error) {
+            cancelando = false;
+            cancelar.disabled = false;
+            cancelar.textContent = "⏹ Detener sincronización";
+            mensaje.textContent = error.message || "No se pudo detener la sincronización.";
+        }
+    });
 
     async function consultar() {
         try {
@@ -152,7 +187,8 @@
                 ejecutando: "🔄 Procesando",
                 captcha: "🛡️ Esperando validación del SRI",
                 finalizado: "✅ Finalizado",
-                error: "❌ Error"
+                error: "❌ Error",
+                cancelado: "⏹ Cancelado"
             };
 
             estado.textContent = estados[data.estado] || data.estado || "Procesando";
@@ -162,9 +198,12 @@
             guardadas.textContent = data.guardadas ?? 0;
             errores.textContent = Array.isArray(data.errores) ? data.errores.length : 0;
 
-            if (data.estado === "finalizado" || data.estado === "error") {
+            if (data.estado === "finalizado" || data.estado === "error" || data.estado === "cancelado") {
                 if (data.estado === "finalizado") {
                     mensaje.textContent = "Proceso terminado. La información ya fue procesada por Conta.";
+                }
+                if (data.estado === "cancelado") {
+                    mensaje.textContent = "La sincronización fue detenida por el usuario.";
                 }
                 return;
             }
