@@ -958,7 +958,7 @@ def admin_ventas_editar(request, ruc):
             cur.execute("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='ventas' ORDER BY ordinal_position")
             cols=[x[0] for x in cur.fetchall()]
             if 'numfactur' not in cols: return JsonResponse({'ok':False,'error':'El campo numfactur no existe en ventas.'},status=500)
-            wanted=['fecfactur','numfactur','autorizacion','basenoobj','baseiva0','baseiva12','iva','retiva','retrenta','numret','autret','codret']
+            wanted=['fecfactur','numfactur','autorizacion','basenoobj','baseiva0','baseiva5','baseiva8','baseiva12','baseiva14','baseiva15','iva','iva5','iva8','iva12','iva14','iva15','retiva','retrenta','numret','autret','codret']
             select=[x for x in wanted if x in cols]
             cur.execute(f'SELECT {",".join(chr(34)+x+chr(34) for x in select)} FROM ventas WHERE "numfactur"::text=%s LIMIT 1',[numfactur])
             row=cur.fetchone()
@@ -967,7 +967,7 @@ def admin_ventas_editar(request, ruc):
             if request.method=='GET':
                 for k,v in data.items(): data[k]='' if v is None else (v.isoformat() if hasattr(v,'isoformat') else str(v))
                 return JsonResponse({'ok':True,'venta':data})
-            editable=[x for x in ['fecfactur','autorizacion','basenoobj','baseiva0','baseiva12','iva','retiva','retrenta','numret','autret','codret'] if x in cols and x in request.POST]
+            editable=[x for x in ['fecfactur','autorizacion','basenoobj','baseiva0','baseiva5','baseiva8','baseiva12','baseiva14','baseiva15','iva5','iva8','iva12','iva14','iva15','retiva','retrenta','numret','autret','codret'] if x in cols and x in request.POST]
             vals={x:(request.POST.get(x,'').strip() or None) for x in editable}
             if not vals: return JsonResponse({'ok':False,'error':'No hay cambios para guardar.'},status=400)
             sets=', '.join(f'"{x}"=%s' for x in vals)
