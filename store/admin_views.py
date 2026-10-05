@@ -3014,7 +3014,7 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import VENTAS_COLUMNS
+    from .views import _cliente_db, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
@@ -3053,8 +3053,7 @@ def admin_ventas(request, ruc):
         'total_paginas': total_paginas,
         'total_registros': total_registros,
         'ventas_columns': VENTAS_COLUMNS,
-    })
-def _admin_ventas_filtros(request):
+    })def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
     desde = request.GET.get('fecha_desde','').strip() or primer_dia.strftime('%Y-%m-%d')
