@@ -1682,12 +1682,77 @@ def admin_conta(request):
         },
     )
 
-                             AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                            THEN TRIM(mes::text)::integer
-                        ELSE EXTRACT(MONTH FROM fecfactur::date)::integer
-                    END AS mes,
-                    CASE
-                        WHEN TRIM("año"::text) ~ '^\\d{4}
+def _admin_conciliacion_cliente(cliente, anio=None):
+    """Obtiene la conciliación mensual de ventas y compras."""
+    db_name = str(cliente.ruccedcli).strip()
+    alias = f'cliente_{db_name}'
+    if alias not in connections.databases:
+        base = settings.DATABASES['default'].copy()
+        base['NAME'] = db_name
+        connections.databases[alias] = base
+
+    db = connections[alias]
+
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT anio
+            FROM (
+                SELECT EXTRACT(YEAR FROM fecfactur::date)::integer AS anio
+                FROM ventas
+                WHERE fecfactur IS NOT NULL
+                UNION
+                SELECT TRIM("año"::text)::integer AS anio
+                FROM comprasnue
+                WHERE TRIM("año"::text) ~ '^\\d{4}$'
+            ) periodos
+            WHERE anio IS NOT NULL
+            ORDER BY anio DESC
+        """)
+        anios = [int(row[0]) for row in cursor.fetchall()]
+
+    if not anios:
+        return {
+            'anio': anio or 0, 'anios': [], 'meses': [],
+            'mes_final_nombre': '',
+            'totales': {
+                'ventas': 0, 'compras': 0, 'retrenta': 0,
+                'retiva': 0, 'resultado': 0, 'retenciones': 0,
+            },
+        }
+
+    try:
+        anio = int(anio)
+    except (TypeError, ValueError):
+        anio = anios[0]
+
+    if anio not in anios:
+        anio = anios[0]
+
+    with db.cursor() as cursor:
+        cursor.execute("""
+            WITH meses AS (
+                SELECT generate_series(1, 12) AS mes
+            ),
+            ventas_mes AS (
+                SELECT
+                    EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+                    ), 0) AS ventas,
+                    COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
+                    COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
+                FROM ventas
+                WHERE fecfactur IS NOT NULL
+                  AND EXTRACT(YEAR FROM fecfactur::date)::integer = %s
+                GROUP BY EXTRACT(MONTH FROM fecfactur::date)::integer
+            ),
+            compras_mes AS (
                 SELECT
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
@@ -1702,7 +1767,7 @@ def admin_conta(request):
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
-                  AND TRIM(mes::text) ~ '^\d{1,2}$'
+                  AND TRIM(mes::text) ~ '^\\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                   AND TRIM(tipcom::text) IN ('01', '02')
                 GROUP BY TRIM(mes::text)::integer
@@ -1735,7 +1800,6 @@ def admin_conta(request):
             'retiva': retiva or 0,
         })
 
-    # Siempre se muestran los 12 meses. Los meses sin registros quedan en cero.
     totales = {
         campo: sum((m[campo] for m in meses), 0)
         for campo in ('ventas', 'compras', 'retrenta', 'retiva')
