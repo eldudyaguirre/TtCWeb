@@ -847,7 +847,7 @@ def _admin_ventas_resumen(where, params, cliente):
 
     base0 = baseiva = iva = total = retiva = retrenta = 0.0
 
-    with _admin_admin_cliente_db(cliente).cursor() as cursor:
+    with _admin_cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
         for row in cursor.fetchall():
             b0 = numero(row[0]) + numero(row[1])
@@ -876,7 +876,7 @@ def admin_ventas_legacy_1(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
-        with _admin_admin_cliente_db(cliente).cursor() as cursor:
+        with _admin_cliente_db(cliente).cursor() as cursor:
             cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
         try:
@@ -3992,3 +3992,45 @@ def admin_conta(request):
             'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
         },
     )
+
+
+def admin_ventas_reporte(request, ruc):
+    """Reporte administrativo de ventas. Implementación única y aislada."""
+    if not request.session.get(ADMIN_SESSION_KEY):
+        return redirect('admin_login')
+
+    from .views import VENTAS_COLUMNS
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_ventas_filtros(request)
+
+    try:
+        with _admin_cliente_db(cliente).cursor() as cursor:
+            cursor.execute(f"SELECT COUNT(*) FROM public.ventas v WHERE {where}", params)
+            total_registros = cursor.fetchone()[0]
+
+        try:
+            pagina = max(1, int(request.GET.get('pagina', '1')))
+        except (TypeError, ValueError):
+            pagina = 1
+
+        por_pagina = 50
+        filas = _admin_ventas_query(where, list(params), cliente, por_pagina, (pagina - 1) * por_pagina)
+        resumen = _admin_ventas_resumen(where, list(params), cliente)
+        total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+
+        return render(request, 'admin/ventas.html', {
+            'cliente': cliente,
+            'filas': filas,
+            'resumen': resumen,
+            'filtros': filtros,
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'total_registros': total_registros,
+            'ventas_columns': VENTAS_COLUMNS,
+        })
+    except Exception as exc:
+        return HttpResponse(
+            f"Error en reporte de ventas: {type(exc).__name__}: {exc}",
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
