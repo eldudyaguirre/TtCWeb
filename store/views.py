@@ -759,7 +759,13 @@ def _compras_query(where, params, cliente, limit=None, offset=None, include_numc
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS iva,
             (
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
@@ -774,7 +780,13 @@ def _compras_query(where, params, cliente, limit=None, offset=None, include_numc
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS total,
             (
                 COALESCE(NULLIF(retencioniva10::text, ''), '0')::numeric
@@ -821,7 +833,13 @@ def _compras_resumen(where, params, cliente):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
@@ -836,7 +854,13 @@ def _compras_resumen(where, params, cliente):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(retencioniva10::text, ''), '0')::numeric
@@ -3072,7 +3096,13 @@ def _notas_credito_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS iva,
             (
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
@@ -3087,7 +3117,13 @@ def _notas_credito_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS total,
             codtipodoc AS codmod,
             CONCAT(numestmod, '-', numptoemimod, '-', numsecmod) AS documentomod,
@@ -3124,7 +3160,13 @@ def _notas_credito_resumen(where, params, cliente):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ), 0)
         FROM ({_notas_credito_base_sql()}) notas_reporte
         WHERE {where}
@@ -5416,7 +5458,13 @@ def _notas_credito_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS iva,
             (
                 COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
@@ -5431,7 +5479,13 @@ def _notas_credito_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ) AS total,
             codtipodoc AS codmod,
             CONCAT(numestmod, '-', numptoemimod, '-', numsecmod) AS documentomod,
@@ -5468,7 +5522,13 @@ def _notas_credito_resumen(where, params, cliente):
                 + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                + CASE
+                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
+                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    ELSE 0
+                  END
             ), 0)
         FROM ({_notas_credito_base_sql()}) notas_reporte
         WHERE {where}
