@@ -2004,32 +2004,6 @@ def _admin_compras_filtros(request):
 
 
 @admin_required
-def admin_ventas(request, ruc):
-    from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
-    cliente = get_object_or_404(Cliente, pk=ruc)
-    where, params, filtros = _admin_ventas_filtros(request)
-    try:
-        base = _ventas_base_sql()
-        with _cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM ({base}) ventas_reporte WHERE {where}", params)
-            total_registros = cursor.fetchone()[0]
-        try:
-            pagina = max(1, int(request.GET.get('pagina','1')))
-        except ValueError:
-            pagina = 1
-        por_pagina = 50
-        filas = _ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
-        resumen = _ventas_resumen(where, params.copy(), cliente)
-        total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
-    except Exception as exc:
-        return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
-    return render(request, 'admin/ventas.html', {
-        'cliente': cliente, 'filas': filas, 'resumen': resumen, 'filtros': filtros,
-        'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
-        'ventas_columns': VENTAS_COLUMNS,
-    })
-
-
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
@@ -3013,32 +2987,6 @@ def _admin_compras_filtros(request):
 
 
 @admin_required
-def admin_ventas(request, ruc):
-    from .views import _cliente_db, _ventas_base_sql, _ventas_query, _ventas_resumen, VENTAS_COLUMNS
-    cliente = get_object_or_404(Cliente, pk=ruc)
-    where, params, filtros = _admin_ventas_filtros(request)
-    try:
-        base = _ventas_base_sql()
-        with _cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM ({base}) ventas_reporte WHERE {where}", params)
-            total_registros = cursor.fetchone()[0]
-        try:
-            pagina = max(1, int(request.GET.get('pagina','1')))
-        except ValueError:
-            pagina = 1
-        por_pagina = 50
-        filas = _ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
-        resumen = _ventas_resumen(where, params.copy(), cliente)
-        total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
-    except Exception as exc:
-        return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
-    return render(request, 'admin/ventas.html', {
-        'cliente': cliente, 'filas': filas, 'resumen': resumen, 'filtros': filtros,
-        'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
-        'ventas_columns': VENTAS_COLUMNS,
-    })
-
-
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
