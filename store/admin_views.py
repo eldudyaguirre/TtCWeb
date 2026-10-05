@@ -608,7 +608,11 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     COALESCE(SUM(
                         COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
                         COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                        COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
                     ), 0) AS ventas,
                     COALESCE(SUM(
                         COALESCE(NULLIF(retrenta::text, ''), '0')::numeric
