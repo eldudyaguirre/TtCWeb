@@ -556,56 +556,39 @@ def _admin_conciliacion_cliente(cliente, anio=None):
     # Esto evita interpretar erróneamente valores como 09/01/2026.
     with db.cursor() as cursor:
         cursor.execute("""
-            SELECT DISTINCT "año"
-            FROM (
-                SELECT "año" FROM ventas
-                UNION
-                SELECT "año" FROM comprasnue
-            ) periodos
-            WHERE "año" IS NOT NULL
-              AND TRIM("año"::text) <> ''
-            ORDER BY "año" DESC
-        """)
-        anios = []
-        for row in cursor.fetchall():
-            try:
-                anios.append(int(str(row[0]).strip()))
-            except (TypeError, ValueError):
-                continue
-
-    if not anios:
-        return {
-            'anio': anio or 0,
-            'anios': [],
-            'meses': [],
-            'mes_final_nombre': '',
-            'totales': {
-                'ventas': 0,
-                'compras': 0,
-                'retrenta': 0,
-                'retiva': 0,
-                'resultado': 0,
-                'retenciones': 0,
-            },
-        }
-
-    try:
-        anio = int(anio)
-    except (TypeError, ValueError):
-        anio = anios[0]
-
-    if anio not in anios:
-        anio = anios[0]
-
-    with db.cursor() as cursor:
-        cursor.execute("""
             WITH meses AS (
                 SELECT generate_series(1, 12) AS mes
             ),
-            ventas_normalizadas AS (
+            ventas_mes AS (
                 SELECT
                     CASE
-                        WHEN TRIM(mes::text) ~ '^\\d{1,2}
+                        WHEN TRIM(mes::text) ~ '^\\d{1,2}$'
+                            AND TRIM(mes::text)::integer BETWEEN 1 AND 12
+                            THEN TRIM(mes::text)::integer
+                        ELSE EXTRACT(MONTH FROM NULLIF(TRIM(fecfactur::text), '')::date)::integer
+                    END AS mes,
+                    COALESCE(SUM(
+                        COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric +
+                        COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+                    ), 0) AS ventas,
+                    COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
+                    COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
+                FROM ventas
+                WHERE (
+                    CASE
+                        WHEN TRIM("año"::text) ~ '^\\d{4}$'
+                            THEN TRIM("año"::text)::integer
+                        ELSE EXTRACT(YEAR FROM NULLIF(TRIM(fecfactur::text), '')::date)::integer
+                    END
+                ) = %s
+                GROUP BY 1
+            ),
+            compras_mes AS (
                 SELECT
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
@@ -620,7 +603,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
-                  AND TRIM(mes::text) ~ '^\d{1,2}$'
+                  AND TRIM(mes::text) ~ '^\\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                   AND TRIM(tipcom::text) IN ('01', '02')
                 GROUP BY TRIM(mes::text)::integer
