@@ -158,16 +158,16 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT
                     EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
                     COALESCE(SUM(
-                        COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+                        COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva5::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva8::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva12::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva14::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseiva15::text), ''), '.'), '0')::numeric
                     ), 0) AS ventas,
-                    COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
-                    COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
+                    COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retrenta::text), ''), '.'), '0')::numeric), 0) AS retrenta,
+                    COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retiva::text), ''), '.'), '0')::numeric), 0) AS retiva
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
                   AND EXTRACT(YEAR FROM fecfactur::date)::integer = %s
@@ -177,14 +177,14 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
-                        COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric +
-                        COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
+                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
