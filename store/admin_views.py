@@ -542,7 +542,7 @@ def admin_contrasenas(request):
 
 
 def _admin_conciliacion_cliente(cliente, anio=None):
-    """Obtiene la conciliación mensual usando exclusivamente mes y anio."""
+    """Obtiene la conciliación mensual de ventas y compras."""
     db_name = str(cliente.ruccedcli).strip()
     alias = f'cliente_{db_name}'
     if alias not in connections.databases:
@@ -552,8 +552,49 @@ def _admin_conciliacion_cliente(cliente, anio=None):
 
     db = connections[alias]
 
-    # Los períodos se obtienen de los campos mes/anio, no de las fechas.
-    # Esto evita interpretar erróneamente valores como 09/01/2026.
+    # Los años disponibles se obtienen de ambos orígenes:
+    # ventas usa la fecha real de factura y compras usa mes/año.
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT anio
+            FROM (
+                SELECT TRIM("año"::text)::integer AS anio
+                FROM ventas
+                WHERE TRIM("año"::text) ~ '^\d{4}$'
+                UNION
+                SELECT EXTRACT(YEAR FROM fecfactur::date)::integer AS anio
+                FROM ventas
+                WHERE fecfactur IS NOT NULL
+                UNION
+                SELECT TRIM("año"::text)::integer AS anio
+                FROM comprasnue
+                WHERE TRIM("año"::text) ~ '^\d{4}$'
+            ) periodos
+            WHERE anio IS NOT NULL
+            ORDER BY anio DESC
+        """)
+        anios = [int(row[0]) for row in cursor.fetchall()]
+
+    if not anios:
+        return {
+            'anio': anio or 0,
+            'anios': [],
+            'meses': [],
+            'mes_final_nombre': '',
+            'totales': {
+                'ventas': 0, 'compras': 0, 'retrenta': 0,
+                'retiva': 0, 'resultado': 0, 'retenciones': 0,
+            },
+        }
+
+    try:
+        anio = int(anio)
+    except (TypeError, ValueError):
+        anio = anios[0]
+
+    if anio not in anios:
+        anio = anios[0]
+
     with db.cursor() as cursor:
         cursor.execute("""
             WITH meses AS (
@@ -561,12 +602,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             ),
             ventas_mes AS (
                 SELECT
-                    CASE
-                        WHEN TRIM(mes::text) ~ '^\\d{1,2}$'
-                            AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                            THEN TRIM(mes::text)::integer
-                        ELSE EXTRACT(MONTH FROM NULLIF(TRIM(fecfactur::text), '')::date)::integer
-                    END AS mes,
+                    EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
                     COALESCE(SUM(
                         COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric +
                         COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric +
@@ -579,14 +615,9 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0) AS retrenta,
                     COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0) AS retiva
                 FROM ventas
-                WHERE (
-                    CASE
-                        WHEN TRIM("año"::text) ~ '^\\d{4}$'
-                            THEN TRIM("año"::text)::integer
-                        ELSE EXTRACT(YEAR FROM NULLIF(TRIM(fecfactur::text), '')::date)::integer
-                    END
-                ) = %s
-                GROUP BY 1
+                WHERE fecfactur IS NOT NULL
+                  AND EXTRACT(YEAR FROM fecfactur::date)::integer = %s
+                GROUP BY EXTRACT(MONTH FROM fecfactur::date)::integer
             ),
             compras_mes AS (
                 SELECT
@@ -603,7 +634,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
-                  AND TRIM(mes::text) ~ '^\\d{1,2}$'
+                  AND TRIM(mes::text) ~ '^\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                   AND TRIM(tipcom::text) IN ('01', '02')
                 GROUP BY TRIM(mes::text)::integer
@@ -636,7 +667,6 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             'retiva': retiva or 0,
         })
 
-    # Siempre se muestran los 12 meses. Los meses sin registros quedan en cero.
     totales = {
         campo: sum((m[campo] for m in meses), 0)
         for campo in ('ventas', 'compras', 'retrenta', 'retiva')
@@ -651,7 +681,6 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
     }
-
 
 @admin_required
 def admin_documentacion(request, ruc):
