@@ -14,28 +14,13 @@
 <a href="{% url 'admin_ventas_excel' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="av-excel">Excel</a>
 <a target="_blank" href="{% url 'admin_ventas_pdf' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="av-pdf">PDF</a>
 <a href="#" onclick="return false" class="av-new"><i class="fi fi-rr-plus"></i> Nueva factura</a></div></div>
-<div class="admin-ventas-table-wrap"><table class="admin-ventas-table"><thead><tr>
-<th>FECHA</th><th>CLIENTE</th><th>RUC</th><th>FACTURA</th><th>AUTORIZACION</th>
-<th>BASE0</th><th>BASE IVA</th><th>IVA</th><th>TOTAL</th><th>RET IVA</th><th>RET RENTA</th><th>NUM RET</th><th>AUT RET</th><th>ACCIONES</th>
-</tr></thead><tbody>
-{% for row in filas %}
-<tr>
-<td>{{ row.fecha|default:"—" }}</td>
-<td>{{ row.cliente|default:"—" }}</td>
-<td>{{ row.ruc|default:"—" }}</td>
-<td>{{ row.factura|default:"—" }}</td>
-<td>{{ row.autorizacion|default:"—" }}</td>
-<td class="num">{{ row.base0|floatformat:2 }}</td>
-<td class="num">{{ row.baseiva|floatformat:2 }}</td>
-<td class="num">{{ row.iva|floatformat:2 }}</td>
-<td class="num">{{ row.total|floatformat:2 }}</td>
-<td class="num">{{ row.retiva|floatformat:2 }}</td>
-<td class="num">{{ row.retrenta|floatformat:2 }}</td>
-<td>{{ row.numret|default:"—" }}</td>
-<td>{{ row.autret|default:"—" }}</td>
-<td class="av-actions"><button type="button" class="av-menu">•••</button><div class="av-menu-box"><button type="button" class="av-edit" data-numfactur="{{ row.factura|escape }}">✎ Editar</button><button type="button" class="av-delete">🗑 Eliminar</button></div></td>
-</tr>
-{% empty %}<tr><td colspan="14" class="av-empty">No existen ventas para los filtros seleccionados.</td></tr>{% endfor %}
+<div class="admin-ventas-table-wrap"><table class="admin-ventas-table"><thead><tr><th>FECHA</th><th>CLIENTE</th><th>RUC</th><th>FACTURA</th><th>AUTORIZACION</th><th>BASE0</th><th>BASE IVA</th><th>IVA</th><th>TOTAL</th><th>RET IVA</th><th>RET RENTA</th><th>NUM RET</th><th>AUT RET</th><th>ACCIONES</th></tr></thead><tbody>
+{% for row in filas %}<tr>
+<td>{{ row.3|default:"—" }}</td><td>{{ row.1|default:"—" }}</td><td>{{ row.2|default:"—" }}</td><td>{{ row.4|default:"—" }}</td><td>{{ row.5|default:"—" }}</td>
+<td class="num">{{ row.6|floatformat:2 }}</td><td class="num">{{ row.7|floatformat:2 }}</td><td class="num">{{ row.8|floatformat:2 }}</td><td class="num">{{ row.9|floatformat:2 }}</td><td class="num">{{ row.10|floatformat:2 }}</td><td class="num">{{ row.11|floatformat:2 }}</td>
+<td>{{ row.12|default:"—" }}</td><td>{{ row.13|default:"—" }}</td>
+<td class="av-actions"><button type="button" class="av-menu">•••</button><div class="av-menu-box"><button type="button" class="av-edit" data-numfactur="{{ row.4|escape }}">✎ Editar</button><button type="button" class="av-delete">🗑 Eliminar</button></div></td>
+</tr>{% empty %}<tr><td colspan="14" class="av-empty">No existen ventas para los filtros seleccionados.</td></tr>{% endfor %}
 </tbody></table></div>
 <div class="admin-ventas-summary"><strong>RESUMEN DEL PERÍODO</strong><div><span>Base 0 / No objeto<strong>$ {{ resumen.base0|floatformat:2 }}</strong></span><span>Base IVA<strong>$ {{ resumen.baseiva|floatformat:2 }}</strong></span><span>IVA<strong>$ {{ resumen.iva|floatformat:2 }}</strong></span><span>Total<strong>$ {{ resumen.total|floatformat:2 }}</strong></span><span>Ret IVA<strong>$ {{ resumen.retiva|floatformat:2 }}</strong></span><span>Ret Renta<strong>$ {{ resumen.retrenta|floatformat:2 }}</strong></span></div></div>
 {% if total_paginas > 1 %}<div class="admin-ventas-pagination">{% if pagina > 1 %}<a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}&pagina={{ pagina|add:'-1' }}">‹ Anterior</a>{% endif %}<strong>Página {{ pagina }} de {{ total_paginas }}</strong>{% if pagina < total_paginas %}<a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}&pagina={{ pagina|add:'1' }}">Siguiente ›</a>{% endif %}</div>{% endif %}
