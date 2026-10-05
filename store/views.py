@@ -826,59 +826,59 @@ def _compras_resumen(where, params, cliente):
     sql = f"""
         SELECT
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(montoiva5::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva8::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva12::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva14::text), ''), '.'), '0')::numeric
                 + CASE
-                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
-                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
-                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
-                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.'), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.'), '0')::numeric
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric * 0.15, 2)
                     ELSE 0
                   END
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva5::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva8::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva12::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(montoiva14::text), ''), '.'), '0')::numeric
                 + CASE
-                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
-                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
-                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
-                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.'), '0')::numeric <> 0
+                        THEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.'), '0')::numeric
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric <> 0
+                        THEN ROUND(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric * 0.15, 2)
                     ELSE 0
                   END
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(retencioniva10::text, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva20::text, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva30::text, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva70::text, ''), '0')::numeric
-                + COALESCE(NULLIF(retencioniva100::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(retencioniva10::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(retencioniva20::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(retencioniva30::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(retencioniva70::text), ''), '.'), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(retencioniva100::text), ''), '.'), '0')::numeric
             ), 0),
-            COALESCE(SUM(COALESCE(NULLIF(valret::text, ''), '0')::numeric), 0)
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(valret::text), ''), '.'), '0')::numeric), 0)
         FROM ({_compras_base_sql()}) compras_reporte
         WHERE {where}
     """
