@@ -777,7 +777,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
             except (TypeError, ValueError):
                 return 0.0
 
-    with _admin_cliente_db(cliente).cursor() as cursor:
+    with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, query_params)
         raw_rows = cursor.fetchall()
 
@@ -3024,7 +3024,7 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import VENTAS_COLUMNS
+    from .views import _cliente_db, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
