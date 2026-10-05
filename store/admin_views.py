@@ -2004,7 +2004,6 @@ def _admin_compras_filtros(request):
     }
 
 
-@admin_required
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
@@ -2987,7 +2986,6 @@ def _admin_compras_filtros(request):
     }
 
 
-@admin_required
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
