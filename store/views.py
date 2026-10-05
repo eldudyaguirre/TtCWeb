@@ -590,7 +590,16 @@ def _dashboard_estadisticas(cliente, anio):
             COALESCE(SUM(
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
             ), 0) AS total
         FROM ventas
         WHERE EXTRACT(YEAR FROM fecfactur::date)::integer = %s
@@ -2696,8 +2705,7 @@ def _ventas_query(where, params, cliente, limit=None, offset=None):
             ) AS baseiva,
 
             (
-                COALESCE(NULLIF(TRIM(v.iva::text), ''), '0')::numeric
-                + COALESCE(NULLIF(TRIM(v.iva5::text), ''), '0')::numeric
+                COALESCE(NULLIF(TRIM(v.iva5::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva8::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva12::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva14::text), ''), '0')::numeric
@@ -2712,7 +2720,6 @@ def _ventas_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(TRIM(v.baseiva12::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.baseiva14::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.baseiva15::text), ''), '0')::numeric
-                + COALESCE(NULLIF(TRIM(v.iva::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva5::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva8::text), ''), '0')::numeric
                 + COALESCE(NULLIF(TRIM(v.iva12::text), ''), '0')::numeric
