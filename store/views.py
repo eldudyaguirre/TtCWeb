@@ -2622,8 +2622,17 @@ def _ventas_base_sql():
             v.autorizacion,
             v.basenoobj,
             v.baseiva0,
+            v.baseiva5,
+            v.baseiva8,
             v.baseiva12,
+            v.baseiva14,
+            v.baseiva15,
             v.iva,
+            v.iva5,
+            v.iva8,
+            v.iva12,
+            v.iva14,
+            v.iva15,
             v.retiva,
             v.retrenta,
             v.numret,
@@ -2645,13 +2654,35 @@ def _ventas_query(where, params, cliente, limit=None, offset=None):
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
             ) AS base0,
-            COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric AS baseiva,
-            COALESCE(NULLIF(iva::text, ''), '0')::numeric AS iva,
+            (
+                COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+            ) AS baseiva,
+            (
+                COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
+            ) AS iva,
             (
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
             ) AS total,
             COALESCE(NULLIF(retiva::text, ''), '0')::numeric AS retiva,
             COALESCE(NULLIF(retrenta::text, ''), '0')::numeric AS retrenta,
@@ -2695,16 +2726,34 @@ def _ventas_resumen(where, params, cliente):
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0)
