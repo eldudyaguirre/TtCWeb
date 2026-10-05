@@ -205,7 +205,17 @@
     });
 
     async function consultar() {
+        // Mientras se consulta el estado, dejamos visible que el trabajo fue iniciado.
+        if (validador.style.display === "block") {
+            mensaje.textContent = "🔎 Validando ventas contra el SRI... Iniciando comparación del 01/" + String("{{ mes|escapejs }}").padStart(2, "0") + "/{{ anio|escapejs }}.";
+        }
         try {
+            // El validador puede tardar en abrir sesión con el SRI.
+            // Mostramos su modo inmediatamente, sin esperar la primera respuesta.
+            if ("{{ sri_job|escapejs }}") {
+                validador.style.display = "block";
+            }
+
             const response = await fetch(statusUrl + "?job_id=" + encodeURIComponent(jobId), {
                 headers: {"Accept": "application/json"},
                 cache: "no-store"
