@@ -36,6 +36,16 @@ def _admin_required(request):
     return request.session.get(ADMIN_SESSION_KEY, False)
 
 
+def _admin_cliente_db(cliente):
+    """Obtiene directamente la conexión a la base PostgreSQL del cliente."""
+    alias = f"cliente_{cliente.ruccedcli}"
+    if alias not in connections.databases:
+        base = settings.DATABASES['default'].copy()
+        base['NAME'] = str(cliente.ruccedcli)
+        connections.databases[alias] = base
+    return connections[alias]
+
+
 def admin_login(request):
     if request.session.get(ADMIN_SESSION_KEY):
         return redirect('admin_dashboard')
@@ -724,8 +734,7 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
-    from .views import _cliente_db
-    """Lee los importes originales de ventas y los calcula en Python."""
+        """Lee los importes originales de ventas y los calcula en Python."""
     sql = f"""
         SELECT
             v.nomcli,
@@ -768,7 +777,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
             except (TypeError, ValueError):
                 return 0.0
 
-    with _cliente_db(cliente).cursor() as cursor:
+    with _admin_cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, query_params)
         raw_rows = cursor.fetchall()
 
@@ -816,8 +825,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
 
     return filas
 def _admin_ventas_resumen(where, params, cliente):
-    from .views import _cliente_db
-    """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
+        """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
     sql = f"""
         SELECT
             v.basenoobj, v.baseiva0,
@@ -839,7 +847,7 @@ def _admin_ventas_resumen(where, params, cliente):
 
     base0 = baseiva = iva = total = retiva = retrenta = 0.0
 
-    with _cliente_db(cliente).cursor() as cursor:
+    with _admin_admin_cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
         for row in cursor.fetchall():
             b0 = numero(row[0]) + numero(row[1])
@@ -868,7 +876,7 @@ def admin_ventas_legacy_1(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
-        with _cliente_db(cliente).cursor() as cursor:
+        with _admin_admin_cliente_db(cliente).cursor() as cursor:
             cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
         try:
@@ -3016,11 +3024,10 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import _cliente_db, VENTAS_COLUMNS
-    cliente = get_object_or_404(Cliente, pk=ruc)
+        cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
-        with _cliente_db(cliente).cursor() as cursor:
+        with _admin_cliente_db(cliente).cursor() as cursor:
             cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
             total_registros = cursor.fetchone()[0]
 
