@@ -2642,90 +2642,77 @@ def _ventas_base_sql():
 
 
 def _ventas_query(where, params, cliente, limit=None, offset=None):
+    """
+    Consulta directamente los campos tributarios de ventas.
+
+    No reutiliza el reporte administrativo ni transforma los importes a través
+    de una consulta intermedia. Esto permite que las facturas importadas
+    recientemente reflejen exactamente los valores almacenados en ventas.
+    """
     sql = f"""
         SELECT
-            ROW_NUMBER() OVER (ORDER BY fecfactur::date ASC, factura ASC) AS numero,
-            nomcli AS cliente,
-            ruccedcli AS ruc,
-            fecfactur AS fecha,
-            factura,
-            autorizacion,
+            ROW_NUMBER() OVER (ORDER BY v.fecfactur::date ASC, v.numfactur ASC) AS numero,
+            v.nomcli AS cliente,
+            v.ruccedcli AS ruc,
+            v.fecfactur AS fecha,
+            v.numfactur AS factura,
+            v.autorizacion,
+
             (
-                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
             ) AS base0,
+
             (
-                COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+                COALESCE(NULLIF(TRIM(v.baseiva5::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva8::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva12::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva14::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva15::text), ''), '0')::numeric
             ) AS baseiva,
+
             (
-                COALESCE(NULLIF(iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
+                COALESCE(NULLIF(TRIM(v.iva::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva5::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva8::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva12::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva14::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva15::text), ''), '0')::numeric
             ) AS iva,
+
             (
-                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva15::text, ''), '0')::numeric
+                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva5::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva8::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva12::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva14::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva15::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva5::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva8::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva12::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva14::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.iva15::text), ''), '0')::numeric
             ) AS total,
-            COALESCE(NULLIF(retiva::text, ''), '0')::numeric AS retiva,
-            COALESCE(NULLIF(retrenta::text, ''), '0')::numeric AS retrenta,
-            numret,
-            autret
-        FROM (
-            SELECT
-                fecfactur,
-                nomcli,
-                ruccedcli,
-                numfactur AS factura,
-                autorizacion,
-                basenoobj,
-                baseiva0,
-                baseiva5,
-                baseiva8,
-                baseiva12,
-                baseiva14,
-                baseiva15,
-                iva,
-                iva5,
-                iva8,
-                iva12,
-                iva14,
-                iva15,
-                retiva,
-                retrenta,
-                numret,
-                autret
-            FROM ({_ventas_base_sql()}) ventas_reporte
-        ) ventas_datos
+
+            COALESCE(NULLIF(TRIM(v.retiva::text), ''), '0')::numeric AS retiva,
+            COALESCE(NULLIF(TRIM(v.retrenta::text), ''), '0')::numeric AS retrenta,
+            v.numret,
+            v.autret
+        FROM public.ventas v
         WHERE {where}
-        ORDER BY fecfactur::date ASC, factura ASC
+        ORDER BY v.fecfactur::date ASC, v.numfactur ASC
     """
 
+    query_params = list(params)
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
-        params = [*params, limit, offset or 0]
+        query_params.extend([limit, offset or 0])
 
     with _cliente_db(cliente).cursor() as cursor:
-        cursor.execute(sql, params)
+        cursor.execute(sql, query_params)
         return cursor.fetchall()
-
 
 def _ventas_resumen(where, params, cliente):
     sql = f"""
