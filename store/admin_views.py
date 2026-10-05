@@ -3024,7 +3024,8 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def admin_ventas(request, ruc):
-        cliente = get_object_or_404(Cliente, pk=ruc)
+    from .views import VENTAS_COLUMNS
+    cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
         with _admin_cliente_db(cliente).cursor() as cursor:
@@ -3038,11 +3039,7 @@ def admin_ventas(request, ruc):
 
         por_pagina = 50
         filas = _admin_ventas_query(
-            where,
-            params.copy(),
-            cliente,
-            por_pagina,
-            (pagina - 1) * por_pagina,
+            where, params.copy(), cliente, por_pagina, (pagina - 1) * por_pagina
         )
         resumen = _admin_ventas_resumen(where, params.copy(), cliente)
         total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
@@ -3063,8 +3060,6 @@ def admin_ventas(request, ruc):
         'total_registros': total_registros,
         'ventas_columns': VENTAS_COLUMNS,
     })
-
-
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
     primer_dia = hoy.replace(day=1)
