@@ -737,40 +737,40 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(v.baseiva0::text, ''), '0')::numeric
             ) AS base0,
             (
-                COALESCE(NULLIF(v.baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva15::text, ''), '0')::numeric
+                COALESCE(v.baseiva5, 0)
+                + COALESCE(v.baseiva8, 0)
+                + COALESCE(v.baseiva12, 0)
+                + COALESCE(v.baseiva14, 0)
+                + COALESCE(v.baseiva15, 0)
             ) AS baseiva,
             (
                 COALESCE(NULLIF(v.iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva15::text, ''), '0')::numeric
+                + COALESCE(v.iva5, 0)
+                + COALESCE(v.iva8, 0)
+                + COALESCE(v.iva12, 0)
+                + COALESCE(v.iva14, 0)
+                + COALESCE(v.iva15, 0)
             ) AS iva,
             (
                 COALESCE(NULLIF(v.basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(v.baseiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva15::text, ''), '0')::numeric
+                + COALESCE(v.baseiva5, 0)
+                + COALESCE(v.baseiva8, 0)
+                + COALESCE(v.baseiva12, 0)
+                + COALESCE(v.baseiva14, 0)
+                + COALESCE(v.baseiva15, 0)
                 + COALESCE(NULLIF(v.iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva15::text, ''), '0')::numeric
+                + COALESCE(v.iva5, 0)
+                + COALESCE(v.iva8, 0)
+                + COALESCE(v.iva12, 0)
+                + COALESCE(v.iva14, 0)
+                + COALESCE(v.iva15, 0)
             ) AS total,
             COALESCE(NULLIF(v.retiva::text, ''), '0')::numeric AS retiva,
             COALESCE(NULLIF(v.retrenta::text, ''), '0')::numeric AS retrenta,
             v.numret,
             v.autret
-        FROM ventas v
+        FROM public.ventas v
         WHERE {where}
         ORDER BY v.fecfactur::date ASC, v.numfactur ASC
     """
@@ -790,37 +790,37 @@ def _admin_ventas_resumen(where, params, cliente):
                 + COALESCE(NULLIF(v.baseiva0::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(v.baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva15::text, ''), '0')::numeric
+                COALESCE(v.baseiva5, 0)
+                + COALESCE(v.baseiva8, 0)
+                + COALESCE(v.baseiva12, 0)
+                + COALESCE(v.baseiva14, 0)
+                + COALESCE(v.baseiva15, 0)
             ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(v.iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva15::text, ''), '0')::numeric
+                + COALESCE(v.iva5, 0)
+                + COALESCE(v.iva8, 0)
+                + COALESCE(v.iva12, 0)
+                + COALESCE(v.iva14, 0)
+                + COALESCE(v.iva15, 0)
             ), 0),
             COALESCE(SUM(COALESCE(NULLIF(v.basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(v.baseiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.baseiva15::text, ''), '0')::numeric
+                + COALESCE(v.baseiva5, 0)
+                + COALESCE(v.baseiva8, 0)
+                + COALESCE(v.baseiva12, 0)
+                + COALESCE(v.baseiva14, 0)
+                + COALESCE(v.baseiva15, 0)
                 + COALESCE(NULLIF(v.iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(v.iva15::text, ''), '0')::numeric
+                + COALESCE(v.iva5, 0)
+                + COALESCE(v.iva8, 0)
+                + COALESCE(v.iva12, 0)
+                + COALESCE(v.iva14, 0)
+                + COALESCE(v.iva15, 0)
             ), 0),
             COALESCE(SUM(COALESCE(NULLIF(v.retiva::text, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(v.retrenta::text, ''), '0')::numeric), 0)
-        FROM ventas v
+        FROM public.ventas v
         WHERE {where}
     """
     with _cliente_db(cliente).cursor() as cursor:
