@@ -95,6 +95,32 @@
     <button id="sri-cancelar" type="button" class="btn btn-danger" style="margin-top:18px;">
         ⏹ Detener sincronización
     </button>
+
+    <div id="sri-validador" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid #ddd;">
+        <h3 style="margin:0 0 14px;">🔎 Comparación SRI vs Base de Datos</h3>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;">
+            <div><strong>Días revisados</strong><br><span id="val-dias">0</span></div>
+            <div><strong>Días OK</strong><br><span id="val-ok">0</span></div>
+            <div><strong>Con diferencias</strong><br><span id="val-diferencias">0</span></div>
+            <div><strong>Faltantes recuperados</strong><br><span id="val-faltantes">0</span></div>
+            <div><strong>Sobrantes</strong><br><span id="val-sobrantes">0</span></div>
+        </div>
+        <div style="margin-top:18px;overflow:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd;">Fecha</th>
+                        <th style="text-align:right;padding:8px;border-bottom:1px solid #ddd;">SRI</th>
+                        <th style="text-align:right;padding:8px;border-bottom:1px solid #ddd;">BD</th>
+                        <th style="text-align:center;padding:8px;border-bottom:1px solid #ddd;">Estado</th>
+                        <th style="text-align:right;padding:8px;border-bottom:1px solid #ddd;">Faltantes</th>
+                        <th style="text-align:right;padding:8px;border-bottom:1px solid #ddd;">Sobrantes</th>
+                    </tr>
+                </thead>
+                <tbody id="val-detalle"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <div class="admin-card" style="padding:24px; margin-top:20px;">
@@ -139,6 +165,13 @@
     const guardadas = document.getElementById("sri-guardadas");
     const errores = document.getElementById("sri-errores");
     const cancelar = document.getElementById("sri-cancelar");
+    const validador = document.getElementById("sri-validador");
+    const valDias = document.getElementById("val-dias");
+    const valOk = document.getElementById("val-ok");
+    const valDiferencias = document.getElementById("val-diferencias");
+    const valFaltantes = document.getElementById("val-faltantes");
+    const valSobrantes = document.getElementById("val-sobrantes");
+    const valDetalle = document.getElementById("val-detalle");
     const cancelarUrl = "{% url 'admin_conta_sri_cancelar' %}";
     let cancelando = false;
 
@@ -197,6 +230,39 @@
             estado.textContent = estados[data.estado] || data.estado || "Procesando";
             mensaje.textContent = data.mensaje || "";
             encontradas.textContent = data.sri ?? 0;
+
+            const esValidador = data.operacion === "ventas_validar" || Number(data.dias_revisados || 0) > 0;
+            if (esValidador) {
+                validador.style.display = "block";
+                valDias.textContent = data.dias_revisados ?? 0;
+                valOk.textContent = data.dias_ok ?? 0;
+                valDiferencias.textContent = data.dias_diferentes ?? 0;
+                valFaltantes.textContent = data.faltantes ?? 0;
+                valSobrantes.textContent = data.sobrantes ?? 0;
+
+                let detalle = data.detalle || "[]";
+                try {
+                    if (typeof detalle === "string") detalle = JSON.parse(detalle);
+                } catch (_) {
+                    detalle = [];
+                }
+
+                valDetalle.innerHTML = "";
+                if (Array.isArray(detalle)) {
+                    detalle.forEach(function (dia) {
+                        const tr = document.createElement("tr");
+                        const ok = dia.estado === "OK";
+                        tr.innerHTML =
+                            "<td style='padding:7px;border-bottom:1px solid #eee;'>" + (dia.fecha || "") + "</td>" +
+                            "<td style='padding:7px;text-align:right;border-bottom:1px solid #eee;'>" + (dia.sri ?? 0) + "</td>" +
+                            "<td style='padding:7px;text-align:right;border-bottom:1px solid #eee;'>" + (dia.base_datos ?? 0) + "</td>" +
+                            "<td style='padding:7px;text-align:center;border-bottom:1px solid #eee;font-weight:600;'>" + (ok ? "✓ OK" : "⚠ DIFERENCIA") + "</td>" +
+                            "<td style='padding:7px;text-align:right;border-bottom:1px solid #eee;'>" + (dia.faltantes ?? 0) + "</td>" +
+                            "<td style='padding:7px;text-align:right;border-bottom:1px solid #eee;'>" + (dia.sobrantes ?? 0) + "</td>";
+                        valDetalle.appendChild(tr);
+                    });
+                }
+            }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
             errores.textContent = Array.isArray(data.errores) ? data.errores.length : 0;
