@@ -739,7 +739,6 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
             v.baseiva12,
             v.baseiva14,
             v.baseiva15,
-            v.iva,
             v.iva5,
             v.iva8,
             v.iva12,
@@ -777,7 +776,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
         (
             nomcli, ruccedcli, fecfactur, numfactur, autorizacion,
             basenoobj, baseiva0, baseiva5, baseiva8, baseiva12,
-            baseiva14, baseiva15, iva, iva5, iva8, iva12, iva14, iva15,
+            baseiva14, baseiva15, iva5, iva8, iva12, iva14, iva15,
             retiva, retrenta, numret, autret
         ) = row
 
@@ -787,8 +786,8 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
             + numero(baseiva14) + numero(baseiva15)
         )
         iva_total = (
-            numero(iva) + numero(iva5) + numero(iva8)
-            + numero(iva12) + numero(iva14) + numero(iva15)
+            numero(iva5) + numero(iva8) + numero(iva12)
+            + numero(iva14) + numero(iva15)
         )
         total = base0 + baseiva + iva_total
 
@@ -820,7 +819,7 @@ def _admin_ventas_resumen(where, params, cliente):
         SELECT
             v.basenoobj, v.baseiva0,
             v.baseiva5, v.baseiva8, v.baseiva12, v.baseiva14, v.baseiva15,
-            v.iva, v.iva5, v.iva8, v.iva12, v.iva14, v.iva15,
+            v.iva5, v.iva8, v.iva12, v.iva14, v.iva15,
             v.retiva, v.retrenta
         FROM public.ventas v
         WHERE {where}
@@ -842,13 +841,13 @@ def _admin_ventas_resumen(where, params, cliente):
         for row in cursor.fetchall():
             b0 = numero(row[0]) + numero(row[1])
             biv = sum(numero(x) for x in row[2:7])
-            iv = sum(numero(x) for x in row[7:13])
+            iv = sum(numero(x) for x in row[7:12])
             base0 += b0
             baseiva += biv
             iva += iv
             total += b0 + biv + iv
-            retiva += numero(row[13])
-            retrenta += numero(row[14])
+            retiva += numero(row[12])
+            retrenta += numero(row[13])
 
     return {
         'base0': base0,
