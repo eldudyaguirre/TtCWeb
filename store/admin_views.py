@@ -724,6 +724,7 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
+    from .views import _cliente_db
     """Lee los importes originales de ventas y los calcula en Python."""
     sql = f"""
         SELECT
@@ -815,6 +816,7 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
 
     return filas
 def _admin_ventas_resumen(where, params, cliente):
+    from .views import _cliente_db
     """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
     sql = f"""
         SELECT
@@ -862,7 +864,7 @@ def _admin_ventas_resumen(where, params, cliente):
 
 @admin_required
 def admin_ventas(request, ruc):
-    from .views import VENTAS_COLUMNS
+    from .views import _cliente_db, VENTAS_COLUMNS
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_ventas_filtros(request)
     try:
