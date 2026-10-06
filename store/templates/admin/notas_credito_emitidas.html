@@ -1,0 +1,85 @@
+{% extends "admin/base.html" %}
+{% block title %}N/C emitidas | {{ cliente.nomclient }}{% endblock %}
+{% block content %}
+<div class="admin-breadcrumb"><a href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}">← Documentación</a></div>
+<div class="admin-page-header">
+  <div><span class="admin-kicker">Documentación · Notas de crédito emitidas</span><h1>NOTAS DE CRÉDITO EMITIDAS</h1><p>{{ cliente.nomclient }} | RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p></div>
+  <span class="admin-report-count">{{ total_registros }} registros</span>
+</div>
+<section class="admin-card nc-emit-card">
+<form method="get" class="nc-emit-filters">
+<div><label>Fecha desde</label><input type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}"></div>
+<div><label>Fecha hasta</label><input type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}"></div>
+<div class="nc-emit-actions"><button type="submit">Buscar</button><a href="{% url 'admin_notas_credito_emitidas' ruc=cliente.ruccedcli %}">Limpiar</a></div>
+</form>
+
+<div class="admin-compras-toolbar">
+  <div><span class="admin-kicker">Período consultado</span><strong>{{ filtros.fecha_desde }} → {{ filtros.fecha_hasta }}</strong></div>
+  <div class="admin-compras-toolbar-actions">
+    <a href="{% url 'admin_notas_credito_emitidas_excel' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}" class="admin-compras-tool admin-compras-excel"><i class="fi fi-rr-file-excel"></i> Excel</a>
+    <a href="{% url 'admin_notas_credito_emitidas_pdf' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}" class="admin-compras-tool admin-compras-pdf" target="_blank"><i class="fi fi-rr-file-pdf"></i> PDF</a>
+  </div>
+</div>
+
+<div class="admin-compras-table-wrap nc-emit-table-wrap">
+<table class="admin-compras-table">
+<thead><tr><th>N°</th><th>CLIENTE</th><th>RUC</th><th>FECHA</th><th>N° NC</th><th>AUTORIZACIÓN</th><th>BASES SIN IVA</th><th>BASES CON IVA</th><th>IVA</th><th>TOTAL</th><th>FAC MOD</th><th>FECHA FACTURA</th></tr></thead>
+<tbody>
+{% for row in filas %}
+<tr>
+<td>{{ row.0 }}</td><td>{{ row.1 }}</td><td>{{ row.2 }}</td><td>{{ row.3 }}</td><td>{{ row.4 }}</td><td>{{ row.5 }}</td>
+<td>{{ row.6|floatformat:2 }}</td><td>{{ row.7|floatformat:2 }}</td><td>{{ row.8|floatformat:2 }}</td><td>{{ row.9|floatformat:2 }}</td><td>{{ row.10 }}</td><td>{{ row.11 }}</td>
+</tr>
+{% empty %}<tr><td colspan="12" class="empty">No existen notas de crédito emitidas para los filtros seleccionados.</td></tr>{% endfor %}
+</tbody>
+</table>
+</div>
+
+<div class="nc-emit-summary">
+<div class="title">RESUMEN DEL PERÍODO</div>
+<div class="grid">
+<div><span>Bases sin IVA</span><strong>$ {{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
+<div><span>Bases con IVA</span><strong>$ {{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
+<div><span>IVA</span><strong>$ {{ resumen.iva|floatformat:2 }}</strong></div>
+<div class="total"><span>Total</span><strong>$ {{ resumen.total|floatformat:2 }}</strong></div>
+</div>
+</div>
+
+<div class="nc-emit-pagination">
+{% if total_paginas > 1 %}
+  {% if pagina > 1 %}<a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&pagina={{ pagina|add:'-1' }}">‹ Anterior</a>{% else %}<span></span>{% endif %}
+  <strong>Página {{ pagina }} de {{ total_paginas }}</strong>
+  {% if pagina < total_paginas %}<a href="?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&pagina={{ pagina|add:'1' }}">Siguiente ›</a>{% endif %}
+{% endif %}
+</div>
+</section>
+
+<style>
+.nc-emit-card{margin-top:20px;padding:20px}
+.nc-emit-filters{display:grid;grid-template-columns:180px 180px auto;gap:12px;align-items:end}
+.nc-emit-filters label{display:block;margin-bottom:6px;color:var(--admin-muted);font-size:11px;font-weight:800}
+.nc-emit-filters input{width:100%;height:42px;box-sizing:border-box;border:1px solid #d5dee2;border-radius:8px;padding:0 11px;font:inherit}
+.nc-emit-actions{display:flex;gap:8px}
+.nc-emit-actions button,.nc-emit-actions a{height:42px;padding:0 15px;display:inline-flex;align-items:center;border-radius:8px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+.nc-emit-actions button{border:1px solid #1596a3;background:#1596a3;color:#fff}
+.nc-emit-actions a{border:1px solid #d5dee2;background:#fff;color:#526771}
+.nc-emit-table-wrap{margin-top:20px;overflow:auto;border:1px solid #d8e0e3;border-radius:10px}
+.nc-emit-table-wrap table{width:100%;min-width:1250px;border-collapse:collapse;background:#fff}
+.nc-emit-table-wrap th{padding:10px 8px;background:#21333e;color:#fff;border:1px solid #3b4d56;font-size:10px;white-space:nowrap}
+.nc-emit-table-wrap td{padding:8px;border:1px solid #e1e7e9;color:#344852;font-size:11px;white-space:nowrap;text-align:center}
+.nc-emit-table-wrap td:nth-child(2){text-align:left;min-width:220px}
+.nc-emit-table-wrap td:nth-child(n+7):nth-child(-n+10){text-align:right}
+.empty{padding:25px!important}
+.nc-emit-summary{margin-top:18px;padding:18px;border:1px solid #dce5e7;border-radius:11px;background:#f7fafb}
+.nc-emit-summary .title{margin-bottom:12px;font-size:12px;font-weight:900;color:var(--admin-dark)}
+.nc-emit-summary .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.nc-emit-summary .grid>div{min-height:64px;padding:12px;border:1px solid #e0e7e9;border-radius:9px;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.nc-emit-summary span{color:var(--admin-muted);font-size:10px;font-weight:700}
+.nc-emit-summary strong{color:var(--admin-dark);font-size:14px}
+.nc-emit-summary .total{border-color:#1596a3;background:#eef9fa}
+.nc-emit-pagination{display:flex;justify-content:space-between;align-items:center;margin-top:18px;color:var(--admin-muted);font-size:12px}
+.nc-emit-pagination a{padding:9px 12px;border:1px solid #d5dee2;border-radius:8px;background:#fff;color:#526771;text-decoration:none;font-weight:800}
+@media(max-width:900px){.nc-emit-filters{grid-template-columns:1fr 1fr}.nc-emit-actions{grid-column:1/-1}.nc-emit-summary .grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.nc-emit-filters{grid-template-columns:1fr}.nc-emit-actions{grid-column:auto}.nc-emit-actions button,.nc-emit-actions a{flex:1}.nc-emit-summary .grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
