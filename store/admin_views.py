@@ -1224,6 +1224,231 @@ def admin_notas_credito_recibidas(request, ruc):
         'total_registros': total_registros,
     })
 
+
+def _admin_notas_credito_emitidas_filtros(request):
+    hoy = timezone.localdate()
+    primer_dia_mes = hoy.replace(day=1)
+    fecha_desde = request.GET.get('fecha_desde', '').strip() or primer_dia_mes.strftime('%Y-%m-%d')
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip() or hoy.strftime('%Y-%m-%d')
+
+    where = []
+    params = []
+
+    try:
+        datetime.strptime(fecha_desde, '%Y-%m-%d')
+        where.append('fecnc::date >= %s::date')
+        params.append(fecha_desde)
+    except ValueError:
+        fecha_desde = ''
+
+    try:
+        datetime.strptime(fecha_hasta, '%Y-%m-%d')
+        where.append("fecnc::date < (%s::date + INTERVAL '1 day')")
+        params.append(fecha_hasta)
+    except ValueError:
+        fecha_hasta = ''
+
+    return (' AND '.join(where) if where else '1=1'), params, {
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+    }
+
+
+@admin_required
+def admin_notas_credito_emitidas(request, ruc):
+    from .views import _cliente_db
+    from .ingresos_views import _ingresos_nc_base_sql, _ingresos_nc_query, _ingresos_nc_resumen
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_emitidas_filtros(request)
+    db = _cliente_db(cliente)
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(
+                f"SELECT COUNT(*) FROM ({_ingresos_nc_base_sql()}) nc_reporte WHERE {where}",
+                params,
+            )
+            total_registros = cursor.fetchone()[0]
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando notas de crédito emitidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    try:
+        pagina = max(1, int(request.GET.get('pagina', '1')))
+    except (TypeError, ValueError):
+        pagina = 1
+
+    por_pagina = 50
+    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+    pagina = min(pagina, total_paginas)
+    offset = (pagina - 1) * por_pagina
+
+    try:
+        filas = _ingresos_nc_query(where, params.copy(), cliente, por_pagina, offset)
+        resumen = _ingresos_nc_resumen(where, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando notas de crédito emitidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    return render(request, 'admin/notas_credito_emitidas.html', {
+        'cliente': cliente,
+        'filas': filas,
+        'resumen': resumen,
+        'filtros': filtros,
+        'pagina': pagina,
+        'total_paginas': total_paginas,
+        'total_registros': total_registros,
+    })
+
+
+@admin_required
+def admin_notas_credito_emitidas_excel(request, ruc):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from .ingresos_views import _ingresos_nc_query, _ingresos_nc_resumen, INGRESOS_NC_COLUMNS
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_emitidas_filtros(request)
+    filas = _ingresos_nc_query(where, params.copy(), cliente)
+    resumen = _ingresos_nc_resumen(where, params.copy(), cliente)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'N_C Emitidas'
+    ws.append([label for _, label in INGRESOS_NC_COLUMNS])
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+
+    for row in filas:
+        ws.append(list(row))
+
+    ws.append([])
+    ws.append(['', '', '', '', '', '', 'RESUMEN',
+               resumen['bases_sin_iva'], resumen['bases_con_iva'],
+               resumen['iva'], resumen['total']])
+
+    for column, width in enumerate([7, 35, 17, 13, 22, 28, 16, 16, 13, 16, 22, 18], 1):
+        ws.column_dimensions[chr(64 + column)].width = width
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="notas_credito_emitidas_administrativo.xlsx"'
+    return response
+
+
+@admin_required
+def admin_notas_credito_emitidas_pdf(request, ruc):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from .ingresos_views import _ingresos_nc_query, _ingresos_nc_resumen, INGRESOS_NC_COLUMNS
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_emitidas_filtros(request)
+
+    try:
+        filas = _ingresos_nc_query(where, params.copy(), cliente)
+        resumen = _ingresos_nc_resumen(where, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(
+            f'Error generando PDF de notas de crédito emitidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    def _num(value):
+        try:
+            return f"{float(value or 0):.2f}"
+        except (TypeError, ValueError):
+            return "0.00"
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=landscape(A4),
+        leftMargin=18, rightMargin=18, topMargin=18, bottomMargin=18,
+    )
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle(
+        'AdminNCEEmitTitulo', parent=styles['Title'], fontName='Helvetica-Bold',
+        fontSize=14, leading=16, alignment=TA_CENTER, spaceAfter=3,
+    )
+    cab = ParagraphStyle(
+        'AdminNCEEmitCab', parent=styles['Normal'], fontName='Helvetica-Bold',
+        fontSize=8, leading=10, alignment=TA_CENTER,
+    )
+    tabla = ParagraphStyle(
+        'AdminNCEEmitTabla', parent=styles['Normal'], fontName='Helvetica',
+        fontSize=5.2, leading=6, alignment=TA_CENTER, wordWrap='CJK',
+    )
+    izq = ParagraphStyle('AdminNCEEmitIzq', parent=tabla, alignment=0)
+    enc = ParagraphStyle(
+        'AdminNCEEmitEnc', parent=tabla, fontName='Helvetica-Bold',
+        textColor=colors.white, leading=6,
+    )
+
+    data = [[Paragraph(label, enc) for _, label in INGRESOS_NC_COLUMNS]]
+    for row in filas:
+        values = []
+        for i, value in enumerate(row):
+            if i in (1, 2, 3, 4, 5, 10, 11):
+                values.append(Paragraph(str(value or ''), izq if i == 1 else tabla))
+            else:
+                values.append(Paragraph(_num(value), tabla))
+        data.append(values)
+
+    data.append([
+        '', '', '', '', '', '', _num(resumen['bases_sin_iva']),
+        _num(resumen['bases_con_iva']), _num(resumen['iva']),
+        _num(resumen['total']), '', '',
+    ])
+
+    table = Table(
+        data, repeatRows=1,
+        colWidths=[22, 100, 68, 48, 70, 78, 58, 58, 45, 55, 65, 60],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('ALIGN', (6, 1), (9, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+        ('FONTNAME', (6, -1), (9, -1), 'Helvetica-Bold'),
+    ]))
+
+    doc.build([
+        Paragraph('REPORTE DE NOTAS DE CRÉDITO EMITIDAS - ADMINISTRATIVO', titulo),
+        Paragraph(
+            f"DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            cab,
+        ),
+        Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}", cab),
+        Spacer(1, 8),
+        table,
+    ])
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="notas_credito_emitidas_administrativo.pdf"'
+    return response
+
+
 @admin_required
 def admin_compras(request, ruc):
     from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen
