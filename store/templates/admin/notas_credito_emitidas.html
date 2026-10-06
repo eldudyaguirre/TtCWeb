@@ -56,6 +56,13 @@
 
 <style>
 .nc-emit-card{margin-top:20px;padding:20px}
+.admin-compras-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:20px 0 12px;padding-top:18px;border-top:1px solid var(--admin-border)}
+.admin-compras-toolbar strong{display:block;margin-top:3px;color:var(--admin-dark);font-size:13px}
+.admin-compras-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin-compras-tool{height:38px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;text-decoration:none;font-size:11px;font-weight:800;box-sizing:border-box}
+.admin-compras-excel{background:#fff;border:1px solid #79b98d;color:#287c43}
+.admin-compras-pdf{background:#fff;border:1px solid #d9a0a0;color:#b33b3b}
+.admin-compras-excel:hover,.admin-compras-pdf:hover{background:#f7fafb}
 .nc-emit-filters{display:grid;grid-template-columns:180px 180px auto;gap:12px;align-items:end}
 .nc-emit-filters label{display:block;margin-bottom:6px;color:var(--admin-muted);font-size:11px;font-weight:800}
 .nc-emit-filters input{width:100%;height:42px;box-sizing:border-box;border:1px solid #d5dee2;border-radius:8px;padding:0 11px;font:inherit}
@@ -79,7 +86,7 @@
 .nc-emit-summary .total{border-color:#1596a3;background:#eef9fa}
 .nc-emit-pagination{display:flex;justify-content:space-between;align-items:center;margin-top:18px;color:var(--admin-muted);font-size:12px}
 .nc-emit-pagination a{padding:9px 12px;border:1px solid #d5dee2;border-radius:8px;background:#fff;color:#526771;text-decoration:none;font-weight:800}
-@media(max-width:900px){.nc-emit-filters{grid-template-columns:1fr 1fr}.nc-emit-actions{grid-column:1/-1}.nc-emit-summary .grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.nc-emit-filters{grid-template-columns:1fr 1fr}.nc-emit-actions{grid-column:1/-1}.nc-emit-summary .grid{grid-template-columns:repeat(2,1fr)}.admin-compras-toolbar{align-items:flex-start;flex-direction:column;width:100%}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
 @media(max-width:700px){.nc-emit-filters{grid-template-columns:1fr}.nc-emit-actions{grid-column:auto}.nc-emit-actions button,.nc-emit-actions a{flex:1}.nc-emit-summary .grid{grid-template-columns:1fr}}
 </style>
 {% endblock %}
