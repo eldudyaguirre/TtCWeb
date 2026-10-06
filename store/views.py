@@ -2760,8 +2760,7 @@ def _ventas_resumen(where, params, cliente):
                 + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
             ), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(iva::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
+                COALESCE(NULLIF(iva5::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva14::text, ''), '0')::numeric
@@ -2775,7 +2774,6 @@ def _ventas_resumen(where, params, cliente):
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva5::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva12::text, ''), '0')::numeric
