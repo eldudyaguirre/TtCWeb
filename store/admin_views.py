@@ -875,13 +875,13 @@ def _admin_ventas_filtros(request):
     cliente_busqueda = request.GET.get('cliente_busqueda','').strip()
     where=[]; params=[]
     try:
-        datetime.strptime(desde,'%Y-%m-%d'); where.append('v.fecfactur::date >= %s::date'); params.append(desde)
+        datetime.strptime(desde,'%Y-%m-%d'); where.append('fecfactur::date >= %s::date'); params.append(desde)
     except ValueError: desde=''
     try:
-        datetime.strptime(hasta,'%Y-%m-%d'); where.append("v.fecfactur::date < (%s::date + INTERVAL '1 day')"); params.append(hasta)
+        datetime.strptime(hasta,'%Y-%m-%d'); where.append("fecfactur::date < (%s::date + INTERVAL '1 day')"); params.append(hasta)
     except ValueError: hasta=''
     if cliente_busqueda:
-        where.append('(v.ruccedcli ILIKE %s OR v.nomcli ILIKE %s)')
+        where.append('(ruccedcli ILIKE %s OR nomcli ILIKE %s)')
         params.extend([f'%{cliente_busqueda}%',f'%{cliente_busqueda}%'])
     return (' AND '.join(where) if where else '1=1'), params, {'fecha_desde':desde,'fecha_hasta':hasta,'cliente_busqueda':cliente_busqueda}
 
