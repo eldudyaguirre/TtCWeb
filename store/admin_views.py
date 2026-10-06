@@ -916,26 +916,32 @@ def admin_ventas_pdf(request, ruc):
     styles=getSampleStyleSheet(); title=ParagraphStyle('avt',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,alignment=TA_CENTER)
     head=ParagraphStyle('avh',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8,alignment=TA_CENTER)
     cell=ParagraphStyle('avc',parent=styles['Normal'],fontName='Helvetica',fontSize=5.4,leading=6,alignment=TA_CENTER,wordWrap='CJK')
-    data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
+    # Un solo estilo para TODAS las celdas: texto y valores numéricos.
+    def celda(valor='', estilo=cell):
+        return Paragraph(str(valor if valor is not None else ''), estilo)
+
+    data=[[celda(x[1], head) for x in VENTAS_COLUMNS]]
     for row in filas:
         values=[]
         for i,v in enumerate(row):
-            try:
-                texto = f'{float(v or 0):.2f}' if i not in (0,1,2,3,4,5,12,13) else str(v or '')
-            except (TypeError,ValueError):
+            if i in (0,1,2,3,4,5,12,13):
                 texto = str(v or '')
-            values.append(Paragraph(texto, cell))
+            else:
+                try:
+                    texto = f'{float(v or 0):.2f}'
+                except (TypeError,ValueError):
+                    texto = str(v or '')
+            values.append(celda(texto))
         data.append(values)
     data.append([
-        Paragraph('',cell), Paragraph('',cell), Paragraph('',cell),
-        Paragraph('',cell), Paragraph('',cell), Paragraph('',cell),
-        Paragraph(f"{resumen['base0']:.2f}",cell),
-        Paragraph(f"{resumen['baseiva']:.2f}",cell),
-        Paragraph(f"{resumen['iva']:.2f}",cell),
-        Paragraph(f"{resumen['total']:.2f}",cell),
-        Paragraph(f"{resumen['retiva']:.2f}",cell),
-        Paragraph(f"{resumen['retrenta']:.2f}",cell),
-        Paragraph('',cell), Paragraph('',cell)
+        celda(''), celda(''), celda(''), celda(''), celda(''), celda(''),
+        celda(f"{resumen['base0']:.2f}"),
+        celda(f"{resumen['baseiva']:.2f}"),
+        celda(f"{resumen['iva']:.2f}"),
+        celda(f"{resumen['total']:.2f}"),
+        celda(f"{resumen['retiva']:.2f}"),
+        celda(f"{resumen['retrenta']:.2f}"),
+        celda(''), celda('')
     ])
     table=Table(data,repeatRows=1,colWidths=[22,105,68,48,72,76,52,52,42,52,45,50,52,60])
     table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),('ALIGN',(0,0),(-1,-1),'CENTER'),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5'))]))
