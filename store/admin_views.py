@@ -53,11 +53,8 @@ def admin_login(request):
         else:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "ALTER TABLE seguridad ADD COLUMN IF NOT EXISTS worker BOOLEAN NOT NULL DEFAULT FALSE"
-                )
-                cursor.execute(
                     '''
-                    SELECT usrname, nomusuari, conusuari, worker
+                    SELECT usrname, nomusuari, conusuari
                     FROM seguridad
                     WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
                     LIMIT 1
@@ -85,7 +82,7 @@ def admin_login(request):
                     request.session[ADMIN_SESSION_KEY] = True
                     request.session[ADMIN_USERNAME_KEY] = str(usuario_db).strip()
                     request.session[ADMIN_NAME_KEY] = str(nombre_db or usuario_db).strip()
-                    request.session[ADMIN_WORKER_KEY] = bool(usuario[3])
+                    request.session[ADMIN_WORKER_KEY] = False
                     request.session.set_expiry(1800)
                     return redirect('admin_dashboard')
 
