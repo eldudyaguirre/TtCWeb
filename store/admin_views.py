@@ -1039,6 +1039,7 @@ def admin_notas_credito_pdf(request, ruc):
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from .views import _notas_credito_query, _notas_credito_resumen
 
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_notas_credito_filtros(request)
