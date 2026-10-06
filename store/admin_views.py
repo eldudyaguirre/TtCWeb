@@ -20,6 +20,7 @@ from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
 ADMIN_SESSION_KEY = 'admin_portal'
 ADMIN_USERNAME_KEY = 'admin_username'
 ADMIN_NAME_KEY = 'admin_name'
+ADMIN_WORKER_KEY = 'admin_worker'
 
 
 def admin_required(view_func):
@@ -52,8 +53,11 @@ def admin_login(request):
         else:
             with connection.cursor() as cursor:
                 cursor.execute(
+                    "ALTER TABLE seguridad ADD COLUMN IF NOT EXISTS worker BOOLEAN NOT NULL DEFAULT FALSE"
+                )
+                cursor.execute(
                     '''
-                    SELECT usrname, nomusuari, conusuari
+                    SELECT usrname, nomusuari, conusuari, worker
                     FROM seguridad
                     WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
                     LIMIT 1
@@ -81,6 +85,7 @@ def admin_login(request):
                     request.session[ADMIN_SESSION_KEY] = True
                     request.session[ADMIN_USERNAME_KEY] = str(usuario_db).strip()
                     request.session[ADMIN_NAME_KEY] = str(nombre_db or usuario_db).strip()
+                    request.session[ADMIN_WORKER_KEY] = bool(usuario[3])
                     request.session.set_expiry(1800)
                     return redirect('admin_dashboard')
 
@@ -100,6 +105,7 @@ def admin_logout(request):
     request.session.pop(ADMIN_SESSION_KEY, None)
     request.session.pop(ADMIN_USERNAME_KEY, None)
     request.session.pop(ADMIN_NAME_KEY, None)
+    request.session.pop(ADMIN_WORKER_KEY, None)
     return redirect('admin_login')
 
 
