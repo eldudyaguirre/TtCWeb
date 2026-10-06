@@ -213,8 +213,11 @@
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "No se pudo cancelar.");
-            estado.textContent = "⏹ Cancelado";
-            mensaje.textContent = "La sincronización fue detenida por el usuario.";
+            estado.textContent = "⏳ Deteniendo...";
+            mensaje.textContent = "La solicitud fue recibida. Esperando a que Conta termine de detener la sincronización...";
+            // No damos por terminada la operación hasta que el estado real del job
+            // cambie a "cancelado". Así el usuario sabe que todavía se está deteniendo.
+            consultar();
         } catch (error) {
             cancelando = false;
             cancelar.disabled = false;
@@ -362,7 +365,15 @@
                     mensaje.textContent = "Proceso terminado. La información ya fue procesada por Conta.";
                 }
                 if (data.estado === "cancelado") {
-                    mensaje.textContent = "La sincronización fue detenida por el usuario.";
+                    estado.textContent = "⏹ Detenido";
+                    estado.style.color = "#6b7280";
+                    mensaje.textContent = "La sincronización fue detenida correctamente.";
+                    cancelar.disabled = true;
+                    cancelar.textContent = "⏹ Detenido";
+                }
+                if (data.estado === "error") {
+                    cancelar.disabled = true;
+                    cancelar.textContent = "⏹ Detener sincronización";
                 }
                 return;
             }
