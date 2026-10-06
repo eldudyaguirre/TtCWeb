@@ -269,6 +269,26 @@
             mensaje.textContent = data.mensaje || "";
             encontradas.textContent = data.sri ?? 0;
 
+            // Una consulta SRI válida sin comprobantes no es un error.
+            // Se presenta como información para que el usuario no vea una
+            // alerta roja cuando simplemente no existen documentos en ese período.
+            const sinComprobantes =
+                data.estado === "finalizado" &&
+                Number(data.sri || 0) === 0 &&
+                Number(data.ya_existentes || 0) === 0 &&
+                Number(data.guardadas || 0) === 0 &&
+                (!Array.isArray(data.errores) || data.errores.length === 0);
+
+            if (sinComprobantes) {
+                estado.textContent = "ℹ️ Sin comprobantes";
+                estado.style.color = "#2563eb";
+                mensaje.textContent =
+                    data.mensaje ||
+                    "No existen comprobantes para los parámetros seleccionados.";
+            } else {
+                estado.style.color = "";
+            }
+
             const esValidador = data.operacion === "ventas_validar" || Number(data.dias_revisados || 0) > 0;
             if (esValidador) {
                 validador.style.display = "block";
@@ -338,7 +358,7 @@
             }
 
             if (data.estado === "finalizado" || data.estado === "error" || data.estado === "cancelado") {
-                if (data.estado === "finalizado") {
+                if (data.estado === "finalizado" && !sinComprobantes) {
                     mensaje.textContent = "Proceso terminado. La información ya fue procesada por Conta.";
                 }
                 if (data.estado === "cancelado") {
