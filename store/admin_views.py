@@ -4077,7 +4077,7 @@ def admin_conta(request):
             except RuntimeError as exc:
                 error = str(exc)
 
-    elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'validar_ventas'):
+    elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
             error = 'Seleccione un cliente activo válido.'
@@ -4100,6 +4100,14 @@ def admin_conta(request):
                         mes=int(mes),
                     )
                     messages.success(request, 'La validación de ventas contra el SRI fue iniciada en segundo plano.')
+                elif request.POST.get('accion') == 'sincronizar_notas_credito_recibidas':
+                    resultado = _conta_sincronizar_notas_credito_recibidas(
+                        usuario=usuario,
+                        ruc=str(cliente.ruccedcli).strip(),
+                        anio=int(anio),
+                        mes=int(mes),
+                    )
+                    messages.success(request, 'La sincronización de notas de crédito recibidas fue iniciada en segundo plano.')
                 elif request.POST.get('accion') == 'sincronizar_notas_credito_emitidas':
                     resultado = _conta_sincronizar_notas_credito_emitidas(
                         usuario=usuario,
