@@ -3174,40 +3174,62 @@ def _notas_credito_query(where, params, cliente, limit=None, offset=None):
 def _notas_credito_resumen(where, params, cliente):
     sql = f"""
         SELECT
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(montoiva5::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(montoiva8::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(montoiva12::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(montoiva14::text), ''), '.')::numeric, 0)), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(baseimpnoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva0::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseexenta::text, ''), '0')::numeric
-            ), 0),
-            COALESCE(SUM(
-                COALESCE(NULLIF(baseimpiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva14::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric
-            ), 0),
-            COALESCE(SUM(
-                COALESCE(NULLIF(montoiva5::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva8::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva12::text, ''), '0')::numeric
-                + COALESCE(NULLIF(montoiva14::text, ''), '0')::numeric
-                + CASE
-                    WHEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric <> 0
-                        THEN COALESCE(NULLIF(montoiva15::text, ''), '0')::numeric
-                    WHEN COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric <> 0
-                        THEN ROUND(COALESCE(NULLIF(baseimpiva15::text, ''), '0')::numeric * 0.15, 2)
+                CASE
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.')::numeric, 0) <> 0
+                        THEN COALESCE(NULLIF(NULLIF(TRIM(montoiva15::text), ''), '.')::numeric, 0)
+                    WHEN COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.')::numeric, 0) <> 0
+                        THEN ROUND(COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.')::numeric, 0) * 0.15, 2)
                     ELSE 0
-                  END
+                END
             ), 0)
         FROM ({_notas_credito_base_sql()}) notas_reporte
         WHERE {where}
     """
     with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, params)
-        row=cursor.fetchone()
-    bases_sin, bases_con, iva = [float(x or 0) for x in row]
-    return {'bases_sin_iva': bases_sin, 'bases_con_iva': bases_con, 'iva': iva, 'total': bases_sin + bases_con + iva}
+        row = cursor.fetchone()
 
+    (
+        base_no_obj, base0, exenta, base5, base8, base12, base14, base15,
+        iva5, iva8, iva12, iva14, iva15,
+    ) = [float(x or 0) for x in row]
+
+    bases_sin_iva = base_no_obj + base0 + exenta
+    bases_con_iva = base5 + base8 + base12 + base14 + base15
+    iva = iva5 + iva8 + iva12 + iva14 + iva15
+
+    return {
+        'base_no_obj': base_no_obj,
+        'base0': base0,
+        'exenta': exenta,
+        'base5': base5,
+        'base8': base8,
+        'base12': base12,
+        'base14': base14,
+        'base15': base15,
+        'bases_sin_iva': bases_sin_iva,
+        'bases_con_iva': bases_con_iva,
+        'iva5': iva5,
+        'iva8': iva8,
+        'iva12': iva12,
+        'iva14': iva14,
+        'iva15': iva15,
+        'iva': iva,
+        'total': bases_sin_iva + bases_con_iva + iva,
+    }
 
 def _notas_credito_datos(request):
     where, params, filtros = _compras_where(request)
