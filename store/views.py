@@ -2923,6 +2923,7 @@ def ventas_pdf(request):
         parent=styles['Normal'],
         fontName='Helvetica',
         fontSize=5.2,
+        textColor=colors.black,
         leading=6,
         alignment=TA_CENTER,
         wordWrap='CJK',
@@ -2960,18 +2961,23 @@ def ventas_pdf(request):
             if index in (1, 2, 3, 4, 5, 12, 13):
                 formatted.append(Paragraph(str(value or ''), tabla if index != 1 else tabla_izq))
             else:
-                formatted.append(f"{float(value or 0):.2f}" if index in (6, 7, 8, 9, 10, 11) else Paragraph(str(value or ''), tabla))
+                try:
+                    texto = f"{float(value or 0):.2f}"
+                except (TypeError, ValueError):
+                    texto = str(value or '')
+                formatted.append(Paragraph(texto, tabla))
         data.append(formatted)
 
     data.append([
-        '', '', '', '', '', '',
-        f"{resumen['base0']:.2f}",
-        f"{resumen['baseiva']:.2f}",
-        f"{resumen['iva']:.2f}",
-        f"{resumen['total']:.2f}",
-        f"{resumen['retiva']:.2f}",
-        f"{resumen['retrenta']:.2f}",
-        '', '',
+        Paragraph('', tabla), Paragraph('', tabla), Paragraph('', tabla),
+        Paragraph('', tabla), Paragraph('', tabla), Paragraph('', tabla),
+        Paragraph(f"{resumen['base0']:.2f}", tabla),
+        Paragraph(f"{resumen['baseiva']:.2f}", tabla),
+        Paragraph(f"{resumen['iva']:.2f}", tabla),
+        Paragraph(f"{resumen['total']:.2f}", tabla),
+        Paragraph(f"{resumen['retiva']:.2f}", tabla),
+        Paragraph(f"{resumen['retrenta']:.2f}", tabla),
+        Paragraph('', tabla), Paragraph('', tabla),
     ])
 
     table = Table(
