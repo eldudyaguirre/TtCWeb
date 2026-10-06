@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password, make_password
 
 from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
@@ -96,6 +97,69 @@ def admin_login(request):
             'username': username,
         },
     )
+
+
+
+@csrf_exempt
+def conta_worker_error(request):
+    """Recibe errores internos de Conta y los reporta por el SMTP de TtCWeb."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+    token = request.headers.get('X-TotalCounts-Internal', '').strip()
+    if not token or token != settings.CONTA_INTERNAL_TOKEN:
+        return JsonResponse({'error': 'No autorizado.'}, status=401)
+
+    try:
+        import json
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'JSON inválido.'}, status=400)
+
+    worker = str(payload.get('worker') or '-').strip()
+    usuario = str(payload.get('usuario') or '-').strip()
+    equipo = str(payload.get('equipo') or '-').strip()
+    job_id = str(payload.get('job_id') or '-').strip()
+    ruc = str(payload.get('ruc') or '-').strip()
+    anio = str(payload.get('anio') or '-').strip()
+    mes = str(payload.get('mes') or '-').strip()
+    tipo = str(payload.get('tipo_comprobante') or '-').strip()
+    operacion = str(payload.get('operacion') or '-').strip()
+    error_tipo = str(payload.get('error_tipo') or 'Exception').strip()
+    error_mensaje = str(payload.get('error_mensaje') or '-').strip()
+    traceback_texto = str(payload.get('traceback') or '-')
+
+    asunto = f'[Conta] Error SRI Worker | {worker} | job {job_id}'
+    cuerpo = f"""Conta - ERROR AUTOMÁTICO DEL SRI WORKER
+
+Worker: {worker}
+Usuario: {usuario}
+Equipo: {equipo}
+Job ID: {job_id}
+RUC: {ruc}
+Año: {anio}
+Mes: {mes}
+Tipo comprobante: {tipo}
+Operación: {operacion}
+
+Error: {error_tipo}: {error_mensaje}
+
+Traceback completo:
+{traceback_texto}
+"""
+
+    try:
+        from django.core.mail import send_mail
+        send_mail(
+            asunto,
+            cuerpo,
+            settings.DEFAULT_FROM_EMAIL,
+            [getattr(settings, 'BUG_REPORT_RECIPIENT', 'eldudyaguirre@gmail.com')],
+            fail_silently=False,
+        )
+        return JsonResponse({'ok': True})
+    except Exception as exc:
+        return JsonResponse({'error': f'No se pudo enviar el correo: {exc}'}, status=500)
 
 
 def admin_logout(request):
