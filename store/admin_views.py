@@ -849,9 +849,9 @@ def _admin_compras_filtros(request):
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
     """
-    Consulta directamente las bases e IVA de la tabla ventas.
-    BASE IVA = baseiva5 + baseiva8 + baseiva12 + baseiva14 + baseiva15.
-    IVA = iva5 + iva8 + iva12 + iva14 + iva15.
+    Consulta las ventas y calcula los importes directamente en Python.
+    Esto evita cualquier diferencia de tipos de PostgreSQL en los campos
+    tributarios, especialmente baseiva12.
     """
     sql = f"""
         SELECT
@@ -861,66 +861,94 @@ def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
             v.fecfactur AS fecha,
             v.numfactur AS factura,
             v.autorizacion,
-            (
-                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
-                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
-            ) AS base0,
-            (
-                COALESCE(NULLIF(NULLIF(TRIM(v.baseiva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva15::text), ''), '.')::numeric, 0)
-            ) AS baseiva,
-            (
-                COALESCE(NULLIF(NULLIF(TRIM(v.iva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva15::text), ''), '.')::numeric, 0)
-            ) AS iva,
-            (
-                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
-                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva15::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(v.iva15::text), ''), '.')::numeric, 0)
-            ) AS total,
-            COALESCE(NULLIF(TRIM(v.retiva::text), ''), '0')::numeric AS retiva,
-            COALESCE(NULLIF(TRIM(v.retrenta::text), ''), '0')::numeric AS retrenta,
+            v.basenoobj,
+            v.baseiva0,
+            v.baseiva5,
+            v.baseiva8,
+            v.baseiva12,
+            v.baseiva14,
+            v.baseiva15,
+            v.iva5,
+            v.iva8,
+            v.iva12,
+            v.iva14,
+            v.iva15,
+            v.retiva,
+            v.retrenta,
             v.numret,
             v.autret
         FROM public.ventas v
         WHERE {where}
         ORDER BY v.fecfactur::date ASC, v.numfactur ASC
     """
+
     query_params = list(params)
     if limit is not None:
         sql += " LIMIT %s OFFSET %s"
         query_params.extend([limit, offset or 0])
 
+    def numero(valor):
+        if valor is None:
+            return 0.0
+        try:
+            texto = str(valor).strip().replace(',', '.')
+            if not texto or texto == '.':
+                return 0.0
+            return float(texto)
+        except (TypeError, ValueError):
+            return 0.0
+
+    filas = []
     with _cliente_db(cliente).cursor() as cursor:
         cursor.execute(sql, query_params)
-        return cursor.fetchall()
+        for row in cursor.fetchall():
+            base0 = numero(row[6]) + numero(row[7])
+            baseiva = (
+                numero(row[8])
+                + numero(row[9])
+                + numero(row[10])
+                + numero(row[11])
+                + numero(row[12])
+            )
+            iva = (
+                numero(row[13])
+                + numero(row[14])
+                + numero(row[15])
+                + numero(row[16])
+                + numero(row[17])
+            )
+            total = base0 + baseiva + iva
+
+            filas.append((
+                row[0],
+                row[1],
+                row[2],
+                row[3],
+                row[4],
+                row[5],
+                base0,
+                baseiva,
+                iva,
+                total,
+                numero(row[18]),
+                numero(row[19]),
+                row[20],
+                row[21],
+            ))
+
+    return filas
 
 
 def _admin_ventas_resumen(where, params, cliente):
     filas = _admin_ventas_query(where, params, cliente)
-    base0 = baseiva = iva = total = retiva = retrenta = 0.0
-    for row in filas:
-        base0 += float(row[6] or 0)
-        baseiva += float(row[7] or 0)
-        iva += float(row[8] or 0)
-        total += float(row[9] or 0)
-        retiva += float(row[10] or 0)
-        retrenta += float(row[11] or 0)
+
+    base0 = sum(float(row[6] or 0) for row in filas)
+    baseiva = sum(float(row[7] or 0) for row in filas)
+    iva = sum(float(row[8] or 0) for row in filas)
+    total = sum(float(row[9] or 0) for row in filas)
+    retiva = sum(float(row[10] or 0) for row in filas)
+    retrenta = sum(float(row[11] or 0) for row in filas)
+
     return {
         'base0': base0,
         'baseiva': baseiva,
