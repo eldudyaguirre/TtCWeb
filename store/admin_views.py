@@ -1824,6 +1824,43 @@ def _conta_chat(usuario, mensaje, conversation_id='admin'):
         raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
 
 
+def _conta_sincronizar_retenciones_recibidas(usuario, ruc, anio, mes):
+    """Inicia en Conta la sincronización de retenciones recibidas hacia ventas."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    payload = json.dumps({'ruc': ruc, 'anio': int(anio), 'mes': int(mes)}).encode('utf-8')
+    req = request.Request(
+        f'{base_url}/api/v1/admin/sri/compras/retenciones/sincronizar',
+        data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='POST',
+    )
+    try:
+        with request.urlopen(req, timeout=180) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}')
+
+
 @admin_required
 def admin_conta_sri_cancelar(request):
     """Solicita la cancelación de un trabajo SRI en Conta."""
@@ -1894,7 +1931,7 @@ def admin_conta(request):
             except RuntimeError as exc:
                 error = str(exc)
 
-    elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'validar_ventas'):
+    elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'sincronizar_retenciones_recibidas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
             error = 'Seleccione un cliente activo válido.'
@@ -1925,6 +1962,14 @@ def admin_conta(request):
                         mes=int(mes),
                     )
                     messages.success(request, 'La sincronización de notas de crédito recibidas fue iniciada en segundo plano.')
+                elif request.POST.get('accion') == 'sincronizar_retenciones_recibidas':
+                    resultado = _conta_sincronizar_retenciones_recibidas(
+                        usuario=usuario,
+                        ruc=str(cliente.ruccedcli).strip(),
+                        anio=int(anio),
+                        mes=int(mes),
+                    )
+                    messages.success(request, 'La sincronización de retenciones recibidas fue iniciada en segundo plano.')
                 elif request.POST.get('accion') == 'sincronizar_notas_credito_emitidas':
                     resultado = _conta_sincronizar_notas_credito_emitidas(
                         usuario=usuario,
@@ -4108,6 +4153,14 @@ def admin_conta(request):
                         mes=int(mes),
                     )
                     messages.success(request, 'La sincronización de notas de crédito recibidas fue iniciada en segundo plano.')
+                elif request.POST.get('accion') == 'sincronizar_retenciones_recibidas':
+                    resultado = _conta_sincronizar_retenciones_recibidas(
+                        usuario=usuario,
+                        ruc=str(cliente.ruccedcli).strip(),
+                        anio=int(anio),
+                        mes=int(mes),
+                    )
+                    messages.success(request, 'La sincronización de retenciones recibidas fue iniciada en segundo plano.')
                 elif request.POST.get('accion') == 'sincronizar_notas_credito_emitidas':
                     resultado = _conta_sincronizar_notas_credito_emitidas(
                         usuario=usuario,
