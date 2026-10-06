@@ -994,6 +994,100 @@ def _admin_notas_credito_filtros(request):
     }
 
 
+
+@admin_required
+def admin_notas_credito_excel(request, ruc):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from .views import _notas_credito_query, _notas_credito_resumen
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_filtros(request)
+    filas = _notas_credito_query(where, params.copy(), cliente)
+    resumen = _notas_credito_resumen(where, params.copy(), cliente)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'N_C Recibidas'
+    headers = ['N°','PROVEEDOR','RUC','TIPO','FECHA','N° NOTA','AUTORIZACIÓN',
+               'BASES SIN IVA','BASES CON IVA','IVA','TOTAL','COD MOD',
+               'DOC. MODIFICADO','AUT. MODIFICACIÓN']
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+    for row in filas:
+        ws.append(list(row))
+    ws.append([])
+    ws.append(['','','','','','','RESUMEN',
+               resumen['bases_sin_iva'], resumen['bases_con_iva'],
+               resumen['iva'], resumen['total']])
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="notas_credito_recibidas_administrativo.xlsx"'
+    return response
+
+
+@admin_required
+def admin_notas_credito_pdf(request, ruc):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_filtros(request)
+    filas = _notas_credito_query(where, params.copy(), cliente)
+    resumen = _notas_credito_resumen(where, params.copy(), cliente)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),
+                            leftMargin=18, rightMargin=18, topMargin=18, bottomMargin=18)
+    styles = getSampleStyleSheet()
+    title = ParagraphStyle('NCRTitle', parent=styles['Title'], fontName='Helvetica-Bold',
+                           fontSize=14, alignment=TA_CENTER)
+    head = ParagraphStyle('NCRHead', parent=styles['Normal'], fontName='Helvetica-Bold',
+                          fontSize=7, alignment=TA_CENTER)
+    cell = ParagraphStyle('NCRCell', parent=styles['Normal'], fontSize=5.5,
+                          leading=6, alignment=TA_CENTER)
+    headers = ['N°','PROVEEDOR','RUC','TIPO','FECHA','N° NOTA','AUTORIZACIÓN',
+               'BASES SIN IVA','BASES CON IVA','IVA','TOTAL','COD MOD',
+               'DOC. MODIFICADO','AUT. MODIFICACIÓN']
+    data = [[Paragraph(h, head) for h in headers]]
+    for row in filas:
+        data.append([
+            Paragraph(str(v or ''), cell) if i in (0,1,2,3,4,5,6,11,12,13)
+            else f'{float(v or 0):.2f}'
+            for i, v in enumerate(row)
+        ])
+    data.append(['','','','','','','RESUMEN',
+                 f"{resumen['bases_sin_iva']:.2f}", f"{resumen['bases_con_iva']:.2f}",
+                 f"{resumen['iva']:.2f}", f"{resumen['total']:.2f}"])
+    table = Table(data, repeatRows=1,
+                  colWidths=[20,105,65,35,55,75,85,55,55,45,55,45,75,75])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
+        ('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5')),
+    ]))
+    elements = [
+        Paragraph('NOTAS DE CRÉDITO RECIBIDAS', title),
+        Paragraph(f"PERÍODO {filtros['fecha_desde']} A {filtros['fecha_hasta']}", head),
+        Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}", head),
+        Spacer(1, 8), table
+    ]
+    doc.build(elements)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="notas_credito_recibidas_administrativo.pdf"'
+    return response
+
 @admin_required
 def admin_notas_credito_recibidas(request, ruc):
     from .views import _cliente_db, _notas_credito_base_sql, _notas_credito_query, _notas_credito_resumen
