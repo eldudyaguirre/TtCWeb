@@ -2748,27 +2748,21 @@ def _ventas_query(where, params, cliente, limit=None, offset=None):
 def _ventas_resumen(where, params, cliente):
     sql = f"""
         SELECT
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva5::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva8::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva12::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva14::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(baseiva15::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(iva5::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(iva8::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(iva12::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(iva14::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(iva15::text), ''), '.')::numeric, 0)), 0),
             COALESCE(SUM(
-                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
-            ), 0),
-            COALESCE(SUM(
-                COALESCE(NULLIF(NULLIF(TRIM(baseiva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(baseiva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(baseiva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(baseiva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(baseiva15::text), ''), '.')::numeric, 0)
-            ), 0),
-            COALESCE(SUM(
-                COALESCE(NULLIF(NULLIF(TRIM(iva5::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(iva8::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(iva12::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(iva14::text), ''), '.')::numeric, 0)
-                + COALESCE(NULLIF(NULLIF(TRIM(iva15::text), ''), '.')::numeric, 0)
-            ), 0),
-            COALESCE(SUM(
-                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.')::numeric, 0)
                 + COALESCE(NULLIF(NULLIF(TRIM(baseiva5::text), ''), '.')::numeric, 0)
                 + COALESCE(NULLIF(NULLIF(TRIM(baseiva8::text), ''), '.')::numeric, 0)
                 + COALESCE(NULLIF(NULLIF(TRIM(baseiva12::text), ''), '.')::numeric, 0)
@@ -2780,8 +2774,8 @@ def _ventas_resumen(where, params, cliente):
                 + COALESCE(NULLIF(NULLIF(TRIM(iva14::text), ''), '.')::numeric, 0)
                 + COALESCE(NULLIF(NULLIF(TRIM(iva15::text), ''), '.')::numeric, 0)
             ), 0),
-            COALESCE(SUM(COALESCE(NULLIF(retiva::text, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(retrenta::text, ''), '0')::numeric), 0)
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retiva::text), ''), '.')::numeric, 0)), 0),
+            COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retrenta::text), ''), '.')::numeric, 0)), 0)
         FROM ({_ventas_base_sql()}) ventas_reporte
         WHERE {where}
     """
@@ -2789,11 +2783,27 @@ def _ventas_resumen(where, params, cliente):
         cursor.execute(sql, params)
         row = cursor.fetchone()
 
-    base0, baseiva, iva, total, retiva, retrenta = [float(x or 0) for x in row]
+    (
+        basenoobj, base0, base5, base8, base12, base14, base15,
+        iva5, iva8, iva12, iva14, iva15,
+        total, retiva, retrenta,
+    ) = [float(x or 0) for x in row]
+
     return {
+        'basenoobj': basenoobj,
         'base0': base0,
-        'baseiva': baseiva,
-        'iva': iva,
+        'base5': base5,
+        'base8': base8,
+        'base12': base12,
+        'base14': base14,
+        'base15': base15,
+        'baseiva': base5 + base8 + base12 + base14 + base15,
+        'iva5': iva5,
+        'iva8': iva8,
+        'iva12': iva12,
+        'iva14': iva14,
+        'iva15': iva15,
+        'iva': iva5 + iva8 + iva12 + iva14 + iva15,
         'total': total,
         'retiva': retiva,
         'retrenta': retrenta,
