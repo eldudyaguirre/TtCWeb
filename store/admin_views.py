@@ -848,130 +848,31 @@ def _admin_compras_filtros(request):
 
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
-    """Lee los importes originales de ventas y los calcula en Python."""
-    sql = f"""
-        SELECT
-            v.nomcli,
-            v.ruccedcli,
-            v.fecfactur,
-            v.numfactur,
-            v.autorizacion,
-            v.basenoobj,
-            v.baseiva0,
-            v.baseiva5,
-            v.baseiva8,
-            v.baseiva12,
-            v.baseiva14,
-            v.baseiva15,
-            v.iva5,
-            v.iva8,
-            v.iva12,
-            v.iva14,
-            v.iva15,
-            v.retiva,
-            v.retrenta,
-            v.numret,
-            v.autret
-        FROM public.ventas v
-        WHERE {where}
-        ORDER BY v.fecfactur::date ASC, v.numfactur ASC
     """
-    query_params = list(params)
-    if limit is not None:
-        sql += " LIMIT %s OFFSET %s"
-        query_params.extend([limit, offset or 0])
+    Usa exactamente la misma consulta tributaria que el reporte de ventas
+    del portal. Así administrativo y portal muestran los mismos importes.
+    """
+    from .views import _ventas_query
+    return _ventas_query(where, params, cliente, limit, offset)
 
-    def numero(valor):
-        try:
-            return float(valor or 0)
-        except (TypeError, ValueError):
-            try:
-                return float(str(valor or 0).replace(',', '.'))
-            except (TypeError, ValueError):
-                return 0.0
 
-    with _cliente_db(cliente).cursor() as cursor:
-        cursor.execute(sql, query_params)
-        raw_rows = cursor.fetchall()
-
-    filas = []
-    inicio = (offset or 0) + 1
-    for posicion, row in enumerate(raw_rows, start=inicio):
-        (
-            nomcli, ruccedcli, fecfactur, numfactur, autorizacion,
-            basenoobj, baseiva0, baseiva5, baseiva8, baseiva12,
-            baseiva14, baseiva15, iva5, iva8, iva12, iva14, iva15,
-            retiva, retrenta, numret, autret
-        ) = row
-
-        base0 = numero(basenoobj) + numero(baseiva0)
-        baseiva = (
-            numero(baseiva5) + numero(baseiva8) + numero(baseiva12)
-            + numero(baseiva14) + numero(baseiva15)
-        )
-        iva_total = (
-            numero(iva5) + numero(iva8) + numero(iva12)
-            + numero(iva14) + numero(iva15)
-        )
-        total = base0 + baseiva + iva_total
-
-        fecha = fecfactur
-        if hasattr(fecha, 'strftime'):
-            fecha = fecha.strftime('%d/%m/%Y')
-
-        filas.append((
-            posicion,
-            nomcli,
-            ruccedcli,
-            fecha,
-            numfactur,
-            autorizacion,
-            base0,
-            baseiva,
-            iva_total,
-            total,
-            numero(retiva),
-            numero(retrenta),
-            numret,
-            autret,
-        ))
-
-    return filas
 def _admin_ventas_resumen(where, params, cliente):
-    """Obtiene el resumen desde los mismos campos originales que muestra el reporte."""
-    sql = f"""
-        SELECT
-            v.basenoobj, v.baseiva0,
-            v.baseiva5, v.baseiva8, v.baseiva12, v.baseiva14, v.baseiva15,
-            v.iva5, v.iva8, v.iva12, v.iva14, v.iva15,
-            v.retiva, v.retrenta
-        FROM public.ventas v
-        WHERE {where}
     """
+    Calcula el resumen desde la misma fuente que las filas del reporte.
+    Se hace en Python para evitar diferencias entre administrativo y portal.
+    """
+    from .views import _ventas_query
 
-    def numero(valor):
-        try:
-            return float(valor or 0)
-        except (TypeError, ValueError):
-            try:
-                return float(str(valor or 0).replace(',', '.'))
-            except (TypeError, ValueError):
-                return 0.0
+    filas = _ventas_query(where, params, cliente)
 
     base0 = baseiva = iva = total = retiva = retrenta = 0.0
-
-    with _cliente_db(cliente).cursor() as cursor:
-        cursor.execute(sql, params)
-        for row in cursor.fetchall():
-            b0 = numero(row[0]) + numero(row[1])
-            biv = sum(numero(x) for x in row[2:7])
-            iv = sum(numero(x) for x in row[7:12])
-            base0 += b0
-            baseiva += biv
-            iva += iv
-            total += b0 + biv + iv
-            retiva += numero(row[12])
-            retrenta += numero(row[13])
+    for row in filas:
+        base0 += float(row[6] or 0)
+        baseiva += float(row[7] or 0)
+        iva += float(row[8] or 0)
+        total += float(row[9] or 0)
+        retiva += float(row[10] or 0)
+        retrenta += float(row[11] or 0)
 
     return {
         'base0': base0,
@@ -981,7 +882,6 @@ def _admin_ventas_resumen(where, params, cliente):
         'retiva': retiva,
         'retrenta': retrenta,
     }
-
 
 @admin_required
 def admin_ventas(request, ruc):
