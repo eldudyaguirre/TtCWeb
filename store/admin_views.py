@@ -2543,30 +2543,6 @@ def admin_ventas_excel(request, ruc):
 
 
 @admin_required
-def admin_ventas_pdf(request, ruc):
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import landscape,A4
-    from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER
-    from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Paragraph,Spacer
-    from .views import _ventas_query,_ventas_resumen,VENTAS_COLUMNS
-    cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
-    filas=_ventas_query(where,params.copy(),cliente); resumen=_ventas_resumen(where,params.copy(),cliente)
-    buf=BytesIO(); doc=SimpleDocTemplate(buf,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
-    styles=getSampleStyleSheet(); title=ParagraphStyle('avt',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,alignment=TA_CENTER)
-    head=ParagraphStyle('avh',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8,alignment=TA_CENTER)
-    cell=ParagraphStyle('avc',parent=styles['Normal'],fontSize=5.4,leading=6,alignment=TA_CENTER)
-    data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
-    for row in filas:
-        data.append([Paragraph(str(v or ''),cell) if i in (0,1,2,3,4,5,12,13) else f'{float(v or 0):.2f}' for i,v in enumerate(row)])
-    data.append(['','','','','','',f"{resumen['base0']:.2f}",f"{resumen['baseiva']:.2f}",f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",f"{resumen['retiva']:.2f}",f"{resumen['retrenta']:.2f}",''])
-    table=Table(data,repeatRows=1,colWidths=[22,105,68,48,72,76,52,52,42,52,45,50,52,60])
-    table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),('ALIGN',(0,0),(-1,-1),'CENTER'),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5'))]))
-    doc.build([Paragraph('REPORTE DE VENTAS',title),Paragraph(f"VENTAS DESDE {filtros['fecha_desde']} A {filtros['fecha_hasta']}",head),Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}",head),Spacer(1,10),table])
-    response=HttpResponse(buf.getvalue(),content_type='application/pdf'); response['Content-Disposition']='attachment; filename="ventas_administrativo.pdf"'; return response
-
-
-@admin_required
 def admin_ventas_editar(request, ruc):
     from .views import _cliente_db
     cliente=get_object_or_404(Cliente,pk=ruc)
@@ -3557,30 +3533,6 @@ def admin_ventas_excel(request, ruc):
     ws.append([]); ws.append(['','','','','','RESUMEN',resumen['base0'],resumen['baseiva'],resumen['iva'],resumen['total'],resumen['retiva'],resumen['retrenta']])
     buffer=BytesIO(); wb.save(buffer)
     response=HttpResponse(buffer.getvalue(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); response['Content-Disposition']='attachment; filename="ventas_administrativo.xlsx"'; return response
-
-
-@admin_required
-def admin_ventas_pdf(request, ruc):
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import landscape,A4
-    from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER
-    from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Paragraph,Spacer
-    from .views import _ventas_query,_ventas_resumen,VENTAS_COLUMNS
-    cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
-    filas=_ventas_query(where,params.copy(),cliente); resumen=_ventas_resumen(where,params.copy(),cliente)
-    buf=BytesIO(); doc=SimpleDocTemplate(buf,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
-    styles=getSampleStyleSheet(); title=ParagraphStyle('avt',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,alignment=TA_CENTER)
-    head=ParagraphStyle('avh',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8,alignment=TA_CENTER)
-    cell=ParagraphStyle('avc',parent=styles['Normal'],fontSize=5.4,leading=6,alignment=TA_CENTER)
-    data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
-    for row in filas:
-        data.append([Paragraph(str(v or ''),cell) if i in (0,1,2,3,4,5,12,13) else f'{float(v or 0):.2f}' for i,v in enumerate(row)])
-    data.append(['','','','','','',f"{resumen['base0']:.2f}",f"{resumen['baseiva']:.2f}",f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",f"{resumen['retiva']:.2f}",f"{resumen['retrenta']:.2f}",''])
-    table=Table(data,repeatRows=1,colWidths=[22,105,68,48,72,76,52,52,42,52,45,50,52,60])
-    table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),('ALIGN',(0,0),(-1,-1),'CENTER'),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5'))]))
-    doc.build([Paragraph('REPORTE DE VENTAS',title),Paragraph(f"VENTAS DESDE {filtros['fecha_desde']} A {filtros['fecha_hasta']}",head),Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}",head),Spacer(1,10),table])
-    response=HttpResponse(buf.getvalue(),content_type='application/pdf'); response['Content-Disposition']='attachment; filename="ventas_administrativo.pdf"'; return response
 
 
 @admin_required
