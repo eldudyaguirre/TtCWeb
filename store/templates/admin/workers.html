@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% block title %}Workers | Administración{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Configuración</span>
+        <h1>Workers</h1>
+        <p>Define qué usuarios pueden trabajar como workers de Conta.</p>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <span class="admin-kicker">Conta SRI</span>
+            <h2>Usuarios Worker</h2>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Worker</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in trabajadores %}
+                <tr>
+                    <td><strong>{{ item.usuario }}</strong></td>
+                    <td>{{ item.nombre }}</td>
+                    <td>
+                        {% if item.worker %}
+                            <span class="admin-status active">ACTIVO</span>
+                        {% else %}
+                            <span class="admin-status inactive">INACTIVO</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" style="margin:0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="usuario" value="{{ item.usuario }}">
+                            {% if item.worker %}
+                                <input type="hidden" name="accion" value="desactivar">
+                                <button type="submit" class="admin-secondary-button">Desactivar</button>
+                            {% else %}
+                                <input type="hidden" name="accion" value="activar">
+                                <button type="submit" class="admin-secondary-button">Activar Worker</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="admin-empty">No hay usuarios registrados en seguridad.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
