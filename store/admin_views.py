@@ -1039,53 +1039,113 @@ def admin_notas_credito_pdf(request, ruc):
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
     cliente = get_object_or_404(Cliente, pk=ruc)
     where, params, filtros = _admin_notas_credito_filtros(request)
-    filas = _notas_credito_query(where, params.copy(), cliente)
-    resumen = _notas_credito_resumen(where, params.copy(), cliente)
+
+    try:
+        filas = _notas_credito_query(where, params.copy(), cliente)
+        resumen = _notas_credito_resumen(where, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(
+            f'Error generando PDF de notas de crédito recibidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    def _num(value):
+        try:
+            return f"{float(value or 0):.2f}"
+        except (TypeError, ValueError):
+            return "0.00"
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),
-                            leftMargin=18, rightMargin=18, topMargin=18, bottomMargin=18)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=18, rightMargin=18, topMargin=18, bottomMargin=18,
+    )
+
     styles = getSampleStyleSheet()
-    title = ParagraphStyle('NCRTitle', parent=styles['Title'], fontName='Helvetica-Bold',
-                           fontSize=14, alignment=TA_CENTER)
-    head = ParagraphStyle('NCRHead', parent=styles['Normal'], fontName='Helvetica-Bold',
-                          fontSize=7, alignment=TA_CENTER)
-    cell = ParagraphStyle('NCRCell', parent=styles['Normal'], fontSize=5.5,
-                          leading=6, alignment=TA_CENTER)
-    headers = ['N°','PROVEEDOR','RUC','TIPO','FECHA','N° NOTA','AUTORIZACIÓN',
-               'BASES SIN IVA','BASES CON IVA','IVA','TOTAL','COD MOD',
-               'DOC. MODIFICADO','AUT. MODIFICACIÓN']
-    data = [[Paragraph(h, head) for h in headers]]
-    for row in filas:
-        data.append([
-            Paragraph(str(v or ''), cell) if i in (0,1,2,3,4,5,6,11,12,13)
-            else f'{float(v or 0):.2f}'
-            for i, v in enumerate(row)
-        ])
-    data.append(['','','','','','','RESUMEN',
-                 f"{resumen['bases_sin_iva']:.2f}", f"{resumen['bases_con_iva']:.2f}",
-                 f"{resumen['iva']:.2f}", f"{resumen['total']:.2f}"])
-    table = Table(data, repeatRows=1,
-                  colWidths=[20,105,65,35,55,75,85,55,55,45,55,45,75,75])
-    table.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-        ('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),
-        ('ALIGN',(0,0),(-1,-1),'CENTER'),
-        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
-        ('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5')),
-    ]))
-    elements = [
-        Paragraph('NOTAS DE CRÉDITO RECIBIDAS', title),
-        Paragraph(f"PERÍODO {filtros['fecha_desde']} A {filtros['fecha_hasta']}", head),
-        Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}", head),
-        Spacer(1, 8), table
+    titulo = ParagraphStyle(
+        'AdminNCTitulo', parent=styles['Title'], fontName='Helvetica-Bold',
+        fontSize=14, leading=16, alignment=TA_CENTER, spaceAfter=3,
+    )
+    cab = ParagraphStyle(
+        'AdminNCCab', parent=styles['Normal'], fontName='Helvetica-Bold',
+        fontSize=8, leading=10, alignment=TA_CENTER,
+    )
+    tabla = ParagraphStyle(
+        'AdminNCTabla', parent=styles['Normal'], fontName='Helvetica',
+        fontSize=5, leading=5.8, alignment=TA_CENTER, wordWrap='CJK',
+    )
+    izq = ParagraphStyle('AdminNCIzq', parent=tabla, alignment=0)
+    enc = ParagraphStyle(
+        'AdminNCEnc', parent=tabla, fontName='Helvetica-Bold',
+        textColor=colors.white, leading=6,
+    )
+
+    headers = [
+        'N°', 'PROVEEDOR', 'RUC', 'TIPO', 'FECHA', 'N° NOTA',
+        'AUTORIZACIÓN', 'BASES SIN IVA', 'BASES CON IVA', 'IVA',
+        'TOTAL', 'COD MOD', 'DOC. MODIFICADO', 'AUT. MODIFICACIÓN',
     ]
+
+    data = [[Paragraph(label, enc) for label in headers]]
+
+    for row in filas:
+        values = []
+        for i, value in enumerate(row):
+            if i in (1, 2, 3, 4, 5, 6, 11, 12, 13):
+                values.append(
+                    Paragraph(str(value or ''), izq if i == 1 else tabla)
+                )
+            else:
+                values.append(Paragraph(_num(value), tabla))
+        data.append(values)
+
+    data.append([
+        '', '', '', '', '', '', 'RESUMEN',
+        _num(resumen['bases_sin_iva']),
+        _num(resumen['bases_con_iva']),
+        _num(resumen['iva']),
+        _num(resumen['total']),
+        '', '', '',
+    ])
+
+    table = Table(
+        data,
+        repeatRows=1,
+        colWidths=[22, 105, 65, 38, 48, 70, 70, 55, 55, 45, 55, 45, 75, 75],
+    )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (10, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef5f5')),
+        ('FONTNAME', (6, -1), (10, -1), 'Helvetica-Bold'),
+    ]))
+
+    elements = [
+        Paragraph('REPORTE DE NOTAS DE CRÉDITO RECIBIDAS - ADMINISTRATIVO', titulo),
+        Paragraph(
+            f"DESDE {filtros['fecha_desde'] or '—'} A {filtros['fecha_hasta'] or '—'}",
+            cab,
+        ),
+        Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}", cab),
+        Spacer(1, 8),
+        table,
+    ]
+
     doc.build(elements)
+
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="notas_credito_recibidas_administrativo.pdf"'
+    response['Content-Disposition'] = (
+        'attachment; filename="notas_credito_recibidas_administrativo.pdf"'
+    )
     return response
 
 @admin_required
