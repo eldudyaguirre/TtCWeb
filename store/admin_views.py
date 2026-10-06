@@ -915,19 +915,16 @@ def admin_ventas_pdf(request, ruc):
     buf=BytesIO(); doc=SimpleDocTemplate(buf,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
     styles=getSampleStyleSheet(); title=ParagraphStyle('avt',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=14,alignment=TA_CENTER)
     head=ParagraphStyle('avh',parent=styles['Normal'],fontName='Helvetica-Bold',fontSize=8,alignment=TA_CENTER)
-    cell=ParagraphStyle('avc',parent=styles['Normal'],fontSize=5.4,leading=6,alignment=TA_CENTER)
+    cell=ParagraphStyle('avc',parent=styles['Normal'],fontName='Helvetica',fontSize=5.4,leading=6,alignment=TA_CENTER,wordWrap='CJK')
     data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
     for row in filas:
         values=[]
         for i,v in enumerate(row):
-            if i in (0,1,2,3,4,5,12,13):
-                values.append(Paragraph(str(v or ''),cell))
-            else:
-                try:
-                    texto=f'{float(v or 0):.2f}'
-                except (TypeError,ValueError):
-                    texto=str(v or '')
-                values.append(Paragraph(texto,cell))
+            try:
+                texto = f'{float(v or 0):.2f}' if i not in (0,1,2,3,4,5,12,13) else str(v or '')
+            except (TypeError,ValueError):
+                texto = str(v or '')
+            values.append(Paragraph(texto, cell))
         data.append(values)
     data.append([
         Paragraph('',cell), Paragraph('',cell), Paragraph('',cell),
