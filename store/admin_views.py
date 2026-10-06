@@ -846,117 +846,26 @@ def _admin_compras_filtros(request):
     }
 
 
-@admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
     """
-    Consulta las ventas y calcula los importes directamente en Python.
-    Esto evita cualquier diferencia de tipos de PostgreSQL en los campos
-    tributarios, especialmente baseiva12.
+    Usa exactamente la misma consulta de ventas que el portal.
+
+    La tabla ventas de este sistema almacena la base gravada en baseiva12
+    y el IVA total en iva. No debemos reconstruirlos sumando columnas iva5,
+    iva8, iva12, etc., porque esas columnas no son la fuente usada por este
+    reporte y pueden venir vacías.
     """
-    sql = f"""
-        SELECT
-            ROW_NUMBER() OVER (ORDER BY v.fecfactur::date ASC, v.numfactur ASC) AS numero,
-            v.nomcli AS cliente,
-            v.ruccedcli AS ruc,
-            v.fecfactur AS fecha,
-            v.numfactur AS factura,
-            v.autorizacion,
-            v.basenoobj,
-            v.baseiva0,
-            v.baseiva5,
-            v.baseiva8,
-            v.baseiva12,
-            v.baseiva14,
-            v.baseiva15,
-            v.iva5,
-            v.iva8,
-            v.iva12,
-            v.iva14,
-            v.iva15,
-            v.retiva,
-            v.retrenta,
-            v.numret,
-            v.autret
-        FROM public.ventas v
-        WHERE {where}
-        ORDER BY v.fecfactur::date ASC, v.numfactur ASC
-    """
-
-    query_params = list(params)
-    if limit is not None:
-        sql += " LIMIT %s OFFSET %s"
-        query_params.extend([limit, offset or 0])
-
-    def numero(valor):
-        if valor is None:
-            return 0.0
-        try:
-            texto = str(valor).strip().replace(',', '.')
-            if not texto or texto == '.':
-                return 0.0
-            return float(texto)
-        except (TypeError, ValueError):
-            return 0.0
-
-    filas = []
-    with _cliente_db(cliente).cursor() as cursor:
-        cursor.execute(sql, query_params)
-        for row in cursor.fetchall():
-            base0 = numero(row[6]) + numero(row[7])
-            baseiva = (
-                numero(row[8])
-                + numero(row[9])
-                + numero(row[10])
-                + numero(row[11])
-                + numero(row[12])
-            )
-            iva = (
-                numero(row[13])
-                + numero(row[14])
-                + numero(row[15])
-                + numero(row[16])
-                + numero(row[17])
-            )
-            total = base0 + baseiva + iva
-
-            filas.append((
-                row[0],
-                row[1],
-                row[2],
-                row[3],
-                row[4],
-                row[5],
-                base0,
-                baseiva,
-                iva,
-                total,
-                numero(row[18]),
-                numero(row[19]),
-                row[20],
-                row[21],
-            ))
-
-    return filas
+    from .views import _ventas_query
+    return _ventas_query(where, params, cliente, limit, offset)
 
 
 def _admin_ventas_resumen(where, params, cliente):
-    filas = _admin_ventas_query(where, params, cliente)
-
-    base0 = sum(float(row[6] or 0) for row in filas)
-    baseiva = sum(float(row[7] or 0) for row in filas)
-    iva = sum(float(row[8] or 0) for row in filas)
-    total = sum(float(row[9] or 0) for row in filas)
-    retiva = sum(float(row[10] or 0) for row in filas)
-    retrenta = sum(float(row[11] or 0) for row in filas)
-
-    return {
-        'base0': base0,
-        'baseiva': baseiva,
-        'iva': iva,
-        'total': total,
-        'retiva': retiva,
-        'retrenta': retrenta,
-    }
+    """
+    Usa exactamente el mismo resumen tributario que el reporte de ventas
+    del portal.
+    """
+    from .views import _ventas_resumen
+    return _ventas_resumen(where, params, cliente)
 
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
