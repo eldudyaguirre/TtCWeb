@@ -10,10 +10,11 @@
 <div class="wide"><label>Cliente</label><input type="search" name="cliente_busqueda" value="{{ filtros.cliente_busqueda }}" placeholder="Nombre o RUC del cliente"></div>
 <div class="admin-ventas-actions"><button type="submit" class="admin-ventas-search"><i class="fi fi-rr-search"></i> Buscar</button><a href="{% url 'admin_ventas' ruc=cliente.ruccedcli %}" class="admin-ventas-clear">Limpiar</a></div>
 </form>
-<div class="admin-ventas-toolbar"><div><span class="admin-kicker">Período consultado</span><strong>{{ filtros.fecha_desde }} → {{ filtros.fecha_hasta }}</strong></div><div class="admin-ventas-tools">
-<a href="{% url 'admin_ventas_excel' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="av-excel">Excel</a>
-<a target="_blank" href="{% url 'admin_ventas_pdf' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="av-pdf">PDF</a>
-<a href="#" onclick="return false" class="av-new"><i class="fi fi-rr-plus"></i> Nueva factura</a></div></div>
+<div class="admin-ventas-toolbar"><div><span class="admin-kicker">Período consultado</span><strong>{{ filtros.fecha_desde }} → {{ filtros.fecha_hasta }}</strong></div><div class="admin-compras-toolbar-actions">
+<a href="{% url 'admin_ventas_excel' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="admin-compras-tool admin-compras-excel"><i class="fi fi-rr-file-excel"></i> Excel</a>
+<a href="{% url 'admin_ventas_pdf' ruc=cliente.ruccedcli %}?fecha_desde={{ filtros.fecha_desde }}&fecha_hasta={{ filtros.fecha_hasta }}&cliente_busqueda={{ filtros.cliente_busqueda|urlencode }}" class="admin-compras-tool admin-compras-pdf" target="_blank"><i class="fi fi-rr-file-pdf"></i> PDF</a>
+<a href="#" class="admin-compras-tool admin-compras-new" onclick="return false;"><i class="fi fi-rr-plus"></i> Nueva factura</a>
+</div></div>
 <div class="admin-ventas-table-wrap"><table class="admin-ventas-table"><thead><tr>
 <th>FECHA</th><th>CLIENTE</th><th>RUC</th><th>FACTURA</th><th>AUTORIZACION</th>
 <th>BASE0</th><th>BASE IVA</th><th>IVA</th><th>TOTAL</th><th>RET IVA</th><th>RET RENTA</th><th>NUM RET</th><th>AUT RET</th><th>ACCIONES</th>
