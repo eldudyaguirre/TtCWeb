@@ -918,8 +918,28 @@ def admin_ventas_pdf(request, ruc):
     cell=ParagraphStyle('avc',parent=styles['Normal'],fontSize=5.4,leading=6,alignment=TA_CENTER)
     data=[[Paragraph(x[1],head) for x in VENTAS_COLUMNS]]
     for row in filas:
-        data.append([Paragraph(str(v or ''),cell) if i in (0,1,2,3,4,5,12,13) else f'{float(v or 0):.2f}' for i,v in enumerate(row)])
-    data.append(['','','','','','',f"{resumen['base0']:.2f}",f"{resumen['baseiva']:.2f}",f"{resumen['iva']:.2f}",f"{resumen['total']:.2f}",f"{resumen['retiva']:.2f}",f"{resumen['retrenta']:.2f}",''])
+        values=[]
+        for i,v in enumerate(row):
+            if i in (0,1,2,3,4,5,12,13):
+                values.append(Paragraph(str(v or ''),cell))
+            else:
+                try:
+                    texto=f'{float(v or 0):.2f}'
+                except (TypeError,ValueError):
+                    texto=str(v or '')
+                values.append(Paragraph(texto,cell))
+        data.append(values)
+    data.append([
+        Paragraph('',cell), Paragraph('',cell), Paragraph('',cell),
+        Paragraph('',cell), Paragraph('',cell), Paragraph('',cell),
+        Paragraph(f"{resumen['base0']:.2f}",cell),
+        Paragraph(f"{resumen['baseiva']:.2f}",cell),
+        Paragraph(f"{resumen['iva']:.2f}",cell),
+        Paragraph(f"{resumen['total']:.2f}",cell),
+        Paragraph(f"{resumen['retiva']:.2f}",cell),
+        Paragraph(f"{resumen['retrenta']:.2f}",cell),
+        Paragraph('',cell), Paragraph('',cell)
+    ])
     table=Table(data,repeatRows=1,colWidths=[22,105,68,48,72,76,52,52,42,52,45,50,52,60])
     table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#21333e')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.25,colors.HexColor('#d8e0e3')),('ALIGN',(0,0),(-1,-1),'CENTER'),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('BACKGROUND',(0,-1),(-1,-1),colors.HexColor('#eef5f5'))]))
     doc.build([Paragraph('REPORTE DE VENTAS',title),Paragraph(f"VENTAS DESDE {filtros['fecha_desde']} A {filtros['fecha_hasta']}",head),Paragraph(f"{cliente.nomclient} | RUC. {cliente.ruccedcli}",head),Spacer(1,10),table])
