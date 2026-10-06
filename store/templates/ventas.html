@@ -161,12 +161,30 @@
             <div class="portal-report-summary">
                 <div class="portal-report-summary-title">Resumen del período</div>
                 <div class="portal-report-summary-grid">
-                    <div><span>Base0</span><strong>{{ resumen.base0|floatformat:2 }}</strong></div>
+                    <div><span>Base 0 / No objeto</span><strong>{{ resumen.base0|floatformat:2 }}</strong></div>
                     <div><span>Base IVA</span><strong>{{ resumen.baseiva|floatformat:2 }}</strong></div>
                     <div><span>IVA</span><strong>{{ resumen.iva|floatformat:2 }}</strong></div>
                     <div class="portal-report-total"><span>Total</span><strong>{{ resumen.total|floatformat:2 }}</strong></div>
                     <div><span>Ret IVA</span><strong>{{ resumen.retiva|floatformat:2 }}</strong></div>
                     <div><span>Ret Renta</span><strong>{{ resumen.retrenta|floatformat:2 }}</strong></div>
+                </div>
+            </div>
+
+            <div class="portal-report-summary ventas-desglose">
+                <div class="portal-report-summary-title">Desglose de valores</div>
+                <div class="portal-report-summary-grid ventas-desglose-grid">
+                    <div><span>Base No Obj.</span><strong>{{ resumen.basenoobj|floatformat:2 }}</strong></div>
+                    <div><span>Base 0</span><strong>{{ resumen.base0|floatformat:2 }}</strong></div>
+                    <div><span>Base 5%</span><strong>{{ resumen.base5|floatformat:2 }}</strong></div>
+                    <div><span>Base 8%</span><strong>{{ resumen.base8|floatformat:2 }}</strong></div>
+                    <div><span>Base 12%</span><strong>{{ resumen.base12|floatformat:2 }}</strong></div>
+                    <div><span>Base 14%</span><strong>{{ resumen.base14|floatformat:2 }}</strong></div>
+                    <div><span>Base 15%</span><strong>{{ resumen.base15|floatformat:2 }}</strong></div>
+                    <div><span>IVA 5%</span><strong>{{ resumen.iva5|floatformat:2 }}</strong></div>
+                    <div><span>IVA 8%</span><strong>{{ resumen.iva8|floatformat:2 }}</strong></div>
+                    <div><span>IVA 12%</span><strong>{{ resumen.iva12|floatformat:2 }}</strong></div>
+                    <div><span>IVA 14%</span><strong>{{ resumen.iva14|floatformat:2 }}</strong></div>
+                    <div><span>IVA 15%</span><strong>{{ resumen.iva15|floatformat:2 }}</strong></div>
                 </div>
             </div>
 
