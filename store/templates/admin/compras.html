@@ -134,6 +134,25 @@
         </div>
     </div>
 
+    <div class="admin-compras-summary admin-compras-desglose">
+        <div class="admin-compras-summary-title">Desglose de valores</div>
+        <div class="admin-compras-summary-grid">
+            <div><span>Base No Obj.</span><strong>$ {{ resumen.base_no_obj|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 0%</span><strong>$ {{ resumen.base0|floatformat:2 }}</strong></div>
+            <div><span>Base Exenta</span><strong>$ {{ resumen.exenta|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 5%</span><strong>$ {{ resumen.base5|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 8%</span><strong>$ {{ resumen.base8|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 12%</span><strong>$ {{ resumen.base12|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 14%</span><strong>$ {{ resumen.base14|floatformat:2 }}</strong></div>
+            <div><span>Base IVA 15%</span><strong>$ {{ resumen.base15|floatformat:2 }}</strong></div>
+            <div><span>IVA 5%</span><strong>$ {{ resumen.iva5|floatformat:2 }}</strong></div>
+            <div><span>IVA 8%</span><strong>$ {{ resumen.iva8|floatformat:2 }}</strong></div>
+            <div><span>IVA 12%</span><strong>$ {{ resumen.iva12|floatformat:2 }}</strong></div>
+            <div><span>IVA 14%</span><strong>$ {{ resumen.iva14|floatformat:2 }}</strong></div>
+            <div><span>IVA 15%</span><strong>$ {{ resumen.iva15|floatformat:2 }}</strong></div>
+        </div>
+    </div>
+
     {% if total_paginas > 1 %}
     <div class="admin-compras-pagination">
         {% if pagina > 1 %}
@@ -545,6 +564,9 @@
 .admin-compras-modal-actions .admin-compras-clear:hover{background:#f4f7f8!important;border-color:#9fb3ba!important;color:#21333e!important}
 .admin-compras-modal-actions .admin-compras-new{background:#1596a3!important;border-color:#1596a3!important;color:#fff!important}
 .admin-compras-modal-actions .admin-compras-new:hover{background:#117f8b!important;border-color:#117f8b!important;color:#fff!important}@media(max-width:700px){.admin-compras-modal{padding:8px}.admin-compras-modal-dialog{width:100%;max-height:96vh}.admin-compras-modal-header{padding:16px}.admin-compras-modal-dialog form{padding:16px}.admin-compras-modal-grid{grid-template-columns:1fr}.admin-compras-modal-grid .wide{grid-column:auto}.admin-compras-modal-actions{flex-direction:column}.admin-compras-modal-actions button{width:100%}}
+
+.admin-compras-desglose{margin-top:14px}.admin-compras-desglose .admin-compras-summary-grid{grid-template-columns:repeat(7,1fr)}
+@media(max-width:1100px){.admin-compras-desglose .admin-compras-summary-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 
 <script>
