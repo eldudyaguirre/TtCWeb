@@ -849,22 +849,70 @@ def _admin_compras_filtros(request):
 @admin_required
 def _admin_ventas_query(where, params, cliente, limit=None, offset=None):
     """
-    Usa exactamente la misma consulta tributaria que el reporte de ventas
-    del portal. Así administrativo y portal muestran los mismos importes.
+    Consulta directamente las bases e IVA de la tabla ventas.
+    BASE IVA = baseiva5 + baseiva8 + baseiva12 + baseiva14 + baseiva15.
+    IVA = iva5 + iva8 + iva12 + iva14 + iva15.
     """
-    from .views import _ventas_query
-    return _ventas_query(where, params, cliente, limit, offset)
+    sql = f"""
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY v.fecfactur::date ASC, v.numfactur ASC) AS numero,
+            v.nomcli AS cliente,
+            v.ruccedcli AS ruc,
+            v.fecfactur AS fecha,
+            v.numfactur AS factura,
+            v.autorizacion,
+            (
+                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
+            ) AS base0,
+            (
+                COALESCE(NULLIF(NULLIF(TRIM(v.baseiva5::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva8::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva12::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva14::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva15::text), ''), '.')::numeric, 0)
+            ) AS baseiva,
+            (
+                COALESCE(NULLIF(NULLIF(TRIM(v.iva5::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva8::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva12::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva14::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva15::text), ''), '.')::numeric, 0)
+            ) AS iva,
+            (
+                COALESCE(NULLIF(TRIM(v.basenoobj::text), ''), '0')::numeric
+                + COALESCE(NULLIF(TRIM(v.baseiva0::text), ''), '0')::numeric
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva5::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva8::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva12::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva14::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.baseiva15::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva5::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva8::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva12::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva14::text), ''), '.')::numeric, 0)
+                + COALESCE(NULLIF(NULLIF(TRIM(v.iva15::text), ''), '.')::numeric, 0)
+            ) AS total,
+            COALESCE(NULLIF(TRIM(v.retiva::text), ''), '0')::numeric AS retiva,
+            COALESCE(NULLIF(TRIM(v.retrenta::text), ''), '0')::numeric AS retrenta,
+            v.numret,
+            v.autret
+        FROM public.ventas v
+        WHERE {where}
+        ORDER BY v.fecfactur::date ASC, v.numfactur ASC
+    """
+    query_params = list(params)
+    if limit is not None:
+        sql += " LIMIT %s OFFSET %s"
+        query_params.extend([limit, offset or 0])
+
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, query_params)
+        return cursor.fetchall()
 
 
 def _admin_ventas_resumen(where, params, cliente):
-    """
-    Calcula el resumen desde la misma fuente que las filas del reporte.
-    Se hace en Python para evitar diferencias entre administrativo y portal.
-    """
-    from .views import _ventas_query
-
-    filas = _ventas_query(where, params, cliente)
-
+    filas = _admin_ventas_query(where, params, cliente)
     base0 = baseiva = iva = total = retiva = retrenta = 0.0
     for row in filas:
         base0 += float(row[6] or 0)
@@ -873,7 +921,6 @@ def _admin_ventas_resumen(where, params, cliente):
         total += float(row[9] or 0)
         retiva += float(row[10] or 0)
         retrenta += float(row[11] or 0)
-
     return {
         'base0': base0,
         'baseiva': baseiva,
@@ -882,34 +929,6 @@ def _admin_ventas_resumen(where, params, cliente):
         'retiva': retiva,
         'retrenta': retrenta,
     }
-
-@admin_required
-def admin_ventas(request, ruc):
-    from .views import VENTAS_COLUMNS
-    cliente = get_object_or_404(Cliente, pk=ruc)
-    where, params, filtros = _admin_ventas_filtros(request)
-    try:
-        with _cliente_db(cliente).cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM ventas v WHERE {where}", params)
-            total_registros = cursor.fetchone()[0]
-        try:
-            pagina = max(1, int(request.GET.get('pagina','1')))
-        except ValueError:
-            pagina = 1
-        por_pagina = 50
-        filas = _admin_ventas_query(where, params.copy(), cliente, por_pagina, (pagina-1)*por_pagina)
-        resumen = _admin_ventas_resumen(where, params.copy(), cliente)
-        total_paginas = max(1, (total_registros + por_pagina - 1)//por_pagina)
-    except Exception as exc:
-        return HttpResponse(f"Error en reporte de ventas: {type(exc).__name__}: {exc}", status=500, content_type='text/plain; charset=utf-8')
-    filas_template = filas
-
-    return render(request, 'admin/ventas.html', {
-        'cliente': cliente, 'filas': filas_template, 'resumen': resumen, 'filtros': filtros,
-        'pagina': pagina, 'total_paginas': total_paginas, 'total_registros': total_registros,
-        'ventas_columns': VENTAS_COLUMNS,
-    })
-
 
 def _admin_ventas_filtros(request):
     hoy = timezone.localdate()
