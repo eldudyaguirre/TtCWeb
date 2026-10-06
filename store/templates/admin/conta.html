@@ -105,6 +105,11 @@
         ⏹ Detener sincronización
     </button>
 
+    <div id="sri-errores-detalle" style="display:none;margin-top:20px;padding:16px;border-radius:8px;background:#fff3f3;border:1px solid #f1b5b5;">
+        <h3 style="margin:0 0 12px;color:#9b1c1c;">⚠️ Detalle de errores</h3>
+        <div id="sri-errores-lista" style="font-size:14px;"></div>
+    </div>
+
     <div id="sri-validador" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid #ddd;">
         <h3 style="margin:0 0 14px;">🔎 Comparación SRI vs Base de Datos</h3>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;">
@@ -173,6 +178,8 @@
     const existentes = document.getElementById("sri-existentes");
     const guardadas = document.getElementById("sri-guardadas");
     const errores = document.getElementById("sri-errores");
+    const erroresDetalle = document.getElementById("sri-errores-detalle");
+    const erroresLista = document.getElementById("sri-errores-lista");
     const cancelar = document.getElementById("sri-cancelar");
     const validador = document.getElementById("sri-validador");
     const valDias = document.getElementById("val-dias");
@@ -284,7 +291,30 @@
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
-            errores.textContent = Array.isArray(data.errores) ? data.errores.length : 0;
+            const listaErrores = Array.isArray(data.errores) ? data.errores : [];
+            errores.textContent = listaErrores.length;
+
+            if (listaErrores.length) {
+                erroresDetalle.style.display = "block";
+                erroresLista.innerHTML = "";
+                listaErrores.forEach(function (error, indice) {
+                    const bloque = document.createElement("div");
+                    bloque.style.cssText = "padding:10px 0;border-bottom:1px solid #e5bcbc;";
+                    const pagina = error.pagina != null ? "Página " + error.pagina : "";
+                    const fila = error.fila != null ? " · Fila " + error.fila : "";
+                    const detalle = error.detalle || "Error sin detalle";
+                    bloque.innerHTML =
+                        "<strong>Error " + (indice + 1) + "</strong>" +
+                        (pagina || fila ? " <span style='font-weight:normal;color:#666;'>(" + pagina + fila + ")</span>" : "") +
+                        "<div style='margin-top:5px;white-space:pre-wrap;word-break:break-word;'>" +
+                        String(detalle).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                        "</div>";
+                    erroresLista.appendChild(bloque);
+                });
+            } else {
+                erroresDetalle.style.display = "none";
+                erroresLista.innerHTML = "";
+            }
 
             if (data.estado === "finalizado" || data.estado === "error" || data.estado === "cancelado") {
                 if (data.estado === "finalizado") {
