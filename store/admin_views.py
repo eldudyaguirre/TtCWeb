@@ -890,7 +890,7 @@ def _admin_ventas_filtros(request):
 def admin_ventas_excel(request, ruc):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
-    from .views import VENTAS_COLUMNS
+    from .views import _ventas_query, _ventas_resumen, VENTAS_COLUMNS
     cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
     filas=_admin_ventas_query(where,params.copy(),cliente); resumen=_admin_ventas_resumen(where,params.copy(),cliente)
     wb=Workbook(); ws=wb.active; ws.title='Ventas'
