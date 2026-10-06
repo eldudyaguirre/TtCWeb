@@ -2954,30 +2954,35 @@ def ventas_pdf(request):
         Spacer(1, 10),
     ]
 
-    data = [[Paragraph(label, encabezado) for _, label in VENTAS_COLUMNS]]
+    # Todas las celdas se renderizan como Paragraph para que ReportLab
+    # use exactamente la misma fuente y tamaño en texto y valores numéricos.
+    def celda_tabla(valor='', estilo=tabla):
+        return Paragraph(str(valor if valor is not None else ''), estilo)
+
+    data = [[celda_tabla(label, encabezado) for _, label in VENTAS_COLUMNS]]
     for row in filas:
         formatted = []
         for index, value in enumerate(row):
             if index in (1, 2, 3, 4, 5, 12, 13):
-                formatted.append(Paragraph(str(value or ''), tabla if index != 1 else tabla_izq))
+                formatted.append(celda_tabla(value, tabla if index != 1 else tabla_izq))
             else:
                 try:
                     texto = f"{float(value or 0):.2f}"
                 except (TypeError, ValueError):
                     texto = str(value or '')
-                formatted.append(Paragraph(texto, tabla))
+                formatted.append(celda_tabla(texto))
         data.append(formatted)
 
     data.append([
-        Paragraph('', tabla), Paragraph('', tabla), Paragraph('', tabla),
-        Paragraph('', tabla), Paragraph('', tabla), Paragraph('', tabla),
-        Paragraph(f"{resumen['base0']:.2f}", tabla),
-        Paragraph(f"{resumen['baseiva']:.2f}", tabla),
-        Paragraph(f"{resumen['iva']:.2f}", tabla),
-        Paragraph(f"{resumen['total']:.2f}", tabla),
-        Paragraph(f"{resumen['retiva']:.2f}", tabla),
-        Paragraph(f"{resumen['retrenta']:.2f}", tabla),
-        Paragraph('', tabla), Paragraph('', tabla),
+        celda_tabla(), celda_tabla(), celda_tabla(),
+        celda_tabla(), celda_tabla(), celda_tabla(),
+        celda_tabla(f"{resumen['base0']:.2f}"),
+        celda_tabla(f"{resumen['baseiva']:.2f}"),
+        celda_tabla(f"{resumen['iva']:.2f}"),
+        celda_tabla(f"{resumen['total']:.2f}"),
+        celda_tabla(f"{resumen['retiva']:.2f}"),
+        celda_tabla(f"{resumen['retrenta']:.2f}"),
+        celda_tabla(), celda_tabla(),
     ])
 
     table = Table(
@@ -2989,7 +2994,6 @@ def ventas_pdf(request):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#21333e')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 5.2),
         ('GRID', (0, 0), (-1, -1), .25, colors.HexColor('#d8e0e3')),
         ('ALIGN', (0, 1), (0, -1), 'CENTER'),
         ('ALIGN', (2, 1), (13, -1), 'CENTER'),
