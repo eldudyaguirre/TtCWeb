@@ -909,7 +909,7 @@ def admin_ventas_pdf(request, ruc):
     from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
     from reportlab.lib.enums import TA_CENTER
     from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,Paragraph,Spacer
-    from .views import VENTAS_COLUMNS
+    from .views import _ventas_query, _ventas_resumen, VENTAS_COLUMNS
     cliente=get_object_or_404(Cliente,pk=ruc); where,params,filtros=_admin_ventas_filtros(request)
     filas=_ventas_query(where,params.copy(),cliente); resumen=_ventas_resumen(where,params.copy(),cliente)
     buf=BytesIO(); doc=SimpleDocTemplate(buf,pagesize=landscape(A4),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=20)
