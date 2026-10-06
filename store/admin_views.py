@@ -242,6 +242,63 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'totales': totales,
     }
 
+
+@admin_required
+def admin_workers(request):
+    """Administra qué usuarios administrativos tienen habilitado el worker SRI."""
+    if request.method == 'POST':
+        usuario = request.POST.get('usuario', '').strip()
+        accion = request.POST.get('accion', '').strip()
+
+        if usuario and accion in ('activar', 'desactivar'):
+            valor = accion == 'activar'
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE seguridad
+                    SET worker = %s
+                    WHERE UPPER(TRIM(usrname::text)) = UPPER(TRIM(%s))
+                    """,
+                    [valor, usuario],
+                )
+            messages.success(
+                request,
+                f'Worker {"activado" if valor else "desactivado"} para {usuario}.'
+            )
+
+        return redirect('admin_workers')
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                TRIM(usrname::text) AS usuario,
+                COALESCE(TRIM(nomusuari::text), '') AS nombre,
+                COALESCE(worker, FALSE) AS worker
+            FROM seguridad
+            ORDER BY worker DESC, nomusuari, usrname
+            """
+        )
+        trabajadores = [
+            {
+                'usuario': row[0],
+                'nombre': row[1],
+                'worker': bool(row[2]),
+            }
+            for row in cursor.fetchall()
+        ]
+
+    return render(
+        request,
+        'admin/workers.html',
+        {
+            'trabajadores': trabajadores,
+            'admin_nombre': request.session.get(ADMIN_NAME_KEY, ''),
+            'admin_usuario': request.session.get(ADMIN_USERNAME_KEY, ''),
+        },
+    )
+
+
 @admin_required
 def admin_datos_usuario(request):
     """Muestra y permite editar los datos del usuario administrativo autenticado."""
