@@ -220,6 +220,15 @@
         }
     });
 
+    function escaparHtml(valor) {
+        return String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     async function consultar() {
         // Mientras se consulta el estado, dejamos visible que el trabajo fue iniciado.
         if (validador.style.display === "block") {
@@ -303,11 +312,20 @@
                     const pagina = error.pagina != null ? "Página " + error.pagina : "";
                     const fila = error.fila != null ? " · Fila " + error.fila : "";
                     const detalle = error.detalle || "Error sin detalle";
+                    const clienteError = error.cliente || "";
+                    const numRetencion = error.num_retencion || "";
+                    const proveedor = error.proveedor_retencion || "";
+                    const facturaSustento = error.factura_sustento || "";
+
                     bloque.innerHTML =
                         "<strong>Error " + (indice + 1) + "</strong>" +
                         (pagina || fila ? " <span style='font-weight:normal;color:#666;'>(" + pagina + fila + ")</span>" : "") +
-                        "<div style='margin-top:5px;white-space:pre-wrap;word-break:break-word;'>" +
-                        String(detalle).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                        (clienteError ? "<div style='margin-top:7px;'><strong>Cliente:</strong> " + escaparHtml(clienteError) + "</div>" : "") +
+                        (numRetencion ? "<div style='margin-top:4px;'><strong>Número de retención:</strong> " + escaparHtml(numRetencion) + "</div>" : "") +
+                        (proveedor ? "<div style='margin-top:4px;'><strong>Emisor de la retención:</strong> " + escaparHtml(proveedor) + "</div>" : "") +
+                        (facturaSustento ? "<div style='margin-top:4px;'><strong>Factura(s) sustento:</strong> " + escaparHtml(facturaSustento) + "</div>" : "") +
+                        "<div style='margin-top:7px;white-space:pre-wrap;word-break:break-word;'>" +
+                        escaparHtml(detalle) +
                         "</div>";
                     erroresLista.appendChild(bloque);
                 });
