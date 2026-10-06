@@ -959,6 +959,93 @@ def admin_ventas_editar(request, ruc):
         return JsonResponse({'ok':False,'error':f'Error actualizando venta: {type(exc).__name__}: {exc}'},status=500)
 
 
+
+def _admin_notas_credito_filtros(request):
+    hoy = timezone.localdate()
+    primer_dia_mes = hoy.replace(day=1)
+    fecha_desde = request.GET.get('fecha_desde', '').strip() or primer_dia_mes.strftime('%Y-%m-%d')
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip() or hoy.strftime('%Y-%m-%d')
+    proveedor = request.GET.get('proveedor', '').strip()
+
+    where = []
+    params = []
+    try:
+        datetime.strptime(fecha_desde, '%Y-%m-%d')
+        where.append('fecemi::date >= %s::date')
+        params.append(fecha_desde)
+    except ValueError:
+        fecha_desde = ''
+
+    try:
+        datetime.strptime(fecha_hasta, '%Y-%m-%d')
+        where.append("fecemi::date < (%s::date + INTERVAL '1 day')")
+        params.append(fecha_hasta)
+    except ValueError:
+        fecha_hasta = ''
+
+    if proveedor:
+        where.append('(ruccedprovee ILIKE %s OR nomprovee ILIKE %s)')
+        params.extend([f'%{proveedor}%', f'%{proveedor}%'])
+
+    return (' AND '.join(where) if where else '1=1'), params, {
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'proveedor': proveedor,
+    }
+
+
+@admin_required
+def admin_notas_credito_recibidas(request, ruc):
+    from .views import _cliente_db, _notas_credito_base_sql, _notas_credito_query, _notas_credito_resumen
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    where, params, filtros = _admin_notas_credito_filtros(request)
+    db = _cliente_db(cliente)
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(
+                f"SELECT COUNT(*) FROM ({_notas_credito_base_sql()}) notas_reporte WHERE {where}",
+                params,
+            )
+            total_registros = cursor.fetchone()[0]
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando notas de crédito recibidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    try:
+        pagina = max(1, int(request.GET.get('pagina', '1')))
+    except (TypeError, ValueError):
+        pagina = 1
+
+    por_pagina = 50
+    total_paginas = max(1, (total_registros + por_pagina - 1) // por_pagina)
+    pagina = min(pagina, total_paginas)
+    offset = (pagina - 1) * por_pagina
+
+    try:
+        filas = _notas_credito_query(where, params.copy(), cliente, por_pagina, offset)
+        resumen = _notas_credito_resumen(where, params.copy(), cliente)
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando notas de crédito recibidas: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    return render(request, 'admin/notas_credito_recibidas.html', {
+        'cliente': cliente,
+        'filas': filas,
+        'resumen': resumen,
+        'filtros': filtros,
+        'pagina': pagina,
+        'total_paginas': total_paginas,
+        'total_registros': total_registros,
+    })
+
 @admin_required
 def admin_compras(request, ruc):
     from .views import _cliente_db, _compras_base_sql, _compras_query, _compras_resumen
