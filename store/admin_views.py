@@ -1,6 +1,7 @@
 from io import BytesIO
 from functools import wraps
 import mimetypes
+from pathlib import Path
 
 from django.contrib import messages
 from django.db import connection, connections
@@ -1926,7 +1927,30 @@ def admin_cliente(request, ruc):
             'dirclient', 'teldomcli', 'teloficli',
             'telcelcli', 'corelectr', 'ocuclient',
         ])
-        messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+
+        certificado_ruc = request.FILES.get('certificado_ruc')
+        if certificado_ruc:
+            if certificado_ruc.size > 10 * 1024 * 1024:
+                messages.error(request, 'El Certificado de RUC no puede superar los 10 MB.')
+                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+            extension = Path(certificado_ruc.name).suffix.lower()
+            content_type = (certificado_ruc.content_type or '').lower()
+            if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
+                messages.error(request, 'El Certificado de RUC debe ser un archivo PDF.')
+                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+            carpeta_ruc = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc'
+            carpeta_ruc.mkdir(parents=True, exist_ok=True)
+            destino = carpeta_ruc / 'certificado_ruc.pdf'
+            with destino.open('wb') as salida:
+                for chunk in certificado_ruc.chunks():
+                    salida.write(chunk)
+
+            messages.success(request, 'Certificado de RUC cargado correctamente.')
+        else:
+            messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
     usuarios = (
@@ -1937,6 +1961,8 @@ def admin_cliente(request, ruc):
     )
 
     db_name = str(cliente.ruccedcli).strip()
+    certificado_ruc_path = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+    certificado_ruc_exists = certificado_ruc_path.is_file()
     db_status = 'No verificada'
     db_error = ''
     conciliacion = {
@@ -1984,8 +2010,20 @@ def admin_cliente(request, ruc):
             'db_status': db_status,
             'db_error': db_error,
             'conciliacion': conciliacion,
+            'certificado_ruc_exists': certificado_ruc_exists,
         },
     )
+
+
+@admin_required
+def admin_cliente_certificado_ruc(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    archivo = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+    if not archivo.is_file():
+        raise Http404('No existe un Certificado de RUC cargado para este cliente.')
+    response = FileResponse(archivo.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="certificado_ruc.pdf"'
+    return response
 
 
 def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
