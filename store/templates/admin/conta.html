@@ -100,10 +100,9 @@
     <div style="padding:16px;border:1px solid #dbe3ea;border-radius:10px;background:#f8fafc;">
         <strong>Proceso masivo</strong>
         <p style="margin:6px 0 12px;">Este proceso no requiere seleccionar un cliente. Conta recorrerá todos los clientes activos y descargará su certificado directamente desde el SRI.</p>
-        <form id="certificados-ruc-form" method="post" action="{% url 'admin_conta' %}" style="margin:0;" onsubmit="return confirmarDescargaCertificadosRuc(event);">
+        <form id="certificados-ruc-form" method="post" action="{% url 'admin_conta_certificados_ruc' %}" style="margin:0;" onsubmit="return confirmarDescargaCertificadosRuc(event);">
             {% csrf_token %}
-            <button id="certificados-ruc-btn" type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary"
-                    onclick="return true;">
+            <button id="certificados-ruc-btn" type="submit" class="btn btn-primary">
                 📄 Descargar Certificados de RUC de clientes activos
             </button>
         </form>
@@ -113,6 +112,7 @@
 <script>
 async function confirmarDescargaCertificadosRuc(event) {
     if (event) event.preventDefault();
+
     const ok = confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');
     if (!ok) return false;
 
@@ -124,9 +124,6 @@ async function confirmarDescargaCertificadosRuc(event) {
     boton.textContent = '⏳ Enviando solicitud a Conta...';
 
     try {
-        const controlador = new AbortController();
-        const temporizador = setTimeout(() => controlador.abort(), 10000);
-
         const respuesta = await fetch(formulario.action, {
             method: 'POST',
             body: new FormData(formulario),
@@ -134,15 +131,22 @@ async function confirmarDescargaCertificadosRuc(event) {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
-            credentials: 'same-origin',
-            signal: controlador.signal
+            credentials: 'same-origin'
         });
 
-        clearTimeout(temporizador);
+        const texto = await respuesta.text();
+        let datos;
+        try {
+            datos = JSON.parse(texto);
+        } catch (e) {
+            throw new Error(
+                'El servidor devolvió HTML en lugar de JSON (HTTP ' +
+                respuesta.status + ').'
+            );
+        }
 
-        const datos = await respuesta.json();
         if (!respuesta.ok || !datos.ok) {
-            throw new Error(datos.mensaje || 'TtCWeb no pudo iniciar el proceso.');
+            throw new Error(datos.mensaje || 'No se pudo iniciar el proceso.');
         }
 
         boton.textContent = '✅ Solicitud enviada a Conta';
@@ -152,20 +156,14 @@ async function confirmarDescargaCertificadosRuc(event) {
         aviso.className = 'admin-message';
         aviso.textContent = datos.mensaje;
         formulario.parentNode.insertBefore(aviso, formulario);
-
     } catch (error) {
         boton.disabled = false;
         boton.textContent = '📄 Descargar Certificados de RUC de clientes activos';
-        alert(
-            error.name === 'AbortError'
-                ? 'TtCWeb tardó demasiado en responder. Revisa el estado de Conta desde PowerShell.'
-                : 'Error al iniciar la descarga: ' + error.message
-        );
+        alert('Error al iniciar la descarga: ' + error.message);
     }
 
     return false;
-}
-</script>
+}</script>
 
 <div id="sri-progreso" class="admin-card" style="padding:24px; margin-top:20px; display:{% if sri_job %}block{% else %}none{% endif %};">
     <h2 style="margin-top:0;">Sincronización SRI</h2>
