@@ -256,6 +256,8 @@
             <p class="admin-modal-note">La actualización con el SRI se habilitará cuando conectemos la API del servidor.</p>
         </form>
 
+        </form>
+
         <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
             <label>RUC</label>
             <div class="admin-ruc-upload">
@@ -320,16 +322,7 @@
                 {% endif %}
             </div>
         </div>
-        </form>
-                <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
-                {% if certificado_ruc_exists %}
-                <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
-                {% else %}
-                <span class="admin-ruc-empty">No hay Certificado de RUC cargado.</span>
-                {% endif %}
-            </div>
-        </div>
-        </form>
+
     </div>
 </div>
 
