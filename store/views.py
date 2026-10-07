@@ -187,6 +187,54 @@ def mi_empresa_certificado_ruc(request):
 
 
 @login_required
+def mi_empresa_documento_legal(request, tipo):
+    documentos = {
+        'contrato_constitutivo': {
+            'nombre': 'contrato_constitutivo.pdf',
+            'titulo': 'Contrato Constitutivo',
+        },
+        'nombramiento_rep_legal': {
+            'nombre': 'nombramiento_rep_legal.pdf',
+            'titulo': 'Nombramiento Rep. Legal',
+        },
+        'nomina_socios': {
+            'nombre': 'nomina_socios.pdf',
+            'titulo': 'Nómina de Socios',
+        },
+    }
+
+    documento = documentos.get(tipo)
+    if not documento:
+        raise Http404('Documento legal no válido.')
+
+    asignacion = (
+        UsuarioCliente.objects
+        .filter(usuario=request.user, activo=True)
+        .select_related('cliente')
+        .first()
+    )
+
+    if asignacion is None:
+        raise Http404('No tienes una empresa activa asignada.')
+
+    permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
+    if not permitido:
+        raise Http404('No tienes acceso a esta empresa.')
+
+    cliente = asignacion.cliente
+    ruc = str(cliente.ruccedcli).strip()
+    from .services.archivos.storage import data_root
+
+    ruta = data_root() / ruc / 'documentos' / 'legales' / documento['nombre']
+    if not ruta.is_file():
+        raise Http404(f'No existe {documento["titulo"]} cargado para esta empresa.')
+
+    response = FileResponse(ruta.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{documento["nombre"]}"'
+    return response
+
+
+@login_required
 def mi_empresa(request):
     if request.user.is_staff or request.user.is_superuser:
         return redirect('portal')
@@ -216,15 +264,16 @@ def mi_empresa(request):
     ruc = str(cliente.ruccedcli).strip()
     from .services.archivos.storage import data_root
     certificado_ruc_path = data_root() / ruc / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
-    certificado_ruc_exists = (
-        certificado_ruc_path.is_file()
-        and Archivo.objects.filter(
-            cliente=cliente,
-            tipo=Archivo.Tipo.PDF,
-            ruta_relativa=f'{ruc}/documentos/ruc/certificado_ruc.pdf',
-            activo=True,
-        ).exists()
-    )
+    certificado_ruc_exists = certificado_ruc_path.is_file()
+
+    documentos_legales = {}
+    for clave, nombre_archivo in {
+        'contrato_constitutivo': 'contrato_constitutivo.pdf',
+        'nombramiento_rep_legal': 'nombramiento_rep_legal.pdf',
+        'nomina_socios': 'nomina_socios.pdf',
+    }.items():
+        ruta_legal = data_root() / ruc / 'documentos' / 'legales' / nombre_archivo
+        documentos_legales[clave] = ruta_legal.is_file()
 
     if request.method == 'POST':
         if asignacion.rol == UsuarioCliente.Rol.CONSULTA:
@@ -255,6 +304,7 @@ def mi_empresa(request):
             'rol': asignacion.rol,
             'puede_editar': asignacion.rol != UsuarioCliente.Rol.CONSULTA,
             'certificado_ruc_exists': certificado_ruc_exists,
+            'documentos_legales': documentos_legales,
         },
     )
 
