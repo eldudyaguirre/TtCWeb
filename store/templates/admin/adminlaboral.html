@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+{% block title %}Laboral | {{ cliente.nomclient }}{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb">
+    <a href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}">← {{ cliente.nomclient }}</a>
+</div>
+
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Gestión laboral del cliente</span>
+        <h1>LABORAL</h1>
+        <p>RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+</div>
+
+<section class="admin-documentacion-grid">
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-users"></i></span>
+        <div>
+            <strong>Trabajadores</strong>
+            <span>Consultar y gestionar trabajadores</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-wallet"></i></span>
+        <div>
+            <strong>Roles de Pagos</strong>
+            <span>Consultar roles y pagos de trabajadores</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-document-signed"></i></span>
+        <div>
+            <strong>Contratos</strong>
+            <span>Consultar y gestionar contratos laborales</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-check"></i></span>
+        <div>
+            <strong>Finiquitos</strong>
+            <span>Consultar y gestionar finiquitos laborales</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-gift"></i></span>
+        <div>
+            <strong>Décimos</strong>
+            <span>Consultar décimos y beneficios laborales</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="#" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-book-alt"></i></span>
+        <div>
+            <strong>Reglamentos</strong>
+            <span>Consultar reglamentos y documentación laboral</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+</section>
+
+<style>
+.admin-documentacion-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:18px;
+    margin-top:22px;
+}
+.admin-documentacion-card{
+    min-height:150px;
+    box-sizing:border-box;
+    padding:22px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    position:relative;
+    text-decoration:none;
+    background:#fff;
+    border:1px solid var(--admin-border);
+    border-radius:14px;
+    color:var(--admin-dark);
+    box-shadow:0 6px 18px rgba(31,45,52,.04);
+    transition:.18s ease;
+}
+.admin-documentacion-card:hover{
+    transform:translateY(-2px);
+    border-color:#1596a3;
+    box-shadow:0 10px 24px rgba(31,45,52,.08);
+}
+.admin-documentacion-icon{
+    width:50px;
+    height:50px;
+    flex:0 0 50px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:rgba(21,150,163,.10);
+    color:#1596a3;
+    font-size:20px;
+}
+.admin-documentacion-card div{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    padding-right:22px;
+}
+.admin-documentacion-card strong{
+    font-size:16px;
+    color:var(--admin-dark);
+}
+.admin-documentacion-card div span{
+    font-size:12px;
+    line-height:1.45;
+    color:var(--admin-muted);
+}
+.admin-documentacion-arrow{
+    position:absolute;
+    right:18px;
+    color:#91a1a7;
+    font-size:12px;
+}
+@media(max-width:900px){
+    .admin-documentacion-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:700px){
+    .admin-documentacion-grid{
+        grid-template-columns:1fr;
+        gap:12px;
+        margin-top:16px;
+    }
+    .admin-documentacion-card{
+        min-height:112px;
+        padding:18px;
+        border-radius:12px;
+    }
+}
+</style>
+{% endblock %}
