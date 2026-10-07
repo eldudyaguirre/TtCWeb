@@ -100,10 +100,10 @@
     <div style="padding:16px;border:1px solid #dbe3ea;border-radius:10px;background:#f8fafc;">
         <strong>Proceso masivo</strong>
         <p style="margin:6px 0 12px;">Este proceso no requiere seleccionar un cliente. Conta recorrerá todos los clientes activos y descargará su certificado directamente desde el SRI.</p>
-        <form id="certificados-ruc-form" method="post" action="{% url 'admin_conta' %}" style="margin:0;">
+        <form id="certificados-ruc-form" method="post" action="{% url 'admin_conta' %}" style="margin:0;" onsubmit="return confirmarDescargaCertificadosRuc(event);">
             {% csrf_token %}
             <button id="certificados-ruc-btn" type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary"
-                    onclick="return confirmarDescargaCertificadosRuc();">
+                    onclick="return true;">
                 📄 Descargar Certificados de RUC de clientes activos
             </button>
         </form>
@@ -111,7 +111,8 @@
 </div>
 
 <script>
-async function confirmarDescargaCertificadosRuc() {
+async function confirmarDescargaCertificadosRuc(event) {
+    if (event) event.preventDefault();
     const ok = confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');
     if (!ok) return false;
 
