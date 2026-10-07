@@ -29,6 +29,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/certificado-ruc/', admin_views.admin_cliente_certificado_ruc, name='admin_cliente_certificado_ruc'),
     path('totalcounts/clientes/<str:ruc>/documento-legal/<str:tipo>/', admin_views.admin_cliente_documento_legal, name='admin_cliente_documento_legal'),
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
+    path('totalcounts/clientes/<str:ruc>/laboral/', admin_views.admin_laboral, name='admin_laboral'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/', admin_views.admin_compras, name='admin_compras'),
     path('totalcounts/clientes/<str:ruc>/documentacion/notas-credito-recibidas/', admin_views.admin_notas_credito_recibidas, name='admin_notas_credito_recibidas'),
     path('totalcounts/clientes/<str:ruc>/documentacion/notas-credito-recibidas/excel/', admin_views.admin_notas_credito_excel, name='admin_notas_credito_excel'),
