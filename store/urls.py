@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import ingresos_views
 from . import admin_views
+from .admin_trabajadores_pdf import admin_trabajadores_pdf
 
 
 urlpatterns = [
@@ -32,7 +33,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/laboral/', admin_views.admin_laboral, name='admin_laboral'),
     path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/', admin_views.admin_trabajadores, name='admin_trabajadores'),
     path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/excel/', admin_views.admin_trabajadores_excel, name='admin_trabajadores_excel'),
-    path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/pdf/', admin_views.admin_trabajadores_pdf, name='admin_trabajadores_pdf'),
+    path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/pdf/', admin_trabajadores_pdf, name='admin_trabajadores_pdf'),
     path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/<str:cedula>/pdf/', admin_views.admin_trabajador_pdf, name='admin_trabajador_pdf'),
     path('totalcounts/clientes/<str:ruc>/laboral/trabajadores/<str:cedula>/', admin_views.admin_trabajador_detalle, name='admin_trabajador_detalle'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/', admin_views.admin_compras, name='admin_compras'),
