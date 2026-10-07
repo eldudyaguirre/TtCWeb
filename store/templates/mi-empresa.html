@@ -64,6 +64,54 @@
                             <div class="portal-company-field "><span>Datos IESS</span><input type="text" name="datiess" value="{{ cliente.datiess|default:'' }}" readonly></div>
                         </div>
                     </div>
+
+                    <div class="portal-company-section portal-legal-documents">
+                        <h2>Documentos Legales</h2>
+                        <div class="portal-legal-documents-grid">
+                            <div class="portal-legal-card">
+                                <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
+                                <div class="portal-legal-card-content">
+                                    <h3>RUC</h3>
+                                    <p>Certificado de Registro Único de Contribuyentes.</p>
+                                    {% if certificado_ruc_exists %}
+                                    <a href="{% url 'mi_empresa_certificado_ruc' %}" class="portal-legal-card-link">
+                                        <i class="fi fi-rr-download"></i> Descargar certificado de RUC
+                                    </a>
+                                    {% else %}
+                                    <span class="portal-legal-card-status">No disponible</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="portal-legal-card portal-legal-card-disabled">
+                                <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
+                                <div class="portal-legal-card-content">
+                                    <h3>Contrato Constitutivo</h3>
+                                    <p>Documento legal de constitución de la empresa.</p>
+                                    <span class="portal-legal-card-status">Próximamente</span>
+                                </div>
+                            </div>
+
+                            <div class="portal-legal-card portal-legal-card-disabled">
+                                <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
+                                <div class="portal-legal-card-content">
+                                    <h3>Nombramiento Rep. Legal</h3>
+                                    <p>Documento de nombramiento del representante legal.</p>
+                                    <span class="portal-legal-card-status">Próximamente</span>
+                                </div>
+                            </div>
+
+                            <div class="portal-legal-card portal-legal-card-disabled">
+                                <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
+                                <div class="portal-legal-card-content">
+                                    <h3>Nómina de Socios</h3>
+                                    <p>Documento con la nómina de socios de la empresa.</p>
+                                    <span class="portal-legal-card-status">Próximamente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 <div class="portal-company-form-actions">
                         {% if puede_editar %}
                         <button type="submit" class="portal-account-submit portal-company-save-bottom" id="guardarEmpresaBtnBottom" hidden><i class="fi fi-rr-disk"></i> Guardar cambios</button>
