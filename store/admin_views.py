@@ -1943,60 +1943,28 @@ def admin_cliente(request, ruc):
                     raise ValueError('El archivo PDF está vacío.')
 
                 from .models.archivo import Archivo
+                from .services.archivos.storage import guardar_archivo, eliminar_archivo
 
-                # El Certificado de RUC tiene una ubicación fija y conocida.
-                # Lo guardamos directamente en TOTALCOUNTS_DATA_ROOT para no
-                # depender de nombres temporales del servicio de almacenamiento.
-                data_root = Path(settings.TOTALCOUNTS_DATA_ROOT)
-                ruc_root = data_root / str(cliente.ruccedcli).strip()
-                destino_dir = ruc_root / 'documentos' / 'ruc'
-                destino_dir.mkdir(parents=True, exist_ok=True)
-                destino = destino_dir / 'certificado_ruc.pdf'
-
-                # Eliminar certificados anteriores registrados para este cliente.
+                # El Certificado de RUC se gestiona mediante el servicio centralizado
+                # de archivos, usando un nombre físico fijo.
                 anteriores = Archivo.objects.filter(
                     cliente=cliente,
                     tipo=Archivo.Tipo.PDF,
                     ruta_relativa__startswith=f'{cliente.ruccedcli}/documentos/ruc/'
                 )
                 for anterior in anteriores:
-                    anterior_path = data_root / anterior.ruta_relativa
-                    if anterior_path != destino:
-                        try:
-                            anterior_path.unlink(missing_ok=True)
-                        except OSError:
-                            pass
-                    anterior.delete()
+                    eliminar_archivo(anterior)
 
-                # Guardar físicamente el PDF en la ruta definitiva.
-                with destino.open('wb') as archivo_destino:
-                    for chunk in certificado_ruc.chunks():
-                        archivo_destino.write(chunk)
-
-                if not destino.is_file() or destino.stat().st_size <= 0:
-                    raise IOError(f'No se pudo verificar el archivo creado: {destino}')
-
-                # Registrar/actualizar el documento en la tabla archivos.
-                import hashlib
-                certificado_ruc.seek(0)
-                sha256 = hashlib.sha256()
-                for chunk in certificado_ruc.chunks():
-                    sha256.update(chunk)
-
-                Archivo.objects.create(
+                archivo_guardado = guardar_archivo(
                     cliente=cliente,
+                    uploaded_file=certificado_ruc,
                     tipo=Archivo.Tipo.PDF,
-                    nombre_original=Path(certificado_ruc.name).name[:255],
+                    subcarpeta='documentos/ruc',
                     nombre_fisico='certificado_ruc.pdf',
-                    ruta_relativa=f'{cliente.ruccedcli}/documentos/ruc/certificado_ruc.pdf',
-                    extension='.pdf',
-                    mime_type='application/pdf',
-                    tamano=destino.stat().st_size,
-                    sha256=sha256.hexdigest(),
-                    creado_por=request.user if getattr(request.user, 'is_authenticated', False) else None,
+                    usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
                 )
 
-                messages.success(request, f'Certificado de RUC cargado correctamente: {destino}')
+                messages.success(request, 'Certificado de RUC cargado correctamente.')
             except Exception as exc:
                 messages.error(request, f'No se pudo guardar el Certificado de RUC: {type(exc).__name__}: {exc}')
         else:
