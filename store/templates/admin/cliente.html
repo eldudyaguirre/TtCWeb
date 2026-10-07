@@ -265,7 +265,16 @@
                     <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
                     <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
                 </form>
-                <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
+                <button
+                    type="button"
+                    class="admin-ruc-upload-button admin-ruc-sri-button"
+                    id="adminObtenerRucSri"
+                    data-url="{% url 'admin_cliente_obtener_ruc_sri' ruc=cliente.ruccedcli %}"
+                >
+                    <i class="fi fi-rr-refresh"></i> Obtener RUC del SRI
+                </button>
+                <span class="admin-ruc-help">Cargar el certificado en PDF o generarlo directamente desde el SRI.</span>
+                <span class="admin-ruc-sri-status" id="adminObtenerRucSriStatus"></span>
                 {% if certificado_ruc_exists %}
                 <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
                 {% else %}
@@ -373,6 +382,77 @@
     .admin-modal-save,.admin-modal-sri{width:100%;justify-content:center}
     .admin-modal-note{text-align:center}
 }
+<style>
+.admin-ruc-sri-button{margin-top:8px}
+.admin-ruc-sri-status{display:block;margin-top:8px;font-size:12px;font-weight:700;color:#66747d}
+.admin-ruc-sri-status.ok{color:#16834b}
+.admin-ruc-sri-status.error{color:#b23b3b}
+</style>
+
+<script>
+(function () {
+    const boton = document.getElementById('adminObtenerRucSri');
+    const estado = document.getElementById('adminObtenerRucSriStatus');
+
+    if (!boton || !estado) return;
+
+    boton.addEventListener('click', async function () {
+        if (boton.disabled) return;
+
+        const confirmar = window.confirm(
+            'Se abrirá Chromium y se iniciará sesión en el SRI con las credenciales de este cliente.\\n\\n' +
+            'La clave se enviará UNA SOLA VEZ. Si el SRI no inicia sesión, no se realizará otro intento.\\n\\n' +
+            '¿Desea continuar?'
+        );
+
+        if (!confirmar) return;
+
+        boton.disabled = true;
+        estado.className = 'admin-ruc-sri-status';
+        estado.textContent = 'Iniciando conexión con el SRI...';
+
+        try {
+            const tokenInput = document.querySelector(
+                'input[name="csrfmiddlewaretoken"]'
+            );
+
+            const respuesta = await fetch(
+                boton.dataset.url,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': tokenInput ? tokenInput.value : '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                }
+            );
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok || !data.ok) {
+                throw new Error(
+                    data.mensaje || 'No se pudo iniciar el proceso.'
+                );
+            }
+
+            estado.className = 'admin-ruc-sri-status ok';
+            estado.textContent =
+                '✓ ' + data.mensaje;
+
+        } catch (error) {
+
+            estado.className = 'admin-ruc-sri-status error';
+            estado.textContent =
+                '✗ ' + error.message;
+
+            boton.disabled = false;
+        }
+    });
+})();
+</script>
+
 </style>
 
 <script>
