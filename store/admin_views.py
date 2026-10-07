@@ -818,7 +818,8 @@ def admin_trabajadores(request, ruc):
     """Listado de trabajadores activos del cliente para el portal administrativo."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     try:
-        db = __import__('store.views', fromlist=['_cliente_db'])._cliente_db(cliente)
+        from .views import _cliente_db
+        db = _cliente_db(cliente)
         sql = """
             SELECT
                 ROW_NUMBER() OVER (ORDER BY nombres, cedula) AS numero,
