@@ -259,7 +259,7 @@
         <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
             <label for="cliente-certificado-ruc">RUC</label>
             <div class="admin-ruc-upload">
-                <form method="post" enctype="multipart/form-data" class="admin-ruc-form">
+                <form method="post" action="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" enctype="multipart/form-data" class="admin-ruc-form">
                     {% csrf_token %}
                     <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
                     <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
