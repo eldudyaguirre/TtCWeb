@@ -44,6 +44,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/pdf/', admin_views.admin_compras_pdf, name='admin_compras_pdf'),
     path('logout/', views.do_logout, name='logout'),
     path('portal/mi-empresa/', views.mi_empresa, name='mi_empresa'),
+    path('portal/mi-empresa/certificado-ruc/', views.mi_empresa_certificado_ruc, name='mi_empresa_certificado_ruc'),
     path('portal/parametros/', views.parametros, name='parametros'),
     path('portal/cambiar-contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('portal/aceptar-documento-legal/', views.aceptar_documento_legal, name='aceptar_documento_legal'),
