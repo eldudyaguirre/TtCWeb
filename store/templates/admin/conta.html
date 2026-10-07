@@ -111,15 +111,58 @@
 </div>
 
 <script>
-function confirmarDescargaCertificadosRuc() {
+async function confirmarDescargaCertificadosRuc() {
     const ok = confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');
     if (!ok) return false;
+
+    const formulario = document.getElementById('certificados-ruc-form');
     const boton = document.getElementById('certificados-ruc-btn');
-    if (boton) {
-        boton.disabled = true;
-        boton.textContent = '⏳ Enviando solicitud a Conta...';
+    if (!formulario || !boton) return false;
+
+    boton.disabled = true;
+    boton.textContent = '⏳ Enviando solicitud a Conta...';
+
+    try {
+        const controlador = new AbortController();
+        const temporizador = setTimeout(() => controlador.abort(), 10000);
+
+        const respuesta = await fetch(formulario.action, {
+            method: 'POST',
+            body: new FormData(formulario),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin',
+            signal: controlador.signal
+        });
+
+        clearTimeout(temporizador);
+
+        const datos = await respuesta.json();
+        if (!respuesta.ok || !datos.ok) {
+            throw new Error(datos.mensaje || 'TtCWeb no pudo iniciar el proceso.');
+        }
+
+        boton.textContent = '✅ Solicitud enviada a Conta';
+        boton.disabled = false;
+
+        const aviso = document.createElement('div');
+        aviso.className = 'admin-message';
+        aviso.textContent = datos.mensaje;
+        formulario.parentNode.insertBefore(aviso, formulario);
+
+    } catch (error) {
+        boton.disabled = false;
+        boton.textContent = '📄 Descargar Certificados de RUC de clientes activos';
+        alert(
+            error.name === 'AbortError'
+                ? 'TtCWeb tardó demasiado en responder. Revisa el estado de Conta desde PowerShell.'
+                : 'Error al iniciar la descarga: ' + error.message
+        );
     }
-    return true;
+
+    return false;
 }
 </script>
 
