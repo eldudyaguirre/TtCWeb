@@ -814,6 +814,227 @@ def admin_documentacion(request, ruc):
 
 
 @admin_required
+def admin_trabajadores(request, ruc):
+    """Listado de trabajadores activos del cliente para el portal administrativo."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    try:
+        db = __import__('store.views', fromlist=['_cliente_db'])._cliente_db(cliente)
+        sql = """
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY nombres, cedula) AS numero,
+                TRIM(cedula::text) AS cedula,
+                TRIM(nombres::text) AS trabajador,
+                TRIM(COALESCE(cargo::text, '')) AS cargo,
+                TRIM(COALESCE(tipojornada::text, '')) AS tipojornada,
+                fecentrada,
+                sueldo
+            FROM trabajadores
+            WHERE activo = TRUE
+              AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+            ORDER BY nombres, cedula
+        """
+        with db.cursor() as cursor:
+            cursor.execute(sql)
+            filas = cursor.fetchall()
+    except Exception as exc:
+        return HttpResponse(
+            f'Error consultando trabajadores: {type(exc).__name__}: {exc}',
+            status=500,
+            content_type='text/plain; charset=utf-8',
+        )
+
+    return render(request, 'admin/trabajadores_admin.html', {
+        'cliente': cliente,
+        'filas': filas,
+        'total_registros': len(filas),
+    })
+
+
+@admin_required
+def admin_trabajador_detalle(request, ruc, cedula):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    from .views import _cliente_db
+    sql = """
+        SELECT
+            cedula, nombres, sexo, fecnac, cargas, direccion, telefono,
+            activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+            codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+            jn, horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+    try:
+        with _cliente_db(cliente).cursor() as cursor:
+            cursor.execute(sql, [cedula.strip()])
+            row = cursor.fetchone()
+    except Exception as exc:
+        return JsonResponse({'error': f'Error consultando trabajador: {type(exc).__name__}: {exc}'}, status=500)
+
+    if row is None:
+        return JsonResponse({'error': 'Trabajador no encontrado.'}, status=404)
+
+    campos = [
+        'cedula', 'nombres', 'sexo', 'fecnac', 'cargas', 'direccion',
+        'telefono', 'activo', 'fecentrada', 'comisionsec', 'cargo',
+        'tipojornada', 'sueldo', 'codcomision', 'fecsalida', 'motivos',
+        'fr', 'xiv', 'xiii', 'notastra', 'jn', 'horaslab',
+    ]
+
+    def serializar(valor):
+        return valor.isoformat() if hasattr(valor, 'isoformat') else valor
+
+    return JsonResponse({
+        campo: serializar(valor)
+        for campo, valor in zip(campos, row)
+    })
+
+
+@admin_required
+def admin_trabajador_pdf(request, ruc, cedula):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    from .views import _cliente_db
+    sql = """
+        SELECT
+            cedula, nombres, sexo, fecnac, cargas, direccion, telefono,
+            activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+            codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+            jn, horaslab
+        FROM trabajadores
+        WHERE TRIM(cedula::text) = %s
+          AND activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        LIMIT 1
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql, [cedula.strip()])
+        row = cursor.fetchone()
+
+    if row is None:
+        return HttpResponse('Trabajador no encontrado.', status=404, content_type='text/plain; charset=utf-8')
+
+    (
+        cedula_db, nombres, sexo, fecnac, cargas, direccion, telefono,
+        activo, fecentrada, comisionsec, cargo, tipojornada, sueldo,
+        codcomision, fecsalida, motivos, fr, xiv, xiii, notastra,
+        jn, horaslab
+    ) = row
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    def valor(v):
+        return '' if v is None else str(v)
+    def fecha(v):
+        return v.strftime('%d/%m/%Y') if v else ''
+    def si_no(v):
+        return 'Sí' if v else 'No'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=35, bottomMargin=35)
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle('AdminTrabajadorPDFTitulo', parent=styles['Title'], fontName='Helvetica-Bold', fontSize=16, leading=19, alignment=TA_CENTER, spaceAfter=4)
+    subtitulo = ParagraphStyle('AdminTrabajadorPDFSubtitulo', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, leading=12, alignment=TA_CENTER, spaceAfter=10)
+    etiqueta = ParagraphStyle('AdminTrabajadorPDFEtiqueta', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, leading=10)
+    dato = ParagraphStyle('AdminTrabajadorPDFDato', parent=styles['Normal'], fontName='Helvetica', fontSize=9, leading=11)
+
+    elements = [
+        Paragraph('FICHA DEL TRABAJADOR', titulo),
+        Paragraph(f'{valor(nombres)} | CÉDULA {valor(cedula_db)}', subtitulo),
+    ]
+    datos = [
+        ('Cédula', cedula_db), ('Nombres', nombres), ('Sexo', sexo),
+        ('Fecha de nacimiento', fecha(fecnac)), ('Cargas familiares', cargas),
+        ('Dirección de contacto', direccion), ('Teléfono de contacto', telefono),
+        ('Estado', si_no(activo)), ('Fecha de ingreso', fecha(fecentrada)),
+        ('Comisión sectorial', comisionsec), ('Cargo', cargo),
+        ('Jornada laboral', tipojornada), ('Horas de jornada', horaslab),
+        ('Sueldo', f'{float(sueldo or 0):,.2f}'), ('Código sectorial', codcomision),
+        ('Fecha de salida', fecha(fecsalida)), ('Motivos', motivos),
+        ('Acumulación F.P.', si_no(fr)), ('XIV mensualizado', si_no(xiv)),
+        ('XIII mensualizado', si_no(xiii)), ('Jornada nocturna', si_no(jn)),
+        ('Notas', notastra),
+    ]
+    data = [[Paragraph(etiqueta_texto, etiqueta), Paragraph(valor(dato_valor), dato)] for etiqueta_texto, dato_valor in datos]
+    table = Table(data, colWidths=[145, 365])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#eef5f5')),
+        ('GRID', (0, 0), (-1, -1), .3, colors.HexColor('#d8e0e3')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.extend([table, Spacer(1, 12), Paragraph(f'{cliente.nomclient} | RUC. {cliente.ruccedcli}', subtitulo)])
+    doc.build(elements)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="trabajador_{cedula_db}.pdf"'
+    return response
+
+
+@admin_required
+def admin_trabajadores_excel(request, ruc):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    from .views import _cliente_db
+
+    sql = """
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY nombres, cedula) AS numero,
+            TRIM(cedula::text) AS cedula,
+            TRIM(nombres::text) AS trabajador,
+            TRIM(COALESCE(cargo::text, '')) AS cargo,
+            TRIM(COALESCE(tipojornada::text, '')) AS tipojornada,
+            fecentrada,
+            sueldo
+        FROM trabajadores
+        WHERE activo = TRUE
+          AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
+        ORDER BY nombres, cedula
+    """
+    with _cliente_db(cliente).cursor() as cursor:
+        cursor.execute(sql)
+        filas = cursor.fetchall()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Trabajadores'
+    ws.append(['N°', 'CÉDULA', 'TRABAJADOR', 'CARGO', 'TIPO JORNADA', 'FECHA ENTRADA', 'SUELDO'])
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='21333E')
+        cell.alignment = Alignment(horizontal='center')
+    for row in filas:
+        ws.append([row[0], row[1], row[2], row[3], row[4], row[5], float(row[6] or 0)])
+    ws.freeze_panes = 'A2'
+    ws.auto_filter.ref = ws.dimensions
+    for col, width in {'A':8,'B':16,'C':40,'D':25,'E':20,'F':18,'G':15}.items():
+        ws.column_dimensions[col].width = width
+    for cell in ws['F'][1:]:
+        if cell.value:
+            cell.number_format = 'DD/MM/YYYY'
+    for cell in ws['G'][1:]:
+        if cell.value is not None:
+            cell.number_format = '#,##0.00'
+    ws.append([])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="listado_trabajadores_{cliente.ruccedcli}.xlsx"'
+    return response
+
+
+@admin_required
 def admin_laboral(request, ruc):
     """Muestra las categorías de gestión laboral disponibles para el cliente."""
     cliente = get_object_or_404(Cliente, pk=ruc)
