@@ -24,7 +24,7 @@ def _safe_name(filename):
     return f'{stem}_{uuid4().hex[:12]}{extension}'
 
 
-def guardar_archivo(cliente, uploaded_file, tipo, subcarpeta, usuario=None):
+def guardar_archivo(cliente, uploaded_file, tipo, subcarpeta, usuario=None, nombre_fisico=None):
     from ...models.archivo import Archivo
 
     ruc = str(cliente.ruccedcli).strip()
@@ -32,7 +32,7 @@ def guardar_archivo(cliente, uploaded_file, tipo, subcarpeta, usuario=None):
     target_dir = data_root() / relative_dir
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    nombre_fisico = _safe_name(uploaded_file.name)
+    nombre_fisico = nombre_fisico or _safe_name(uploaded_file.name)
     relative_path = relative_dir / nombre_fisico
     target_path = data_root() / relative_path
 
