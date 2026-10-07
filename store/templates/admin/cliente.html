@@ -257,13 +257,70 @@
         </form>
 
         <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
-            <label for="cliente-certificado-ruc">RUC</label>
+            <label>RUC</label>
             <div class="admin-ruc-upload">
                 <form method="post" action="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" enctype="multipart/form-data" class="admin-ruc-form">
                     {% csrf_token %}
                     <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
                     <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
                 </form>
+                <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
+                {% if certificado_ruc_exists %}
+                <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
+                {% else %}
+                <span class="admin-ruc-empty">No hay Certificado de RUC cargado.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
+            <label>Contrato Constitutivo</label>
+            <div class="admin-ruc-upload">
+                <form method="post" action="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='contrato_constitutivo' %}" enctype="multipart/form-data" class="admin-ruc-form">
+                    {% csrf_token %}
+                    <input name="documento_legal" type="file" accept="application/pdf" required>
+                    <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Contrato Constitutivo</button>
+                </form>
+                {% if documentos_legales.contrato_constitutivo %}
+                <a href="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='contrato_constitutivo' %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Contrato Constitutivo</a>
+                {% else %}
+                <span class="admin-ruc-empty">No hay Contrato Constitutivo cargado.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
+            <label>Nombramiento Rep. Legal</label>
+            <div class="admin-ruc-upload">
+                <form method="post" action="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='nombramiento_rep_legal' %}" enctype="multipart/form-data" class="admin-ruc-form">
+                    {% csrf_token %}
+                    <input name="documento_legal" type="file" accept="application/pdf" required>
+                    <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Nombramiento Rep. Legal</button>
+                </form>
+                {% if documentos_legales.nombramiento_rep_legal %}
+                <a href="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='nombramiento_rep_legal' %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Nombramiento Rep. Legal</a>
+                {% else %}
+                <span class="admin-ruc-empty">No hay Nombramiento Rep. Legal cargado.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
+            <label>Nómina de Socios</label>
+            <div class="admin-ruc-upload">
+                <form method="post" action="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='nomina_socios' %}" enctype="multipart/form-data" class="admin-ruc-form">
+                    {% csrf_token %}
+                    <input name="documento_legal" type="file" accept="application/pdf" required>
+                    <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Nómina de Socios</button>
+                </form>
+                {% if documentos_legales.nomina_socios %}
+                <a href="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='nomina_socios' %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Nómina de Socios</a>
+                {% else %}
+                <span class="admin-ruc-empty">No hay Nómina de Socios cargada.</span>
+                {% endif %}
+            </div>
+        </div>
+        </form>
                 <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
                 {% if certificado_ruc_exists %}
                 <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
