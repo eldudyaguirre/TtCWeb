@@ -2208,3 +2208,95 @@
     .portal-export-btn { flex:1; justify-content:center; }
     .portal-report-summary-grid { grid-template-columns:1fr 1fr; }
 }
+
+
+/* Documentos legales - Mi empresa */
+.portal-legal-documents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.portal-legal-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    min-width: 0;
+    padding: 18px 19px;
+    border: 1px solid rgba(33, 51, 62, 0.10);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(33, 51, 62, 0.03);
+}
+
+.portal-legal-card-icon {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(5, 130, 131, .10);
+    color: #058283;
+    font-size: 18px;
+}
+
+.portal-legal-card-content {
+    min-width: 0;
+}
+
+.portal-legal-card h3 {
+    margin: 0 0 5px;
+    color: #21333e;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.portal-legal-card p {
+    margin: 0 0 12px;
+    color: #78838b;
+    font-size: .78rem;
+    line-height: 1.45;
+}
+
+.portal-legal-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #058283;
+    font-size: .78rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.portal-legal-card-link:hover {
+    color: #046b6c;
+    text-decoration: underline;
+}
+
+.portal-legal-card-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #eef2f3;
+    color: #68777e;
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+.portal-legal-card-disabled {
+    opacity: .72;
+}
+
+@media (max-width: 767px) {
+    .portal-legal-documents-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .portal-legal-card {
+        padding: 16px;
+    }
+}
