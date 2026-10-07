@@ -83,30 +83,48 @@
                                 </div>
                             </div>
 
-                            <div class="portal-legal-card portal-legal-card-disabled">
+                            <div class="portal-legal-card">
                                 <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
                                 <div class="portal-legal-card-content">
                                     <h3>Contrato Constitutivo</h3>
                                     <p>Documento legal de constitución de la empresa.</p>
-                                    <span class="portal-legal-card-status">Próximamente</span>
+                                    {% if documentos_legales.contrato_constitutivo %}
+                                    <a href="{% url 'mi_empresa_documento_legal' tipo='contrato_constitutivo' %}" class="portal-legal-card-link">
+                                        <i class="fi fi-rr-download"></i> Descargar Contrato Constitutivo
+                                    </a>
+                                    {% else %}
+                                    <span class="portal-legal-card-status">No hay Contrato Constitutivo cargado.</span>
+                                    {% endif %}
                                 </div>
                             </div>
 
-                            <div class="portal-legal-card portal-legal-card-disabled">
+                            <div class="portal-legal-card">
                                 <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
                                 <div class="portal-legal-card-content">
                                     <h3>Nombramiento Rep. Legal</h3>
                                     <p>Documento de nombramiento del representante legal.</p>
-                                    <span class="portal-legal-card-status">Próximamente</span>
+                                    {% if documentos_legales.nombramiento_rep_legal %}
+                                    <a href="{% url 'mi_empresa_documento_legal' tipo='nombramiento_rep_legal' %}" class="portal-legal-card-link">
+                                        <i class="fi fi-rr-download"></i> Descargar Nombramiento Rep. Legal
+                                    </a>
+                                    {% else %}
+                                    <span class="portal-legal-card-status">No hay Nombramiento Rep. Legal cargado.</span>
+                                    {% endif %}
                                 </div>
                             </div>
 
-                            <div class="portal-legal-card portal-legal-card-disabled">
+                            <div class="portal-legal-card">
                                 <div class="portal-legal-card-icon"><i class="fi fi-rr-document"></i></div>
                                 <div class="portal-legal-card-content">
                                     <h3>Nómina de Socios</h3>
                                     <p>Documento con la nómina de socios de la empresa.</p>
-                                    <span class="portal-legal-card-status">Próximamente</span>
+                                    {% if documentos_legales.nomina_socios %}
+                                    <a href="{% url 'mi_empresa_documento_legal' tipo='nomina_socios' %}" class="portal-legal-card-link">
+                                        <i class="fi fi-rr-download"></i> Descargar Nómina de Socios
+                                    </a>
+                                    {% else %}
+                                    <span class="portal-legal-card-status">No hay Nómina de Socios cargada.</span>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
