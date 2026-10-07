@@ -7,7 +7,12 @@ from django.conf import settings
 
 
 def data_root():
-    root = Path(settings.TOTALCOUNTS_DATA_ROOT)
+    # TOTALCOUNTS_DATA_ROOT viene del .env de producción.
+    # Ejemplo: D:\Aplicaciones\Cliente
+    configured = str(settings.TOTALCOUNTS_DATA_ROOT).strip()
+    if not configured:
+        raise RuntimeError('TOTALCOUNTS_DATA_ROOT no está configurado.')
+    root = Path(configured)
     root.mkdir(parents=True, exist_ok=True)
     return root
 
