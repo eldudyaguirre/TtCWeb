@@ -2971,22 +2971,34 @@ def admin_conta(request):
                 error = str(exc)
 
     elif request.method == 'POST' and request.POST.get('accion') == 'descargar_certificados_ruc':
-        try:
-            resultado = _conta_descargar_certificados_ruc(
-                usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
-            )
-            if resultado.get('estado') == 'iniciado':
-                messages.success(
-                    request,
-                    f"Conta inició la descarga de {resultado.get('total', 0)} Certificados de RUC.",
+        import threading
+
+        usuario = request.session.get(ADMIN_USERNAME_KEY, 'ADMIN')
+
+        def _iniciar_certificados_ruc():
+            try:
+                respuesta = _conta_descargar_certificados_ruc(usuario=usuario)
+                import logging
+                logging.getLogger(__name__).info(
+                    'Conta certificados RUC | solicitud enviada | respuesta=%s',
+                    respuesta,
                 )
-            else:
-                messages.info(
-                    request,
-                    resultado.get('mensaje', 'Conta recibió la solicitud.'),
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception(
+                    'Conta certificados RUC | error enviando solicitud'
                 )
-        except RuntimeError as exc:
-            error = str(exc)
+
+        threading.Thread(
+            target=_iniciar_certificados_ruc,
+            name='TtCWeb-Conta-Certificados-RUC',
+            daemon=True,
+        ).start()
+
+        messages.success(
+            request,
+            'La solicitud de descarga de Certificados de RUC fue enviada a Conta. El proceso continúa en segundo plano.',
+        )
 
     elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'sincronizar_retenciones_recibidas', 'sincronizar_retenciones_emitidas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
