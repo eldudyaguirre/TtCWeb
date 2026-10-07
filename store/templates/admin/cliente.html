@@ -243,23 +243,6 @@
                     <label for="cliente-actividad">Actividad económica</label>
                     <input id="cliente-actividad" name="ocuclient" type="text" value="{{ cliente.ocuclient|default:'' }}">
                 </div>
-
-                <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
-                    <label for="cliente-certificado-ruc">RUC</label>
-                    <div class="admin-ruc-upload">
-                        <form method="post" enctype="multipart/form-data" class="admin-ruc-form">
-                            {% csrf_token %}
-                            <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
-                            <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
-                        </form>
-                        <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
-                        {% if certificado_ruc_exists %}
-                        <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
-                        {% else %}
-                        <span class="admin-ruc-empty">No hay Certificado de RUC cargado.</span>
-                        {% endif %}
-                    </div>
-                </div>
             </div>
 
             <div class="admin-modal-actions">
@@ -271,6 +254,24 @@
                 </button>
             </div>
             <p class="admin-modal-note">La actualización con el SRI se habilitará cuando conectemos la API del servidor.</p>
+        </form>
+
+        <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
+            <label for="cliente-certificado-ruc">RUC</label>
+            <div class="admin-ruc-upload">
+                <form method="post" enctype="multipart/form-data" class="admin-ruc-form">
+                    {% csrf_token %}
+                    <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
+                    <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
+                </form>
+                <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
+                {% if certificado_ruc_exists %}
+                <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
+                {% else %}
+                <span class="admin-ruc-empty">No hay Certificado de RUC cargado.</span>
+                {% endif %}
+            </div>
+        </div>
         </form>
     </div>
 </div>
