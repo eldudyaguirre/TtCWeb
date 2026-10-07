@@ -1942,41 +1942,61 @@ def admin_cliente(request, ruc):
                 if certificado_ruc.size <= 0:
                     raise ValueError('El archivo PDF está vacío.')
 
-                from .services.archivos.storage import guardar_archivo
                 from .models.archivo import Archivo
 
+                # El Certificado de RUC tiene una ubicación fija y conocida.
+                # Lo guardamos directamente en TOTALCOUNTS_DATA_ROOT para no
+                # depender de nombres temporales del servicio de almacenamiento.
+                data_root = Path(settings.TOTALCOUNTS_DATA_ROOT)
+                ruc_root = data_root / str(cliente.ruccedcli).strip()
+                destino_dir = ruc_root / 'documentos' / 'ruc'
+                destino_dir.mkdir(parents=True, exist_ok=True)
+                destino = destino_dir / 'certificado_ruc.pdf'
+
+                # Eliminar certificados anteriores registrados para este cliente.
                 anteriores = Archivo.objects.filter(
                     cliente=cliente,
                     tipo=Archivo.Tipo.PDF,
-                    activo=True,
                     ruta_relativa__startswith=f'{cliente.ruccedcli}/documentos/ruc/'
                 )
                 for anterior in anteriores:
-                    try:
-                        anterior_path = Path(settings.TOTALCOUNTS_DATA_ROOT) / anterior.ruta_relativa
-                        anterior_path.unlink(missing_ok=True)
-                    except Exception:
-                        pass
+                    anterior_path = data_root / anterior.ruta_relativa
+                    if anterior_path != destino:
+                        try:
+                            anterior_path.unlink(missing_ok=True)
+                        except OSError:
+                            pass
                     anterior.delete()
 
-                archivo_guardado = guardar_archivo(
+                # Guardar físicamente el PDF en la ruta definitiva.
+                with destino.open('wb') as archivo_destino:
+                    for chunk in certificado_ruc.chunks():
+                        archivo_destino.write(chunk)
+
+                if not destino.is_file() or destino.stat().st_size <= 0:
+                    raise IOError(f'No se pudo verificar el archivo creado: {destino}')
+
+                # Registrar/actualizar el documento en la tabla archivos.
+                import hashlib
+                certificado_ruc.seek(0)
+                sha256 = hashlib.sha256()
+                for chunk in certificado_ruc.chunks():
+                    sha256.update(chunk)
+
+                Archivo.objects.create(
                     cliente=cliente,
-                    uploaded_file=certificado_ruc,
                     tipo=Archivo.Tipo.PDF,
-                    subcarpeta='documentos/ruc',
-                    usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
+                    nombre_original=Path(certificado_ruc.name).name[:255],
+                    nombre_fisico='certificado_ruc.pdf',
+                    ruta_relativa=f'{cliente.ruccedcli}/documentos/ruc/certificado_ruc.pdf',
+                    extension='.pdf',
+                    mime_type='application/pdf',
+                    tamano=destino.stat().st_size,
+                    sha256=sha256.hexdigest(),
+                    creado_por=request.user if getattr(request.user, 'is_authenticated', False) else None,
                 )
 
-                destino = Path(settings.TOTALCOUNTS_DATA_ROOT) / archivo_guardado.ruta_relativa
-                copia = destino.parent / 'certificado_ruc.pdf'
-                if destino != copia:
-                    destino.replace(copia)
-
-                archivo_guardado.ruta_relativa = f'{cliente.ruccedcli}/documentos/ruc/certificado_ruc.pdf'
-                archivo_guardado.nombre_fisico = 'certificado_ruc.pdf'
-                archivo_guardado.save(update_fields=['ruta_relativa', 'nombre_fisico'])
-
-                messages.success(request, 'Certificado de RUC cargado correctamente.')
+                messages.success(request, f'Certificado de RUC cargado correctamente: {destino}')
             except Exception as exc:
                 messages.error(request, f'No se pudo guardar el Certificado de RUC: {type(exc).__name__}: {exc}')
         else:
