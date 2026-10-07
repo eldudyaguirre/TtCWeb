@@ -4542,6 +4542,37 @@ def admin_cliente(request, ruc):
         except Exception as exc:
             db_error = f'Error consultando datos: {exc}'
 
+    # Estado de los documentos legales del cliente.
+    # Esta es la definición efectiva de admin_cliente (el archivo conserva
+    # definiciones históricas), por lo que el contexto debe construirse aquí.
+    from .services.archivos.storage import data_root
+
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    documentos_root = data_root() / ruc_cliente / 'documentos'
+    ruc_root = documentos_root / 'ruc'
+    certificado_ruc_path = ruc_root / 'certificado_ruc.pdf'
+
+    # Compatibilidad con archivos creados con nombres físicos anteriores.
+    if not certificado_ruc_path.is_file() and ruc_root.is_dir():
+        candidatos = sorted(
+            ruc_root.glob('*.pdf'),
+            key=lambda ruta: ruta.stat().st_mtime,
+            reverse=True,
+        )
+        certificado_ruc_path = candidatos[0] if candidatos else certificado_ruc_path
+
+    certificado_ruc_exists = certificado_ruc_path.is_file()
+
+    documentos_legales = {}
+    for clave, nombre_archivo in {
+        'contrato_constitutivo': 'contrato_constitutivo.pdf',
+        'nombramiento_rep_legal': 'nombramiento_rep_legal.pdf',
+        'nomina_socios': 'nomina_socios.pdf',
+    }.items():
+        documentos_legales[clave] = (
+            documentos_root / 'legales' / nombre_archivo
+        ).is_file()
+
     return render(
         request,
         'admin/cliente.html',
@@ -4552,6 +4583,8 @@ def admin_cliente(request, ruc):
             'db_status': db_status,
             'db_error': db_error,
             'conciliacion': conciliacion,
+            'certificado_ruc_exists': certificado_ruc_exists,
+            'documentos_legales': documentos_legales,
         },
     )
 
