@@ -2484,6 +2484,42 @@ def admin_cliente_documento_legal(request, ruc, tipo):
 
 
 
+def _conta_descargar_certificados_ruc(usuario):
+    """Solicita a Conta descargar los Certificados de RUC de todos los clientes activos."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    req = request.Request(
+        f'{base_url}/api/v1/admin/sri/certificados-ruc/descargar-todos',
+        headers={
+            'Accept': 'application/json',
+            'X-TotalCounts-Internal': token,
+            'X-TotalCounts-User': usuario,
+        },
+        method='POST',
+    )
+    try:
+        with request.urlopen(req, timeout=20) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
+
+
+
+
 def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
     """Llama a Conta desde el servidor; el navegador nunca recibe el secreto."""
     import json
