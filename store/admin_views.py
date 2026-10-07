@@ -3510,6 +3510,43 @@ def admin_cliente(request, ruc):
         except Exception as exc:
             db_error = f'Error consultando datos: {exc}'
 
+    # Los documentos del popup deben calcularse en la definición efectiva de
+    # admin_cliente (esta es la última definición del archivo y por tanto la
+    # que Python utiliza).
+    from .models.archivo import Archivo
+    from .services.archivos.storage import data_root
+
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    ruc_documentos_dir = data_root() / ruc_cliente / 'documentos' / 'ruc'
+    certificado_ruc_path = ruc_documentos_dir / 'certificado_ruc.pdf'
+
+    if not certificado_ruc_path.is_file() and ruc_documentos_dir.is_dir():
+        candidatos_ruc = sorted(
+            ruc_documentos_dir.glob('certificado_ruc*.pdf'),
+            key=lambda ruta: ruta.stat().st_mtime,
+            reverse=True,
+        )
+        certificado_ruc_path = candidatos_ruc[0] if candidatos_ruc else certificado_ruc_path
+
+    certificado_ruc_exists = certificado_ruc_path.is_file()
+
+    documentos_legales = {}
+    documentos_legales_config = {
+        'contrato_constitutivo': 'contrato_constitutivo.pdf',
+        'nombramiento_rep_legal': 'nombramiento_rep_legal.pdf',
+        'nomina_socios': 'nomina_socios.pdf',
+    }
+
+    for clave, nombre_archivo in documentos_legales_config.items():
+        ruta_legal = (
+            data_root()
+            / ruc_cliente
+            / 'documentos'
+            / 'legales'
+            / nombre_archivo
+        )
+        documentos_legales[clave] = ruta_legal.is_file()
+
     return render(
         request,
         'admin/cliente.html',
@@ -3520,6 +3557,8 @@ def admin_cliente(request, ruc):
             'db_status': db_status,
             'db_error': db_error,
             'conciliacion': conciliacion,
+            'certificado_ruc_exists': certificado_ruc_exists,
+            'documentos_legales': documentos_legales,
         },
     )
 
