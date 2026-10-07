@@ -2970,6 +2970,24 @@ def admin_conta(request):
             except RuntimeError as exc:
                 error = str(exc)
 
+    elif request.method == 'POST' and request.POST.get('accion') == 'descargar_certificados_ruc':
+        try:
+            resultado = _conta_descargar_certificados_ruc(
+                usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+            )
+            if resultado.get('estado') == 'iniciado':
+                messages.success(
+                    request,
+                    f"Conta inició la descarga de {resultado.get('total', 0)} Certificados de RUC.",
+                )
+            else:
+                messages.info(
+                    request,
+                    resultado.get('mensaje', 'Conta recibió la solicitud.'),
+                )
+        except RuntimeError as exc:
+            error = str(exc)
+
     elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'sincronizar_retenciones_recibidas', 'sincronizar_retenciones_emitidas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
