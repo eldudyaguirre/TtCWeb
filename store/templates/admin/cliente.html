@@ -182,8 +182,8 @@
     <button type="button" class="admin-module-card admin-datos-cliente-trigger" id="adminDatosClienteTrigger">
     <i class="fi fi-rr-database"></i><strong>Información General</strong><span>Consultar y gestionar información del cliente</span>
 </button>
-    <a href="#" class="admin-module-card"><i class="fi fi-rr-briefcase"></i><strong>Laboral</strong><span>Consultar y gestionar información laboral</span></a>
     <a href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}" class="admin-module-card"><i class="fi fi-rr-document"></i><strong>Documentación</strong><span>Consultar información de documentos</span></a>
+    <a href="#" class="admin-module-card"><i class="fi fi-rr-briefcase"></i><strong>Laboral</strong><span>Consultar y gestionar información laboral</span></a>
     <a href="{% url 'sri_anexos_admin' %}?ruc={{ cliente.ruccedcli }}" class="admin-module-card"><i class="fi fi-rr-folder-open"></i><strong>Archivos y anexos</strong><span>Cargar y organizar documentación</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-users"></i><strong>Usuarios</strong><span>Activar, desactivar y gestionar accesos</span></a>
     <a href="#" class="admin-module-card"><i class="fi fi-rr-wallet"></i><strong>Cobranza</strong><span>Consultar saldos y registrar pagos</span></a>
