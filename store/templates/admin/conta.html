@@ -100,10 +100,13 @@
     <div style="padding:16px;border:1px solid #dbe3ea;border-radius:10px;background:#f8fafc;">
         <strong>Proceso masivo</strong>
         <p style="margin:6px 0 12px;">Este proceso no requiere seleccionar un cliente. Conta recorrerá todos los clientes activos y descargará su certificado directamente desde el SRI.</p>
-        <button type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary" formnovalidate
-                onclick="return confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');">
-            📄 Descargar Certificados de RUC de clientes activos
-        </button>
+        <form method="post" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary"
+                    onclick="return confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');">
+                📄 Descargar Certificados de RUC de clientes activos
+            </button>
+        </form>
     </div>
 </div>
 
