@@ -1930,24 +1930,55 @@ def admin_cliente(request, ruc):
 
         certificado_ruc = request.FILES.get('certificado_ruc')
         if certificado_ruc:
-            if certificado_ruc.size > 10 * 1024 * 1024:
-                messages.error(request, 'El Certificado de RUC no puede superar los 10 MB.')
-                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+            try:
+                if certificado_ruc.size > 10 * 1024 * 1024:
+                    raise ValueError('El Certificado de RUC no puede superar los 10 MB.')
 
-            extension = Path(certificado_ruc.name).suffix.lower()
-            content_type = (certificado_ruc.content_type or '').lower()
-            if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
-                messages.error(request, 'El Certificado de RUC debe ser un archivo PDF.')
-                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+                extension = Path(certificado_ruc.name).suffix.lower()
+                content_type = (certificado_ruc.content_type or '').lower()
+                if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
+                    raise ValueError('El Certificado de RUC debe ser un archivo PDF.')
 
-            carpeta_ruc = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc'
-            carpeta_ruc.mkdir(parents=True, exist_ok=True)
-            destino = carpeta_ruc / 'certificado_ruc.pdf'
-            with destino.open('wb') as salida:
-                for chunk in certificado_ruc.chunks():
-                    salida.write(chunk)
+                if certificado_ruc.size <= 0:
+                    raise ValueError('El archivo PDF está vacío.')
 
-            messages.success(request, 'Certificado de RUC cargado correctamente.')
+                from .services.archivos.storage import guardar_archivo
+                from .models.archivo import Archivo
+
+                anteriores = Archivo.objects.filter(
+                    cliente=cliente,
+                    tipo=Archivo.Tipo.PDF,
+                    activo=True,
+                    ruta_relativa__startswith=f'{cliente.ruccedcli}/documentos/ruc/'
+                )
+                for anterior in anteriores:
+                    try:
+                        anterior_path = Path(settings.TOTALCOUNTS_DATA_ROOT) / anterior.ruta_relativa
+                        anterior_path.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                    anterior.delete()
+
+                archivo_guardado = guardar_archivo(
+                    cliente=cliente,
+                    uploaded_file=certificado_ruc,
+                    tipo=Archivo.Tipo.PDF,
+                    subcarpeta='documentos/ruc',
+                    usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
+                )
+
+                destino = Path(settings.TOTALCOUNTS_DATA_ROOT) / archivo_guardado.ruta_relativa
+                copia = destino.parent / 'certificado_ruc.pdf'
+                if destino != copia:
+                    destino.replace(copia)
+
+                archivo_guardado.ruta_relativa = f'{cliente.ruccedcli}/documentos/ruc/certificado_ruc.pdf'
+                archivo_guardado.nombre_fisico = 'certificado_ruc.pdf'
+                archivo_guardado.save(update_fields=['ruta_relativa', 'nombre_fisico'])
+
+                messages.success(request, 'Certificado de RUC cargado correctamente.')
+            except Exception as exc:
+                messages.error(request, f'No se pudo guardar el Certificado de RUC: {type(exc).__name__}: {exc}')
         else:
             messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
 
