@@ -16,6 +16,7 @@ urlpatterns = [
     path('internal/conta/certificado-ruc/', admin_views.conta_certificado_ruc, name='conta_certificado_ruc'),
     path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('totalcounts/conta/', admin_views.admin_conta, name='admin_conta'),
+    path('totalcounts/conta/certificados-ruc/iniciar/', admin_views.admin_conta_certificados_ruc, name='admin_conta_certificados_ruc'),
     path('totalcounts/conta/sri/status/', admin_views.admin_conta_sri_status, name='admin_conta_sri_status'),
     path('totalcounts/conta/sri/cancelar/', admin_views.admin_conta_sri_cancelar, name='admin_conta_sri_cancelar'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
