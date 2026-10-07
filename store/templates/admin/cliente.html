@@ -247,7 +247,11 @@
                 <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
                     <label for="cliente-certificado-ruc">RUC</label>
                     <div class="admin-ruc-upload">
-                        <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf">
+                        <form method="post" enctype="multipart/form-data" class="admin-ruc-form">
+                            {% csrf_token %}
+                            <input id="cliente-certificado-ruc" name="certificado_ruc" type="file" accept="application/pdf" required>
+                            <button type="submit" class="admin-ruc-upload-button"><i class="fi fi-rr-upload"></i> Cargar Certificado de RUC</button>
+                        </form>
                         <span class="admin-ruc-help">Cargar Certificado de RUC en PDF (máximo 10 MB).</span>
                         {% if certificado_ruc_exists %}
                         <a href="{% url 'admin_cliente_certificado_ruc' ruc=cliente.ruccedcli %}" target="_blank" class="admin-ruc-view"><i class="fi fi-rr-file-pdf"></i> Ver Certificado de RUC</a>
@@ -295,6 +299,9 @@
 .admin-modal-field input:focus{border-color:#1596a3;box-shadow:0 0 0 3px rgba(21,150,163,.1)}
 .admin-modal-field input[readonly]{background:#f3f6f7;color:#6d777d;cursor:not-allowed}
 .admin-ruc-upload{display:flex;flex-direction:column;gap:7px}
+.admin-ruc-form{display:flex;flex-direction:column;gap:8px}
+.admin-ruc-upload-button{height:38px;width:max-content;border:1px solid #1596a3;border-radius:8px;background:#1596a3;color:#fff;padding:0 13px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.admin-ruc-upload-button:hover{background:#117f89}
 .admin-ruc-upload input[type="file"]{height:auto;padding:9px 10px;background:#f8fafb}
 .admin-ruc-help,.admin-ruc-empty{font-size:10px;color:var(--admin-muted)}
 .admin-ruc-view{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:8px 11px;border:1px solid #d9a0a0;border-radius:8px;background:#fff;color:#b33b3b;text-decoration:none;font-size:11px;font-weight:800}
