@@ -2937,6 +2937,57 @@ def admin_conta_sri_status(request):
 
 
 @admin_required
+def admin_conta_certificados_ruc(request):
+    """Inicia la descarga masiva de Certificados de RUC y responde siempre en JSON."""
+    from django.http import JsonResponse
+
+    if request.method != 'POST':
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'Método no permitido.'},
+            status=405,
+        )
+
+    usuario = request.session.get(ADMIN_USERNAME_KEY, 'ADMIN')
+
+    try:
+        import threading
+
+        def _iniciar():
+            try:
+                respuesta = _conta_descargar_certificados_ruc(usuario=usuario)
+                import logging
+                logging.getLogger(__name__).info(
+                    'Conta certificados RUC | solicitud enviada | respuesta=%s',
+                    respuesta,
+                )
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception(
+                    'Conta certificados RUC | error enviando solicitud',
+                )
+
+        threading.Thread(
+            target=_iniciar,
+            name='TtCWeb-Conta-Certificados-RUC',
+            daemon=True,
+        ).start()
+
+        return JsonResponse({
+            'ok': True,
+            'estado': 'enviado',
+            'mensaje': (
+                'La solicitud de descarga de Certificados de RUC fue enviada '
+                'a Conta. El proceso continúa en segundo plano.'
+            ),
+        })
+    except Exception as exc:
+        return JsonResponse(
+            {'ok': False, 'mensaje': str(exc)},
+            status=500,
+        )
+
+
+@admin_required
 def admin_conta(request):
     """Panel de Conta dentro del administrador autenticado de TotalCounts."""
     from datetime import datetime
