@@ -2505,7 +2505,7 @@ def _conta_descargar_certificados_ruc(usuario):
         method='POST',
     )
     try:
-        with request.urlopen(req, timeout=20) as response:
+        with request.urlopen(req, timeout=5) as response:
             return json.loads(response.read().decode('utf-8'))
     except error.HTTPError as exc:
         body = exc.read().decode('utf-8', errors='replace')
