@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.storage import FileSystemStorage
 import re
@@ -147,6 +147,46 @@ def do_signin(request):
 
 
 @login_required
+def mi_empresa_certificado_ruc(request):
+    asignacion = (
+        UsuarioCliente.objects
+        .filter(usuario=request.user, activo=True)
+        .select_related('cliente')
+        .first()
+    )
+
+    if asignacion is None:
+        raise Http404('No tienes una empresa activa asignada.')
+
+    permitido, _, _ = validar_acceso_cliente(asignacion.cliente)
+    if not permitido:
+        raise Http404('No tienes acceso a esta empresa.')
+
+    cliente = asignacion.cliente
+    ruc = str(cliente.ruccedcli).strip()
+    from .services.archivos.storage import data_root
+
+    archivo = (
+        Archivo.objects
+        .filter(
+            cliente=cliente,
+            tipo=Archivo.Tipo.PDF,
+            ruta_relativa=f'{ruc}/documentos/ruc/certificado_ruc.pdf',
+            activo=True,
+        )
+        .first()
+    )
+    ruta = data_root() / ruc / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+
+    if not archivo or not ruta.is_file():
+        raise Http404('No existe un Certificado de RUC cargado para esta empresa.')
+
+    response = FileResponse(ruta.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="certificado_ruc.pdf"'
+    return response
+
+
+@login_required
 def mi_empresa(request):
     if request.user.is_staff or request.user.is_superuser:
         return redirect('portal')
@@ -173,6 +213,18 @@ def mi_empresa(request):
         return redirect('portal')
 
     cliente = asignacion.cliente
+    ruc = str(cliente.ruccedcli).strip()
+    from .services.archivos.storage import data_root
+    certificado_ruc_path = data_root() / ruc / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+    certificado_ruc_exists = (
+        certificado_ruc_path.is_file()
+        and Archivo.objects.filter(
+            cliente=cliente,
+            tipo=Archivo.Tipo.PDF,
+            ruta_relativa=f'{ruc}/documentos/ruc/certificado_ruc.pdf',
+            activo=True,
+        ).exists()
+    )
 
     if request.method == 'POST':
         if asignacion.rol == UsuarioCliente.Rol.CONSULTA:
@@ -202,6 +254,7 @@ def mi_empresa(request):
             'cliente': cliente,
             'rol': asignacion.rol,
             'puede_editar': asignacion.rol != UsuarioCliente.Rol.CONSULTA,
+            'certificado_ruc_exists': certificado_ruc_exists,
         },
     )
 
