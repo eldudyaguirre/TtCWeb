@@ -1,0 +1,381 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Trabajadores | {{ cliente.nomclient }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .admin-trabajadores-report { margin-top: 22px; }
+    .portal-report-card { background:#fff; border:1px solid var(--admin-border); border-radius:14px; box-shadow:0 6px 18px rgba(31,45,52,.04); overflow:hidden; }
+    .portal-report-heading { display:flex; justify-content:space-between; gap:20px; padding:22px 24px 14px; align-items:flex-start; }
+    .portal-kicker { color:#1596a3; font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; }
+    .trabajadores-report-title h1 { margin:5px 0 6px; color:var(--admin-dark); font-size:24px; }
+    .trabajadores-report-title p { margin:2px 0; color:var(--admin-muted); font-size:12px; }
+    .portal-report-count { color:var(--admin-muted); font-size:13px; font-weight:700; white-space:nowrap; }
+    .portal-report-export { display:flex; gap:10px; padding:0 24px 18px; }
+    .portal-export-btn { border:0; border-radius:8px; padding:9px 13px; text-decoration:none; }
+    .trabajadores-export-btn { display:inline-flex!important; align-items:center; justify-content:center; gap:8px; font-family:inherit!important; font-size:13px!important; font-weight:700!important; line-height:1.2!important; color:#fff!important; }
+    .portal-export-pdf { background:#b33b3b; }
+    .portal-export-excel { background:#1596a3; }
+    .trabajadores-table-wrap { overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; padding:0 24px; }
+    .trabajadores-table { min-width:1050px; width:100%; border-collapse:collapse; }
+    .trabajadores-table th { position:sticky; top:0; z-index:2; background:#21333e; color:#fff; padding:10px 9px; font-size:11px; text-align:left; white-space:nowrap; }
+    .trabajadores-table td { padding:10px 9px; border-bottom:1px solid #e6ebed; color:var(--admin-dark); font-size:12px; }
+    .trabajadores-table tbody tr:hover { background:#f7fbfb; }
+    .trabajador-link { color:#1596a3!important; text-decoration:none; font-weight:600; cursor:pointer; }
+    .trabajador-link:hover { text-decoration:underline; }
+    .portal-report-empty { text-align:center; padding:30px!important; color:var(--admin-muted)!important; }
+    .trabajadores-total { margin:0 24px; padding:14px 0 20px; font-size:13px; font-weight:700; color:var(--admin-dark); }
+    .trabajador-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); padding:24px; align-items:center; justify-content:center; }
+    .trabajador-modal.show { display:flex; }
+    .trabajador-modal-card { width:min(850px,100%); max-height:90vh; overflow-y:auto; background:#fff; border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.28); }
+    .trabajador-modal-header { display:flex; justify-content:space-between; align-items:center; gap:15px; padding:18px 22px; background:#21333e; color:#fff; }
+    .trabajador-modal-header h2 { margin:0; font-size:20px; }
+    .trabajador-modal-actions { display:flex; align-items:center; gap:12px; }
+    .trabajador-modal-pdf { display:inline-flex; align-items:center; gap:7px; padding:7px 11px; border-radius:6px; background:#fff; color:#21333e; font-size:13px; font-weight:600; text-decoration:none; }
+    .trabajador-modal-close { border:0; background:transparent; color:#fff; font-size:28px; line-height:1; cursor:pointer; }
+    .trabajador-modal-body { padding:22px; }
+    .trabajador-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 20px; }
+    .trabajador-detail { border-bottom:1px solid #e6ebed; padding-bottom:8px; }
+    .trabajador-detail.full { grid-column:1/-1; }
+    .trabajador-detail-label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:#6b777d; margin-bottom:3px; }
+    .trabajador-detail-value { display:block; font-size:14px; color:#21333e; word-break:break-word; }
+    .trabajador-modal-loading,.trabajador-modal-error { padding:30px; text-align:center; }
+    @media(max-width:700px){
+        .admin-trabajadores-report{margin-top:16px}
+        .portal-report-heading{padding:18px 16px 12px;flex-direction:column}
+        .portal-report-export{padding:0 16px 15px}
+        .trabajadores-table-wrap{padding:0 16px}
+        .trabajadores-total{margin:0 16px}
+        .trabajador-modal{padding:10px}
+        .trabajador-modal-card{max-height:95vh}
+        .trabajador-detail-grid{grid-template-columns:1fr}
+        .trabajador-detail.full{grid-column:auto}
+    }
+
+    .trabajadores-report-header { align-items: flex-start; }
+    .trabajadores-report-title h1 { margin-bottom: 6px; text-transform: uppercase; }
+    .trabajadores-report-title p { margin: 2px 0; }
+    .trabajadores-table-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .trabajadores-table { min-width: 1050px; }
+    .trabajadores-table th { position: sticky; top: 0; z-index: 2; }
+    .trabajadores-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .trabajadores-export-btn {
+        display: inline-flex !important; align-items: center; justify-content: center; gap: 8px;
+        font-family: inherit !important; font-size: 14px !important; font-weight: 600 !important;
+        line-height: 1.2 !important; text-decoration: none !important; color: #ffffff !important;
+    }
+    .trabajadores-export-btn i { color: #ffffff !important; }
+    .trabajadores-total { margin-top: 12px; font-size: 13px; font-weight: 600; }
+
+    .trabajador-link {
+        color: #1596a3 !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .trabajadores-table td .trabajador-link {
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+    }
+    .trabajador-link:hover {
+        text-decoration: underline;
+        font-size: calc(1em + 0.5pt) !important;
+    }
+
+    .trabajador-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.55);
+        padding: 24px;
+        align-items: center;
+        justify-content: center;
+    }
+    .trabajador-modal.show { display: flex; }
+    .trabajador-modal-card {
+        width: min(850px, 100%);
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 18px 50px rgba(0,0,0,.28);
+    }
+    .trabajador-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        background: #21333e;
+        color: #ffffff;
+    }
+    .trabajador-modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+    .trabajador-modal-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .trabajador-modal-pdf {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #21333e;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .trabajador-modal-pdf:hover { text-decoration: none; opacity: .9; }
+    .trabajador-modal-close {
+        border: 0;
+        background: transparent;
+        color: #ffffff;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .trabajador-modal-body {
+        padding: 22px;
+    }
+    .trabajador-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 20px;
+    }
+    .trabajador-detail {
+        border-bottom: 1px solid #e6ebed;
+        padding-bottom: 8px;
+    }
+    .trabajador-detail.full { grid-column: 1 / -1; }
+    .trabajador-detail-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #6b777d;
+        margin-bottom: 3px;
+    }
+    .trabajador-detail-value {
+        display: block;
+        font-size: 14px;
+        color: #21333e;
+        word-break: break-word;
+    }
+    .trabajador-modal-loading,
+    .trabajador-modal-error {
+        padding: 30px;
+        text-align: center;
+    }
+    @media (max-width: 700px) {
+        .trabajador-modal { padding: 10px; }
+        .trabajador-modal-card { max-height: 95vh; }
+        .trabajador-detail-grid { grid-template-columns: 1fr; }
+        .trabajador-detail.full { grid-column: auto; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb"><a href="{% url 'admin_laboral' ruc=cliente.ruccedcli %}">← Laboral</a></div>
+<main class="admin-trabajadores-report">
+    <div class="container-fluid">
+        <section class="portal-report-card">
+            <div class="portal-report-heading trabajadores-report-header">
+                <div class="trabajadores-report-title">
+                    <div class="portal-kicker">Laboral</div>
+                    <h1>LISTADO DE TRABAJADORES</h1>
+                    <p>TRABAJADORES ACTIVOS</p>
+                    <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
+                </div>
+                <div class="portal-report-count">{{ total_registros }} trabajadores</div>
+            </div>
+
+            <div class="portal-report-export trabajadores-actions">
+                <a class="portal-export-btn trabajadores-export-btn portal-export-pdf"
+                   href="{% url 'admin_trabajadores_pdf' ruc=cliente.ruccedcli %}">
+                    <i class="fi fi-rr-file-pdf"></i> PDF
+                </a>
+                <a class="portal-export-btn trabajadores-export-btn portal-export-excel"
+                   href="{% url 'admin_trabajadores_excel' ruc=cliente.ruccedcli %}">
+                    <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+            </div>
+
+            <div class="trabajadores-table-wrap">
+                <table class="portal-report-table trabajadores-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>CÉDULA</th>
+                            <th>TRABAJADOR</th>
+                            <th>CARGO</th>
+                            <th>TIPO JORNADA</th>
+                            <th>FECHA ENTRADA</th>
+                            <th>SUELDO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in filas %}
+                        <tr>
+                            <td>{{ row.0 }}</td>
+                            <td>{{ row.1 }}</td>
+                            <td><a href="#" class="trabajador-link" data-cedula="{{ row.1 }}">{{ row.2 }}</a></td>
+                            <td>{{ row.3 }}</td>
+                            <td>{{ row.4 }}</td>
+                            <td>{{ row.5|date:"d/m/Y" }}</td>
+                            <td>{{ row.6|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="portal-report-empty">
+                                No existen trabajadores activos registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="trabajadores-total">
+                Total de trabajadores activos: {{ total_registros }}
+            </div>
+
+            <div id="trabajadorModal" class="trabajador-modal" aria-hidden="true">
+                <div class="trabajador-modal-card" role="dialog" aria-modal="true" aria-labelledby="trabajadorModalTitle">
+                    <div class="trabajador-modal-header">
+                        <h2 id="trabajadorModalTitle">Información del trabajador</h2>
+                        <div class="trabajador-modal-actions">
+                            <a href="#" id="trabajadorModalPdf" class="trabajador-modal-pdf" target="_blank" rel="noopener">
+                                <i class="fi fi-rr-file-pdf"></i> PDF
+                            </a>
+                            <button type="button" class="trabajador-modal-close" id="trabajadorModalClose" aria-label="Cerrar">&times;</button>
+                        </div>
+                    </div>
+                    <div class="trabajador-modal-body" id="trabajadorModalBody">
+                        <div class="trabajador-modal-loading">Cargando información...</div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const modal = document.getElementById('trabajadorModal');
+                const body = document.getElementById('trabajadorModalBody');
+                const close = document.getElementById('trabajadorModalClose');
+                const pdfButton = document.getElementById('trabajadorModalPdf');
+                const detailUrl = "{% url 'admin_trabajador_detalle' ruc=cliente.ruccedcli cedula='CEDULA_TRABAJADOR' %}";
+                const pdfUrl = "{% url 'admin_trabajador_pdf' ruc=cliente.ruccedcli cedula='CEDULA_TRABAJADOR' %}";
+
+                function escapeHtml(value) {
+                    return String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                }
+
+                function fecha(value) {
+                    if (!value) return '';
+                    const d = new Date(value);
+                    if (Number.isNaN(d.getTime())) return value;
+                    return d.toLocaleDateString('es-EC');
+                }
+
+                function booleano(value) {
+                    return value ? 'Sí' : 'No';
+                }
+
+                function dinero(value) {
+                    if (value === null || value === undefined || value === '') return '';
+                    const n = Number(value);
+                    return Number.isNaN(n) ? value : n.toLocaleString('es-EC', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+
+                function detalle(label, value, full) {
+                    return '<div class="trabajador-detail' + (full ? ' full' : '') + '">' +
+                        '<span class="trabajador-detail-label">' + escapeHtml(label) + '</span>' +
+                        '<span class="trabajador-detail-value">' + escapeHtml(value) + '</span>' +
+                        '</div>';
+                }
+
+                function cerrar() {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+
+                document.querySelectorAll('.trabajador-link').forEach(function (link) {
+                    link.addEventListener('click', async function (event) {
+                        event.preventDefault();
+                        const cedula = this.dataset.cedula;
+                        pdfButton.href = pdfUrl.replace('CEDULA_TRABAJADOR', encodeURIComponent(cedula));
+                        modal.classList.add('show');
+                        modal.setAttribute('aria-hidden', 'false');
+                        body.innerHTML = '<div class="trabajador-modal-loading">Cargando información...</div>';
+
+                        try {
+                            const url = detailUrl.replace('CEDULA_TRABAJADOR', encodeURIComponent(cedula));
+                            const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(data.error || 'No fue posible obtener la información.');
+                            }
+
+                            document.getElementById('trabajadorModalTitle').textContent = data.nombres || 'Información del trabajador';
+
+                            body.innerHTML =
+                                '<div class="trabajador-detail-grid">' +
+                                detalle('Cédula', data.cedula) +
+                                detalle('Nombres', data.nombres) +
+                                detalle('Sexo', data.sexo) +
+                                detalle('Fecha de nacimiento', fecha(data.fecnac)) +
+                                detalle('Cargas familiares', data.cargas) +
+                                detalle('Dirección de contacto', data.direccion, true) +
+                                detalle('Teléfono de contacto', data.telefono) +
+                                detalle('Estado', booleano(data.activo)) +
+                                detalle('Fecha de ingreso', fecha(data.fecentrada)) +
+                                detalle('Comisión sectorial', data.comisionsec) +
+                                detalle('Cargo', data.cargo) +
+                                detalle('Jornada laboral', data.tipojornada) +
+                                detalle('Horas de jornada', data.horaslab) +
+                                detalle('Sueldo', dinero(data.sueldo)) +
+                                detalle('Código sectorial', data.codcomision) +
+                                detalle('Fecha de salida', fecha(data.fecsalida)) +
+                                detalle('Motivos', data.motivos, true) +
+                                detalle('Acumulación F.P.', booleano(data.fr)) +
+                                detalle('XIV mensualizado', booleano(data.xiv)) +
+                                detalle('XIII mensualizado', booleano(data.xiii)) +
+                                detalle('Jornada nocturna', booleano(data.jn)) +
+                                detalle('Notas', data.notastra, true) +
+                                '</div>';
+                        } catch (error) {
+                            body.innerHTML = '<div class="trabajador-modal-error">' + escapeHtml(error.message) + '</div>';
+                        }
+                    });
+                });
+
+                close.addEventListener('click', cerrar);
+                modal.addEventListener('click', function (event) {
+                    if (event.target === modal) cerrar();
+                });
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') cerrar();
+                });
+            });
+            </script>
+        </section>
+    </div>
+</main>
+{% endblock %}
