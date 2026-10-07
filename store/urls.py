@@ -13,6 +13,7 @@ urlpatterns = [
     path('totalcounts/login/', admin_views.admin_login, name='admin_login'),
     path('totalcounts/logout/', admin_views.admin_logout, name='admin_logout'),
     path('internal/conta/worker-error/', admin_views.conta_worker_error, name='conta_worker_error'),
+    path('internal/conta/certificado-ruc/', admin_views.conta_certificado_ruc, name='conta_certificado_ruc'),
     path('totalcounts/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('totalcounts/conta/', admin_views.admin_conta, name='admin_conta'),
     path('totalcounts/conta/sri/status/', admin_views.admin_conta_sri_status, name='admin_conta_sri_status'),
