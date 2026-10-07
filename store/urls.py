@@ -30,6 +30,7 @@ urlpatterns = [
     path('totalcounts/foto-usuario/', admin_views.admin_foto_usuario, name='admin_foto_usuario'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('totalcounts/clientes/<str:ruc>/certificado-ruc/', admin_views.admin_cliente_certificado_ruc, name='admin_cliente_certificado_ruc'),
+    path('totalcounts/clientes/<str:ruc>/obtener-ruc-sri/', admin_views.admin_cliente_obtener_ruc_sri, name='admin_cliente_obtener_ruc_sri'),
     path('totalcounts/clientes/<str:ruc>/documento-legal/<str:tipo>/', admin_views.admin_cliente_documento_legal, name='admin_cliente_documento_legal'),
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
     path('totalcounts/clientes/<str:ruc>/laboral/', admin_views.admin_laboral, name='admin_laboral'),
