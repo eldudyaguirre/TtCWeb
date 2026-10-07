@@ -2058,6 +2058,86 @@ def admin_cliente_certificado_ruc(request, ruc):
     return response
 
 
+@admin_required
+def admin_cliente_documento_legal(request, ruc, tipo):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+
+    documentos = {
+        'contrato_constitutivo': {
+            'subcarpeta': 'documentos/legales',
+            'nombre': 'contrato_constitutivo.pdf',
+            'titulo': 'Contrato Constitutivo',
+        },
+        'nombramiento_rep_legal': {
+            'subcarpeta': 'documentos/legales',
+            'nombre': 'nombramiento_rep_legal.pdf',
+            'titulo': 'Nombramiento Rep. Legal',
+        },
+        'nomina_socios': {
+            'subcarpeta': 'documentos/legales',
+            'nombre': 'nomina_socios.pdf',
+            'titulo': 'Nómina de Socios',
+        },
+    }
+    documento = documentos.get(tipo)
+    if not documento:
+        raise Http404('Documento legal no válido.')
+
+    from .models.archivo import Archivo
+    from .services.archivos.storage import guardar_archivo, eliminar_archivo
+
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    ruta_relativa = f'{ruc_cliente}/{documento["subcarpeta"]}/{documento["nombre"]}'
+
+    if request.method == 'POST':
+        archivo_subido = request.FILES.get('documento_legal')
+        if not archivo_subido:
+            messages.error(request, f'Selecciona el archivo de {documento["titulo"]}.')
+            return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+        try:
+            if archivo_subido.size <= 0:
+                raise ValueError('El archivo está vacío.')
+            if archivo_subido.size > 10 * 1024 * 1024:
+                raise ValueError('El archivo no puede superar los 10 MB.')
+
+            extension = Path(archivo_subido.name).suffix.lower()
+            content_type = (archivo_subido.content_type or '').lower()
+            if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
+                raise ValueError(f'{documento["titulo"]} debe ser un archivo PDF.')
+
+            anteriores = Archivo.objects.filter(
+                cliente=cliente,
+                tipo=Archivo.Tipo.PDF,
+                ruta_relativa=ruta_relativa,
+            )
+            for anterior in anteriores:
+                eliminar_archivo(anterior)
+
+            guardar_archivo(
+                cliente=cliente,
+                uploaded_file=archivo_subido,
+                tipo=Archivo.Tipo.PDF,
+                subcarpeta=documento['subcarpeta'],
+                nombre_fisico=documento['nombre'],
+                usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
+            )
+            messages.success(request, f'{documento["titulo"]} cargado correctamente.')
+        except Exception as exc:
+            messages.error(request, f'No se pudo guardar {documento["titulo"]}: {type(exc).__name__}: {exc}')
+
+        return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+    ruta = Path(settings.TOTALCOUNTS_DATA_ROOT) / ruc_cliente / documento['subcarpeta'] / documento['nombre']
+    if not ruta.is_file():
+        raise Http404(f'No existe {documento["titulo"]}.')
+
+    response = FileResponse(ruta.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{documento["nombre"]}"'
+    return response
+
+
+
 def _conta_sincronizar_compras(usuario, ruc, anio, mes, tipo_comprobante=1):
     """Llama a Conta desde el servidor; el navegador nunca recibe el secreto."""
     import json
