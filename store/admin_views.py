@@ -813,6 +813,20 @@ def admin_documentacion(request, ruc):
     )
 
 
+@admin_required
+def admin_laboral(request, ruc):
+    """Muestra las categorías de gestión laboral disponibles para el cliente."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    return render(
+        request,
+        'admin/adminlaboral.html',
+        {
+            'cliente': cliente,
+            'db_name': str(cliente.ruccedcli).strip(),
+        },
+    )
+
+
 def _admin_compras_filtros(request):
     hoy = timezone.localdate()
     primer_dia_mes = hoy.replace(day=1)
