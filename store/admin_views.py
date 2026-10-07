@@ -1,4 +1,5 @@
 from io import BytesIO
+import hashlib
 from functools import wraps
 import mimetypes
 from pathlib import Path
@@ -33,6 +34,80 @@ def admin_required(view_func):
             return redirect('admin_login')
         return view_func(request, *args, **kwargs)
     return wrapped
+
+
+@csrf_exempt
+def conta_certificado_ruc(request):
+    """Recibe desde Conta el Certificado de RUC descargado del SRI."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+    token = request.headers.get('X-TotalCounts-Internal', '').strip()
+    if not token or token != settings.CONTA_INTERNAL_TOKEN:
+        return JsonResponse({'error': 'No autorizado.'}, status=401)
+
+    ruc = request.POST.get('ruc', '').strip()
+    if len(ruc) != 13 or not ruc.isdigit():
+        return JsonResponse({'error': 'RUC inválido.'}, status=400)
+
+    cliente = Cliente.objects.filter(
+        ruccedcli=ruc,
+        activo=True,
+    ).first()
+    if cliente is None:
+        return JsonResponse(
+            {'error': 'El RUC no existe o el cliente no está activo.'},
+            status=404,
+        )
+
+    uploaded = request.FILES.get('certificado_ruc')
+    if uploaded is None:
+        return JsonResponse(
+            {'error': 'No se recibió el archivo certificado_ruc.'},
+            status=400,
+        )
+
+    contenido = uploaded.read()
+    if not contenido.startswith(b'%PDF'):
+        return JsonResponse(
+            {'error': 'El archivo recibido no es un PDF válido.'},
+            status=400,
+        )
+
+    from .models.archivo import Archivo
+    from .services.archivos.storage import data_root
+
+    relative_path = f'{ruc}/documentos/ruc/certificado_ruc.pdf'
+    target_path = data_root() / ruc / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_bytes(contenido)
+
+    sha256 = hashlib.sha256(contenido).hexdigest()
+    archivo, creado = Archivo.objects.update_or_create(
+        ruta_relativa=relative_path,
+        defaults={
+            'cliente': cliente,
+            'tipo': Archivo.Tipo.PDF,
+            'nombre_original': 'certificado_ruc.pdf',
+            'nombre_fisico': 'certificado_ruc.pdf',
+            'extension': '.pdf',
+            'mime_type': 'application/pdf',
+            'tamano': len(contenido),
+            'sha256': sha256,
+            'creado_por': None,
+            'activo': True,
+        },
+    )
+
+    return JsonResponse({
+        'ok': True,
+        'ruc': ruc,
+        'ruta_relativa': archivo.ruta_relativa,
+        'tamano': archivo.tamano,
+        'sha256': sha256,
+        'creado': creado,
+    })
+
 
 
 def _admin_required(request):
