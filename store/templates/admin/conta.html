@@ -22,15 +22,6 @@
         {% csrf_token %}
         <input type="hidden" name="accion" id="sri-accion" value="sincronizar_compras">
 
-        <div style="margin-bottom:20px;padding:16px;border:1px solid #dbe3ea;border-radius:10px;background:#f8fafc;">
-            <strong>Certificados de RUC</strong>
-            <p style="margin:6px 0 12px;">Descarga desde el SRI el Certificado de RUC de todos los clientes activos y lo guarda automáticamente en su carpeta correspondiente.</p>
-            <button type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary" formnovalidate
-                    onclick="return confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');">
-                📄 Descargar Certificados de RUC de clientes activos
-            </button>
-        </div>
-
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;align-items:end;">
             <div>
                 <label for="ruc"><strong>Cliente</strong></label>
@@ -101,6 +92,19 @@
             </button>
         </div>
     </form>
+</div>
+
+<div class="admin-card" style="padding:24px; margin-top:20px;">
+    <h2 style="margin-top:0;">Certificados de RUC</h2>
+    <p>Descarga desde el SRI los Certificados de RUC de todos los clientes activos y los guarda automáticamente en la carpeta correspondiente de cada cliente.</p>
+    <div style="padding:16px;border:1px solid #dbe3ea;border-radius:10px;background:#f8fafc;">
+        <strong>Proceso masivo</strong>
+        <p style="margin:6px 0 12px;">Este proceso no requiere seleccionar un cliente. Conta recorrerá todos los clientes activos y descargará su certificado directamente desde el SRI.</p>
+        <button type="submit" name="accion" value="descargar_certificados_ruc" class="btn btn-primary" formnovalidate
+                onclick="return confirm('¿Iniciar la descarga de los Certificados de RUC de todos los clientes activos?');">
+            📄 Descargar Certificados de RUC de clientes activos
+        </button>
+    </div>
 </div>
 
 <div id="sri-progreso" class="admin-card" style="padding:24px; margin-top:20px; display:{% if sri_job %}block{% else %}none{% endif %};">
