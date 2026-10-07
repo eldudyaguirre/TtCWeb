@@ -19,6 +19,16 @@ from .archivos.storage import data_root
 
 logger = logging.getLogger(__name__)
 
+SRI_LOG_DIR = Path(__file__).resolve().parents[2] / "logs"
+SRI_LOG_DIR.mkdir(parents=True, exist_ok=True)
+SRI_LOG_FILE = SRI_LOG_DIR / "certificados_ruc_sri.log"
+
+_file_handler = logging.FileHandler(SRI_LOG_FILE, encoding="utf-8")
+_file_handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
+if not any(isinstance(h, logging.FileHandler) and getattr(h, "baseFilename", "") == str(SRI_LOG_FILE) for h in logger.handlers):
+    logger.addHandler(_file_handler)
+logger.setLevel(logging.INFO)
+
 
 SRI_LOGIN_URL = (
     "https://srienlinea.sri.gob.ec/"
@@ -407,7 +417,7 @@ async def obtener_certificado_ruc(ruc: str) -> dict:
 
         except Exception as exc:
             logger.exception(
-                "SRI | Error procesando RUC=%s | %s",
+                "SRI | ERROR GENERAL RUC=%s | %s",
                 ruc,
                 exc,
             )
