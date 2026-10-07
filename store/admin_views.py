@@ -1943,15 +1943,10 @@ def admin_cliente(request, ruc):
     from .models.archivo import Archivo
     from .services.archivos.storage import data_root
     certificado_ruc_path = data_root() / str(cliente.ruccedcli).strip() / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
-    certificado_ruc_exists = (
-        certificado_ruc_path.is_file()
-        and Archivo.objects.filter(
-            cliente=cliente,
-            tipo=Archivo.Tipo.PDF,
-            ruta_relativa=f'{str(cliente.ruccedcli).strip()}/documentos/ruc/certificado_ruc.pdf',
-            activo=True,
-        ).exists()
-    )
+    # El archivo físico es la fuente de verdad para mostrar su disponibilidad.
+    # Así también detectamos certificados cargados antes de registrar el archivo
+    # en la tabla de documentos.
+    certificado_ruc_exists = certificado_ruc_path.is_file()
 
     documentos_legales = {}
     documentos_legales_config = {
