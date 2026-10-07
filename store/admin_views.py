@@ -1952,6 +1952,25 @@ def admin_cliente(request, ruc):
             activo=True,
         ).exists()
     )
+
+    documentos_legales = {}
+    documentos_legales_config = {
+        'contrato_constitutivo': 'contrato_constitutivo.pdf',
+        'nombramiento_rep_legal': 'nombramiento_rep_legal.pdf',
+        'nomina_socios': 'nomina_socios.pdf',
+    }
+    for clave, nombre_archivo in documentos_legales_config.items():
+        ruta_legal = data_root() / str(cliente.ruccedcli).strip() / 'documentos' / 'legales' / nombre_archivo
+        documentos_legales[clave] = (
+            ruta_legal.is_file()
+            and Archivo.objects.filter(
+                cliente=cliente,
+                tipo=Archivo.Tipo.PDF,
+                ruta_relativa=f'{str(cliente.ruccedcli).strip()}/documentos/legales/{nombre_archivo}',
+                activo=True,
+            ).exists()
+        )
+
     db_status = 'No verificada'
     db_error = ''
     conciliacion = {
@@ -2000,6 +2019,7 @@ def admin_cliente(request, ruc):
             'db_error': db_error,
             'conciliacion': conciliacion,
             'certificado_ruc_exists': certificado_ruc_exists,
+            'documentos_legales': documentos_legales,
         },
     )
 
