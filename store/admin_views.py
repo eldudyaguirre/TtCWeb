@@ -2995,10 +2995,19 @@ def admin_conta(request):
             daemon=True,
         ).start()
 
-        messages.success(
-            request,
-            'La solicitud de descarga de Certificados de RUC fue enviada a Conta. El proceso continúa en segundo plano.',
+        mensaje_certificados = (
+            'La solicitud de descarga de Certificados de RUC fue enviada a Conta. '
+            'El proceso continúa en segundo plano.'
         )
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({
+                'ok': True,
+                'estado': 'enviado',
+                'mensaje': mensaje_certificados,
+            })
+
+        messages.success(request, mensaje_certificados)
 
     elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'sincronizar_retenciones_recibidas', 'sincronizar_retenciones_emitidas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
