@@ -16,6 +16,8 @@
     .trabajadores-export-btn { display:inline-flex!important; align-items:center; justify-content:center; gap:8px; font-family:inherit!important; font-size:13px!important; font-weight:700!important; line-height:1.2!important; color:#fff!important; }
     .portal-export-pdf { background:#b33b3b; }
     .portal-export-excel { background:#1596a3; }
+    .portal-export-new { background:#4f6f7a; }
+    .portal-export-iess { background:#7a5aa6; }
     .trabajadores-table-wrap { overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; padding:0 24px; }
     .trabajadores-table { min-width:1050px; width:100%; border-collapse:collapse; }
     .trabajadores-table th { position:sticky; top:0; z-index:2; background:#21333e; color:#fff; padding:10px 9px; font-size:11px; text-align:left; white-space:nowrap; }
@@ -209,6 +211,12 @@
                 <a class="portal-export-btn trabajadores-export-btn portal-export-excel"
                    href="{% url 'admin_trabajadores_excel' ruc=cliente.ruccedcli %}">
                     <i class="fi fi-rr-file-excel"></i> Excel
+                </a>
+                <a class="portal-export-btn trabajadores-export-btn portal-export-new" href="#">
+                    <i class="fi fi-rr-user-add"></i> Nuevo
+                </a>
+                <a class="portal-export-btn trabajadores-export-btn portal-export-iess" href="#">
+                    <i class="fi fi-rr-search"></i> Revisar IESS
                 </a>
             </div>
 
