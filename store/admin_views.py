@@ -2937,6 +2937,77 @@ def admin_conta_sri_status(request):
 
 
 @admin_required
+def admin_cliente_obtener_ruc_sri(request, ruc):
+    """Obtiene directamente desde el SRI el Certificado de RUC del cliente."""
+    if request.method != 'POST':
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'Método no permitido.'},
+            status=405,
+        )
+
+    ruc = ''.join(
+        char for char in str(ruc)
+        if char.isdigit()
+    )
+
+    cliente = Cliente.objects.filter(
+        ruccedcli=ruc,
+        activo=True,
+    ).first()
+
+    if cliente is None:
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'Cliente no encontrado o inactivo.'},
+            status=404,
+        )
+
+    if not str(cliente.clavesri or '').strip():
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'El cliente no tiene clave SRI registrada.'},
+            status=400,
+        )
+
+    import threading
+
+    def _procesar():
+        try:
+            from .services.sri_certificado_ruc import (
+                obtener_certificado_ruc_sync,
+            )
+
+            resultado = obtener_certificado_ruc_sync(ruc)
+
+            import logging
+            logging.getLogger(__name__).info(
+                'Certificado RUC directo | RUC=%s | resultado=%s',
+                ruc,
+                resultado,
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                'Certificado RUC directo | error | RUC=%s',
+                ruc,
+            )
+
+    threading.Thread(
+        target=_procesar,
+        name=f'TtCWeb-SRI-RUC-{ruc}',
+        daemon=True,
+    ).start()
+
+    return JsonResponse({
+        'ok': True,
+        'estado': 'procesando',
+        'mensaje': (
+            'Se inició la obtención del Certificado de RUC '
+            'directamente desde el SRI. Chromium se ejecutará '
+            'en segundo plano.'
+        ),
+    })
+
+
+@admin_required
 def admin_conta_certificados_ruc(request):
     """Inicia la descarga masiva de Certificados de RUC y responde siempre en JSON."""
     from django.http import JsonResponse
