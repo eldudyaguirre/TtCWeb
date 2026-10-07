@@ -1942,10 +1942,19 @@ def admin_cliente(request, ruc):
     db_name = str(cliente.ruccedcli).strip()
     from .models.archivo import Archivo
     from .services.archivos.storage import data_root
-    certificado_ruc_path = data_root() / str(cliente.ruccedcli).strip() / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
-    # El archivo físico es la fuente de verdad para mostrar su disponibilidad.
-    # Así también detectamos certificados cargados antes de registrar el archivo
-    # en la tabla de documentos.
+    ruc_documentos_dir = data_root() / str(cliente.ruccedcli).strip() / 'documentos' / 'ruc'
+    certificado_ruc_path = ruc_documentos_dir / 'certificado_ruc.pdf'
+
+    # Compatibilidad con certificados cargados con el nombre físico generado
+    # automáticamente por la versión anterior del almacenamiento.
+    if not certificado_ruc_path.is_file() and ruc_documentos_dir.is_dir():
+        candidatos_ruc = sorted(
+            ruc_documentos_dir.glob('certificado_ruc*.pdf'),
+            key=lambda ruta: ruta.stat().st_mtime,
+            reverse=True,
+        )
+        certificado_ruc_path = candidatos_ruc[0] if candidatos_ruc else certificado_ruc_path
+
     certificado_ruc_exists = certificado_ruc_path.is_file()
 
     documentos_legales = {}
@@ -2065,7 +2074,18 @@ def admin_cliente_certificado_ruc(request, ruc):
 
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
-    archivo = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
+    directorio = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'documentos' / 'ruc'
+    archivo = directorio / 'certificado_ruc.pdf'
+
+    # Soporta también archivos cargados con el nombre generado por versiones anteriores.
+    if not archivo.is_file() and directorio.is_dir():
+        candidatos_ruc = sorted(
+            directorio.glob('certificado_ruc*.pdf'),
+            key=lambda ruta: ruta.stat().st_mtime,
+            reverse=True,
+        )
+        archivo = candidatos_ruc[0] if candidatos_ruc else archivo
+
     if not archivo.is_file():
         raise Http404('No existe un Certificado de RUC cargado para este cliente.')
     response = FileResponse(archivo.open('rb'), content_type='application/pdf')
