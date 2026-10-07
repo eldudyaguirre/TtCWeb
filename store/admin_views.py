@@ -1928,47 +1928,7 @@ def admin_cliente(request, ruc):
             'telcelcli', 'corelectr', 'ocuclient',
         ])
 
-        certificado_ruc = request.FILES.get('certificado_ruc')
-        if certificado_ruc:
-            try:
-                if certificado_ruc.size > 10 * 1024 * 1024:
-                    raise ValueError('El Certificado de RUC no puede superar los 10 MB.')
-
-                extension = Path(certificado_ruc.name).suffix.lower()
-                content_type = (certificado_ruc.content_type or '').lower()
-                if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
-                    raise ValueError('El Certificado de RUC debe ser un archivo PDF.')
-
-                if certificado_ruc.size <= 0:
-                    raise ValueError('El archivo PDF está vacío.')
-
-                from .models.archivo import Archivo
-                from .services.archivos.storage import guardar_archivo, eliminar_archivo
-
-                # El Certificado de RUC se gestiona mediante el servicio centralizado
-                # de archivos, usando un nombre físico fijo.
-                anteriores = Archivo.objects.filter(
-                    cliente=cliente,
-                    tipo=Archivo.Tipo.PDF,
-                    ruta_relativa__startswith=f'{cliente.ruccedcli}/documentos/ruc/'
-                )
-                for anterior in anteriores:
-                    eliminar_archivo(anterior)
-
-                archivo_guardado = guardar_archivo(
-                    cliente=cliente,
-                    uploaded_file=certificado_ruc,
-                    tipo=Archivo.Tipo.PDF,
-                    subcarpeta='documentos/ruc',
-                    nombre_fisico='certificado_ruc.pdf',
-                    usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
-                )
-
-                messages.success(request, 'Certificado de RUC cargado correctamente.')
-            except Exception as exc:
-                messages.error(request, f'No se pudo guardar el Certificado de RUC: {type(exc).__name__}: {exc}')
-        else:
-            messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+        messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
 
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
@@ -2037,6 +1997,49 @@ def admin_cliente(request, ruc):
 @admin_required
 def admin_cliente_certificado_ruc(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
+    if request.method == 'POST':
+        certificado_ruc = request.FILES.get('certificado_ruc')
+        if not certificado_ruc:
+            messages.error(request, 'Selecciona un archivo PDF de Certificado de RUC.')
+            return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+        try:
+            if certificado_ruc.size > 10 * 1024 * 1024:
+                raise ValueError('El Certificado de RUC no puede superar los 10 MB.')
+
+            extension = Path(certificado_ruc.name).suffix.lower()
+            content_type = (certificado_ruc.content_type or '').lower()
+            if extension != '.pdf' or content_type not in ('application/pdf', 'application/octet-stream'):
+                raise ValueError('El Certificado de RUC debe ser un archivo PDF.')
+
+            if certificado_ruc.size <= 0:
+                raise ValueError('El archivo PDF está vacío.')
+
+            from .models.archivo import Archivo
+            from .services.archivos.storage import guardar_archivo, eliminar_archivo
+
+            anteriores = Archivo.objects.filter(
+                cliente=cliente,
+                tipo=Archivo.Tipo.PDF,
+                ruta_relativa__startswith=f'{cliente.ruccedcli}/documentos/ruc/'
+            )
+            for anterior in anteriores:
+                eliminar_archivo(anterior)
+
+            guardar_archivo(
+                cliente=cliente,
+                uploaded_file=certificado_ruc,
+                tipo=Archivo.Tipo.PDF,
+                subcarpeta='documentos/ruc',
+                nombre_fisico='certificado_ruc.pdf',
+                usuario=request.user if getattr(request.user, 'is_authenticated', False) else None,
+            )
+            messages.success(request, 'Certificado de RUC cargado correctamente.')
+        except Exception as exc:
+            messages.error(request, f'No se pudo guardar el Certificado de RUC: {type(exc).__name__}: {exc}')
+
+        return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
     archivo = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'documentos' / 'ruc' / 'certificado_ruc.pdf'
     if not archivo.is_file():
         raise Http404('No existe un Certificado de RUC cargado para este cliente.')
