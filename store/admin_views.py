@@ -156,6 +156,8 @@ def admin_login(request):
                     valido = password == clave_db
 
                 if valido:
+                    # Rotar la sesión después de autenticar para evitar session fixation.
+                    request.session.cycle_key()
                     request.session[ADMIN_SESSION_KEY] = True
                     request.session[ADMIN_USERNAME_KEY] = str(usuario_db).strip()
                     request.session[ADMIN_NAME_KEY] = str(nombre_db or usuario_db).strip()
@@ -239,10 +241,8 @@ Traceback completo:
 
 
 def admin_logout(request):
-    request.session.pop(ADMIN_SESSION_KEY, None)
-    request.session.pop(ADMIN_USERNAME_KEY, None)
-    request.session.pop(ADMIN_NAME_KEY, None)
-    request.session.pop(ADMIN_WORKER_KEY, None)
+    # Invalida completamente la sesión administrativa y genera una nueva.
+    request.session.flush()
     return redirect('admin_login')
 
 
@@ -604,6 +604,7 @@ def _admin_dashboard_saldos():
         'saldo_por_facturar': saldo_por_facturar,
     }
 
+@admin_required
 def admin_dashboard(request):
     clientes_qs = Cliente.objects.all()
     clientes = clientes_qs.order_by('nomclient')[:12]
