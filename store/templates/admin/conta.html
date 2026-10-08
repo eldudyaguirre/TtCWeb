@@ -251,11 +251,28 @@
                 headers: {"Accept": "application/json"},
                 cache: "no-store"
             });
-            const data = await response.json();
+
+            const contenido = await response.text();
+            let data;
+            try {
+                data = contenido ? JSON.parse(contenido) : {};
+            } catch (errorJson) {
+                console.error("Respuesta no JSON al consultar estado de Conta:", {
+                    status: response.status,
+                    contentType: response.headers.get("content-type"),
+                    body: contenido.slice(0, 1000)
+                });
+                estado.textContent = "⚠️ Error consultando estado";
+                mensaje.textContent =
+                    response.status === 200
+                        ? "Conta respondió con una página HTML en lugar de JSON. Revisa el servicio de Conta."
+                        : "Conta respondió HTTP " + response.status + ". Revisa el servicio de Conta.";
+                return;
+            }
 
             if (!response.ok) {
                 estado.textContent = "⚠️ Error consultando estado";
-                mensaje.textContent = data.error || "No se pudo consultar el trabajo.";
+                mensaje.textContent = data.error || data.detail || "No se pudo consultar el trabajo.";
                 return;
             }
 
