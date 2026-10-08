@@ -5409,6 +5409,14 @@ def admin_conta(request):
                         mes=int(mes),
                     )
                     messages.success(request, 'La sincronización de notas de crédito emitidas fue iniciada en segundo plano.')
+                elif request.POST.get('accion') == 'sincronizar_retenciones_emitidas':
+                    resultado = _conta_sincronizar_retenciones_emitidas(
+                        usuario=usuario,
+                        ruc=str(cliente.ruccedcli).strip(),
+                        anio=int(anio),
+                        mes=int(mes),
+                    )
+                    messages.success(request, 'La sincronización de retenciones emitidas fue iniciada en segundo plano.')
                 else:
                     resultado = _conta_sincronizar_compras(
                         usuario=usuario,
