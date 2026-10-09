@@ -5535,45 +5535,6 @@ def admin_rebefics(request, ruc):
                             destino.unlink(missing_ok=True)
                             raise
                         exito = f'El archivo {nombre} se cargó correctamente.'
-            else:
-                contenido = subido.read()
-                valido = True
-                if extension == '.xml':
-                    try:
-                        ET.fromstring(contenido)
-                    except ET.ParseError:
-                        valido = False
-                else:
-                    import io
-                    import zipfile
-                    try:
-                        with zipfile.ZipFile(io.BytesIO(contenido)) as paquete:
-                            valido = paquete.testzip() is None
-                    except zipfile.BadZipFile:
-                        valido = False
-                if not valido:
-                    error = 'El archivo seleccionado no es un XML válido o un ZIP íntegro.'
-                else:
-                    carpeta.mkdir(parents=True, exist_ok=True)
-                    destino.write_bytes(contenido)
-                    try:
-                        Archivo.objects.create(
-                            cliente=cliente,
-                            tipo=Archivo.Tipo.XML if extension == '.xml' else Archivo.Tipo.DOCUMENTO,
-                            nombre_original=nombre,
-                            nombre_fisico=nombre,
-                            ruta_relativa=relativo,
-                            extension=extension,
-                            mime_type='application/xml' if extension == '.xml' else 'application/zip',
-                            tamano=len(contenido),
-                            sha256=hashlib.sha256(contenido).hexdigest(),
-                            creado_por=None,
-                            activo=True,
-                        )
-                    except Exception:
-                        destino.unlink(missing_ok=True)
-                        raise
-                    exito = f'El archivo {nombre} se cargó correctamente.'
 
     registros = []
     anios_disponibles = set()
