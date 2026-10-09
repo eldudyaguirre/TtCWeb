@@ -198,7 +198,7 @@ def parse_aps_xml(content, expected_ruc):
             "sujeto_extranjero_tipo": item.get("tipoSociedadExt", ""),
             "figura_juridica": item.get("figuraJuridicaExt", ""),
             "otra_figura_juridica": item.get("figuraJuridicaOtroExt", ""),
-            "es_sujeto_extranjero": item.get("esSociedadPublicaExt", "").upper() == "SI",
+            "es_sujeto_extranjero": item.get("tipoSociedadExt", "").upper() not in ("", "NA"),
             "ultimo_nivel_cadena": False,
             "tipo_relacion_sujeto": "ACCIONISTA" if "accionista" in item["origenes"] else "SOCIO",
             "porcentaje_participacion": str(porcentaje),
