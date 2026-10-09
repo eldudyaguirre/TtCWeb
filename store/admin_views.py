@@ -5449,6 +5449,146 @@ def admin_conta(request):
 
 
 @admin_required
+def admin_rebefics(request, ruc):
+    """Gestiona los archivos APS/REBEFICS del cliente."""
+    import hashlib
+    import xml.etree.ElementTree as ET
+    from datetime import datetime
+    from pathlib import Path
+    from .models.archivo import Archivo
+    from .services.archivos.storage import data_root
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    raiz = data_root() / ruc_cliente / 'anexos' / 'rebefics'
+    error = ''
+    exito = ''
+
+    if request.method == 'POST':
+        try:
+            anio = int(request.POST.get('anio', ''))
+            mes = int(request.POST.get('mes', ''))
+        except (TypeError, ValueError):
+            anio, mes = 0, 0
+
+        subido = request.FILES.get('archivo_rebefics')
+        if not 2000 <= anio <= 2100:
+            error = 'Selecciona un año válido.'
+        elif not 1 <= mes <= 12:
+            error = 'Selecciona un mes válido.'
+        elif not subido:
+            error = 'Selecciona el archivo APS/REBEFICS.'
+        elif not subido.name.lower().endswith(('.zip', '.xml')):
+            error = 'Solo se permiten archivos .ZIP o .XML.'
+        elif subido.size > 20 * 1024 * 1024:
+            error = 'El archivo no puede superar los 20 MB.'
+        else:
+            extension = Path(subido.name).suffix.lower()
+            nombre = f'APS{mes:02d}{anio}{extension}'
+            carpeta = raiz / str(anio)
+            destino = carpeta / nombre
+            relativo = (Path(ruc_cliente) / 'anexos' / 'rebefics' / str(anio) / nombre).as_posix()
+            existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).first()
+            if existente or destino.exists():
+                error = f'Ya existe un archivo APS/REBEFICS para {mes:02d}/{anio}. Descarga el existente antes de cargar otro.'
+            else:
+                contenido = subido.read()
+                valido = True
+                if extension == '.xml':
+                    try:
+                        ET.fromstring(contenido)
+                    except ET.ParseError:
+                        valido = False
+                else:
+                    import io
+                    import zipfile
+                    try:
+                        with zipfile.ZipFile(io.BytesIO(contenido)) as paquete:
+                            valido = paquete.testzip() is None
+                    except zipfile.BadZipFile:
+                        valido = False
+                if not valido:
+                    error = 'El archivo seleccionado no es un XML válido o un ZIP íntegro.'
+                else:
+                    carpeta.mkdir(parents=True, exist_ok=True)
+                    destino.write_bytes(contenido)
+                    try:
+                        Archivo.objects.create(
+                            cliente=cliente,
+                            tipo=Archivo.Tipo.XML if extension == '.xml' else Archivo.Tipo.DOCUMENTO,
+                            nombre_original=nombre,
+                            nombre_fisico=nombre,
+                            ruta_relativa=relativo,
+                            extension=extension,
+                            mime_type='application/xml' if extension == '.xml' else 'application/zip',
+                            tamano=len(contenido),
+                            sha256=hashlib.sha256(contenido).hexdigest(),
+                            creado_por=None,
+                            activo=True,
+                        )
+                    except Exception:
+                        destino.unlink(missing_ok=True)
+                        raise
+                    exito = f'El archivo {nombre} se cargó correctamente.'
+
+    registros = []
+    anios_disponibles = set()
+    for ruta in raiz.glob('*/*') if raiz.is_dir() else []:
+        if not ruta.is_file() or not ruta.name.upper().startswith('APS'):
+            continue
+        try:
+            anio_archivo = int(ruta.parent.name)
+        except ValueError:
+            continue
+        anios_disponibles.add(anio_archivo)
+        stat = ruta.stat()
+        registros.append({
+            'nombre': ruta.name, 'anio': anio_archivo, 'tamano': stat.st_size,
+            'fecha': datetime.fromtimestamp(stat.st_mtime),
+        })
+
+    registros.sort(key=lambda item: (item['anio'], item['nombre']), reverse=True)
+    try:
+        anio_filtro = int(request.GET.get('anio', ''))
+    except (TypeError, ValueError):
+        anio_filtro = 0
+    if anio_filtro:
+        registros = [item for item in registros if item['anio'] == anio_filtro]
+
+    anio_actual = timezone.localdate().year
+    anios_formulario = sorted(anios_disponibles | {anio_actual, anio_actual - 1}, reverse=True)
+    return render(request, 'admin/rebefics.html', {
+        'cliente': cliente, 'registros': registros,
+        'anios': sorted(anios_disponibles, reverse=True),
+        'anios_formulario': anios_formulario, 'anio_filtro': anio_filtro,
+        'anio_actual': anio_actual, 'error_rebefics': error, 'exito_rebefics': exito,
+        'total_registros': len(registros),
+    })
+
+
+@admin_required
+def admin_rebefics_descargar(request, ruc, nombre):
+    """Descarga un archivo APS/REBEFICS del cliente seleccionado."""
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if Path(nombre).name != nombre or not nombre.upper().startswith('APS') or Path(nombre).suffix.lower() not in ('.xml', '.zip'):
+        raise Http404('Archivo APS/REBEFICS no válido.')
+    anio = nombre[-8:-4] if nombre.lower().endswith('.zip') else nombre[-8:-4]
+    mes = nombre[3:5]
+    if not anio.isdigit() or not mes.isdigit() or not 1 <= int(mes) <= 12:
+        raise Http404('Nombre de archivo no válido.')
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'rebefics' / anio / nombre).as_posix()
+    ruta = data_root() / relativo
+    if not ruta.is_file():
+        raise Http404('El archivo ya no está disponible.')
+    response = FileResponse(ruta.open('rb'), content_type='application/zip' if ruta.suffix.lower() == '.zip' else 'application/xml')
+    response['Content-Disposition'] = f'attachment; filename="{nombre}"'
+    return response
+
+
+@admin_required
 def admin_ats(request, ruc):
     """Carga, lista y descarga los archivos ATS del cliente."""
     import hashlib
