@@ -5460,6 +5460,7 @@ def admin_rebefics(request, ruc):
     from .services.archivos.storage import data_root
 
     cliente = get_object_or_404(Cliente, pk=ruc)
+    total_socios = RebeficsSocio.objects.filter(cliente=cliente, activo=True).count()
     ruc_cliente = str(cliente.ruccedcli).strip()
     raiz = data_root() / ruc_cliente / 'anexos' / 'rebefics'
     error = ''
@@ -5563,7 +5564,7 @@ def admin_rebefics(request, ruc):
         'anios': sorted(anios_disponibles, reverse=True),
         'anios_formulario': anios_formulario, 'anio_filtro': anio_filtro,
         'anio_actual': anio_actual, 'error_rebefics': error, 'exito_rebefics': exito,
-        'total_registros': len(registros),
+        'total_registros': len(registros), 'total_socios': total_socios,
     })
 
 
@@ -5783,12 +5784,15 @@ def admin_rebefics_socios(request, ruc):
         for campo in (
             'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
             'razon_social', 'nacionalidad', 'pais_residencia_fiscal', 'tipo_regimen_fiscal',
+            'sujeto_extranjero_tipo', 'figura_juridica', 'otra_figura_juridica',
             'pais_relacionado_paraiso', 'pais_regimen_fiscal_preferente', 'regimen_fiscal_preferente',
             'estado_jurisdiccion', 'ciudad', 'calle', 'interseccion', 'numero_domicilio',
             'codigo_postal', 'referencia_direccion', 'observaciones',
         ):
             setattr(socio, campo, request.POST.get(campo, '').strip())
         socio.fecha_nacimiento = fecha_nacimiento
+        socio.es_sujeto_extranjero = request.POST.get('es_sujeto_extranjero') == 'on'
+        socio.ultimo_nivel_cadena = request.POST.get('ultimo_nivel_cadena') == 'on'
         socio.es_parte_relacionada = request.POST.get('es_parte_relacionada') == 'on'
         socio.regimen_paraiso_fiscal = request.POST.get('regimen_paraiso_fiscal') == 'on'
         socio.tipo_relacion_sujeto = tipo_relacion
