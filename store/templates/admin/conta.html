@@ -3,9 +3,12 @@
 
 {% block content %}
 <style>
-    .conta-sri-fields > div { min-width: 0; }
+    .conta-sri-fields { align-items: end !important; }
+    .conta-sri-fields > div { min-width: 0; align-self: end; }
+    .conta-sri-fields > div > label { display: block; min-height: 24px; margin-bottom: 6px; }
     .conta-sri-fields select,
     .conta-sri-fields input { box-sizing: border-box; width: 100%; min-width: 0; }
+    .conta-sri-fields #accion-ayuda { min-height: 18px; }
     #accion { font-size: 14px; }
     @media (max-width: 900px) {
         .conta-sri-fields { grid-template-columns: minmax(0, 1fr) minmax(110px, .6fr) minmax(150px, 1fr) !important; }
