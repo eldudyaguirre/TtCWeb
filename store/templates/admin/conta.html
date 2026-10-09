@@ -2,6 +2,21 @@
 {% block title %}Conta | Administración TotalCounts{% endblock %}
 
 {% block content %}
+<style>
+    .conta-sri-fields > div { min-width: 0; }
+    .conta-sri-fields select,
+    .conta-sri-fields input { box-sizing: border-box; width: 100%; min-width: 0; }
+    #accion { font-size: 14px; }
+    @media (max-width: 900px) {
+        .conta-sri-fields { grid-template-columns: minmax(0, 1fr) minmax(110px, .6fr) minmax(150px, 1fr) !important; }
+        .conta-sri-fields > div:first-child { grid-column: 1 / -1; }
+        .conta-sri-fields > div:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+        .conta-sri-fields { grid-template-columns: minmax(0, 1fr) !important; }
+        .conta-sri-fields > div { grid-column: 1 / -1; }
+    }
+</style>
 <div class="admin-page-header">
     <div>
         <span class="admin-kicker">Inteligencia y automatización</span>
@@ -21,7 +36,7 @@
     <form method="post">
         {% csrf_token %}
 
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;align-items:end;">
+        <div class="conta-sri-fields" style="display:grid;grid-template-columns:minmax(300px, 2.4fr) minmax(100px, .7fr) minmax(150px, 1fr) minmax(270px, 1.7fr);gap:14px;align-items:end;">
             <div>
                 <label for="ruc"><strong>Cliente</strong></label>
                 <select id="ruc" name="ruc" class="form-control" required>
@@ -56,7 +71,7 @@
             </div>
             <div>
                 <label for="accion"><strong>Tipo de proceso</strong></label>
-                <select id="accion" name="accion" class="form-control" required>
+                <select id="accion" name="accion" class="form-control" style="width:100%;min-width:0;" required>
                     <option value="sincronizar_compras" {% if accion == "sincronizar_compras" or not accion %}selected{% endif %}>01 - Compras Recibidas</option>
                     <option value="sincronizar_retenciones_emitidas" {% if accion == "sincronizar_retenciones_emitidas" %}selected{% endif %}>02 - Retenciones emitidas</option>
                     <option value="sincronizar_notas_credito_recibidas" {% if accion == "sincronizar_notas_credito_recibidas" %}selected{% endif %}>03 - Notas de Crédito recibidas</option>
