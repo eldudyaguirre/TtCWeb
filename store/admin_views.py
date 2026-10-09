@@ -3135,6 +3135,7 @@ def admin_conta(request):
         messages.success(request, mensaje_certificados)
 
     elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'sincronizar_notas_credito_emitidas', 'sincronizar_notas_credito_recibidas', 'sincronizar_retenciones_recibidas', 'sincronizar_retenciones_emitidas', 'validar_ventas'):
+        accion = request.POST.get('accion', '').strip()
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
             error = 'Seleccione un cliente activo válido.'
@@ -3203,7 +3204,7 @@ def admin_conta(request):
                         ruc=str(cliente.ruccedcli).strip(),
                         anio=int(anio),
                         mes=int(mes),
-                        tipo_comprobante=int(request.POST.get('tipo_comprobante', '1')),
+                        tipo_comprobante=1,
                     )
                     messages.success(request, 'La sincronización de compras fue iniciada en segundo plano.')
                 sri_job = resultado.get('job_id')
@@ -3218,6 +3219,7 @@ def admin_conta(request):
             'ruc': ruc,
             'anio': anio,
             'mes': mes,
+            'accion': request.POST.get('accion', 'sincronizar_compras') if request.method == 'POST' else 'sincronizar_compras',
             'resultado': resultado,
             'sri_job': sri_job,
             'respuesta_ia': respuesta_ia,
