@@ -5485,13 +5485,56 @@ def admin_rebefics(request, ruc):
             error = 'El archivo no puede superar los 20 MB.'
         else:
             extension = Path(subido.name).suffix.lower()
-            nombre = f'APS{anio}{extension}'
-            carpeta = raiz / str(anio)
-            destino = carpeta / nombre
-            relativo = (Path(ruc_cliente) / 'anexos' / 'rebefics' / str(anio) / nombre).as_posix()
-            existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).first()
-            if existente or destino.exists():
-                error = f'Ya existe un archivo APS/REBEFICS para el año {anio}. Descarga el existente antes de cargar otro.'
+            # Conservar el nombre original del archivo enviado por el usuario/SRI.
+            nombre = Path(subido.name).name.strip()
+            if not nombre or nombre in {'.', '..'}:
+                error = 'El nombre del archivo no es válido.'
+            else:
+                carpeta = raiz / str(anio)
+                destino = carpeta / nombre
+                relativo = (Path(ruc_cliente) / 'anexos' / 'rebefics' / str(anio) / nombre).as_posix()
+                existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).first()
+                if existente or destino.exists():
+                    error = f'Ya existe un archivo con el nombre {nombre} para el año {anio}. Puedes cargar otro anexo usando su nombre original.'
+                else:
+                    contenido = subido.read()
+                    valido = True
+                    if extension == '.xml':
+                        try:
+                            ET.fromstring(contenido)
+                        except ET.ParseError:
+                            valido = False
+                    else:
+                        import io
+                        import zipfile
+                        try:
+                            with zipfile.ZipFile(io.BytesIO(contenido)) as paquete:
+                                valido = paquete.testzip() is None
+                        except zipfile.BadZipFile:
+                            valido = False
+                    if not valido:
+                        error = 'El archivo seleccionado no es un XML válido o un ZIP íntegro.'
+                    else:
+                        carpeta.mkdir(parents=True, exist_ok=True)
+                        destino.write_bytes(contenido)
+                        try:
+                            Archivo.objects.create(
+                                cliente=cliente,
+                                tipo=Archivo.Tipo.XML if extension == '.xml' else Archivo.Tipo.DOCUMENTO,
+                                nombre_original=nombre,
+                                nombre_fisico=nombre,
+                                ruta_relativa=relativo,
+                                extension=extension,
+                                mime_type='application/xml' if extension == '.xml' else 'application/zip',
+                                tamano=len(contenido),
+                                sha256=hashlib.sha256(contenido).hexdigest(),
+                                creado_por=None,
+                                activo=True,
+                            )
+                        except Exception:
+                            destino.unlink(missing_ok=True)
+                            raise
+                        exito = f'El archivo {nombre} se cargó correctamente.'
             else:
                 contenido = subido.read()
                 valido = True
@@ -5568,24 +5611,17 @@ def admin_rebefics(request, ruc):
 
 
 @admin_required
-def admin_rebefics_descargar(request, ruc, nombre):
-    """Descarga un archivo APS/REBEFICS del cliente seleccionado."""
+def admin_rebefics_descargar(request, ruc, anio, nombre):
+    """Descarga un archivo APS/REBEFICS usando el año de su carpeta."""
     from pathlib import Path
     from .services.archivos.storage import data_root
 
     cliente = get_object_or_404(Cliente, pk=ruc)
-    if Path(nombre).name != nombre or not nombre.upper().startswith('APS') or Path(nombre).suffix.lower() not in ('.xml', '.zip'):
+    if not str(anio).isdigit() or not 2000 <= int(anio) <= 2100:
+        raise Http404('Año no válido.')
+    if Path(nombre).name != nombre or Path(nombre).suffix.lower() not in ('.xml', '.zip'):
         raise Http404('Archivo APS/REBEFICS no válido.')
-    import re
-    coincidencia_anual = re.fullmatch(r'APS(\d{4})\.(?:xml|zip)', nombre, flags=re.IGNORECASE)
-    coincidencia_mensual = re.fullmatch(r'APS(\d{2})(\d{4})\.(?:xml|zip)', nombre, flags=re.IGNORECASE)
-    if coincidencia_anual:
-        anio = coincidencia_anual.group(1)
-    elif coincidencia_mensual and 1 <= int(coincidencia_mensual.group(1)) <= 12:
-        anio = coincidencia_mensual.group(2)
-    else:
-        raise Http404('Nombre de archivo no válido.')
-    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'rebefics' / anio / nombre).as_posix()
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'rebefics' / str(anio) / nombre).as_posix()
     ruta = data_root() / relativo
     if not ruta.is_file():
         raise Http404('El archivo ya no está disponible.')
