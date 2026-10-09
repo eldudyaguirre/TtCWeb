@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% block title %}Socios y beneficiarios finales | {{ cliente.nomclient }}{% endblock %}
+{% block content %}
+<div class="admin-breadcrumb"><a href="{% url 'admin_rebefics' ruc=cliente.ruccedcli %}">← REBEFICS / APS</a></div>
+<div class="admin-page-header"><div><span class="admin-kicker">Base de datos permanente · REBEFICS</span><h1>Socios y beneficiarios finales</h1><p>{{ cliente.nomclient }} | RUC: <strong>{{ cliente.ruccedcli }}</strong></p></div><span class="admin-report-count">{{ total_socios }} registros</span></div>
+{% if messages %}{% for message in messages %}<div class="ats-message {% if message.tags == 'error' %}ats-error{% else %}ats-success{% endif %}">{{ message }}</div>{% endfor %}{% endif %}
+<div class="rebefics-notice"><strong>Información reutilizable</strong><span>Guarda aquí los datos de cada integrante y actualízalos cuando cambie la composición societaria. La generación del XML debe validarse con el esquema y catálogo vigente del SRI.</span></div>
+<section class="rebefics-socios-grid">
+<article class="admin-card socios-form-card">
+<h2>{% if socio_edicion %}Editar registro{% else %}Agregar socio o beneficiario{% endif %}</h2>
+<form method="post" class="socios-form">{% csrf_token %}<input type="hidden" name="socio_id" value="{{ socio_edicion.id|default:'' }}">
+<div class="socios-field"><label>Tipo de sujeto *</label><select name="tipo_sujeto" id="tipo-sujeto" required>{% for value,label in tipos_sujeto %}<option value="{{ value }}" {% if socio_edicion.tipo_sujeto == value %}selected{% elif not socio_edicion and value == 'PN' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+<div class="socios-field"><label>Tipo de identificación *</label><select name="tipo_identificacion" required>{% for value,label in tipos_identificacion %}<option value="{{ value }}" {% if socio_edicion.tipo_identificacion == value %}selected{% elif not socio_edicion and value == 'CEDULA' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+<div class="socios-field full"><label>Identificación *</label><input name="identificacion" maxlength="30" required value="{{ socio_edicion.identificacion|default:'' }}"></div>
+<div class="socios-field natural"><label>Primer nombre</label><input name="primer_nombre" value="{{ socio_edicion.primer_nombre|default:'' }}"></div>
+<div class="socios-field natural"><label>Segundo nombre</label><input name="segundo_nombre" value="{{ socio_edicion.segundo_nombre|default:'' }}"></div>
+<div class="socios-field natural"><label>Primer apellido</label><input name="primer_apellido" value="{{ socio_edicion.primer_apellido|default:'' }}"></div>
+<div class="socios-field natural"><label>Segundo apellido</label><input name="segundo_apellido" value="{{ socio_edicion.segundo_apellido|default:'' }}"></div>
+<div class="socios-field juridico full"><label>Razón social *</label><input name="razon_social" value="{{ socio_edicion.razon_social|default:'' }}"></div>
+<div class="socios-field natural"><label>Fecha de nacimiento</label><input type="date" name="fecha_nacimiento" value="{{ socio_edicion.fecha_nacimiento|date:'Y-m-d' }}"></div>
+<div class="socios-field"><label>Nacionalidad</label><input name="nacionalidad" value="{{ socio_edicion.nacionalidad|default:'' }}"></div>
+<div class="socios-field"><label>País de residencia fiscal</label><input name="pais_residencia_fiscal" value="{{ socio_edicion.pais_residencia_fiscal|default:'' }}"></div>
+<div class="socios-field"><label>Tipo de régimen fiscal</label><input name="tipo_regimen_fiscal" value="{{ socio_edicion.tipo_regimen_fiscal|default:'' }}"></div>
+<div class="socios-field"><label>Relación con la empresa *</label><select name="tipo_relacion_sujeto" required>{% for value,label in tipos_relacion %}<option value="{{ value }}" {% if socio_edicion.tipo_relacion_sujeto == value %}selected{% elif not socio_edicion and value == 'SOCIO' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+<div class="socios-field"><label>Participación (%)</label><input type="number" name="porcentaje_participacion" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion|default:'0' }}"></div>
+<div class="socios-field"><label>Participación efectiva (%)</label><input type="number" name="porcentaje_participacion_efectiva" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion_efectiva|default:'' }}"></div>
+<div class="socios-field"><label>Estado / jurisdicción</label><input name="estado_jurisdiccion" value="{{ socio_edicion.estado_jurisdiccion|default:'' }}"></div>
+<div class="socios-field"><label>Ciudad</label><input name="ciudad" value="{{ socio_edicion.ciudad|default:'' }}"></div>
+<div class="socios-field"><label>Calle</label><input name="calle" value="{{ socio_edicion.calle|default:'' }}"></div>
+<div class="socios-field"><label>Intersección</label><input name="interseccion" value="{{ socio_edicion.interseccion|default:'' }}"></div>
+<div class="socios-field"><label>Número de domicilio</label><input name="numero_domicilio" value="{{ socio_edicion.numero_domicilio|default:'' }}"></div>
+<div class="socios-field"><label>Código postal</label><input name="codigo_postal" value="{{ socio_edicion.codigo_postal|default:'' }}"></div>
+<div class="socios-field full"><label>Referencia de dirección</label><input name="referencia_direccion" value="{{ socio_edicion.referencia_direccion|default:'' }}"></div>
+<div class="socios-field"><label>País relacionado con paraíso fiscal</label><input name="pais_relacionado_paraiso" value="{{ socio_edicion.pais_relacionado_paraiso|default:'' }}"></div>
+<div class="socios-field"><label>País de régimen fiscal preferente</label><input name="pais_regimen_fiscal_preferente" value="{{ socio_edicion.pais_regimen_fiscal_preferente|default:'' }}"></div>
+<div class="socios-field full"><label>Régimen fiscal preferente / jurisdicción de menor imposición</label><input name="regimen_fiscal_preferente" value="{{ socio_edicion.regimen_fiscal_preferente|default:'' }}"></div>
+<div class="socios-checks full">
+<label><input type="checkbox" name="es_parte_relacionada" {% if socio_edicion.es_parte_relacionada %}checked{% endif %}> Parte relacionada</label>
+<label><input type="checkbox" name="regimen_paraiso_fiscal" {% if socio_edicion.regimen_paraiso_fiscal %}checked{% endif %}> Régimen de paraíso fiscal</label>
+<label><input type="checkbox" name="es_beneficiario_final" {% if socio_edicion.es_beneficiario_final %}checked{% endif %}> Es beneficiario final</label>
+<label><input type="checkbox" name="beneficiario_por_propiedad" {% if socio_edicion.beneficiario_por_propiedad %}checked{% endif %}> Beneficiario por propiedad</label>
+<label><input type="checkbox" name="beneficiario_por_control" {% if socio_edicion.beneficiario_por_control %}checked{% endif %}> Beneficiario por control</label>
+<label><input type="checkbox" name="beneficiario_por_administracion" {% if socio_edicion.beneficiario_por_administracion %}checked{% endif %}> Beneficiario por administración</label>
+</div>
+<div class="socios-field full"><label>Integrante de la cadena de titularidad (opcional)</label><select name="relacionado_con"><option value="">Sin relación / nivel directo</option>{% for otro in socios %}{% if otro.id != socio_edicion.id %}<option value="{{ otro.id }}" {% if socio_edicion.relacionado_con_id == otro.id %}selected{% endif %}>{{ otro.nombre_completo }} · {{ otro.identificacion }}</option>{% endif %}{% endfor %}</select></div>
+<div class="socios-field full"><label>Observaciones internas</label><textarea name="observaciones" rows="3">{{ socio_edicion.observaciones|default:'' }}</textarea></div>
+<div class="socios-actions full"><button type="submit" class="ats-submit">Guardar datos</button>{% if socio_edicion %}<a class="socios-cancel" href="{% url 'admin_rebefics_socios' ruc=cliente.ruccedcli %}">Cancelar edición</a>{% endif %}</div>
+</form>
+</article>
+<article class="admin-card socios-list-card"><div class="socios-list-heading"><div><h2>Composición registrada</h2><p>Datos almacenados para reutilizar en futuras presentaciones.</p></div></div>
+{% if socios %}<div class="socios-table-wrap"><table class="ats-table"><thead><tr><th>Socio / sujeto</th><th>Relación</th><th>Participación</th><th>Beneficiario final</th><th>Acciones</th></tr></thead><tbody>{% for socio in socios %}<tr><td><strong>{{ socio.nombre_completo }}</strong><small>{{ socio.identificacion }} · {{ socio.get_tipo_sujeto_display }}</small></td><td>{{ socio.get_tipo_relacion_sujeto_display }}</td><td>{{ socio.porcentaje_participacion }}%</td><td>{% if socio.es_beneficiario_final %}Sí{% else %}No{% endif %}</td><td><div class="socios-row-actions"><a href="?editar={{ socio.id }}">Editar</a><form method="post" onsubmit="return confirm('¿Archivar este registro? Se conservará en la base de datos.');">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="socio_id" value="{{ socio.id }}"><button type="submit">Archivar</button></form></div></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="ats-empty"><i class="fi fi-rr-users-alt"></i><strong>No hay socios registrados</strong><span>Agrega el primer socio o beneficiario usando el formulario.</span></div>{% endif %}
+</article></section>
+<script>
+(function(){const tipo=document.getElementById('tipo-sujeto');function ajustar(){document.querySelectorAll('.natural').forEach(e=>e.style.display=tipo.value==='PN'?'flex':'none');document.querySelectorAll('.juridico').forEach(e=>e.style.display=tipo.value==='PN'?'none':'flex');}tipo.addEventListener('change',ajustar);ajustar();})();
+</script>
+<style>
+.rebefics-notice{display:flex;flex-direction:column;gap:5px;padding:14px 16px;margin:18px 0;border:1px solid #b9e1e5;background:#f1fbfc;border-radius:10px;color:var(--admin-dark);font-size:13px;line-height:1.5}.rebefics-notice span{color:var(--admin-muted)}.rebefics-socios-grid{display:grid;grid-template-columns:minmax(330px,.9fr) minmax(0,1.4fr);gap:18px;align-items:start}.socios-form-card,.socios-list-card{padding:22px;min-width:0}.socios-form-card h2,.socios-list-heading h2{margin:0 0 18px;color:var(--admin-dark);font-size:18px}.socios-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.socios-field{display:flex;flex-direction:column;gap:6px;min-width:0}.socios-field.full{grid-column:1/-1}.socios-field label{font-size:12px;font-weight:600;color:var(--admin-dark)}.socios-field input,.socios-field select,.socios-field textarea{box-sizing:border-box;width:100%;min-width:0;padding:10px 11px;border:1px solid var(--admin-border);border-radius:8px;background:#fff;font:inherit;color:var(--admin-dark)}.socios-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.socios-checks label{display:flex;align-items:center;gap:7px;font-weight:400}.socios-checks input{width:auto}.socios-actions{display:flex;align-items:center;gap:12px}.socios-cancel{font-size:13px;color:var(--admin-muted)}.socios-list-heading p{margin:-10px 0 18px;font-size:12px;color:var(--admin-muted)}.socios-table-wrap{width:100%;overflow:auto}.socios-row-actions{display:flex;flex-direction:column;gap:8px}.socios-row-actions a,.socios-row-actions button{font:inherit;font-size:12px;color:#087d89;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:underline}.socios-row-actions form{margin:0}.ats-table td small{display:block;margin-top:4px;color:var(--admin-muted);font-size:11px}@media(max-width:1100px){.rebefics-socios-grid{grid-template-columns:1fr}}@media(max-width:650px){.socios-form{grid-template-columns:1fr}.socios-field.full{grid-column:auto}.socios-checks{grid-template-columns:1fr}}
+</style>
+{% endblock %}
