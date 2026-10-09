@@ -8,7 +8,6 @@
     .conta-sri-fields > div > label { display: block; min-height: 24px; margin-bottom: 6px; }
     .conta-sri-fields select,
     .conta-sri-fields input { box-sizing: border-box; width: 100%; min-width: 0; }
-    .conta-sri-fields #accion-ayuda { min-height: 18px; }
     #accion { font-size: 14px; }
     @media (max-width: 900px) {
         .conta-sri-fields { grid-template-columns: minmax(0, 1fr) minmax(110px, .6fr) minmax(150px, 1fr) !important; }
@@ -82,7 +81,7 @@
                     <option value="validar_ventas" {% if accion == "validar_ventas" %}selected{% endif %}>05 - Validar Ventas</option>
                     <option value="sincronizar_notas_credito_emitidas" {% if accion == "sincronizar_notas_credito_emitidas" %}selected{% endif %}>06 - Notas de Crédito emitidas</option>
                 </select>
-                <small id="accion-ayuda" style="display:block;margin-top:6px;color:#64748b;">Sincronizar compras recibidas</small>
+                
             </div>
         </div>
 
@@ -93,20 +92,6 @@
     <script>
     (function () {
         const selector = document.getElementById("accion");
-        const ayuda = document.getElementById("accion-ayuda");
-        const descripciones = {
-            sincronizar_compras: "Sincronizar compras recibidas",
-            sincronizar_retenciones_emitidas: "Sincronizar retenciones emitidas",
-            sincronizar_notas_credito_recibidas: "Sincronizar notas de crédito recibidas",
-            sincronizar_ventas: "Sincronizar ventas emitidas",
-            validar_ventas: "Validar ventas contra el SRI",
-            sincronizar_notas_credito_emitidas: "Sincronizar notas de crédito emitidas"
-        };
-        function actualizarAyuda() {
-            ayuda.textContent = descripciones[selector.value] || "Seleccione el proceso que desea ejecutar";
-        }
-        selector.addEventListener("change", actualizarAyuda);
-        actualizarAyuda();
     })();
     </script>
 </div>
