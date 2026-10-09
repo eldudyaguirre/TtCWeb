@@ -5576,9 +5576,14 @@ def admin_rebefics_descargar(request, ruc, nombre):
     cliente = get_object_or_404(Cliente, pk=ruc)
     if Path(nombre).name != nombre or not nombre.upper().startswith('APS') or Path(nombre).suffix.lower() not in ('.xml', '.zip'):
         raise Http404('Archivo APS/REBEFICS no válido.')
-    anio = nombre[-8:-4] if nombre.lower().endswith('.zip') else nombre[-8:-4]
-    mes = nombre[3:5]
-    if not anio.isdigit() or not mes.isdigit() or not 1 <= int(mes) <= 12:
+    import re
+    coincidencia_anual = re.fullmatch(r'APS(\d{4})\.(?:xml|zip)', nombre, flags=re.IGNORECASE)
+    coincidencia_mensual = re.fullmatch(r'APS(\d{2})(\d{4})\.(?:xml|zip)', nombre, flags=re.IGNORECASE)
+    if coincidencia_anual:
+        anio = coincidencia_anual.group(1)
+    elif coincidencia_mensual and 1 <= int(coincidencia_mensual.group(1)) <= 12:
+        anio = coincidencia_mensual.group(2)
+    else:
         raise Http404('Nombre de archivo no válido.')
     relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'rebefics' / anio / nombre).as_posix()
     ruta = data_root() / relativo
