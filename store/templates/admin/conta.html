@@ -20,7 +20,6 @@
 
     <form method="post">
         {% csrf_token %}
-        <input type="hidden" name="accion" id="sri-accion" value="sincronizar_compras">
 
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;align-items:end;">
             <div>
@@ -56,42 +55,42 @@
                 </select>
             </div>
             <div>
-                <label for="tipo_comprobante"><strong>Tipo</strong></label>
-                <select id="tipo_comprobante" name="tipo_comprobante" class="form-control">
-                    <option value="1">Facturas</option>
-                    <option value="2">Liquidaciones de compra</option>
-                    <option value="3">Notas de crédito</option>
-                    <option value="4">Notas de débito</option>
-                    <option value="6">Guías de remisión</option>
-                    <option value="7">Retenciones</option>
+                <label for="accion"><strong>Tipo de proceso</strong></label>
+                <select id="accion" name="accion" class="form-control" required>
+                    <option value="sincronizar_compras" {% if accion == "sincronizar_compras" or not accion %}selected{% endif %}>01 - Compras Recibidas</option>
+                    <option value="sincronizar_retenciones_emitidas" {% if accion == "sincronizar_retenciones_emitidas" %}selected{% endif %}>02 - Retenciones emitidas</option>
+                    <option value="sincronizar_notas_credito_recibidas" {% if accion == "sincronizar_notas_credito_recibidas" %}selected{% endif %}>03 - Notas de Crédito recibidas</option>
+                    <option value="sincronizar_ventas" {% if accion == "sincronizar_ventas" %}selected{% endif %}>04 - Ventas</option>
+                    <option value="validar_ventas" {% if accion == "validar_ventas" %}selected{% endif %}>05 - Validar Ventas</option>
+                    <option value="sincronizar_notas_credito_emitidas" {% if accion == "sincronizar_notas_credito_emitidas" %}selected{% endif %}>06 - Notas de Crédito emitidas</option>
                 </select>
+                <small id="accion-ayuda" style="display:block;margin-top:6px;color:#64748b;">Sincronizar compras recibidas</small>
             </div>
         </div>
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_compras';">
-                🛒 Sincronizar compras recibidas
-            </button>
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_ventas';">
-                🧾 Sincronizar ventas emitidas
-            </button>
-            <button type="submit" name="accion" value="validar_ventas" class="btn btn-secondary">
-                🔎 Validar ventas SRI vs BD
-            </button>
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_notas_credito_recibidas';">
-                📥 Sincronizar notas de crédito recibidas
-            </button>
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_retenciones_recibidas';">
-                🧾 Sincronizar retenciones recibidas
-            </button>
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_notas_credito_emitidas';">
-                📝 Sincronizar notas de crédito emitidas
-            </button>
-            <button type="submit" class="btn btn-primary" onclick="document.getElementById('sri-accion').value='sincronizar_retenciones_emitidas';">
-                🧾 Sincronizar retenciones emitidas
-            </button>
+            <button type="submit" class="btn btn-primary">▶ Procesar</button>
         </div>
     </form>
+    <script>
+    (function () {
+        const selector = document.getElementById("accion");
+        const ayuda = document.getElementById("accion-ayuda");
+        const descripciones = {
+            sincronizar_compras: "Sincronizar compras recibidas",
+            sincronizar_retenciones_emitidas: "Sincronizar retenciones emitidas",
+            sincronizar_notas_credito_recibidas: "Sincronizar notas de crédito recibidas",
+            sincronizar_ventas: "Sincronizar ventas emitidas",
+            validar_ventas: "Validar ventas contra el SRI",
+            sincronizar_notas_credito_emitidas: "Sincronizar notas de crédito emitidas"
+        };
+        function actualizarAyuda() {
+            ayuda.textContent = descripciones[selector.value] || "Seleccione el proceso que desea ejecutar";
+        }
+        selector.addEventListener("change", actualizarAyuda);
+        actualizarAyuda();
+    })();
+    </script>
 </div>
 
 <div id="sri-progreso" class="admin-card" style="padding:24px; margin-top:20px; display:{% if sri_job %}block{% else %}none{% endif %};">
