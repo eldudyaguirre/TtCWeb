@@ -35,6 +35,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ats/', admin_views.admin_ats, name='admin_ats'),
     path('totalcounts/clientes/<str:ruc>/documentacion/rebefics/', admin_views.admin_rebefics, name='admin_rebefics'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/rebefics/socios/', admin_views.admin_rebefics_socios, name='admin_rebefics_socios'),
     path('totalcounts/clientes/<str:ruc>/documentacion/rebefics/descargar/<str:nombre>/', admin_views.admin_rebefics_descargar, name='admin_rebefics_descargar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ats/descargar/<str:nombre>/', admin_views.admin_ats_descargar, name='admin_ats_descargar'),
     path('totalcounts/clientes/<str:ruc>/laboral/', admin_views.admin_laboral, name='admin_laboral'),
