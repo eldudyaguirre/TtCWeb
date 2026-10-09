@@ -204,7 +204,7 @@ def parse_aps_xml(content, expected_ruc):
             "porcentaje_participacion": str(porcentaje),
             "porcentaje_participacion_efectiva": str(porcentaje),
             "es_beneficiario_final": item["beneficiario"],
-            "beneficiario_por_propiedad": _yes(item.get("beneficiario_porPropiedad", "")),
+            "beneficiario_por_propiedad": _yes(item.get("raw_beneficiario", {}).get("porPropiedad", "")),
             "beneficiario_por_control": False,
             "beneficiario_por_administracion": False,
             "estado_jurisdiccion": item.get("beneficiario_provincia", ""),
