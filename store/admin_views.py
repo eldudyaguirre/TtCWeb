@@ -20,6 +20,8 @@ from django.contrib.auth.hashers import check_password, make_password
 
 from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor, RebeficsSocio
 
+from .services.rebefics_import import MAX_APS_XML_BYTES, parse_aps_xml
+
 
 ADMIN_SESSION_KEY = 'admin_portal'
 ADMIN_USERNAME_KEY = 'admin_username'
@@ -5737,8 +5739,107 @@ def admin_rebefics_socios(request, ruc):
     editar_id = request.GET.get('editar')
     socio_edicion = get_object_or_404(socios, pk=editar_id) if editar_id else None
 
+    preview_key = f'rebefics_import_preview_{ruc}'
+    preview = request.session.get(preview_key)
+
     if request.method == 'POST':
         accion = request.POST.get('accion', 'guardar')
+
+        if accion == 'importar_previsualizar':
+            archivo = request.FILES.get('archivo_aps_importar')
+            if not archivo:
+                messages.error(request, 'Selecciona un archivo XML APS.')
+                return redirect('admin_rebefics_socios', ruc=ruc)
+            if archivo.size > MAX_APS_XML_BYTES:
+                messages.error(request, 'El XML supera el límite de 20 MB.')
+                return redirect('admin_rebefics_socios', ruc=ruc)
+            try:
+                resultado = parse_aps_xml(archivo.read(), str(cliente.ruccedcli).strip())
+            except ValueError as exc:
+                messages.error(request, str(exc))
+                return redirect('admin_rebefics_socios', ruc=ruc)
+            filas = resultado['rows']
+            identificaciones = [fila['identificacion'] for fila in filas]
+            existentes = {
+                obj.identificacion: obj
+                for obj in RebeficsSocio.objects.filter(
+                    cliente=cliente, identificacion__in=identificaciones
+                ).order_by('id')
+            }
+            for fila in filas:
+                fila['ya_existe'] = fila['identificacion'] in existentes
+            request.session[preview_key] = filas
+            request.session[f'{preview_key}_meta'] = {
+                'anio': resultado['anio'],
+                'advertencias': resultado['advertencias'],
+                'total': len(filas),
+            }
+            messages.success(request, f"XML validado. Se encontraron {len(filas)} personas únicas para revisar.")
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
+        if accion == 'importar_cancelar':
+            request.session.pop(preview_key, None)
+            request.session.pop(f'{preview_key}_meta', None)
+            messages.success(request, 'Se canceló la importación; no se guardaron cambios.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
+        if accion == 'importar_confirmar':
+            filas = request.session.get(preview_key) or []
+            if not filas:
+                messages.error(request, 'La vista previa expiró. Vuelve a cargar el XML.')
+                return redirect('admin_rebefics_socios', ruc=ruc)
+            from django.db import transaction
+            creados = actualizados = 0
+            try:
+                with transaction.atomic():
+                    for fila in filas:
+                        defaults = {
+                            campo: fila.get(campo, '')
+                            for campo in (
+                                'tipo_sujeto', 'tipo_identificacion', 'primer_nombre',
+                                'segundo_nombre', 'primer_apellido', 'segundo_apellido',
+                                'razon_social', 'nacionalidad', 'pais_residencia_fiscal',
+                                'tipo_regimen_fiscal', 'sujeto_extranjero_tipo',
+                                'figura_juridica', 'otra_figura_juridica',
+                                'estado_jurisdiccion', 'ciudad', 'calle', 'interseccion',
+                                'numero_domicilio', 'codigo_postal', 'referencia_direccion',
+                                'tipo_relacion_sujeto', 'porcentaje_participacion',
+                                'porcentaje_participacion_efectiva', 'observaciones',
+                            )
+                        }
+                        defaults.update({
+                            'fecha_nacimiento': fila.get('fecha_nacimiento') or None,
+                            'es_sujeto_extranjero': fila.get('es_sujeto_extranjero', False),
+                            'ultimo_nivel_cadena': fila.get('ultimo_nivel_cadena', False),
+                            'es_beneficiario_final': fila.get('es_beneficiario_final', False),
+                            'beneficiario_por_propiedad': fila.get('beneficiario_por_propiedad', False),
+                            'beneficiario_por_control': fila.get('beneficiario_por_control', False),
+                            'beneficiario_por_administracion': fila.get('beneficiario_por_administracion', False),
+                            'activo': True,
+                        })
+                        socio_existente = RebeficsSocio.objects.filter(
+                            cliente=cliente, identificacion=fila['identificacion']
+                        ).order_by('id').first()
+                        if socio_existente:
+                            for campo, valor in defaults.items():
+                                setattr(socio_existente, campo, valor)
+                            socio_existente.save()
+                            actualizados += 1
+                        else:
+                            RebeficsSocio.objects.create(
+                                cliente=cliente,
+                                identificacion=fila['identificacion'],
+                                **defaults,
+                            )
+                            creados += 1
+            except Exception:
+                messages.error(request, 'No se completó la importación porque ocurrió un error al guardar. No se aplicaron cambios.')
+                return redirect('admin_rebefics_socios', ruc=ruc)
+            request.session.pop(preview_key, None)
+            request.session.pop(f'{preview_key}_meta', None)
+            messages.success(request, f'Importación completada: {creados} nuevos y {actualizados} actualizados.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
         socio_id = request.POST.get('socio_id', '').strip()
         socio = get_object_or_404(RebeficsSocio, pk=socio_id, cliente=cliente) if socio_id else RebeficsSocio(cliente=cliente)
 
@@ -5821,5 +5922,7 @@ def admin_rebefics_socios(request, ruc):
         'tipos_sujeto': RebeficsSocio.TipoSujeto.choices,
         'tipos_identificacion': RebeficsSocio.TipoIdentificacion.choices,
         'tipos_relacion': RebeficsSocio.TipoRelacion.choices,
+        'import_preview': preview,
+        'import_preview_meta': request.session.get(f'{preview_key}_meta'),
     }
     return render(request, 'admin/rebefics_socios.html', context)
