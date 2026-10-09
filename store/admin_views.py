@@ -5460,7 +5460,7 @@ def admin_ats(request, ruc):
 
     cliente = get_object_or_404(Cliente, pk=ruc)
     ruc_cliente = str(cliente.ruccedcli).strip()
-    raiz = data_root() / ruc_cliente / 'anexos' / 'ATS'
+    raiz = data_root() / ruc_cliente / 'anexos' / 'ats'
     error = ''
     exito = ''
 
@@ -5486,7 +5486,7 @@ def admin_ats(request, ruc):
             nombre = f'AT-{mes:02d}{anio}.xml'
             carpeta = raiz / str(anio)
             destino = carpeta / nombre
-            relativo = (Path(ruc_cliente) / 'anexos' / 'ATS' / str(anio) / nombre).as_posix()
+            relativo = (Path(ruc_cliente) / 'anexos' / 'ats' / str(anio) / nombre).as_posix()
             existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).first()
             if existente or destino.exists():
                 error = f'Ya existe un ATS registrado para {mes:02d}/{anio}. Descarga el archivo existente antes de cargar otro.'
@@ -5517,7 +5517,7 @@ def admin_ats(request, ruc):
     anios_disponibles = set()
     for archivo in Archivo.objects.filter(
         cliente=cliente, tipo=Archivo.Tipo.XML, activo=True,
-        ruta_relativa__contains='/anexos/ATS/'
+        ruta_relativa__contains='/anexos/ats/'
     ).order_by('-creado_en'):
         ruta = data_root() / Path(archivo.ruta_relativa)
         if not ruta.is_file() or not ruta.name.upper().startswith('AT-'):
@@ -5578,7 +5578,7 @@ def admin_ats_descargar(request, ruc, nombre):
     if not anio.isdigit() or not mes.isdigit() or not 1 <= int(mes) <= 12:
         raise Http404('Nombre de ATS no válido.')
 
-    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'ATS' / anio / nombre).as_posix()
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'ats' / anio / nombre).as_posix()
     ruta = data_root() / relativo
     if not ruta.is_file():
         raise Http404('El archivo ATS ya no está disponible.')
