@@ -50,8 +50,8 @@
 <div class="socios-field"><label>Figura jurídica</label><input name="figura_juridica" value="{{ socio_edicion.figura_juridica|default:'' }}"></div>
 <div class="socios-field full"><label>Otra figura jurídica (si aplica)</label><input name="otra_figura_juridica" value="{{ socio_edicion.otra_figura_juridica|default:'' }}"></div>
 <div class="socios-field"><label>Relación con la empresa *</label><select name="tipo_relacion_sujeto" required>{% for value,label in tipos_relacion %}<option value="{{ value }}" {% if socio_edicion.tipo_relacion_sujeto == value %}selected{% elif not socio_edicion and value == 'SOCIO' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-<div class="socios-field"><label>Participación (%)</label><input type="number" name="porcentaje_participacion" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion|default:'0' }}"></div>
-<div class="socios-field"><label>Participación efectiva (%)</label><input type="number" name="porcentaje_participacion_efectiva" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion_efectiva|default:'' }}"></div>
+<div class="socios-field"><label>Participación (%)</label><input type="number" name="porcentaje_participacion" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion|default_if_none:'0' }}"></div>
+<div class="socios-field"><label>Participación efectiva (%)</label><input type="number" name="porcentaje_participacion_efectiva" min="0" max="100" step="0.000001" value="{{ socio_edicion.porcentaje_participacion_efectiva|default_if_none:socio_edicion.porcentaje_participacion }}"></div>
 <div class="socios-field"><label>Estado / jurisdicción</label><input name="estado_jurisdiccion" value="{{ socio_edicion.estado_jurisdiccion|default:'' }}"></div>
 <div class="socios-field"><label>Ciudad</label><input name="ciudad" value="{{ socio_edicion.ciudad|default:'' }}"></div>
 <div class="socios-field"><label>Calle</label><input name="calle" value="{{ socio_edicion.calle|default:'' }}"></div>
