@@ -5471,15 +5471,12 @@ def admin_rebefics(request, ruc):
     if request.method == 'POST':
         try:
             anio = int(request.POST.get('anio', ''))
-            mes = int(request.POST.get('mes', ''))
         except (TypeError, ValueError):
-            anio, mes = 0, 0
+            anio = 0
 
         subido = request.FILES.get('archivo_rebefics')
         if not 2000 <= anio <= 2100:
             error = 'Selecciona un año válido.'
-        elif not 1 <= mes <= 12:
-            error = 'Selecciona un mes válido.'
         elif not subido:
             error = 'Selecciona el archivo APS/REBEFICS.'
         elif not subido.name.lower().endswith(('.zip', '.xml')):
@@ -5488,13 +5485,13 @@ def admin_rebefics(request, ruc):
             error = 'El archivo no puede superar los 20 MB.'
         else:
             extension = Path(subido.name).suffix.lower()
-            nombre = f'APS{mes:02d}{anio}{extension}'
+            nombre = f'APS{anio}{extension}'
             carpeta = raiz / str(anio)
             destino = carpeta / nombre
             relativo = (Path(ruc_cliente) / 'anexos' / 'rebefics' / str(anio) / nombre).as_posix()
             existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).first()
             if existente or destino.exists():
-                error = f'Ya existe un archivo APS/REBEFICS para {mes:02d}/{anio}. Descarga el existente antes de cargar otro.'
+                error = f'Ya existe un archivo APS/REBEFICS para el año {anio}. Descarga el existente antes de cargar otro.'
             else:
                 contenido = subido.read()
                 valido = True
