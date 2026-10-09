@@ -75,11 +75,12 @@
                 <label for="accion"><strong>Tipo de proceso</strong></label>
                 <select id="accion" name="accion" class="form-control" style="width:100%;min-width:0;" required>
                     <option value="sincronizar_compras" {% if accion == "sincronizar_compras" or not accion %}selected{% endif %}>01 - Compras Recibidas</option>
-                    <option value="sincronizar_retenciones_emitidas" {% if accion == "sincronizar_retenciones_emitidas" %}selected{% endif %}>02 - Retenciones emitidas</option>
+                    <option value="sincronizar_retenciones_recibidas" {% if accion == "sincronizar_retenciones_recibidas" %}selected{% endif %}>02 - Retenciones recibidas</option>
                     <option value="sincronizar_notas_credito_recibidas" {% if accion == "sincronizar_notas_credito_recibidas" %}selected{% endif %}>03 - Notas de Crédito recibidas</option>
                     <option value="sincronizar_ventas" {% if accion == "sincronizar_ventas" %}selected{% endif %}>04 - Ventas</option>
                     <option value="validar_ventas" {% if accion == "validar_ventas" %}selected{% endif %}>05 - Validar Ventas</option>
                     <option value="sincronizar_notas_credito_emitidas" {% if accion == "sincronizar_notas_credito_emitidas" %}selected{% endif %}>06 - Notas de Crédito emitidas</option>
+                    <option value="sincronizar_retenciones_emitidas" {% if accion == "sincronizar_retenciones_emitidas" %}selected{% endif %}>07 - Retenciones emitidas</option>
                 </select>
                 
             </div>
