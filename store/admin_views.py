@@ -5821,6 +5821,9 @@ def admin_rebefics_socios(request, ruc):
                             cliente=cliente, identificacion=fila['identificacion']
                         ).order_by('id').first()
                         if socio_existente:
+                            # Conserva la categoría interna de relación que ya tenga el registro;
+                            # el detalle exacto de relaciones APS queda en observaciones.
+                            defaults.pop('tipo_relacion_sujeto', None)
                             for campo, valor in defaults.items():
                                 setattr(socio_existente, campo, valor)
                             socio_existente.save()
