@@ -1,4 +1,5 @@
 from io import BytesIO
+from decimal import Decimal, InvalidOperation
 import hashlib
 from functools import wraps
 import mimetypes
@@ -17,7 +18,7 @@ from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password, make_password
 
-from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor
+from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor, RebeficsSocio
 
 
 ADMIN_SESSION_KEY = 'admin_portal'
@@ -5725,3 +5726,96 @@ def admin_ats_descargar(request, ruc, nombre):
     response = FileResponse(ruta.open('rb'), content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="{nombre}"'
     return response
+
+
+@admin_required
+def admin_rebefics_socios(request, ruc):
+    """Administra la base de datos reutilizable de socios y beneficiarios finales."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    socios = RebeficsSocio.objects.filter(cliente=cliente, activo=True).select_related('relacionado_con')
+    editar_id = request.GET.get('editar')
+    socio_edicion = get_object_or_404(socios, pk=editar_id) if editar_id else None
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion', 'guardar')
+        socio_id = request.POST.get('socio_id', '').strip()
+        socio = get_object_or_404(RebeficsSocio, pk=socio_id, cliente=cliente) if socio_id else RebeficsSocio(cliente=cliente)
+
+        if accion == 'eliminar':
+            socio.activo = False
+            socio.save(update_fields=['activo', 'actualizado_en'])
+            messages.success(request, 'El registro fue archivado; se conserva para el historial.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
+        identificacion = request.POST.get('identificacion', '').strip()
+        tipo_sujeto = request.POST.get('tipo_sujeto', 'PN')
+        tipo_identificacion = request.POST.get('tipo_identificacion', 'CEDULA')
+        tipo_relacion = request.POST.get('tipo_relacion_sujeto', 'SOCIO')
+        nombre = request.POST.get('primer_nombre', '').strip()
+        apellido = request.POST.get('primer_apellido', '').strip()
+        razon_social = request.POST.get('razon_social', '').strip()
+        if not identificacion or (tipo_sujeto == 'PN' and not (nombre or apellido)) or (tipo_sujeto != 'PN' and not razon_social):
+            messages.error(request, 'Completa la identificación y el nombre o razón social según el tipo de sujeto.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
+        try:
+            porcentaje = Decimal(request.POST.get('porcentaje_participacion', '0') or '0')
+            porcentaje_efectivo_texto = request.POST.get('porcentaje_participacion_efectiva', '').strip()
+            porcentaje_efectivo = Decimal(porcentaje_efectivo_texto) if porcentaje_efectivo_texto else None
+            if porcentaje < 0 or porcentaje > 100 or (porcentaje_efectivo is not None and (porcentaje_efectivo < 0 or porcentaje_efectivo > 100)):
+                raise InvalidOperation
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'Los porcentajes deben ser números entre 0 y 100.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+
+        fecha_nacimiento = None
+        fecha_texto = request.POST.get('fecha_nacimiento', '').strip()
+        if fecha_texto:
+            try:
+                fecha_nacimiento = datetime.strptime(fecha_texto, '%Y-%m-%d').date()
+            except ValueError:
+                messages.error(request, 'La fecha de nacimiento no es válida.')
+                return redirect('admin_rebefics_socios', ruc=ruc)
+
+        socio.tipo_sujeto = tipo_sujeto
+        socio.tipo_identificacion = tipo_identificacion
+        socio.identificacion = identificacion
+        for campo in (
+            'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
+            'razon_social', 'nacionalidad', 'pais_residencia_fiscal', 'tipo_regimen_fiscal',
+            'pais_relacionado_paraiso', 'pais_regimen_fiscal_preferente', 'regimen_fiscal_preferente',
+            'estado_jurisdiccion', 'ciudad', 'calle', 'interseccion', 'numero_domicilio',
+            'codigo_postal', 'referencia_direccion', 'observaciones',
+        ):
+            setattr(socio, campo, request.POST.get(campo, '').strip())
+        socio.fecha_nacimiento = fecha_nacimiento
+        socio.es_parte_relacionada = request.POST.get('es_parte_relacionada') == 'on'
+        socio.regimen_paraiso_fiscal = request.POST.get('regimen_paraiso_fiscal') == 'on'
+        socio.tipo_relacion_sujeto = tipo_relacion
+        socio.porcentaje_participacion = porcentaje
+        socio.porcentaje_participacion_efectiva = porcentaje_efectivo
+        socio.es_beneficiario_final = request.POST.get('es_beneficiario_final') == 'on'
+        socio.beneficiario_por_propiedad = request.POST.get('beneficiario_por_propiedad') == 'on'
+        socio.beneficiario_por_control = request.POST.get('beneficiario_por_control') == 'on'
+        socio.beneficiario_por_administracion = request.POST.get('beneficiario_por_administracion') == 'on'
+        relacionado_id = request.POST.get('relacionado_con', '').strip()
+        socio.relacionado_con = socios.filter(pk=relacionado_id).first() if relacionado_id else None
+        try:
+            socio.save()
+        except Exception as exc:
+            # Mantener la página funcional y mostrar un error de validación al usuario.
+            messages.error(request, 'No se pudo guardar el registro. Verifica que no exista otro registro con la misma identificación y relación.')
+            return redirect('admin_rebefics_socios', ruc=ruc)
+        messages.success(request, 'Los datos del socio/beneficiario fueron guardados.')
+        return redirect('admin_rebefics_socios', ruc=ruc)
+
+    context = {
+        'cliente': cliente,
+        'socios': socios,
+        'socio_edicion': socio_edicion,
+        'total_socios': socios.count(),
+        'tipos_sujeto': RebeficsSocio.TipoSujeto.choices,
+        'tipos_identificacion': RebeficsSocio.TipoIdentificacion.choices,
+        'tipos_relacion': RebeficsSocio.TipoRelacion.choices,
+    }
+    return render(request, 'admin/rebefics_socios.html', context)
