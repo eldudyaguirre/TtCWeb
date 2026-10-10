@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!response.ok || !result.ok) {
                     throw new Error(result.error || 'No se pudo iniciar el automatizador local.');
                 }
-                alert('Se solicitó abrir Chrome e iniciar sesión en el SRI para ' + nombre + '.');
+                alert('Se abrió Chrome y se rellenaron los datos del SRI para ' + nombre + '.');
             } catch (error) {
                 alert('No se pudo conectar con el automatizador SRI de esta computadora.\\n\\n' +
                     'Comprueba que esté instalado y ejecutándose el agente local.\\n\\nDetalle: ' + error.message);
