@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "TotalCounts - Ingreso SRI",
+  "version": "1.0.0",
+  "description": "Abre el portal del SRI y rellena el RUC y la clave del cliente seleccionado en TotalCounts, sin iniciar sesión automáticamente.",
+  "permissions": [
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://totalcounts.com.ec/*",
+    "https://srienlinea.sri.gob.ec/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://totalcounts.com.ec/totalcounts/*"
+      ],
+      "js": [
+        "content-totalcounts.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://srienlinea.sri.gob.ec/*"
+      ],
+      "js": [
+        "content-sri.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
