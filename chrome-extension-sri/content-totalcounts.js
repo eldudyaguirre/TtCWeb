@@ -22,7 +22,7 @@
       { type: "TTCWEB_OPEN_SRI", ruc, clave },
       (response) => {
         if (chrome.runtime.lastError || !response?.ok) {
-          alert("No se pudo abrir el SRI con la extensión. Comprueba que esté instalada y habilitada.");
+          alert("No se pudo abrir el SRI con la extensión. " + (response?.error || chrome.runtime.lastError?.message || "Revisa que manifest.json y background.js estén actualizados y recarga la extensión."));
           return;
         }
         alert("Se abrió el SRI para " + nombre + ". Los campos se rellenarán sin iniciar sesión automáticamente.");
