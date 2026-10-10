@@ -205,7 +205,7 @@
     const cancelarUrl = "{% url 'admin_conta_sri_cancelar' %}";
     let cancelando = false;
 
-    repararBtn.addEventListener("click", function () {
+    repararBtn.addEventListener("click", async function () {
         const fechas = Array.from(valDetalle.querySelectorAll("tbody tr"))
             .filter(tr => (tr.textContent || "").includes("DIFERENCIA"))
             .map(tr => (tr.cells[0]?.textContent || "").trim())
