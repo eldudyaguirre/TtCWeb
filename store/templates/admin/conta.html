@@ -125,6 +125,12 @@
             <div><strong>Faltantes recuperados</strong><br><span id="val-faltantes">0</span></div>
             <div><strong>Sobrantes</strong><br><span id="val-sobrantes">0</span></div>
         </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;">
+            <button id="val-reparar" type="button" class="btn btn-primary" style="display:none;">
+                🛠 Reparar diferencias y volver a validar
+            </button>
+            <span id="val-reparar-ayuda" style="font-size:13px;color:#666;"></span>
+        </div>
         <div style="margin-top:18px;overflow:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:14px;">
                 <thead>
@@ -194,8 +200,53 @@
     const valFaltantes = document.getElementById("val-faltantes");
     const valSobrantes = document.getElementById("val-sobrantes");
     const valDetalle = document.getElementById("val-detalle");
+    const repararBtn = document.getElementById("val-reparar");
+    const repararAyuda = document.getElementById("val-reparar-ayuda");
     const cancelarUrl = "{% url 'admin_conta_sri_cancelar' %}";
     let cancelando = false;
+
+    repararBtn.addEventListener("click", function () {
+        const fechas = Array.from(valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]'))
+            .map(tr => tr.dataset.fecha)
+            .filter(fecha => /^\\d{4}-\\d{2}-\\d{2}$/.test(fecha));
+        if (!fechas.length) {
+            alert("No hay días con diferencias para reparar.");
+            return;
+        }
+        if (!confirm("Se reprocesarán únicamente " + fechas.length + " día(s): " + fechas.join(", ") + ". ¿Continuar?")) return;
+        const origen = document.querySelector('form select[name="ruc"]');
+        const formPeriodo = document.querySelector('form select[name="mes"]')?.form;
+        const ruc = origen?.value || "{{ ruc|escapejs }}";
+        const anio = formPeriodo?.querySelector('[name="anio"]')?.value || "{{ anio|escapejs }}";
+        const mes = formPeriodo?.querySelector('[name="mes"]')?.value || "{{ mes|escapejs }}";
+        if (!ruc || !anio || !mes) {
+            alert("No se pudo identificar el cliente y período de la validación.");
+            return;
+        }
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = window.location.pathname;
+        const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+        const campos = {
+            csrfmiddlewaretoken: csrf,
+            accion: "reparar_ventas_diferencias",
+            ruc: ruc,
+            anio: anio,
+            mes: mes,
+            dias_objetivo: JSON.stringify(fechas)
+        };
+        Object.entries(campos).forEach(([name, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        repararBtn.disabled = true;
+        repararBtn.textContent = "⏳ Iniciando reparación...";
+        form.submit();
+    });
 
     cancelar.addEventListener("click", async function () {
         if (cancelando) return;
@@ -333,6 +384,8 @@
                     detalle.forEach(function (dia) {
                         const tr = document.createElement("tr");
                         const ok = dia.estado === "OK";
+                        tr.dataset.fecha = dia.fecha || "";
+                        tr.dataset.estado = ok ? "OK" : "DIFERENCIA";
                         tr.innerHTML =
                             "<td style='padding:7px;border-bottom:1px solid #eee;'>" + (dia.fecha || "") + "</td>" +
                             "<td style='padding:7px;text-align:right;border-bottom:1px solid #eee;'>" + (dia.sri ?? 0) + "</td>" +
@@ -343,6 +396,11 @@
                         valDetalle.appendChild(tr);
                     });
                 }
+                const diferenciasPendientes = valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]').length;
+                repararBtn.style.display = data.estado === "finalizado" && diferenciasPendientes ? "inline-block" : "none";
+                repararAyuda.textContent = diferenciasPendientes
+                    ? "Se repararán solo los " + diferenciasPendientes + " días marcados con DIFERENCIA."
+                    : "";
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
