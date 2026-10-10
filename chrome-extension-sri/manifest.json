@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "TotalCounts - Ingreso SRI",
-  "version": "1.1.0",
-  "description": "Abre el portal del SRI y rellena el RUC y la clave del cliente seleccionado en TotalCounts, sin iniciar sesión automáticamente.",
+  "name": "TotalCounts - Ingreso SRI e IESS",
+  "version": "1.2.0",
+  "description": "Abre los portales SRI e IESS y rellena las credenciales del cliente seleccionado.",
   "permissions": [
     "tabs",
     "storage"
   ],
   "host_permissions": [
     "https://totalcounts.com.ec/*",
-    "https://srienlinea.sri.gob.ec/*"
+    "https://srienlinea.sri.gob.ec/*",
+    "https://www.iess.gob.ec/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -30,6 +31,15 @@
       ],
       "js": [
         "content-sri.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.iess.gob.ec/empleador-web/*"
+      ],
+      "js": [
+        "content-iess.js"
       ],
       "run_at": "document_idle"
     }
