@@ -182,7 +182,7 @@
 {% if sri_job %}
 <script>
 (function () {
-    const jobId = "{{ sri_job|escapejs }}";
+    let jobId = "{{ sri_job|escapejs }}";
     const statusUrl = "{% url 'admin_conta_sri_status' %}";
     const estado = document.getElementById("sri-estado");
     const mensaje = document.getElementById("sri-mensaje");
@@ -230,30 +230,47 @@
             alert("No se pudo identificar el cliente y período de la validación.");
             return;
         }
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = window.location.pathname + window.location.search;
         const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
-        const campos = {
+        const payload = new URLSearchParams({
             csrfmiddlewaretoken: csrf,
             accion: "reparar_ventas_diferencias",
             ruc: ruc,
             anio: anio,
             mes: mes,
             dias_objetivo: JSON.stringify(fechas)
-        };
-        Object.entries(campos).forEach(([name, value]) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
         });
-        document.body.appendChild(form);
         repararBtn.disabled = true;
         repararBtn.textContent = "⏳ Iniciando reparación...";
-        repararAyuda.textContent = "Enviando la reparación de " + fechas.length + " día(s). La página se actualizará y mostrará el progreso.";
-        form.submit();
+        repararAyuda.textContent = "Enviando la reparación de " + fechas.length + " día(s), sin cerrar esta pantalla.";
+        try {
+            const response = await fetch(window.location.pathname + window.location.search, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                    "X-CSRFToken": csrf,
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                },
+                body: payload.toString()
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok || !data.job_id) {
+                throw new Error(data.error || data.detail || "Conta no devolvió el identificador del trabajo.");
+            }
+            jobId = data.job_id;
+            document.getElementById("sri-progreso").style.display = "block";
+            validador.style.display = "block";
+            estado.textContent = "⏳ En cola";
+            mensaje.textContent = data.mensaje || "La reparación fue enviada a Conta.";
+            repararAyuda.textContent = "Reparación iniciada para " + fechas.join(", ") + ". El resultado se actualizará aquí.";
+            cancelar.disabled = false;
+            cancelar.textContent = "⏹ Detener sincronización";
+            consultar();
+        } catch (error) {
+            repararBtn.disabled = false;
+            repararBtn.textContent = "🛠 Reparar diferencias y volver a validar";
+            repararAyuda.textContent = error.message || "No se pudo iniciar la reparación.";
+        }
     });
 
     cancelar.addEventListener("click", async function () {
