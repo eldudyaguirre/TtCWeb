@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     const ruc = String(message.ruc || "").trim();
     const clave = String(message.clave || "");
-    if (!/^\\d{13}$/.test(ruc) || !clave) {
+    if (!/^\d{13}$/.test(ruc) || !clave) {
       sendResponse({ ok: false, error: "RUC o clave no válidos." });
       return;
     }
