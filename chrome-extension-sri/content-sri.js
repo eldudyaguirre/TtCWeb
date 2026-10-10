@@ -25,6 +25,15 @@
       ["text", "tel", "number"].includes((el.type || "").toLowerCase())) || null;
   }
 
+  function findSubmitButton() {
+    const elements = Array.from(document.querySelectorAll("button, input[type='submit'], input[type='button']"))
+      .filter(el => el.getClientRects().length > 0 && !el.disabled);
+    return elements.find(el => {
+      const text = (el.innerText || el.value || el.getAttribute("aria-label") || "").trim();
+      return /^ingresar$/i.test(text);
+    }) || null;
+  }
+
   function setNativeValue(input, value) {
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
     if (setter) setter.call(input, value);
@@ -42,8 +51,31 @@
     if (user && password) {
       setNativeValue(user, credentials.ruc);
       setNativeValue(password, credentials.clave);
+
       if (user.value === credentials.ruc && password.value === credentials.clave) {
         document.documentElement.dataset.ttcSriFillStatus = "filled";
+        // Give the SRI page a moment to process input/change events before clicking.
+        setTimeout(() => {
+          const currentUser = findUserInput();
+          const currentPassword = Array.from(document.querySelectorAll('input[type="password"]')).find(visible);
+          const submit = findSubmitButton();
+
+          if (!currentUser || !currentPassword ||
+              currentUser.value !== credentials.ruc ||
+              currentPassword.value !== credentials.clave) {
+            document.documentElement.dataset.ttcSriFillStatus = "verification-failed";
+            console.warn("[TotalCounts SRI] No se envió el formulario: los campos cambiaron antes del envío.");
+            return;
+          }
+          if (!submit) {
+            document.documentElement.dataset.ttcSriFillStatus = "submit-not-found";
+            console.warn("[TotalCounts SRI] Campos rellenados, pero no se encontró el botón Ingresar.");
+            return;
+          }
+
+          document.documentElement.dataset.ttcSriFillStatus = "submitting";
+          submit.click();
+        }, 400);
         return;
       }
     }
@@ -58,6 +90,10 @@
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type !== "TTCWEB_FILL_SRI_CREDENTIALS") return;
     credentials = { ruc: String(message.ruc || ""), clave: String(message.clave || "") };
+    if (!/^\d{13}$/.test(credentials.ruc) || !credentials.clave) {
+      document.documentElement.dataset.ttcSriFillStatus = "invalid-credentials";
+      return;
+    }
     document.documentElement.dataset.ttcSriFillStatus = "credentials-received";
     attemptFill();
   });
