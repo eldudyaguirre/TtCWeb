@@ -89,32 +89,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.admin-passwords-sri-login').forEach(function (button) {
-        button.addEventListener('click', async function () {
+        button.addEventListener('click', function () {
             const ruc = button.dataset.ruc || '';
             const clave = button.dataset.clave || '';
-            const nombre = button.dataset.nombre || 'cliente';
             if (!ruc || !clave) {
                 alert('Este cliente no tiene una clave SRI registrada.');
                 return;
             }
-            button.disabled = true;
-            try {
-                const response = await fetch('http://127.0.0.1:8765/ingreso-sri', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ruc: ruc, clave: clave })
-                });
-                const result = await response.json();
-                if (!response.ok || !result.ok) {
-                    throw new Error(result.error || 'No se pudo iniciar el automatizador local.');
-                }
-                alert('Se abrió Chrome y se rellenaron los datos del SRI para ' + nombre + '.');
-            } catch (error) {
-                alert('No se pudo conectar con el automatizador SRI de esta computadora.\\n\\n' +
-                    'Comprueba que esté instalado y ejecutándose el agente local.\\n\\nDetalle: ' + error.message);
-            } finally {
-                button.disabled = false;
-            }
+            alert('Para rellenar automáticamente los campos en tu laptop, instala y habilita la extensión TotalCounts - Ingreso SRI en Chrome y vuelve a cargar esta página.');
         });
     });
 });
