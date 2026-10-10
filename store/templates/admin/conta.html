@@ -126,7 +126,7 @@
             <div><strong>Sobrantes</strong><br><span id="val-sobrantes">0</span></div>
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;">
-            <button id="val-reparar" type="button" class="btn btn-primary" style="display:none;">
+            <button id="val-reparar" type="button" class="btn btn-primary" style="display:inline-block;" disabled>
                 🛠 Reparar diferencias y volver a validar
             </button>
             <span id="val-reparar-ayuda" style="font-size:13px;color:#666;"></span>
@@ -208,7 +208,7 @@
     repararBtn.addEventListener("click", function () {
         const fechas = Array.from(valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]'))
             .map(tr => tr.dataset.fecha)
-            .filter(fecha => /^\\d{4}-\\d{2}-\\d{2}$/.test(fecha));
+            .filter(fecha => /^\d{4}-\d{2}-\d{2}$/.test(fecha));
         if (!fechas.length) {
             alert("No hay días con diferencias para reparar.");
             return;
@@ -397,10 +397,16 @@
                     });
                 }
                 const diferenciasPendientes = valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]').length;
-                repararBtn.style.display = data.estado === "finalizado" && diferenciasPendientes ? "inline-block" : "none";
-                repararAyuda.textContent = diferenciasPendientes
-                    ? "Se repararán solo los " + diferenciasPendientes + " días marcados con DIFERENCIA."
-                    : "";
+                repararBtn.style.display = "inline-block";
+                repararBtn.disabled = data.estado !== "finalizado" || diferenciasPendientes === 0;
+                repararBtn.textContent = data.estado !== "finalizado"
+                    ? "⏳ Espera a que termine la validación"
+                    : "🛠 Reparar diferencias y volver a validar";
+                repararAyuda.textContent = data.estado !== "finalizado"
+                    ? "El botón estará disponible cuando termine la validación."
+                    : (diferenciasPendientes
+                        ? "Se repararán solo los " + diferenciasPendientes + " días marcados con DIFERENCIA."
+                        : "No hay días con diferencias pendientes de reparar.");
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
