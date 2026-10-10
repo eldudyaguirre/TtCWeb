@@ -3277,6 +3277,13 @@ def admin_conta(request):
                 if request.POST.get('accion') == 'reparar_ventas_diferencias' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     from django.http import JsonResponse
                     return JsonResponse({'ok': False, 'error': error}, status=400)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception("Error inesperado en acción de Conta")
+                error = 'Error inesperado al iniciar la operación. Revise el registro de TtCWeb.'
+                if request.POST.get('accion') == 'reparar_ventas_diferencias' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({'ok': False, 'error': error}, status=500)
 
     return render(
         request,
