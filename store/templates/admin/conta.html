@@ -259,12 +259,15 @@
                 data = contenido ? JSON.parse(contenido) : {};
             } catch (_) {
                 const loginHtml = /<html|<!doctype html/i.test(contenido);
+                const pareceLogin = /name=["']password["']|admin\/login|iniciar sesión|iniciar sesion/i.test(contenido);
+                const titulo = (contenido.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1];
+                const detalleHtml = (titulo || "").replace(/<[^>]+>/g, "").trim();
                 throw new Error(
                     response.status === 403
-                        ? "La sesión o la verificación CSRF de TotalCounts expiró. Recarga la página e inténtalo otra vez."
-                        : (loginHtml
-                            ? "El servidor devolvió una página HTML en lugar de JSON. Puede haber expirado la sesión o el servidor haber generado un error. Revisa el registro de TtCWeb."
-                            : "Respuesta inesperada del servidor (HTTP " + response.status + ").")
+                        ? "TotalCounts rechazó la solicitud (HTTP 403). Recarga la página e inténtalo otra vez; puede ser la sesión o el token CSRF."
+                        : (loginHtml && pareceLogin
+                            ? "La solicitud terminó en la pantalla de inicio de sesión (HTTP " + response.status + "). Vuelve a iniciar sesión y repite la reparación."
+                            : "El servidor devolvió HTML en lugar de JSON (HTTP " + response.status + (response.redirected ? ", redirigido" : "") + (detalleHtml ? ", página: " + detalleHtml : "") + "). Revisa el registro de TtCWeb para encontrar el error exacto.")
                 );
             }
             if (!response.ok || !data.ok || !data.job_id) {
