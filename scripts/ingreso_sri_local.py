@@ -1,5 +1,5 @@
 """
-Agente local para abrir el SRI en Chrome y autenticar el cliente seleccionado.
+Agente local para abrir el SRI en Chrome y rellenar los datos del cliente sin iniciar sesión.
 Instalar en la computadora donde se quiere ver Chrome:
     poetry run playwright install chrome
     python scripts/ingreso_sri_local.py
@@ -69,29 +69,8 @@ def open_sri(ruc: str, clave: str) -> None:
     user.fill(ruc)
     password.fill(clave)
 
-    submit = None
-    for selector in (
-        'button:has-text("Ingresar")',
-        'button:has-text("Iniciar sesión")',
-        'button:has-text("Iniciar Sesión")',
-        'input[type="submit"]',
-        'button[type="submit"]',
-    ):
-        loc = page.locator(selector)
-        for i in range(loc.count()):
-            item = loc.nth(i)
-            if item.is_visible():
-                submit = item
-                break
-        if submit:
-            break
-
-    if not submit:
-        raise RuntimeError("No se encontró el botón de ingreso del SRI.")
-
-    submit.click(timeout=15000)
-    # Mantener Chrome abierto para que el usuario continúe trabajando.
-    logging.info("Se envió el formulario de acceso SRI para RUC %s.", ruc)
+    # No presionar Ingresar: dejar los datos listos para que el usuario revise.
+    logging.info("Formulario SRI rellenado para RUC %s; no se envió.", ruc)
 
 
 class Handler(BaseHTTPRequestHandler):
