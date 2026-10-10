@@ -423,6 +423,8 @@
                     const pagina = error.pagina != null ? "Página " + error.pagina : "";
                     const fila = error.fila != null ? " · Fila " + error.fila : "";
                     const detalle = error.detalle || "Error sin detalle";
+                    const fechaFactura = error.fecha_factura || error.fecha || "";
+                    const numeroFactura = error.numero_factura || "";
                     const clienteError = error.cliente || "";
                     const numRetencion = error.num_retencion || "";
                     const proveedor = error.proveedor_retencion || "";
@@ -431,6 +433,7 @@
                     bloque.innerHTML =
                         "<strong>Error " + (indice + 1) + "</strong>" +
                         (pagina || fila ? " <span style='font-weight:normal;color:#666;'>(" + pagina + fila + ")</span>" : "") +
+                        (fechaFactura || numeroFactura ? "<div style='margin-top:5px;'><strong>Fecha de factura:</strong> " + escaparHtml(fechaFactura || "No identificada") + " · <strong>Número:</strong> " + escaparHtml(numeroFactura || "No identificado") + "</div>" : "") +
                         (clienteError ? "<div style='margin-top:7px;'><strong>Cliente:</strong> " + escaparHtml(clienteError) + "</div>" : "") +
                         (numRetencion ? "<div style='margin-top:4px;'><strong>Número de retención:</strong> " + escaparHtml(numRetencion) + "</div>" : "") +
                         (proveedor ? "<div style='margin-top:4px;'><strong>Emisor de la retención:</strong> " + escaparHtml(proveedor) + "</div>" : "") +
