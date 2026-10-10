@@ -1,49 +1,61 @@
-const SRI_URL = "https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil";
+const DESTINATIONS = {
+  SRI: {
+    url: "https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil",
+    allowed: "https://srienlinea.sri.gob.ec/",
+    message: "TTCWEB_FILL_SRI_CREDENTIALS"
+  },
+  IESS: {
+    url: "https://www.iess.gob.ec/empleador-web/pages/principal.jsf",
+    allowed: "https://www.iess.gob.ec/empleador-web/",
+    message: "TTCWEB_FILL_IESS_CREDENTIALS"
+  }
+};
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type === "TTCWEB_OPEN_SRI") {
-    if (!sender.tab?.url || !sender.tab.url.startsWith("https://totalcounts.com.ec/totalcounts/")) {
-      sendResponse({ ok: false, error: "Origen no autorizado." });
-      return;
-    }
+  const isSRI = message?.type === "TTCWEB_OPEN_SRI";
+  const isIESS = message?.type === "TTCWEB_OPEN_IESS";
+  if (!isSRI && !isIESS) return;
 
-    const ruc = String(message.ruc || "").trim();
-    const clave = String(message.clave || "");
-    if (!/^\d{13}$/.test(ruc) || !clave) {
-      sendResponse({ ok: false, error: "RUC o clave no válidos." });
-      return;
-    }
-
-    chrome.tabs.create({ url: SRI_URL, active: true }, (tab) => {
-      if (chrome.runtime.lastError || !tab?.id) {
-        sendResponse({ ok: false, error: chrome.runtime.lastError?.message || "No se pudo crear la pestaña del SRI." });
-        return;
-      }
-
-      const tabId = tab.id;
-      let delivered = false;
-      const deadline = Date.now() + 30000;
-
-      const deliverWhenReady = (updatedTabId, changeInfo, updatedTab) => {
-        if (updatedTabId !== tabId || delivered) return;
-        const url = updatedTab?.url || "";
-        if (url && !url.startsWith("https://srienlinea.sri.gob.ec/")) return;
-        if (changeInfo.status !== "complete" && Date.now() < deadline) return;
-
-        chrome.tabs.sendMessage(tabId, { type: "TTCWEB_FILL_SRI_CREDENTIALS", ruc, clave }, (response) => {
-          if (chrome.runtime.lastError) {
-            if (Date.now() < deadline) return;
-            chrome.tabs.onUpdated.removeListener(deliverWhenReady);
-            return;
-          }
-          delivered = true;
-          chrome.tabs.onUpdated.removeListener(deliverWhenReady);
-        });
-      };
-
-      chrome.tabs.onUpdated.addListener(deliverWhenReady);
-      sendResponse({ ok: true });
-    });
-    return true;
+  if (!sender.tab?.url || !sender.tab.url.startsWith("https://totalcounts.com.ec/totalcounts/")) {
+    sendResponse({ ok: false, error: "Origen no autorizado." });
+    return;
   }
+
+  const kind = isSRI ? "SRI" : "IESS";
+  const destination = DESTINATIONS[kind];
+  const usuario = String(message.usuario || message.ruc || "").trim();
+  const clave = String(message.clave || "");
+  if (!usuario || !clave || (kind === "SRI" && !/^\d{13}$/.test(usuario))) {
+    sendResponse({ ok: false, error: "Usuario o clave no válidos." });
+    return;
+  }
+
+  chrome.tabs.create({ url: destination.url, active: true }, (tab) => {
+    if (chrome.runtime.lastError || !tab?.id) {
+      sendResponse({ ok: false, error: chrome.runtime.lastError?.message || "No se pudo abrir el portal." });
+      return;
+    }
+
+    const tabId = tab.id;
+    let delivered = false;
+    const deadline = Date.now() + 30000;
+    const listener = (updatedTabId, changeInfo, updatedTab) => {
+      if (updatedTabId !== tabId || delivered) return;
+      const url = updatedTab?.url || "";
+      if (url && !url.startsWith(destination.allowed)) return;
+      if (changeInfo.status !== "complete" && Date.now() < deadline) return;
+
+      chrome.tabs.sendMessage(tabId, { type: destination.message, usuario, ruc: usuario, clave }, () => {
+        if (chrome.runtime.lastError) {
+          if (Date.now() >= deadline) chrome.tabs.onUpdated.removeListener(listener);
+          return;
+        }
+        delivered = true;
+        chrome.tabs.onUpdated.removeListener(listener);
+      });
+    };
+    chrome.tabs.onUpdated.addListener(listener);
+    sendResponse({ ok: true });
+  });
+  return true;
 });
