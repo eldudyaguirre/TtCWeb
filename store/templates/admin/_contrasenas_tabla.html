@@ -36,6 +36,14 @@
                                     <i class="fi fi-rr-sign-in-alt"></i> Ingreso SRI
                                 </button>
 
+                                <button type="button" class="admin-passwords-action-item admin-passwords-iess-login"
+                                        data-usuario="{{ cliente.cediess|escape }}"
+                                        data-clave="{{ cliente.claveiess|escape }}"
+                                        data-nombre="{{ cliente.nomclient|escape }}"
+                                        {% if not cliente.cediess or not cliente.claveiess %}disabled title="Este cliente no tiene usuario y clave IESS registrados"{% endif %}>
+                                    <i class="fi fi-rr-sign-in-alt"></i> Ingreso IESS
+                                </button>
+
                                 <button type="button" class="admin-passwords-action-item admin-passwords-edit-button"
                                     data-ruc="{{ cliente.ruccedcli }}"
                                     data-nombre="{{ cliente.nomclient }}"
