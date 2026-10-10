@@ -209,7 +209,13 @@
         const fechas = Array.from(valDetalle.querySelectorAll("tbody tr"))
             .filter(tr => (tr.textContent || "").includes("DIFERENCIA"))
             .map(tr => (tr.cells[0]?.textContent || "").trim())
-            .filter(fecha => fecha.length > 0);
+            .map(fecha => {
+                const iso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (iso) return fecha;
+                const local = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                return local ? local[3] + "-" + local[2] + "-" + local[1] : "";
+            })
+            .filter(fecha => /^\d{4}-\d{2}-\d{2}$/.test(fecha));
         if (!fechas.length) {
             alert("No hay días con diferencias para reparar.");
             return;
@@ -226,7 +232,7 @@
         }
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = window.location.pathname;
+        form.action = window.location.pathname + window.location.search;
         const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
         const campos = {
             csrfmiddlewaretoken: csrf,
@@ -246,6 +252,7 @@
         document.body.appendChild(form);
         repararBtn.disabled = true;
         repararBtn.textContent = "⏳ Iniciando reparación...";
+        repararAyuda.textContent = "Enviando la reparación de " + fechas.length + " día(s). La página se actualizará y mostrará el progreso.";
         form.submit();
     });
 
