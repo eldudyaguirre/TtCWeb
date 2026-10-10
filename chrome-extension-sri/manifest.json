@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TotalCounts - Ingreso SRI",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Abre el portal del SRI y rellena el RUC y la clave del cliente seleccionado en TotalCounts, sin iniciar sesión automáticamente.",
   "permissions": [
     "tabs",
