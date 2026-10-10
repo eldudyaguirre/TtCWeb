@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Abre el portal del SRI y rellena el RUC y la clave del cliente seleccionado en TotalCounts, sin iniciar sesión automáticamente.",
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "host_permissions": [
     "https://totalcounts.com.ec/*",
