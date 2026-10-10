@@ -3285,6 +3285,26 @@ def admin_conta(request):
                     from django.http import JsonResponse
                     return JsonResponse({'ok': False, 'error': error}, status=500)
 
+    # Las solicitudes AJAX de reparación siempre deben recibir JSON,
+    # incluso si alguna rama de procesamiento no devolvió una respuesta antes.
+    if (
+        request.method == 'POST'
+        and request.POST.get('accion') == 'reparar_ventas_diferencias'
+        and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    ):
+        from django.http import JsonResponse
+        if sri_job:
+            return JsonResponse({
+                'ok': True,
+                'job_id': sri_job,
+                'estado': (resultado or {}).get('estado', 'pendiente'),
+                'mensaje': 'La reparación selectiva fue enviada a Conta.',
+            })
+        return JsonResponse({
+            'ok': False,
+            'error': error or 'La solicitud llegó a TtCWeb, pero no se obtuvo un identificador de trabajo de Conta. Revise los registros del servicio.',
+        }, status=400)
+
     return render(
         request,
         'admin/conta.html',
