@@ -30,68 +30,68 @@ def open_sri(ruc: str, clave: str) -> None:
         playwright.stop()
         raise
     _BROWSER_SESSIONS.append((playwright, browser))
-        page = browser.new_page()
-        page.goto(SRI_URL, wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(2500)
+    page = browser.new_page()
+    page.goto(SRI_URL, wait_until="domcontentloaded", timeout=60000)
+    page.wait_for_timeout(2500)
 
-        user = None
-        for selector in (
-            'input[name="usuario"]', 'input[name="ruc"]',
-            'input[id*="usuario"]', 'input[id*="ruc"]',
-            'input[placeholder*="RUC"]', 'input[type="text"]',
-        ):
-            loc = page.locator(selector)
-            for i in range(loc.count()):
-                item = loc.nth(i)
-                if item.is_visible():
-                    user = item
-                    break
-            if user:
+    user = None
+    for selector in (
+        'input[name="usuario"]', 'input[name="ruc"]',
+        'input[id*="usuario"]', 'input[id*="ruc"]',
+        'input[placeholder*="RUC"]', 'input[type="text"]',
+    ):
+        loc = page.locator(selector)
+        for i in range(loc.count()):
+            item = loc.nth(i)
+            if item.is_visible():
+                user = item
                 break
+        if user:
+            break
 
-        password = None
-        for selector in (
-            'input[type="password"]', 'input[name="clave"]',
-            'input[name="password"]', 'input[id*="clave"]',
-        ):
-            loc = page.locator(selector)
-            for i in range(loc.count()):
-                item = loc.nth(i)
-                if item.is_visible():
-                    password = item
-                    break
-            if password:
+    password = None
+    for selector in (
+        'input[type="password"]', 'input[name="clave"]',
+        'input[name="password"]', 'input[id*="clave"]',
+    ):
+        loc = page.locator(selector)
+        for i in range(loc.count()):
+            item = loc.nth(i)
+            if item.is_visible():
+                password = item
                 break
+        if password:
+            break
 
-        if not user or not password:
-            raise RuntimeError("No se encontró el formulario de acceso del SRI.")
+    if not user or not password:
+        raise RuntimeError("No se encontró el formulario de acceso del SRI.")
 
-        user.fill(ruc)
-        password.fill(clave)
+    user.fill(ruc)
+    password.fill(clave)
 
-        submit = None
-        for selector in (
-            'button:has-text("Ingresar")',
-            'button:has-text("Iniciar sesión")',
-            'button:has-text("Iniciar Sesión")',
-            'input[type="submit"]',
-            'button[type="submit"]',
-        ):
-            loc = page.locator(selector)
-            for i in range(loc.count()):
-                item = loc.nth(i)
-                if item.is_visible():
-                    submit = item
-                    break
-            if submit:
+    submit = None
+    for selector in (
+        'button:has-text("Ingresar")',
+        'button:has-text("Iniciar sesión")',
+        'button:has-text("Iniciar Sesión")',
+        'input[type="submit"]',
+        'button[type="submit"]',
+    ):
+        loc = page.locator(selector)
+        for i in range(loc.count()):
+            item = loc.nth(i)
+            if item.is_visible():
+                submit = item
                 break
+        if submit:
+            break
 
-        if not submit:
-            raise RuntimeError("No se encontró el botón de ingreso del SRI.")
+    if not submit:
+        raise RuntimeError("No se encontró el botón de ingreso del SRI.")
 
-        submit.click(timeout=15000)
-        # Mantener Chrome abierto para que el usuario continúe trabajando.
-        logging.info("Se envió el formulario de acceso SRI para RUC %s.", ruc)
+    submit.click(timeout=15000)
+    # Mantener Chrome abierto para que el usuario continúe trabajando.
+    logging.info("Se envió el formulario de acceso SRI para RUC %s.", ruc)
 
 
 class Handler(BaseHTTPRequestHandler):
