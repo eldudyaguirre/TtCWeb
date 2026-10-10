@@ -1,32 +1,40 @@
 (() => {
-  if (window.__ttcSRIExtensionReady) return;
-  window.__ttcSRIExtensionReady = true;
+  if (window.__ttcAccessExtensionReady) return;
+  window.__ttcAccessExtensionReady = true;
 
   document.addEventListener("click", (event) => {
-    const button = event.target.closest(".admin-passwords-sri-login");
+    const sriButton = event.target.closest(".admin-passwords-sri-login");
+    const iessButton = event.target.closest(".admin-passwords-iess-login");
+    const button = sriButton || iessButton;
     if (!button) return;
-
-    const ruc = (button.dataset.ruc || "").trim();
-    const clave = button.dataset.clave || "";
-    const nombre = button.dataset.nombre || "cliente";
-    if (!/^\d{13}$/.test(ruc) || !clave) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      alert("Este cliente no tiene un RUC o una clave SRI válidos.");
-      return;
-    }
 
     event.preventDefault();
     event.stopImmediatePropagation();
-    chrome.runtime.sendMessage(
-      { type: "TTCWEB_OPEN_SRI", ruc, clave },
-      (response) => {
-        if (chrome.runtime.lastError || !response?.ok) {
-          alert("No se pudo abrir el SRI con la extensión. " + (response?.error || chrome.runtime.lastError?.message || "Revisa que manifest.json y background.js estén actualizados y recarga la extensión."));
-          return;
-        }
-        alert("Se abrió el SRI para " + nombre + ". Los campos se rellenarán sin iniciar sesión automáticamente.");
+
+    const isIESS = Boolean(iessButton);
+    const usuario = (button.dataset.usuario || button.dataset.ruc || "").trim();
+    const clave = button.dataset.clave || "";
+    const nombre = button.dataset.nombre || "cliente";
+
+    if (!usuario || !clave || (!isIESS && !/^\d{13}$/.test(usuario))) {
+      alert("Este cliente no tiene usuario/RUC y clave válidos para este portal.");
+      return;
+    }
+
+    chrome.runtime.sendMessage({
+      type: isIESS ? "TTCWEB_OPEN_IESS" : "TTCWEB_OPEN_SRI",
+      usuario,
+      ruc: usuario,
+      clave
+    }, response => {
+      if (chrome.runtime.lastError || !response?.ok) {
+        alert("No se pudo abrir el portal. " +
+          (response?.error || chrome.runtime.lastError?.message || "Revisa que la extensión esté actualizada."));
+        return;
       }
-    );
+      alert(isIESS
+        ? "Se abrió el IESS para " + nombre + ". La extensión rellenará los datos y pulsará Ingresar."
+        : "Se abrió el SRI para " + nombre + ". La extensión rellenará los datos y pulsará Ingresar.");
+    });
   }, true);
 })();
