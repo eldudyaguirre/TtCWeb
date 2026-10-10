@@ -28,6 +28,13 @@
                                 <i class="fi fi-rr-menu-dots"></i>
                             </button>
                             <div class="admin-passwords-action-menu">
+                                <a class="admin-passwords-action-item admin-passwords-sri-login"
+                                   href="https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil"
+                                   target="_blank" rel="noopener noreferrer"
+                                   aria-label="Abrir el portal del SRI para {{ cliente.nomclient }}">
+                                    <i class="fi fi-rr-sign-in-alt"></i> Ingreso SRI
+                                </a>
+
                                 <button type="button" class="admin-passwords-action-item admin-passwords-edit-button"
                                     data-ruc="{{ cliente.ruccedcli }}"
                                     data-nombre="{{ cliente.nomclient }}"
