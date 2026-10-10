@@ -28,12 +28,13 @@
                                 <i class="fi fi-rr-menu-dots"></i>
                             </button>
                             <div class="admin-passwords-action-menu">
-                                <a class="admin-passwords-action-item admin-passwords-sri-login"
-                                   href="https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil"
-                                   target="_blank" rel="noopener noreferrer"
-                                   aria-label="Abrir el portal del SRI para {{ cliente.nomclient }}">
+                                <button type="button" class="admin-passwords-action-item admin-passwords-sri-login"
+                                        data-ruc="{{ cliente.ruccedcli }}"
+                                        data-clave="{{ cliente.clavesri|escape }}"
+                                        data-nombre="{{ cliente.nomclient|escape }}"
+                                        {% if not cliente.clavesri %}disabled title="Este cliente no tiene clave SRI registrada"{% endif %}>
                                     <i class="fi fi-rr-sign-in-alt"></i> Ingreso SRI
-                                </a>
+                                </button>
 
                                 <button type="button" class="admin-passwords-action-item admin-passwords-edit-button"
                                     data-ruc="{{ cliente.ruccedcli }}"
