@@ -3264,7 +3264,7 @@ def admin_conta(request):
                     )
                     messages.success(request, 'La sincronización de compras fue iniciada en segundo plano.')
                 sri_job = resultado.get('job_id')
-                if accion == 'reparar_ventas_diferencias' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if accion == 'reparar_ventas_diferencias':
                     from django.http import JsonResponse
                     return JsonResponse({
                         'ok': True,
@@ -3274,7 +3274,7 @@ def admin_conta(request):
                     })
             except (ValueError, RuntimeError) as exc:
                 error = str(exc)
-                if request.POST.get('accion') == 'reparar_ventas_diferencias' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if request.POST.get('accion') == 'reparar_ventas_diferencias':
                     from django.http import JsonResponse
                     return JsonResponse({'ok': False, 'error': error}, status=400)
             except Exception:
@@ -3290,7 +3290,6 @@ def admin_conta(request):
     if (
         request.method == 'POST'
         and request.POST.get('accion') == 'reparar_ventas_diferencias'
-        and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     ):
         from django.http import JsonResponse
         if sri_job:
