@@ -253,7 +253,20 @@
                 },
                 body: payload.toString()
             });
-            const data = await response.json();
+            const contenido = await response.text();
+            let data = {};
+            try {
+                data = contenido ? JSON.parse(contenido) : {};
+            } catch (_) {
+                const loginHtml = /<html|<!doctype html/i.test(contenido);
+                throw new Error(
+                    response.status === 403
+                        ? "La sesión o la verificación CSRF de TotalCounts expiró. Recarga la página e inténtalo otra vez."
+                        : (loginHtml
+                            ? "El servidor devolvió una página HTML en lugar de JSON. Puede haber expirado la sesión o el servidor haber generado un error. Revisa el registro de TtCWeb."
+                            : "Respuesta inesperada del servidor (HTTP " + response.status + ").")
+                );
+            }
             if (!response.ok || !data.ok || !data.job_id) {
                 throw new Error(data.error || data.detail || "Conta no devolvió el identificador del trabajo.");
             }
