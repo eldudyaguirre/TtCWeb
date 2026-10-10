@@ -18,11 +18,18 @@ PORT = 8765
 ALLOWED_ORIGIN = "https://totalcounts.com.ec"
 SRI_URL = "https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+# Mantener Playwright y los navegadores vivos mientras el agente siga ejecutándose.
+_BROWSER_SESSIONS = []
 
 
 def open_sri(ruc: str, clave: str) -> None:
-    with sync_playwright() as p:
-        browser = p.chromium.launch(channel="chrome", headless=False)
+    playwright = sync_playwright().start()
+    try:
+        browser = playwright.chromium.launch(channel="chrome", headless=False)
+    except Exception:
+        playwright.stop()
+        raise
+    _BROWSER_SESSIONS.append((playwright, browser))
         page = browser.new_page()
         page.goto(SRI_URL, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
@@ -57,7 +64,6 @@ def open_sri(ruc: str, clave: str) -> None:
                 break
 
         if not user or not password:
-            browser.close()
             raise RuntimeError("No se encontró el formulario de acceso del SRI.")
 
         user.fill(ruc)
@@ -81,7 +87,6 @@ def open_sri(ruc: str, clave: str) -> None:
                 break
 
         if not submit:
-            browser.close()
             raise RuntimeError("No se encontró el botón de ingreso del SRI.")
 
         submit.click(timeout=15000)
