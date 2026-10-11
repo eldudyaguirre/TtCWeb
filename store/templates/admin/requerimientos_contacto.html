@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% block title %}Requerimientos de contacto | Administración TotalCounts{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+  <div><span class="admin-kicker">Comunicación</span><h1>Requerimientos de contacto</h1><p>Solicitudes recibidas desde el formulario público de TotalCounts.</p></div>
+</div>
+<section class="admin-kpis">
+  <div class="admin-kpi"><span>Total recibidos</span><strong>{{ total }}</strong><small>Todos los requerimientos</small></div>
+  <div class="admin-kpi"><span>Pendientes</span><strong>{{ pendientes }}</strong><small>Requieren atención</small></div>
+  <div class="admin-kpi"><span>En seguimiento</span><strong>{{ seguimiento }}</strong><small>Gestión en curso</small></div>
+  <div class="admin-kpi"><span>Resueltos</span><strong>{{ resueltos }}</strong><small>Atención completada</small></div>
+</section>
+<form method="get" class="admin-filters">
+  <input type="text" name="q" value="{{ query }}" placeholder="Buscar nombre, correo, celular o mensaje">
+  <select name="estado"><option value="">Todos los estados</option>{% for value,label in estados %}<option value="{{ value }}" {% if estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  <select name="tema"><option value="">Todos los temas</option>{% for value,label in temas %}<option value="{{ value }}" {% if tema == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  <button type="submit" class="admin-secondary-button">Filtrar</button><a href="{% url 'admin_requerimientos_contacto' %}">Limpiar</a>
+</form>
+<section class="admin-card"><div class="admin-table-wrap"><table class="admin-table">
+<thead><tr><th>Fecha</th><th>Contacto</th><th>Tema</th><th>Mensaje</th><th>Correo</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for item in requerimientos %}
+<tr>
+<td>{{ item.creado_en|date:"d/m/Y H:i" }}</td>
+<td><strong>{{ item.nombre }}</strong><div>{{ item.email }}</div><small>{{ item.celular }}</small></td>
+<td>{{ item.get_tema_display }}</td>
+<td>{{ item.mensaje|truncatechars:110 }}</td>
+<td><span class="admin-status {% if item.correo_enviado %}active{% else %}inactive{% endif %}">{% if item.correo_enviado %}ENVIADO{% else %}PENDIENTE{% endif %}</span></td>
+<td><span class="admin-status {% if item.estado == 'RESUELTO' %}active{% elif item.estado == 'PENDIENTE' %}inactive{% endif %}">{{ item.get_estado_display }}</span></td>
+<td><a class="admin-secondary-button" href="{% url 'admin_requerimiento_contacto_detalle' item.id %}">Revisar</a></td>
+</tr>
+{% empty %}<tr><td colspan="7" class="admin-empty">No hay requerimientos que coincidan con los filtros.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}
