@@ -13,3 +13,5 @@ from .admin_perfil import AdminPerfil
 from .suscriptor import Suscriptor
 
 from .rebefics_socio import RebeficsSocio
+
+from .requerimiento_contacto import RequerimientoContacto, HistorialRequerimientoContacto
