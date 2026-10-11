@@ -176,7 +176,31 @@
             }
         </style>
         
-    </head>
+    
+        <style>
+            /* Contactanos: separa el título del menú y reduce su tamaño. */
+            #slider.hero .slide-content .right.alt {
+                padding-top: 76px !important;
+            }
+            #slider.hero .slide-content h1.title {
+                font-size: clamp(2.25rem, 3.2vw, 3.2rem) !important;
+                line-height: 1.08 !important;
+                margin-bottom: 1.25rem !important;
+                max-width: 100%;
+            }
+            @media (max-width: 767px) {
+                #slider.hero .slide-content .right.alt {
+                    padding-top: 48px !important;
+                }
+                #slider.hero .slide-content h1.title {
+                    font-size: clamp(2rem, 7vw, 2.65rem) !important;
+                    line-height: 1.1 !important;
+                    margin-bottom: 1rem !important;
+                }
+            }
+        </style>
+
+</head>
 
     <body>
         
