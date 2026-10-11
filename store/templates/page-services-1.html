@@ -429,38 +429,34 @@
                             <a class="navbar-brand" href="/">
                                 <span class="brand">
                                     <span class="featured">
-                                        <span class="first">NEX</span>
+                                        <span class="first">TOTAL</span>
                                     </span>
-                                    <span class="last">GEN</span>
+                                    <span class="last">COUNTS</span>
                                 </span>
                                 
-                                <!-- 
-                                    Custom Logo
-                                    <img src="{% static 'images/logo.svg' %}" alt="NEXGEN">
-                                -->
                             </a>
-                            <p>A Functional HTML Template<br>for Corporate & Business.</p>
+                            <p>CUENTAS CON NOSOTROS.</p>
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="tel:+593984230099" class="nav-link">
                                         <i class="fas fa-phone-alt mr-2"></i>
-                                        +1 (305) 1234-5678
+                                        +593 984-230-099
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
                                         <i class="fas fa-envelope mr-2"></i>
-                                        hello@example.com
+                                        totalcounts@hotmail.com
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">
                                         <i class="fas fa-map-marker-alt mr-2"></i>
-                                        Main Avenue, 987
+                                        Av. Isabel la Católica y José Zorrilla esq.
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#contact" class="mt-4 btn outline-button smooth-anchor">GET IN TOUCH</a>
+                                    <a href="{% url 'contactanos' %}" class="mt-4 btn outline-button">CONTACTANOS</a>
                                 </li>
                             </ul>
                         </div>
@@ -468,36 +464,35 @@
                             <div class="row items">
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
-                                        <h4>About</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>The Company</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Institutional</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Social & Events</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Innovation</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Environment</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Technology</a>
+                                        <h4>Acerca</h4>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañía</a>
+                                        <a href="#" class="footer-info-link" data-info="mision"><i class="icon-arrow-right"></i>Misión</a>
+                                        <a href="#" class="footer-info-link" data-info="vision"><i class="icon-arrow-right"></i>Visión</a>
+                                        <a href="#" class="footer-info-link" data-info="objetivos"><i class="icon-arrow-right"></i>Objetivos</a>
+                                        <a href="#" class="footer-info-link" data-info="acerca"><i class="icon-arrow-right"></i>Acerca de</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
-                                        <h4>Services</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Audit & Assurance</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Financial Advisory</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Analytics M&A</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Middle Marketing</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Legal Consulting</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Regulatory Risk</a>
+                                        <h4>Servicios</h4>
+                                        <a href="#" class="footer-service-link" data-service="tributario"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#" class="footer-service-link" data-service="rrhh"><i class="icon-arrow-right"></i>Recursos Humanos</a>
+                                        <a href="#" class="footer-service-link" data-service="reglamentos"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#" class="footer-service-link" data-service="societario"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="legal"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#" class="footer-service-link" data-service="auditorias"><i class="icon-arrow-right"></i>Auditorías</a>
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-4 item">
                                     <div class="card">
-                                        <h4>Support</h4>
-                                        <a href="#"><i class="icon-arrow-right"></i>Responsibility</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Terms of Use</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>About Cookies</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Privacy Policy</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Accessibility</a>
-                                        <a href="#"><i class="icon-arrow-right"></i>Information</a>
-                                    </div>
+                                        <h4>Soporte</h4>
+                                        <a href="#" class="footer-info-link" data-info="responsabilidad"><i class="icon-arrow-right"></i>Responsabilidad</a>
+                                        <a href="#" class="footer-info-link" data-info="terminos"><i class="icon-arrow-right"></i>Términos de Uso</a>
+                                        <a href="#" class="footer-info-link" data-info="cookies"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="#" class="footer-info-link" data-info="privacidad"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="{% url 'avisos_legales' %}" class="footer-info-link"><i class="icon-arrow-right"></i>Avisos Legales</a>
+                                        <a href="#" class="footer-info-link" data-info="accesibilidad"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                                                            </div>
                                 </div>
                             </div>
                         </div>
@@ -510,13 +505,13 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-12 col-md-6 p-3 text-center text-lg-left">
-                            <p>Enjoy the low price. We are tracking any intention of piracy.</p>
+                            <p>Técnicos en Operaciones Tributarias Aguirre Larriva</p>
                             <!--
                                 Suggestion: Replace the text above with a description of your website.
                              -->
                         </div>
                         <div class="col-12 col-md-6 p-3 text-center text-lg-right">
-                            <p>© 2023 NEXGEN is Proudly Powered by <a href="https://themeforest.net/user/codingsdev" target="_blank">Codings</a>.</p>
+                            <p>© 2026 TotalWeb by C.A.S. está desarrollado por <a href="https://www.totalcounts.com.ec/" target="_blank">Adrián Aguirre Larriva</a>.</p>
                         </div>
                     </div>
                 </div>
