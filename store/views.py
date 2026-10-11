@@ -7,6 +7,8 @@ from django.conf import settings
 from django.db import IntegrityError, connection, connections, transaction
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -4080,9 +4082,16 @@ def contactanos(request):
 
         if not nombre or not email or not tema or not mensaje:
             messages.error(request, 'Completa nombres, email, tema y mensaje antes de enviar.')
+        elif len(nombre) > 120 or len(email) > 254 or len(celular) > 30 or len(mensaje) > 5000:
+            messages.error(request, 'Revisa la longitud de los campos. El mensaje admite hasta 5000 caracteres.')
         elif tema not in temas_validos:
             messages.error(request, 'Selecciona un tema válido.')
         else:
+            try:
+                validate_email(email)
+            except ValidationError:
+                messages.error(request, 'Ingresa un correo electrónico válido.')
+                return render(request, 'contactanos.html')
             try:
                 import html
 
