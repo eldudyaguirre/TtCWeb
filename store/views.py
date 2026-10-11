@@ -6057,7 +6057,7 @@ def avisos_legales(request):
 
 
 def blog(request):
-    raise Http404
+    return render(request, 'page_blog.html')
 
 
 def error_404(request, exception):
