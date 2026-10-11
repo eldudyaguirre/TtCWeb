@@ -1785,7 +1785,11 @@ def sri_anexos(request):
                     'total': len(archivos),
                 })
             meses.sort(key=lambda item: item['numero'], reverse=True)
-            grupos.append({'anio': anio, 'meses': meses})
+            grupos.append({
+                'anio': anio,
+                'meses': meses,
+                'total_archivos': sum(mes['total'] for mes in meses),
+            })
 
         grupos.sort(key=lambda item: item['anio'], reverse=True)
         tipo['anios'] = grupos
