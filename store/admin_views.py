@@ -18,7 +18,7 @@ from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password, make_password
 
-from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor, RebeficsSocio
+from .models import AdminPerfil, Cliente, UsuarioCliente, VisitaWeb, Suscriptor, RebeficsSocio, RequerimientoContacto, HistorialRequerimientoContacto
 
 from .services.rebefics_import import MAX_APS_XML_BYTES, parse_aps_xml
 
@@ -6023,3 +6023,79 @@ def admin_rebefics_socios(request, ruc):
         'import_preview_meta': request.session.get(f'{preview_key}_meta'),
     }
     return render(request, 'admin/rebefics_socios.html', context)
+
+
+@admin_required
+def admin_requerimientos_contacto(request):
+    from django.db.models import Q
+
+    query = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    tema = request.GET.get('tema', '').strip()
+    requerimientos = RequerimientoContacto.objects.all()
+
+    if query:
+        requerimientos = requerimientos.filter(
+            Q(nombre__icontains=query) |
+            Q(email__icontains=query) |
+            Q(celular__icontains=query) |
+            Q(mensaje__icontains=query)
+        )
+    if estado:
+        requerimientos = requerimientos.filter(estado=estado)
+    if tema:
+        requerimientos = requerimientos.filter(tema=tema)
+
+    return render(request, 'admin/requerimientos_contacto.html', {
+        'requerimientos': requerimientos[:500],
+        'query': query,
+        'estado': estado,
+        'tema': tema,
+        'estados': RequerimientoContacto.ESTADOS,
+        'temas': RequerimientoContacto.TIPOS,
+        'total': RequerimientoContacto.objects.count(),
+        'pendientes': RequerimientoContacto.objects.filter(estado='PENDIENTE').count(),
+        'seguimiento': RequerimientoContacto.objects.filter(estado='EN_SEGUIMIENTO').count(),
+        'resueltos': RequerimientoContacto.objects.filter(estado='RESUELTO').count(),
+    })
+
+
+@admin_required
+def admin_requerimiento_contacto_detalle(request, requerimiento_id):
+    item = get_object_or_404(RequerimientoContacto, pk=requerimiento_id)
+
+    if request.method == 'POST':
+        estado_nuevo = request.POST.get('estado', '').strip()
+        nota = request.POST.get('nota', '').strip()
+        notas_internas = request.POST.get('notas_internas', '').strip()
+
+        estados_validos = dict(RequerimientoContacto.ESTADOS)
+        if estado_nuevo not in estados_validos:
+            messages.error(request, 'Selecciona un estado válido.')
+            return redirect('admin_requerimiento_contacto_detalle', requerimiento_id=item.pk)
+        if len(nota) > 3000 or len(notas_internas) > 5000:
+            messages.error(request, 'Las notas superan la longitud permitida.')
+            return redirect('admin_requerimiento_contacto_detalle', requerimiento_id=item.pk)
+
+        estado_anterior = item.estado
+        item.estado = estado_nuevo
+        item.notas_internas = notas_internas
+        item.gestionado_por = request.session.get(ADMIN_NAME_KEY, request.session.get(ADMIN_USERNAME_KEY, 'Administración'))
+        item.save(update_fields=['estado', 'notas_internas', 'gestionado_por', 'actualizado_en'])
+
+        if estado_anterior != estado_nuevo or nota:
+            HistorialRequerimientoContacto.objects.create(
+                requerimiento=item,
+                estado_anterior=estado_anterior,
+                estado_nuevo=estado_nuevo,
+                nota=nota,
+                usuario=item.gestionado_por,
+            )
+        messages.success(request, 'La gestión del requerimiento fue guardada.')
+        return redirect('admin_requerimiento_contacto_detalle', requerimiento_id=item.pk)
+
+    return render(request, 'admin/requerimiento_contacto_detalle.html', {
+        'item': item,
+        'estados': RequerimientoContacto.ESTADOS,
+        'historial': item.historial.all(),
+    })
