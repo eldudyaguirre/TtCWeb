@@ -1709,7 +1709,10 @@ def sri_anexos(request):
 
     from pathlib import Path
 
-    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli) / 'anexos'
+    # Los anexos pueden estar directamente dentro de la carpeta del año
+    # o dentro de subcarpetas mensuales. Recorrer recursivamente evita
+    # ocultar archivos válidos que no estén organizados por mes.
+    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'anexos'
     tipos = [
         {'nombre': 'Anexo Transaccional Simplificado', 'carpeta': 'ats', 'icono': 'fi-rr-document'},
         {'nombre': 'Anexo Relación Dependencia', 'carpeta': 'relacion_dependencia', 'icono': 'fi-rr-users'},
@@ -1719,51 +1722,74 @@ def sri_anexos(request):
         {'nombre': 'Anexo REBEFICS', 'carpeta': 'rebefics', 'icono': 'fi-rr-file'},
     ]
 
+    nombres_meses = {
+        '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+        '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+        '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre',
+    }
     anios = set()
+
     for tipo in tipos:
-        carpeta = raiz_cliente / tipo['carpeta']
-        grupos = []
-        if carpeta.exists() and carpeta.is_dir():
-            for anio_dir in carpeta.iterdir():
-                if not anio_dir.is_dir() or not anio_dir.name.isdigit():
+        carpeta_tipo = raiz_cliente / tipo['carpeta']
+        archivos_por_anio = {}
+
+        if carpeta_tipo.is_dir():
+            for archivo in carpeta_tipo.rglob('*'):
+                if not archivo.is_file():
                     continue
-                anio = anio_dir.name
+
+                try:
+                    relativo = archivo.relative_to(carpeta_tipo)
+                except ValueError:
+                    continue
+
+                partes = relativo.parts
+                if not partes or not partes[0].isdigit() or len(partes[0]) != 4:
+                    # Solo mostrar archivos organizados bajo una carpeta de año.
+                    continue
+
+                anio = partes[0]
                 anios.add(anio)
-                meses = []
-                for mes_dir in sorted(anio_dir.iterdir(), key=lambda p: p.name):
-                    if not mes_dir.is_dir() or not mes_dir.name.isdigit():
-                        continue
-                    archivos = []
-                    for archivo in sorted(mes_dir.iterdir(), key=lambda p: p.name.lower()):
-                        if archivo.is_file():
-                            stat = archivo.stat()
-                            archivos.append({
-                                'nombre': archivo.name,
-                                'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
-                                'tamano': (
-                                    f'{stat.st_size / 1024:.1f} KB'
-                                    if stat.st_size < 1024 * 1024
-                                    else f'{stat.st_size / (1024 * 1024):.2f} MB'
-                                ),
-                                'fecha': datetime.fromtimestamp(stat.st_mtime),
-                            })
-                    if archivos:
-                        meses.append({
-                            'numero': mes_dir.name.zfill(2),
-                            'nombre': dict([
-                                ('01','Enero'),('02','Febrero'),('03','Marzo'),('04','Abril'),
-                                ('05','Mayo'),('06','Junio'),('07','Julio'),('08','Agosto'),
-                                ('09','Septiembre'),('10','Octubre'),('11','Noviembre'),('12','Diciembre')
-                            ]).get(mes_dir.name.zfill(2), mes_dir.name),
-                            'archivos': archivos,
-                            'total': len(archivos),
-                        })
-                if meses:
-                    meses.sort(key=lambda item: item['numero'], reverse=True)
-                    grupos.append({'anio': anio, 'meses': meses})
+
+                # Si el archivo está dentro de una carpeta mensual numérica,
+                # agruparlo por mes. Si está directamente en el año (o en una
+                # subcarpeta no mensual), mostrarlo bajo "General".
+                mes = '00'
+                if len(partes) >= 3 and partes[1].isdigit():
+                    posible_mes = partes[1].zfill(2)
+                    if posible_mes in nombres_meses:
+                        mes = posible_mes
+
+                stat = archivo.stat()
+                item = {
+                    'nombre': archivo.name,
+                    'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
+                    'tamano': (
+                        f'{stat.st_size / 1024:.1f} KB'
+                        if stat.st_size < 1024 * 1024
+                        else f'{stat.st_size / (1024 * 1024):.2f} MB'
+                    ),
+                    'fecha': datetime.fromtimestamp(stat.st_mtime),
+                }
+                archivos_por_anio.setdefault(anio, {}).setdefault(mes, []).append(item)
+
+        grupos = []
+        for anio, archivos_por_mes in archivos_por_anio.items():
+            meses = []
+            for numero_mes, archivos in archivos_por_mes.items():
+                archivos.sort(key=lambda item: item['nombre'].lower())
+                meses.append({
+                    'numero': numero_mes,
+                    'nombre': nombres_meses.get(numero_mes, 'General'),
+                    'archivos': archivos,
+                    'total': len(archivos),
+                })
+            meses.sort(key=lambda item: item['numero'], reverse=True)
+            grupos.append({'anio': anio, 'meses': meses})
+
         grupos.sort(key=lambda item: item['anio'], reverse=True)
         tipo['anios'] = grupos
-        tipo['total'] = sum(m['total'] for a in grupos for m in a['meses'])
+        tipo['total'] = sum(mes['total'] for anio in grupos for mes in anio['meses'])
 
     return render(request, 'sri-anexos.html', {
         'cliente': cliente,
