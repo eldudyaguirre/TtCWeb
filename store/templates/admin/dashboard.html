@@ -58,18 +58,25 @@
 .admin-content .admin-kpi small{position:relative;z-index:1;color:#fff!important}
 .admin-content .admin-kpi .admin-kpi-icon{
     position:absolute!important;
-    right:20px;top:18px;
+    right:18px;top:50%;
+    transform:translateY(-50%);
     display:flex;align-items:center;justify-content:center;
-    width:48px;height:48px;
-    border-radius:14px;
-    color:#fff!important;
-    background:rgba(255,255,255,.18);
-    border:1px solid rgba(255,255,255,.15);
-    font-size:22px;
-    opacity:.95;
+    width:auto;height:auto;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    color:rgba(255,255,255,.28)!important;
+    font-size:62px;
+    line-height:1;
+    opacity:1;
+    pointer-events:none;
 }
-.admin-content .admin-kpi .admin-kpi-icon i{color:#fff!important}
-.admin-content .admin-kpi strong{padding-right:42px}
+.admin-content .admin-kpi .admin-kpi-icon i{color:rgba(255,255,255,.30)!important}
+.admin-content .admin-kpi strong{padding-right:54px}
+@media(max-width:700px){
+    .admin-content .admin-kpi .admin-kpi-icon{right:12px;font-size:42px}
+    .admin-content .admin-kpi strong{padding-right:32px}
+}
 .admin-content .admin-kpi span{display:block;font-size:13px;font-weight:600;opacity:.94}
 .admin-content .admin-kpi strong{display:block;font-size:30px!important;line-height:1.15;margin:12px 0 8px!important;letter-spacing:-.5px;overflow-wrap:anywhere}
 .admin-content .admin-kpi small{display:block;font-size:12px;opacity:.88}
