@@ -4178,7 +4178,7 @@ def avisos_legales(request):
 
 
 def servicios(request):
-    raise Http404
+    return render(request, 'page-services-1.html')
 
 
 def blog(request):
