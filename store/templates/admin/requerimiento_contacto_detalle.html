@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% block title %}Requerimiento #{{ item.id }} | Administración TotalCounts{% endblock %}
+{% block content %}
+<div class="admin-page-header"><div><span class="admin-kicker">Comunicación · Requerimiento #{{ item.id }}</span><h1>{{ item.nombre }}</h1><p>Recibido el {{ item.creado_en|date:"d/m/Y H:i" }}</p></div><a class="admin-secondary-button" href="{% url 'admin_requerimientos_contacto' %}">Volver al listado</a></div>
+{% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}{% endif %}
+<div class="admin-grid">
+<section class="admin-card" style="padding:24px">
+<h2>Datos de contacto</h2><p><strong>Correo:</strong> <a href="mailto:{{ item.email }}">{{ item.email }}</a></p><p><strong>Celular:</strong> {{ item.celular|default:"No indicado" }}</p><p><strong>Tema:</strong> {{ item.get_tema_display }}</p><p><strong>Estado del correo:</strong> {% if item.correo_enviado %}Enviado{% else %}No confirmado{% endif %}</p>
+<h3>Mensaje recibido</h3><div style="white-space:pre-wrap;overflow-wrap:anywhere">{{ item.mensaje }}</div>
+</section>
+<section class="admin-card" style="padding:24px">
+<h2>Registrar gestión</h2>
+<form method="post">{% csrf_token %}
+<label for="estado">Estado</label><select id="estado" name="estado" class="form-control mb-3">{% for value,label in estados %}<option value="{{ value }}" {% if item.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+<label for="nota">Nota de esta gestión</label><textarea id="nota" name="nota" class="form-control mb-3" rows="4" maxlength="3000" placeholder="Llamada realizada, correo enviado, acuerdo, seguimiento..."></textarea>
+<label for="notas_internas">Notas internas</label><textarea id="notas_internas" name="notas_internas" class="form-control mb-3" rows="4" maxlength="5000">{{ item.notas_internas }}</textarea>
+<button class="admin-primary-button" type="submit">Guardar gestión</button>
+</form>
+</section>
+<section class="admin-card" style="padding:24px;grid-column:1/-1"><h2>Historial de gestión</h2>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Cambio de estado</th><th>Nota</th></tr></thead><tbody>
+{% for registro in historial %}<tr><td>{{ registro.creado_en|date:"d/m/Y H:i" }}</td><td>{{ registro.usuario|default:"Administración" }}</td><td>{{ registro.get_estado_anterior_display|default:registro.estado_anterior }} → {{ registro.get_estado_nuevo_display|default:registro.estado_nuevo }}</td><td>{{ registro.nota|default:"—" }}</td></tr>{% empty %}<tr><td colspan="4" class="admin-empty">Aún no hay gestiones registradas.</td></tr>{% endfor %}
+</tbody></table></div></section>
+</div>
+{% endblock %}
