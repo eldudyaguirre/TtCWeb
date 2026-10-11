@@ -50,7 +50,7 @@
                         <div class="sri-anexo-year {% if forloop.first %}is-open{% endif %}">
                             <button type="button" class="sri-anexo-year-head">
                                 <span><i class="fi fi-rr-angle-small-right sri-anexo-year-arrow"></i>{{ anio.anio }}</span>
-                                <span>{{ anio.meses|length }} mes{% if anio.meses|length != 1 %}es{% endif %}</span>
+                                <span>{{ anio.total_archivos }} archivo{% if anio.total_archivos != 1 %}s{% endif %}</span>
                             </button>
                             <div class="sri-anexo-year-body">
                                 {% for mes in anio.meses %}
