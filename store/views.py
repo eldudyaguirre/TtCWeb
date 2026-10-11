@@ -4092,6 +4092,8 @@ def contactanos(request):
                 validate_email(email)
             except ValidationError:
                 messages.error(request, 'Ingresa un correo electrónico válido.')
+                if request.POST.get('return_to') == 'index':
+                    return redirect('/#contact')
                 return render(request, 'contactanos.html')
             try:
                 import html
@@ -4157,6 +4159,8 @@ def contactanos(request):
                 requerimiento.save(update_fields=['correo_enviado', 'actualizado_en'])
 
                 messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
+                if request.POST.get('return_to') == 'index':
+                    return redirect('/#contact')
                 return redirect('contactanos')
             except Exception as exc:
                 import logging
@@ -4166,6 +4170,8 @@ def contactanos(request):
                     f'No se pudo enviar el mensaje. Revise la configuración SMTP del servidor. ({type(exc).__name__})'
                 )
 
+    if request.method == 'POST' and request.POST.get('return_to') == 'index':
+        return redirect('/#contact')
     return render(request, 'contactanos.html')
 def avisos_legales(request):
     return render(request, 'avisos-legales.html')
