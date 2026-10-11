@@ -4198,6 +4198,13 @@ def recursos_humanos(request):
     return response
 
 
+def servicios_societario(request):
+    """Página pública de servicios societarios."""
+    response = render(request, 'servicios-societario.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
+
 def blog(request):
     raise Http404
 
