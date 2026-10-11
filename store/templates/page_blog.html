@@ -23,10 +23,10 @@
         <!-- ==============================================
         Favicons
         =============================================== -->
-        <link rel="shortcut icon" src="{% static 'images/favicon.ico' %}">
-        <link rel="apple-touch-icon" src="{% static 'images/apple-touch-icon.png' %}">
-        <link rel="apple-touch-icon" sizes="72x72" src="{% static 'images/apple-touch-icon-72x72.png' %}">
-        <link rel="apple-touch-icon" sizes="114x114" src="{% static 'images/apple-touch-icon-114x114.png' %}">
+        <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+        <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
 
         <!-- ==============================================
         Vendor Stylesheet
@@ -123,7 +123,7 @@
                 <div class="container header">
 
                     <!-- Navbar Brand-->
-                    <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts" style="max-height:48px;width:auto;"></a>
+                    <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts" style="max-height:48px;width:auto;"></a>
 
                     <!-- Nav holder -->
                     <div class="ml-auto"></div>
@@ -280,7 +280,7 @@
                                 <!-- Content -->
                                 <nav data-aos="zoom-out-up" data-aos-delay="800" aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+                                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
                                         <li class="breadcrumb-item active" aria-current="page">Blog</li>
                                     </ol>
                                 </nav>
@@ -1030,7 +1030,7 @@
                         <div class="col-12 col-lg-3 footer-left">
 
                             <!-- Navbar Brand-->
-                            <a class="navbar-brand" href="{% url 'index' %}">
+                            <a class="navbar-brand" href="{% url 'home' %}">
                                 <span class="brand">
                                     <span class="featured">
                                         <span class="first">NEX</span>
