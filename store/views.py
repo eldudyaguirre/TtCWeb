@@ -4184,6 +4184,13 @@ def servicios(request):
     return response
 
 
+def servicios_tributario(request):
+    """Página pública del servicio tributario."""
+    response = render(request, 'services-tributario.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
+
 def blog(request):
     raise Http404
 
