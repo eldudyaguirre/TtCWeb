@@ -67,7 +67,36 @@
             }
         </style>
         
-    </head>
+    
+        <style>
+            /* Forzar tarjetas de áreas de servicio con dimensiones idénticas */
+            body #services.offers .items > .item {
+                display: flex !important;
+                align-items: stretch !important;
+            }
+            body #services.offers .items > .item > .card {
+                width: 100% !important;
+                height: 238px !important;
+                min-height: 238px !important;
+                max-height: 238px !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+            }
+            body #services.offers .items > .item > .card > a {
+                margin-top: auto !important;
+            }
+            @media (max-width: 767px) {
+                body #services.offers .items > .item > .card {
+                    height: 238px !important;
+                    min-height: 238px !important;
+                    max-height: 238px !important;
+                }
+            }
+        </style>
+
+</head>
 
     <body>
         
