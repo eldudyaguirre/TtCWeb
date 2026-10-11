@@ -56,6 +56,20 @@
 .admin-content .admin-kpi span,
 .admin-content .admin-kpi strong,
 .admin-content .admin-kpi small{position:relative;z-index:1;color:#fff!important}
+.admin-content .admin-kpi .admin-kpi-icon{
+    position:absolute!important;
+    right:20px;top:18px;
+    display:flex;align-items:center;justify-content:center;
+    width:48px;height:48px;
+    border-radius:14px;
+    color:#fff!important;
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.15);
+    font-size:22px;
+    opacity:.95;
+}
+.admin-content .admin-kpi .admin-kpi-icon i{color:#fff!important}
+.admin-content .admin-kpi strong{padding-right:42px}
 .admin-content .admin-kpi span{display:block;font-size:13px;font-weight:600;opacity:.94}
 .admin-content .admin-kpi strong{display:block;font-size:30px!important;line-height:1.15;margin:12px 0 8px!important;letter-spacing:-.5px;overflow-wrap:anywhere}
 .admin-content .admin-kpi small{display:block;font-size:12px;opacity:.88}
@@ -118,12 +132,30 @@
 </style>
 
 <section class="admin-kpis">
-    <div class="admin-kpi"><span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small></div>
-    <div class="admin-kpi"><span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small></div>
-    <div class="admin-kpi"><span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small></div>
-    <div class="admin-kpi"><span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small></div>
-    <div class="admin-kpi"><span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small></div>
-    <div class="admin-kpi"><span>Saldo por facturar</span><strong>$ {{ saldo_por_facturar|floatformat:2 }}</strong><small>Valores por facturar</small></div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+        <span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small>
+    </div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-check"></i></span>
+        <span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small>
+    </div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></span>
+        <span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small>
+    </div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-cog"></i></span>
+        <span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small>
+    </div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-hand-holding-usd"></i></span>
+        <span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small>
+    </div>
+    <div class="admin-kpi">
+        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-file-invoice-dollar"></i></span>
+        <span>Saldo por facturar</span><strong>$ {{ saldo_por_facturar|floatformat:2 }}</strong><small>Valores por facturar</small>
+    </div>
 </section>
 
 
