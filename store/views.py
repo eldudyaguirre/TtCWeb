@@ -4178,7 +4178,10 @@ def avisos_legales(request):
 
 
 def servicios(request):
-    return render(request, 'page-services-1.html')
+    """Página pública de servicios."""
+    response = render(request, 'page-services-1.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
 
 
 def blog(request):
