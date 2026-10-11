@@ -4226,7 +4226,7 @@ def servicios_tramites_varios(request):
 
 
 def blog(request):
-    raise Http404
+    return render(request, 'page_blog.html')
 
 
 def error_404(request, exception):
