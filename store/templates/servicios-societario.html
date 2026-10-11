@@ -1,0 +1,870 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="es">
+
+    <head>
+
+        <!-- ==============================================
+        Basic Page Needs
+        =============================================== -->
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
+
+        <title>TotalCounts - Servicios Societarios</title>
+
+        <meta name="description" content="Servicios societarios de TotalCounts en Ecuador: trámites ante la Superintendencia de Compañías, Registro Mercantil y apoyo documental corporativo.">
+        <meta name="subject" content="Gestión societaria y acompañamiento corporativo en Ecuador">
+        <meta name="author" content="TotalCounts - C.A.S.">
+
+        <!-- ==============================================
+        Favicons
+        =============================================== -->
+        <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
+
+        <!-- ==============================================
+        Vendor Stylesheet
+        =============================================== -->
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/slider.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/icons-fa.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/animation.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/gallery.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cookie-notice.min.css' %}">
+
+        <!-- ==============================================
+        Custom Stylesheet
+        =============================================== -->
+        <link rel="stylesheet" href="{% static 'css/default.css' %}">
+        <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}?v=20260924">
+
+        <!-- ==============================================
+        Theme Color
+        =============================================== -->
+        <meta name="theme-color" content="#21333e">
+
+        <!-- ==============================================
+        Theme Settings
+        =============================================== -->
+        <style>
+            :root {
+                --hero-bg-color: #080d10;
+
+                --section-1-bg-color: #eef4ed;
+                --section-2-bg-color: #111117;
+                --section-3-bg-color: #ffffff;
+
+                --footer-bg-color: #080d10;
+                --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
+            }
+        </style>
+
+        <style>
+            /* Metodología: mantener el fondo claro y la organización del diseño original */
+            #about.section-2 {
+                background-color: #eef4ed !important;
+                color: #21333e !important;
+            }
+            #about.section-2 .text,
+            #about.section-2 h2,
+            #about.section-2 h4 {
+                color: #21333e !important;
+            }
+            #about.section-2 p {
+                color: #71808a !important;
+            }
+            #about.section-2 .featured > span {
+                background-color: #cfe5df !important;
+                color: #008b8b !important;
+            }
+            #about.section-2 .items {
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 22px;
+            }
+            #about.section-2 .items .item {
+                padding: 0 18px 20px 0 !important;
+                box-sizing: border-box;
+            }
+            #about.section-2 .items .item h4 {
+                display: flex;
+                align-items: center;
+                line-height: 1.3;
+                margin-bottom: 22px;
+            }
+            #about.section-2 .items .item h4 i {
+                color: #009c9c !important;
+            }
+            @media (max-width: 767.98px) {
+                #about.section-2 .items .item {
+                    padding-right: 0 !important;
+                    padding-bottom: 18px !important;
+                }
+            }
+        </style>
+        
+    </head>
+
+    <body>
+        
+
+        <!-- Header -->
+        <header id="header">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand top">
+                <div class="container header">
+
+                    <!-- Navbar Items [left] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
+                        </li>
+                    </ul>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items [right] -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item social">
+                            <a href="https://www.facebook.com/TotalCounts/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="far fa-envelope"></i></a>
+                        </li>
+                        <li class="nav-item social">
+                            <a href="https://wa.me/593964208139" class="nav-link pr-0"><i class="fab fa-whatsapp"></i></a>
+                        </li>
+                    </ul>
+
+                </div>
+            </nav>
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand navbar-fixed sub">
+                <div class="container header">
+
+                    <!-- Navbar Brand-->
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'images/logo.svg' %}">
+                        <span class="brand">
+                            <span class="featured">
+                                <span class="first"> TOTAL</span>
+                            </span>
+                            <span class="last"> COUNTS</span>
+                        </span>
+                
+                        
+                    </a>
+
+                    <!-- Nav holder -->
+                    <div class="ml-auto"></div>
+
+                    <!-- Navbar Items -->
+                    <ul class="navbar-nav items">
+                        <li class="nav-item">
+                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'blog' %}" class="nav-link">BLOG</a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Icons -->
+                    <ul class="navbar-nav icons">
+                        <li class="nav-item">
+                            <a href="{% url 'signin' %}" class="nav-link" aria-label="Iniciar sesión">
+                                <i class="icon-user"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Toggle -->
+                    <ul class="navbar-nav toggle">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#menu">
+                                <i class="icon-menu m-0"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Navbar Action -->
+                    <ul class="navbar-nav action">
+                        <li class="nav-item ml-3">
+                            <a href="{% url 'contactanos' %}" class="btn ml-lg-auto primary-button">CONTACTANOS</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+        </header>
+
+        <!-- Hero -->
+        <section id="slider" class="hero p-0 odd featured">
+            <div class="swiper-container no-slider animation slider-h-50 slider-h-auto">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide slide-center">
+                        <img src="{% static 'images/bg-wide.jpg' %}" alt="Servicios societarios de TotalCounts" class="full-image" data-mask="80">
+                        <div class="slide-content row text-center">
+                            <div class="col-12 mx-auto inner">
+                                <nav data-aos="zoom-out-up" data-aos-delay="800" aria-label="breadcrumb">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                                        <li class="breadcrumb-item"><a href="{% url 'servicios' %}">Servicios</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">Societario</li>
+                                    </ol>
+                                </nav>
+                                <h1 class="mb-0 title effect-static-text">Societario</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Servicio de Societario -->
+        <section id="single" class="section-1 single">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-lg-8 p-0 text">
+                        <div class="row intro m-0">
+                            <div class="col-12">
+                                <span class="pre-title m-0">Gestión corporativa y cumplimiento societario</span>
+                                <div class="title-icon">
+                                    <h2><span class="featured"><span><i class="icon icon-user"></i>Gestión</span></span> de Societario</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 align-self-center">
+                                <p>En TotalCounts acompañamos a las empresas en la organización y gestión de sus asuntos societarios, con atención a los trámites y documentos necesarios para mantener ordenada su información corporativa.</p>
+                                <p>Apoyamos en gestiones ante la Superintendencia de Compañías, el Registro Mercantil y otras entidades relacionadas, de acuerdo con el tipo de trámite y la documentación proporcionada por cada cliente.</p>
+                                <blockquote>Una documentación societaria organizada facilita el seguimiento de los trámites corporativos y ayuda a mantener información clara y accesible para la empresa.</blockquote>
+                                <h3>¿Cómo podemos ayudarte?</h3>
+                                <ul>
+                                    <li>Orientación y apoyo en trámites ante la Superintendencia de Compañías.</li>
+                                    <li>Gestiones y consultas relacionadas con el Registro Mercantil.</li>
+                                    <li>Organización y revisión de documentación societaria.</li>
+                                    <li>Apoyo documental para cambios y actualizaciones de información corporativa.</li>
+                                    <li>Seguimiento de trámites y requisitos según cada caso.</li>
+                                </ul>
+                                <p>El alcance del servicio se define según la naturaleza del trámite, la documentación disponible y los requisitos aplicables de la entidad correspondiente.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del servicio -->
+                    <aside class="col-12 col-lg-4 pl-lg-5 p-0 float-right sidebar">
+                        <div class="row">
+                            <div class="col-12 align-self-center text-left">
+                                <h4>Áreas de apoyo</h4>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-start align-items-center">
+                                        <a href="{% url 'contactanos' %}"><i class="icon icon-organization"></i></a>
+                                        Trámites societarios
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center">
+                                        <a href="{% url 'contactanos' %}"><i class="icon icon-doc"></i></a>
+                                        Documentación corporativa
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center">
+                                        <a href="{% url 'contactanos' %}"><i class="icon icon-layers"></i></a>
+                                        Registro Mercantil
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center">
+                                        <a href="{% url 'contactanos' %}"><i class="icon icon-briefcase"></i></a>
+                                        Superintendencia de Compañías
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center">
+                                        <a href="{% url 'contactanos' %}"><i class="icon icon-user"></i></a>
+                                        Asesoría personalizada
+                                    </li>
+                                </ul>
+                                <a href="{% url 'contactanos' %}" class="mt-4 btn primary-button">Solicitar información</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metodología de trabajo -->
+        <section id="about" class="section-2 highlights image-right">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-6 pr-md-5 align-self-center text-center text-md-left text">
+                        <div data-aos="fade-up" class="row intro">
+                            <div class="col-12 p-0">
+                                <span class="pre-title m-auto m-md-0">Nuestro enfoque</span>
+                                <h2><span class="featured"><span>Orden</span></span> y seguimiento</h2>
+                                <p>Organizamos la documentación y las gestiones societarias acordadas con el cliente, identificando los requisitos y pasos de cada trámite.</p>
+                                <p>El acompañamiento se adapta a la situación de la empresa y a los documentos disponibles para mantener un proceso claro y ordenado.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 pr-md-5 align-self-center text-center text-md-left text">
+                        <div class="row items">
+                            <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 item">
+                                <h4><i class="mr-2 icon-note"></i>Documentación</h4>
+                                <p>Organizamos los documentos y antecedentes societarios de la empresa.</p>
+                            </div>
+                            <div data-aos="fade-up" class="col-12 col-md-6 p-0 item">
+                                <h4><i class="mr-2 icon-layers"></i>Organización</h4>
+                                <p>Facilitamos el control de documentos y registros corporativos.</p>
+                            </div>
+                        </div>
+                        <div class="row items">
+                            <div data-aos="fade-up" class="col-12 col-md-6 p-0 item">
+                                <h4><i class="mr-2 icon-chart"></i>Seguimiento</h4>
+                                <p>Seguimos el avance de los trámites y requisitos identificados.</p>
+                            </div>
+                            <div data-aos="fade-up" class="col-12 col-md-6 p-0 pr-md-4 item">
+                                <h4><i class="mr-2 icon-briefcase"></i>Acompañamiento</h4>
+                                <p>Apoyamos a la empresa según sus necesidades de gestión societaria.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contacto -->
+        <section id="contact" class="section-3 form contact">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-8 pr-md-5 align-self-center text">
+                        <div class="row intro">
+                            <div class="col-12 p-0">
+                                <span class="pre-title m-0">¿Necesitas apoyo?</span>
+                                <h2>Conversemos sobre tus <span class="featured"><span>necesidades societarias</span></span></h2>
+                                <p>Contáctanos para revisar las necesidades de gestión de Societario de tu empresa.</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 p-0">
+                                <a href="{% url 'contactanos' %}" class="btn primary-button">Contactarnos</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="contacts">
+                            <h4>TotalCounts</h4>
+                            <p>CUENTAS CON NOSOTROS.</p>
+                            <ul class="navbar-nav">
+                                <li class="nav-item"><a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a></li>
+                                <li class="nav-item"><a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a></li>
+                                <li class="nav-item"><a href="{% url 'contactanos' %}" class="mt-2 btn outline-button">Contactarnos</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+
+            <!-- Footer [content] -->
+            <section id="footer" class="odd footer offers">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-lg-3 footer-left">
+
+                            <!-- Navbar Brand-->
+                            <a class="navbar-brand" href="/">
+                                <span class="brand">
+                                    <span class="featured">
+                                        <span class="first">TOTAL</span>
+                                    </span>
+                                    <span class="last">COUNTS</span>
+                                </span>
+                                
+                            </a>
+                            <p>CUENTAS CON NOSOTROS.</p>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a href="tel:+593984230099" class="nav-link">
+                                        <i class="fas fa-phone-alt mr-2"></i>
+                                        +593 984-230-099
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="mailto:totalcounts@hotmail.com" class="nav-link">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        totalcounts@hotmail.com
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Av. Isabel la Católica y José Zorrilla esq.
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'contactanos' %}" class="mt-4 btn outline-button">CONTACTANOS</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-12 col-lg-9 p-0 footer-right">
+                            <div class="row items">
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Acerca</h4>
+                                        <a href="{% url 'about' %}"><i class="icon-arrow-right"></i>La compañía</a>
+                                        <a href="#" class="footer-info-link" data-info="mision"><i class="icon-arrow-right"></i>Misión</a>
+                                        <a href="#" class="footer-info-link" data-info="vision"><i class="icon-arrow-right"></i>Visión</a>
+                                        <a href="#" class="footer-info-link" data-info="objetivos"><i class="icon-arrow-right"></i>Objetivos</a>
+                                        <a href="#" class="footer-info-link" data-info="acerca"><i class="icon-arrow-right"></i>Acerca de</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Servicios</h4>
+                                        <a href="#" class="footer-service-link" data-service="tributario"><i class="icon-arrow-right"></i>Control Tributario</a>
+                                        <a href="#" class="footer-service-link" data-service="rrhh"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="reglamentos"><i class="icon-arrow-right"></i>Reglamentos</a>
+                                        <a href="#" class="footer-service-link" data-service="societario"><i class="icon-arrow-right"></i>Societario</a>
+                                        <a href="#" class="footer-service-link" data-service="legal"><i class="icon-arrow-right"></i>Consultoría Legal</a>
+                                        <a href="#" class="footer-service-link" data-service="auditorias"><i class="icon-arrow-right"></i>Auditorías</a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4 item">
+                                    <div class="card">
+                                        <h4>Soporte</h4>
+                                        <a href="#" class="footer-info-link" data-info="responsabilidad"><i class="icon-arrow-right"></i>Responsabilidad</a>
+                                        <a href="#" class="footer-info-link" data-info="terminos"><i class="icon-arrow-right"></i>Términos de Uso</a>
+                                        <a href="#" class="footer-info-link" data-info="cookies"><i class="icon-arrow-right"></i>Acerca de Cookies</a>
+                                        <a href="#" class="footer-info-link" data-info="privacidad"><i class="icon-arrow-right"></i>Políticas de Privacidad</a>
+                                        <a href="{% url 'avisos_legales' %}" class="footer-info-link"><i class="icon-arrow-right"></i>Avisos Legales</a>
+                                        <a href="#" class="footer-info-link" data-info="accesibilidad"><i class="icon-arrow-right"></i>Accesibilidad</a>
+                                                                            </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Copyright -->
+            <section id="copyright" class="p-3 odd copyright">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-left">
+                            <p>Técnicos en Operaciones Tributarias Aguirre Larriva</p>
+                            <!--
+                                Suggestion: Replace the text above with a description of your website.
+                             -->
+                        </div>
+                        <div class="col-12 col-md-6 p-3 text-center text-lg-right">
+                            <p>© 2026 TotalWeb by C.A.S. está desarrollado por <a href="https://www.totalcounts.com.ec/" target="_blank">Adrián Aguirre Larriva</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </footer>
+
+        <!-- Modal [search] -->
+        <div id="search" class="p-0 modal fade" role="dialog" aria-labelledby="search" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0">
+                                        <h2>What are you looking for?</h2>
+                                        <div class="badges">
+                                            <span class="badge"><a href="#">Consulting</a></span>
+                                            <span class="badge"><a href="#">Audit</a></span>
+                                            <span class="badge"><a href="#">Assurance</a></span>
+                                            <span class="badge"><a href="#">Advisory</a></span>
+                                            <span class="badge"><a href="#">Financial</a></span>
+                                            <span class="badge"><a href="#">Capital Markets</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="text" class="form-control" placeholder="Enter Keywords">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">SEARCH</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [sign] -->
+        <div id="sign" class="p-0 modal fade" role="dialog" aria-labelledby="sign" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0 pb-3">
+                                        <h2>Sign In</h2>
+                                        <p>Don't have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#register">Register now</a>.</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="email" class="form-control" placeholder="Email" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Password" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">SIGN IN</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [register] -->
+        <div id="register" class="p-0 modal fade" role="dialog" aria-labelledby="register" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" class="row">
+                            <div class="col-12 p-0 align-self-center">
+                                <div class="row">
+                                    <div class="col-12 p-0 pb-3">
+                                        <h2>Register</h2>
+                                        <p>Have an account? <a href="#" class="primary-color" data-toggle="modal" data-target="#sign">Sign In</a>.</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="text" class="form-control" placeholder="Name" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="email" class="form-control" placeholder="Email" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Password" required>
+                                    </div>
+                                    <div class="col-12 p-0 input-group">
+                                        <input type="password" class="form-control" placeholder="Confirm Password" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 p-0 input-group align-self-center">
+                                        <button class="btn primary-button">REGISTER</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [información del sitio] -->
+        <div id="footer-info-modal" class="footer-info-modal" aria-hidden="true">
+            <div class="footer-info-overlay"></div>
+            <div class="footer-info-dialog" role="dialog" aria-modal="true" aria-labelledby="footer-info-title">
+                <button type="button" class="footer-info-close" aria-label="Cerrar">&times;</button>
+                <div class="footer-info-content">
+                    <span class="pre-title">TotalCounts</span>
+                    <h3 id="footer-info-title"></h3>
+                    <div id="footer-info-body"></div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .footer-info-modal {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 99999;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .footer-info-modal.active { display: flex; }
+            .footer-info-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(3, 10, 14, .78);
+                backdrop-filter: blur(6px);
+            }
+            .footer-info-dialog {
+                position: relative;
+                z-index: 1;
+                width: min(680px, 100%);
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 38px;
+                border-radius: 16px;
+                background: rgba(17, 25, 29, .97);
+                border: 1px solid rgba(255,255,255,.10);
+                box-shadow: 0 25px 80px rgba(0,0,0,.45);
+                color: #fff;
+            }
+            .footer-info-content h3 {
+                margin: 8px 0 20px;
+                font-size: 30px;
+            }
+            .footer-info-content p {
+                color: rgba(255,255,255,.78);
+                line-height: 1.75;
+                margin-bottom: 14px;
+            }
+            .footer-info-close {
+                position: absolute;
+                top: 12px;
+                right: 16px;
+                width: 38px;
+                height: 38px;
+                border: 0;
+                border-radius: 50%;
+                background: rgba(255,255,255,.08);
+                color: #fff;
+                font-size: 28px;
+                line-height: 1;
+                cursor: pointer;
+            }
+            .footer-info-close:hover { background: rgba(255,255,255,.16); }
+            @media (max-width: 576px) {
+                .footer-info-dialog { padding: 30px 24px; }
+                .footer-info-content h3 { font-size: 24px; }
+            }
+        </style>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('footer-info-modal');
+            const title = document.getElementById('footer-info-title');
+            const body = document.getElementById('footer-info-body');
+            const close = modal.querySelector('.footer-info-close');
+            const overlay = modal.querySelector('.footer-info-overlay');
+
+            const info = {
+                responsabilidad: {
+                    title: 'Responsabilidad',
+                    body: '<p>En TotalCounts trabajamos para brindar información y servicios contables, tributarios, laborales e informáticos de manera clara y responsable.</p><p>La información publicada en este sitio tiene carácter general y no sustituye el análisis particular de cada caso. Las decisiones deben considerar la documentación y circunstancias específicas de cada cliente.</p>'
+                },
+                terminos: {
+                    title: 'Términos de Uso',
+                    body: '<p>El uso de este sitio implica la aceptación de estas condiciones. El contenido se proporciona con fines informativos sobre los servicios de TotalCounts.</p><p>No está permitido utilizar, copiar o distribuir el contenido del sitio de forma que perjudique a TotalCounts o infrinja la normativa aplicable.</p>'
+                },
+                cookies: {
+                    title: 'Acerca de Cookies',
+                    body: '<p>TotalCounts utiliza cookies técnicas y necesarias para mantener sesiones, autenticación, seguridad y determinadas funciones del sitio. Actualmente no utilizamos cookies de publicidad personalizada, remarketing ni analítica de terceros.</p><p>El usuario puede administrar o bloquear las cookies desde la configuración de su navegador. Algunas funciones podrían verse afectadas al deshabilitarlas.</p>'
+                },
+                privacidad: {
+                    title: 'Políticas de Privacidad',
+                    body: '<p>TotalCounts procura tratar los datos personales de sus usuarios y clientes de forma responsable y conforme a la normativa aplicable.</p><p>Los datos proporcionados mediante formularios o canales de contacto se utilizan para atender solicitudes, prestar servicios y mantener la comunicación relacionada con la relación comercial.</p><p>No se solicitarán datos personales innecesarios para la finalidad correspondiente.</p>'
+                },
+                accesibilidad: {
+                    title: 'Accesibilidad',
+                    body: '<p>Trabajamos para que nuestro sitio pueda ser utilizado por el mayor número posible de personas, procurando mantener una navegación clara, contenidos legibles y elementos interactivos identificables.</p><p>Si encuentras alguna dificultad de acceso o navegación, puedes comunicarla mediante nuestros canales de contacto para ayudarnos a mejorar.</p>'
+                },
+                mision: {
+                    title: 'Misión',
+                    body: '<p>Brindar soluciones contables, tributarias, laborales y tecnológicas que aporten claridad, orden y herramientas útiles para la gestión de nuestros clientes.</p><p>Buscamos acompañar a cada organización con servicios orientados a sus necesidades y a la correcta gestión de sus operaciones.</p>'
+                },
+                vision: {
+                    title: 'Visión',
+                    body: '<p>Consolidarnos como una organización reconocida por integrar conocimiento contable, tributario y tecnológico para ofrecer soluciones confiables y adaptadas a las nuevas necesidades empresariales.</p>'
+                },
+                objetivos: {
+                    title: 'Objetivos',
+                    body: '<p>Fortalecer la gestión de nuestros clientes mediante servicios especializados, procesos eficientes y herramientas tecnológicas.</p><p>Promover el cumplimiento de las obligaciones aplicables, mejorar la calidad de la información y facilitar la toma de decisiones empresariales.</p>'
+                },
+                acerca: {
+                    title: 'Acerca de TotalCounts',
+                    body: '<p>TotalCounts es una marca registrada, la aplicación web está diseñada para llevar el acceso total a los datos de su empresa en todos sus campos de acción.</p><p>Comercialización, Contabilidad, Balances, Laboral y archivo de documentos de sustento administrativo. Todo de manera automática e integrada.</p>'
+                }
+            };
+
+            function openInfo(key) {
+                const item = info[key];
+                if (!item) return;
+                title.textContent = item.title;
+                body.innerHTML = item.body;
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                close.focus();
+            }
+
+            function closeInfo() {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            document.querySelectorAll('.footer-info-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    openInfo(this.dataset.info);
+                });
+            });
+
+            const services = {
+                tributario: {
+                    title: 'Control Tributario',
+                    body: '<p>Brindamos acompañamiento en el cumplimiento de las obligaciones tributarias y en la revisión de procesos relacionados con impuestos.</p><p>Analizamos la información disponible para identificar obligaciones, oportunidades de mejora y procedimientos adecuados ante la administración tributaria.</p>'
+                },
+                rrhh: {
+                    title: 'Societario',
+                    body: '<p>Apoyamos a las empresas en la gestión de sus procesos laborales y de societarios.</p><p>Incluye orientación sobre documentación, procedimientos internos, obligaciones laborales y aplicación adecuada de la normativa correspondiente.</p>'
+                },
+                reglamentos: {
+                    title: 'Reglamentos',
+                    body: '<p>Ayudamos a establecer y actualizar reglamentos y procedimientos internos necesarios para una adecuada organización empresarial.</p><p>El objetivo es contar con reglas claras que faciliten la gestión y el cumplimiento de las obligaciones aplicables.</p>'
+                },
+                societario: {
+                    title: 'Societario',
+                    body: '<p>Ofrecemos asesoramiento en asuntos relacionados con la organización y cumplimiento societario de las empresas.</p><p>Apoyamos en la revisión de documentación y procesos necesarios para mantener una adecuada gestión corporativa.</p>'
+                },
+                legal: {
+                    title: 'Consultoría Legal',
+                    body: '<p>Brindamos orientación legal relacionada con las necesidades de la empresa y sus operaciones.</p><p>Analizamos cada situación de acuerdo con la documentación y circunstancias particulares para orientar los pasos correspondientes.</p>'
+                },
+                auditorias: {
+                    title: 'Auditorías',
+                    body: '<p>Realizamos servicios de auditoría y revisión orientados a evaluar información, procesos y controles de la organización.</p><p>El análisis permite identificar aspectos que pueden ser fortalecidos y generar información útil para la administración.</p>'
+                }
+            };
+
+            document.querySelectorAll('.footer-service-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const item = services[this.dataset.service];
+                    if (!item) return;
+                    title.textContent = item.title;
+                    body.innerHTML = item.body;
+                    modal.classList.add('active');
+                    modal.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                    close.focus();
+                });
+            });
+
+            close.addEventListener('click', closeInfo);
+            overlay.addEventListener('click', closeInfo);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && modal.classList.contains('active')) {
+                    closeInfo();
+                }
+            });
+        });
+        </script>
+
+
+        <!-- Modal [map] -->
+        <div id="map" class="p-0 modal fade" role="dialog" aria-labelledby="map" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header absolute" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="modal-body p-0">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2970.123073808986!2d12.490042215441486!3d41.89021017922119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x132f61b6532013ad%3A0x28f1c82e908503c4!2sColiseu!5e0!3m2!1spt-BR!2sbr!4v1594148229878!5m2!1spt-BR!2sbr" width="600" height="450" aria-hidden="false" tabindex="0"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal [responsive menu] -->
+        <div id="menu" class="p-0 modal fade" role="dialog" aria-labelledby="menu" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout" role="document">
+                <div class="modal-content full">
+                    <div class="modal-header" data-dismiss="modal">
+                        <i class="icon-close fas fa-arrow-right"></i>
+                    </div>
+                    <div class="menu modal-body">
+                        <div class="row w-100">
+                            <div class="items p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                            <div class="contacts p-0 col-12 text-center">
+                                <!-- Append [navbar] -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll [to top] -->
+        <div id="scroll-to-top" class="scroll-to-top">
+            <a href="#header" class="smooth-anchor">
+                <i class="fas fa-arrow-up"></i>
+            </a>
+        </div>        
+        
+        <!-- ==============================================
+        Google reCAPTCHA // Put your site key here
+        =============================================== -->
+        <script src="https://www.google.com/recaptcha/api.js?render=6Lf-NwEVAAAAAPo_wwOYxFW18D9_EKvwxJxeyUx7"></script>
+
+        <!-- ==============================================
+        Vendor Scripts
+        =============================================== -->
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inview.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/ponyfill.min.js' %}"></script>
+        <script src="{% static 'js/slider.min.js' %}"></script>
+        <script src="{% static 'js/animation.min.js' %}"></script>
+        <script src="{% static 'js/progress-radial.min.js' %}"></script>
+        <script src="{% static 'js/bricklayer.min.js' %}"></script>
+        <script src="{% static 'js/gallery.min.js' %}"></script>
+        <script src="{% static 'js/shuffle.min.js' %}"></script>
+        <script src="{% static 'js/cookie-notice.min.js' %}"></script>
+        <script src="{% static 'js/particles.min.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
+
+    </body>
+</html>
