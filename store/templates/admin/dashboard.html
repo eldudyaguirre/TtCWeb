@@ -71,7 +71,12 @@
     opacity:1;
     pointer-events:none;
 }
-.admin-content .admin-kpi .admin-kpi-icon i{color:rgba(255,255,255,.30)!important}
+.admin-content .admin-kpi .admin-kpi-icon svg{
+    display:block;width:1em;height:1em;overflow:visible;
+    fill:none;stroke:rgba(255,255,255,.32);stroke-width:3;
+    stroke-linecap:round;stroke-linejoin:round;
+}
+.admin-content .admin-kpi .admin-kpi-icon svg circle{fill:none;stroke:rgba(255,255,255,.32)}
 .admin-content .admin-kpi strong{padding-right:54px}
 @media(max-width:700px){
     .admin-content .admin-kpi .admin-kpi-icon{right:12px;font-size:42px}
@@ -140,27 +145,27 @@
 
 <section class="admin-kpis">
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="24" cy="20" r="9"/><path d="M7 49v-5c0-8 7-14 17-14s17 6 17 14v5H7Z"/><circle cx="45" cy="22" r="7"/><path d="M44 33c8 0 14 5 14 12v4H44"/></svg></span>
         <span>Clientes</span><strong>{{ clientes_total }}</strong><small>Total registrados</small>
     </div>
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-check"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="19" r="9"/><path d="M7 49v-5c0-8 7-14 18-14 6 0 11 2 14 6"/><path d="m37 43 6 6 13-15"/></svg></span>
         <span>Clientes activos</span><strong>{{ clientes_activos }}</strong><small>Con servicio activo</small>
     </div>
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="19" r="9"/><path d="M7 49v-5c0-8 7-14 18-14s18 6 18 14v5H7Z"/><path d="m43 15 13 13m0-13L43 28"/></svg></span>
         <span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small>
     </div>
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-user-cog"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="18" r="9"/><path d="M7 49v-5c0-8 7-14 18-14 5 0 9 1 12 4"/><circle cx="47" cy="43" r="8"/><path d="M47 31v4m0 16v4m-12-12h4m16 0h4m-20-8 3 3m10 10 3 3m0-16-3 3m-10 10-3 3"/></svg></span>
         <span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small>
     </div>
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-hand-holding-usd"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M7 37h14l8 7h12c5 0 8-7 2-7H31"/><path d="M7 37v15h14l8 5h15l13-15c3-4-2-8-6-5l-10 7"/><circle cx="43" cy="17" r="10"/><path d="M46 12c-1-2-7-2-7 2s8 2 7 6-7 4-9 1m4-12v17"/></svg></span>
         <span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small>
     </div>
     <div class="admin-kpi">
-        <span class="admin-kpi-icon" aria-hidden="true"><i class="fas fa-file-invoice-dollar"></i></span>
+        <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M15 7h25l10 10v40H15Z"/><path d="M40 7v12h10M23 29h19M23 37h19"/><circle cx="31" cy="47" r="7"/><path d="M33 44c-1-2-5-2-5 1s6 1 5 4-5 2-6 0m3-8v9"/></svg></span>
         <span>Saldo por facturar</span><strong>$ {{ saldo_por_facturar|floatformat:2 }}</strong><small>Valores por facturar</small>
     </div>
 </section>
