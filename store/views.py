@@ -54,7 +54,10 @@ TEMPLATE_PREVIEWS = {
 
 
 def home(request):
-    return render(request, 'index.html')
+    total_registros_clientes = Cliente.objects.count()
+    return render(request, 'index.html', {
+        'empresas_administradas': total_registros_clientes,
+    })
 
 
 def newsletter_subscribe(request):
