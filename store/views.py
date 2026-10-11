@@ -4191,6 +4191,13 @@ def servicios_tributario(request):
     return response
 
 
+def recursos_humanos(request):
+    """Página pública del servicio de Recursos Humanos."""
+    response = render(request, 'recursos-humanos.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
+
 def blog(request):
     raise Http404
 
