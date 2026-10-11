@@ -335,17 +335,17 @@
     
                                         <div class="row form-group-margin">
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="text" name="name" class="form-control field-name" placeholder="Nombres">
+                                                <input type="text" name="name" class="form-control field-name" placeholder="Nombres" maxlength="120" autocomplete="name" required>
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="email" name="email" class="form-control field-email" placeholder="Email">
+                                                <input type="email" name="email" class="form-control field-email" placeholder="Email" maxlength="254" autocomplete="email" required>
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
-                                                <input type="text" name="phone" class="form-control field-phone" placeholder="Celular">
+                                                <input type="tel" name="phone" class="form-control field-phone" placeholder="Celular" maxlength="30" autocomplete="tel">
                                             </div>
                                             <div class="col-12 col-md-6 m-0 p-2 input-group">
                                                 <i class="icon-arrow-down mr-3"></i>
-                                                <select name="info" class="form-control field-info">
+                                                <select name="info" class="form-control field-info" required>
                                                     <option value="" selected disabled>Temas frecuentes</option>
                                                     <option>Consulta Tributaria</option>
                                                     <option>Consulta Contable</option>
@@ -357,7 +357,7 @@
                                                 </select>
                                             </div>
                                             <div class="col-12 m-0 p-2 input-group">
-                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" rows="4" required></textarea>
+                                                <textarea name="message" class="form-control field-message" placeholder="Mensaje" rows="4" maxlength="5000" required></textarea>
                                             </div>
                                             <div class="col-12 col-12 m-0 pl-md-2">
                                                 <span class="form-alert"></span>
