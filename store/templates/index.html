@@ -97,24 +97,6 @@
         <link rel="stylesheet" href="{% static 'css/totalcounts-responsive.css' %}?v=20260924">
 
         <style>
-            .intro-video-embed {
-                position: relative;
-                width: 100%;
-                max-width: 900px;
-                aspect-ratio: 16 / 9;
-                margin: 0 auto;
-                overflow: hidden;
-                border-radius: 4px;
-                background: #071f20;
-                box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
-            }
-            .intro-video-embed iframe {
-                position: absolute;
-                inset: 0;
-                width: 100%;
-                height: 100%;
-                border: 0;
-            }
             .newsletter-subscribe-form .newsletter-consent label {
                 display:flex;
                 align-items:flex-start;
@@ -394,16 +376,11 @@
                 </div>
                 <div class="row text-center">
                     <div class="col-12 gallery">
-                        <div class="intro-video-embed">
-                            <iframe
-                                title="Video de introducción de TotalCounts"
-                                src="https://player.vimeo.com/video/1234856350?h=621c4679bd"
-                                frameborder="0"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                                allowfullscreen>
-                            </iframe>
-                        </div>
+                        <a href="https://vimeo.com/222990241" class="square-image d-flex justify-content-center align-items-center">
+                            <i class="icon bigger fas fa-play clone"></i>
+                            <i class="icon bigger fas fa-play"></i>
+                            <img src="{% static 'images/video-1.jpg' %}" class="fit-image" alt="Introduction Video">
+                        </a>
                     </div>
                 </div>
             </div>
