@@ -26,6 +26,7 @@ from .models import (
     SecuencialDocumento,
     UsuarioCliente,
     Suscriptor,
+    RequerimientoContacto,
 )
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 from .services.archivos import eliminar_archivo, guardar_archivo
@@ -4096,6 +4097,14 @@ def contactanos(request):
                 import html
 
                 celular_final = celular or 'No indicado'
+                requerimiento = RequerimientoContacto.objects.create(
+                    nombre=nombre,
+                    email=email,
+                    celular=celular,
+                    tema=tema,
+                    mensaje=mensaje,
+                    estado='PENDIENTE',
+                )
 
                 cuerpo = (
                     'TOTALCOUNTS - MENSAJE DESDE LA WEB\n'
@@ -4144,6 +4153,8 @@ def contactanos(request):
                 )
                 correo.attach_alternative(html_body, 'text/html')
                 correo.send(fail_silently=False)
+                requerimiento.correo_enviado = True
+                requerimiento.save(update_fields=['correo_enviado', 'actualizado_en'])
 
                 messages.success(request, 'Tu mensaje fue enviado correctamente. Nos pondremos en contacto contigo.')
                 return redirect('contactanos')
