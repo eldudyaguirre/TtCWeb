@@ -38,7 +38,7 @@ TEMPLATE_PREVIEWS = {
     'page-404-1': 'page-404-1.html',
     'page-about-1': 'page-about-1.html',
     'page-blog-1': 'page-blog-1.html',
-    'page-blog-2': 'page-blog-2.html',
+    'page_blog': 'page_blog.html',
     'page-contact-1': 'page-contact-1.html',
     'page-contact-2': 'page-contact-2.html',
     'page-our-people-1': 'page-our-people-1.html',
