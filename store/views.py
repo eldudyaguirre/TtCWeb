@@ -116,6 +116,16 @@ def do_signin(request):
         return redirect('portal')
 
     form = AuthenticationForm(request, data=request.POST or None)
+    form.fields['username'].widget.attrs.update({
+        'class': 'form-control',
+        'autocomplete': 'username',
+        'placeholder': 'Usuario',
+    })
+    form.fields['password'].widget.attrs.update({
+        'class': 'form-control',
+        'autocomplete': 'current-password',
+        'placeholder': 'Contraseña',
+    })
 
     if request.method == 'POST':
         if form.is_valid():
