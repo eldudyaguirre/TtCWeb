@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blog | TotalCounts</title>
+    <meta name="description" content="Noticias, consejos y novedades tributarias, contables y empresariales de TotalCounts.">
+    <link rel="stylesheet" href="{% static 'assets/css/vendor/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/default.css' %}">
+    <style>
+        .blog-hero { position:relative; min-height:300px; display:flex; align-items:center; justify-content:center; background:#17252d url("{% static 'images/bg-wide.jpg' %}") center/cover no-repeat; color:#fff; text-align:center; }
+        .blog-hero:before { content:""; position:absolute; inset:0; background:rgba(8,13,16,.72); }
+        .blog-hero-content { position:relative; z-index:1; padding:90px 20px 55px; }
+        .blog-hero h1 { color:#fff; margin:14px 0 0; }
+        .blog-layout { padding-top:70px; padding-bottom:70px; }
+        .blog-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; }
+        .blog-card { background:#fff; box-shadow:0 8px 28px rgba(0,0,0,.08); height:100%; }
+        .blog-card-image { width:100%; aspect-ratio: 16/10; object-fit:cover; display:block; }
+        .blog-card-meta { display:flex; justify-content:space-between; gap:12px; padding:18px 22px 0; color:#71808a; font-size:.85rem; }
+        .blog-card-body { padding:15px 22px 24px; }
+        .blog-card-body h2 { font-size:1.2rem; line-height:1.4; margin-bottom:10px; }
+        .blog-card-body h2 a { color:inherit; text-decoration:none; }
+        .blog-card-body p { margin-bottom:0; }
+        .blog-sidebar-block { margin-bottom:35px; }
+        .blog-sidebar-block h3 { font-size:1.2rem; margin-bottom:18px; }
+        .blog-sidebar-block ul { list-style:none; padding:0; margin:0; }
+        .blog-sidebar-block li { padding:10px 0; border-bottom:1px solid #e8ecef; }
+        .blog-sidebar-block a { text-decoration:none; }
+        .blog-search { display:flex; gap:8px; }
+        .blog-search input { min-width:0; width:100%; padding:12px; border:1px solid #dce2e5; }
+        .blog-search button { border:0; padding:0 18px; }
+        .blog-pagination { display:flex; justify-content:center; gap:8px; margin-top:40px; }
+        .blog-pagination a { display:inline-flex; align-items:center; justify-content:center; min-width:38px; height:38px; border:1px solid #e1e6e8; text-decoration:none; }
+        .blog-pagination a.active { color:#fff; background:#21333e; border-color:#21333e; }
+        @media(max-width:767px) { .blog-grid { grid-template-columns:1fr; } .blog-layout { padding-top:40px; padding-bottom:45px; } .blog-hero { min-height:240px; } }
+    </style>
+</head>
+<body>
+<header id="header">
+    <nav class="navbar navbar-expand navbar-fixed sub">
+        <div class="container header">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/logosvg.svg' %}" alt="TotalCounts" style="max-height:48px;width:auto;">
+            </a>
+            <div class="ml-auto"></div>
+            <ul class="navbar-nav items">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">INICIO</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'servicios' %}">SERVICIOS</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'blog' %}">BLOG</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'contactanos' %}">CONTÁCTANOS</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<section class="blog-hero">
+    <div class="blog-hero-content container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Blog</li>
+            </ol>
+        </nav>
+        <h1 class="title">Blog</h1>
+        <p>Información útil para tomar mejores decisiones en tu negocio.</p>
+    </div>
+</section>
+
+<main id="blog" class="container blog-layout">
+    <div class="row">
+        <section class="col-12 col-lg-8 mb-5 mb-lg-0">
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-1.jpg' %}" alt="Actualidad tributaria">
+                    <div class="blog-card-meta"><span>Tributario</span><span>Lectura recomendada</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Novedades tributarias que debes conocer</a></h2><p>Información y recomendaciones para mantener tus obligaciones tributarias al día.</p></div>
+                </article>
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-2.jpg' %}" alt="Gestión empresarial">
+                    <div class="blog-card-meta"><span>Empresas</span><span>Consejos</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Claves para una mejor gestión empresarial</a></h2><p>Buenas prácticas para organizar los procesos y tomar decisiones con información confiable.</p></div>
+                </article>
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-3.jpg' %}" alt="Contabilidad">
+                    <div class="blog-card-meta"><span>Contabilidad</span><span>Guías</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Cómo mantener tu información contable organizada</a></h2><p>Una estructura ordenada facilita el control y la preparación de reportes.</p></div>
+                </article>
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-4.jpg' %}" alt="Recursos humanos">
+                    <div class="blog-card-meta"><span>Laboral</span><span>Actualidad</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Aspectos importantes de la gestión laboral</a></h2><p>Revisa puntos esenciales para administrar correctamente la información de tu equipo.</p></div>
+                </article>
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-5.jpg' %}" alt="Planificación de negocios">
+                    <div class="blog-card-meta"><span>Negocios</span><span>Recomendaciones</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Planificación y control para crecer con orden</a></h2><p>Herramientas y hábitos que pueden ayudar a fortalecer tu negocio.</p></div>
+                </article>
+                <article class="blog-card">
+                    <img class="blog-card-image" src="{% static 'images/news-1.jpg' %}" alt="Servicios profesionales">
+                    <div class="blog-card-meta"><span>TotalCounts</span><span>Novedades</span></div>
+                    <div class="blog-card-body"><h2><a href="#">Novedades y recursos para nuestros clientes</a></h2><p>Conoce información de interés para tu empresa y sus procesos administrativos.</p></div>
+                </article>
+            </div>
+            <nav class="blog-pagination" aria-label="Paginación del blog">
+                <a href="#" aria-label="Página anterior">‹</a><a class="active" href="#">1</a><a href="#">2</a><a href="#">3</a><a href="#" aria-label="Página siguiente">›</a>
+            </nav>
+        </section>
+
+        <aside class="col-12 col-lg-4 pl-lg-5">
+            <div class="blog-sidebar-block">
+                <h3>Buscar artículos</h3>
+                <form class="blog-search" method="get">
+                    <input type="search" name="q" placeholder="Escribe una palabra clave" aria-label="Buscar artículos">
+                    <button class="primary-button" type="submit">BUSCAR</button>
+                </form>
+            </div>
+            <div class="blog-sidebar-block">
+                <h3>Categorías</h3>
+                <ul>
+                    <li><a href="#">Tributario</a></li><li><a href="#">Contabilidad</a></li><li><a href="#">Recursos humanos</a></li><li><a href="#">Societario</a></li><li><a href="#">Gestión empresarial</a></li>
+                </ul>
+            </div>
+            <div class="blog-sidebar-block">
+                <h3>Servicios TotalCounts</h3>
+                <ul>
+                    <li><a href="{% url 'servicios_tributario' %}">Servicios tributarios</a></li>
+                    <li><a href="{% url 'recursos_humanos' %}">Recursos humanos</a></li>
+                    <li><a href="{% url 'servicios_societario' %}">Servicios societarios</a></li>
+                    <li><a href="{% url 'servicios_consultoria_legal' %}">Consultoría legal</a></li>
+                </ul>
+            </div>
+            <div class="blog-sidebar-block">
+                <h3>Etiquetas</h3>
+                <p><span class="badge">SRI</span> <span class="badge">Impuestos</span> <span class="badge">Contabilidad</span> <span class="badge">Empresas</span> <span class="badge">Laboral</span></p>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer>
+    <section class="odd footer offers">
+        <div class="container text-center">
+            <p>Soluciones tributarias, contables y empresariales para tu negocio.</p>
+            <a href="{% url 'contactanos' %}" class="btn outline-button">CONTÁCTANOS</a>
+        </div>
+    </section>
+    <section class="p-3 odd copyright"><div class="container text-center"><p>© {% now "Y" %} TotalCounts. Todos los derechos reservados.</p></div></section>
+</footer>
+</body>
+</html>
