@@ -141,6 +141,45 @@
 .admin-pages-card{margin-bottom:20px!important}
 @media(max-width:1000px){.admin-content .admin-visit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.admin-visit-grid{grid-template-columns:1fr!important}.admin-traffic-summary{grid-template-columns:repeat(2,1fr);gap:10px}.admin-traffic-summary-item:nth-child(2){border-right:0}.admin-traffic-summary-item{padding:8px 12px}}
 @media(max-width:700px){.admin-content .admin-visit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:18px!important}.admin-content .admin-visit-kpi{padding:16px!important}.admin-visit-kpi .admin-stat-icon{width:36px;height:36px;font-size:15px;margin-bottom:12px}.admin-visit-kpi strong{font-size:25px!important}.admin-traffic-card{padding:18px 14px 14px!important}.admin-traffic-header h2{font-size:20px!important}.admin-chart-shell{height:245px}.admin-chart-area svg{height:195px}.admin-chart-y-labels{width:22px;font-size:9px;padding-bottom:38px}.admin-chart-x-labels{font-size:9px}.admin-traffic-summary{grid-template-columns:1fr 1fr}.admin-traffic-summary-item{padding:8px;border-right:0!important}.admin-traffic-summary-value{font-size:15px}}
+
+/* Indicadores secundarios: estilo sencillo y discreto */
+.admin-content .admin-visit-kpi{
+    min-height:0!important;
+    padding:16px 18px!important;
+    background:#fff!important;
+    color:var(--admin-dark)!important;
+    border:1px solid var(--admin-border,#e1e8eb)!important;
+    border-radius:10px!important;
+    box-shadow:none!important;
+    transition:none!important;
+}
+.admin-content .admin-visit-kpi:hover{
+    transform:none!important;
+    box-shadow:none!important;
+}
+.admin-content .admin-visit-kpi::before,
+.admin-content .admin-visit-kpi::after{display:none!important}
+.admin-content .admin-visit-kpi .admin-stat-icon{
+    width:auto!important;height:auto!important;
+    margin:0 0 8px!important;padding:0!important;
+    border:0!important;border-radius:0!important;
+    background:transparent!important;
+    color:var(--admin-muted,#7b8790)!important;
+    font-size:15px!important;
+}
+.admin-content .admin-visit-kpi span,
+.admin-content .admin-visit-kpi small{
+    color:var(--admin-muted,#7b8790)!important;
+    opacity:1!important;
+}
+.admin-content .admin-visit-kpi span{font-size:12px!important;font-weight:500!important}
+.admin-content .admin-visit-kpi strong{
+    padding:0!important;margin:5px 0!important;
+    color:var(--admin-dark,#263238)!important;
+    font-size:23px!important;letter-spacing:0!important;
+}
+.admin-content .admin-visit-kpi small{font-size:11px!important}
+
 </style>
 
 <section class="admin-kpis">
