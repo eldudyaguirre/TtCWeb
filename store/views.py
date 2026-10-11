@@ -6015,10 +6015,6 @@ def avisos_legales(request):
     return render(request, 'avisos-legales.html')
 
 
-def servicios(request):
-    raise Http404
-
-
 def blog(request):
     raise Http404
 
