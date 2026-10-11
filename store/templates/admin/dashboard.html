@@ -172,6 +172,38 @@
     color:var(--admin-dark,#263238)!important;
 }
 
+
+/* Corrección: neutralizar también las reglas de color por nth-child */
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+1),
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+2),
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+3),
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n){
+    background:#fff!important;
+    color:var(--admin-dark,#263238)!important;
+    border:1px solid var(--admin-border,#e1e8eb)!important;
+    box-shadow:none!important;
+}
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+1):hover,
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+2):hover,
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n+3):hover,
+.admin-content .admin-visit-kpis .admin-visit-kpi:nth-child(4n):hover{
+    transform:none!important;
+    box-shadow:none!important;
+}
+.admin-content .admin-visit-kpis .admin-visit-kpi .admin-stat-icon{
+    background:transparent!important;
+    color:var(--admin-muted,#7b8790)!important;
+    border:0!important;
+}
+.admin-content .admin-visit-kpis .admin-visit-kpi span,
+.admin-content .admin-visit-kpis .admin-visit-kpi small{
+    color:var(--admin-muted,#7b8790)!important;
+    opacity:1!important;
+}
+.admin-content .admin-visit-kpis .admin-visit-kpi strong{
+    color:var(--admin-dark,#263238)!important;
+}
+
 </style>
 
 <section class="admin-kpis">
