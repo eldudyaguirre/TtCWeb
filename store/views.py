@@ -4204,6 +4204,26 @@ def servicios_societario(request):
     response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
+def servicios_seguridad_ocupacional(request):
+    """Página pública de servicios de seguridad y salud ocupacional."""
+    response = render(request, 'seguridad-ocupacional.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
+
+def servicios_consultoria_legal(request):
+    """Página pública de consultoría legal."""
+    response = render(request, 'consultoria-legal.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
+
+def servicios_tramites_varios(request):
+    """Página pública de trámites administrativos varios."""
+    response = render(request, 'tramites-varios.html')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
+
 
 def blog(request):
     raise Http404
