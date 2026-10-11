@@ -705,11 +705,15 @@ iframe {
 }
 
 
-/* Homepage - áreas de trabajo: todas las tarjetas con la misma altura en escritorio. */
-@media (min-width: 768px) {
-    body.home #services.offers .items .item .card {
-        height: 238px !important;
-        min-height: 238px !important;
-        box-sizing: border-box !important;
-    }
+/* Áreas de servicio: tarjetas uniformes en Inicio y en la página Servicios. */
+#services.offers .items .item .card {
+    height: 238px !important;
+    min-height: 238px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#services.offers .items .item .card > a {
+    margin-top: auto !important;
 }
