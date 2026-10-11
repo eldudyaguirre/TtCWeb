@@ -204,6 +204,14 @@
     color:var(--admin-dark,#263238)!important;
 }
 
+
+.admin-content .admin-kpi-separator{
+    grid-column:1 / -1;
+    height:1px;
+    background:var(--admin-border,#e1e8eb);
+    margin:0;
+}
+
 </style>
 
 <section class="admin-kpis">
@@ -223,6 +231,7 @@
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="18" r="9"/><path d="M7 49v-5c0-8 7-14 18-14 5 0 9 1 12 4"/><circle cx="47" cy="43" r="8"/><path d="M47 31v4m0 16v4m-12-12h4m16 0h4m-20-8 3 3m10 10 3 3m0-16-3 3m-10 10-3 3"/></svg></span>
         <span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small>
     </div>
+    <div class="admin-kpi-separator" aria-hidden="true"></div>
     <div class="admin-kpi">
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M7 37h14l8 7h12c5 0 8-7 2-7H31"/><path d="M7 37v15h14l8 5h15l13-15c3-4-2-8-6-5l-10 7"/><circle cx="43" cy="17" r="10"/><path d="M46 12c-1-2-7-2-7 2s8 2 7 6-7 4-9 1m4-12v17"/></svg></span>
         <span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small>
