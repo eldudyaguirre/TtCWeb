@@ -115,6 +115,7 @@ urlpatterns = [
     path('avisos-legales/', views.avisos_legales, name='avisos_legales'),
     path('servicios/', views.servicios, name='servicios'),
     path('servicios/tributario/', views.servicios_tributario, name='servicios_tributario'),
+    path('servicios/recursos-humanos/', views.recursos_humanos, name='recursos_humanos'),
     path('blog/', views.blog, name='blog'),
     path('plantillas/', views.template_catalog, name='template_catalog'),
     path('plantillas/<slug:slug>/', views.template_preview, name='template_preview'),
