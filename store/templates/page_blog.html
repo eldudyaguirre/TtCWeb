@@ -910,39 +910,38 @@
         </section>
 
         <!-- Subscribe -->
-        <section id="subscribe" class="section-3 odd subscribe">
+        <section id="subscribe" class="section-6 odd subscribe">
             <div class="container smaller">
                 <div class="row">
                     <div class="col-12 col-md-6 m-md-0 intro">
-                        <span class="pre-title m-0">Newsletter</span>
-                        <h2><span class="featured"><span>Know</span></span> First</h2>
-                        <p>Follow closely and receive content about our company and the news of the current market.</p>
+                        <span class="pre-title m-0">Noticias</span>
+                        <h2><span class="featured"><span>Entérate</span></span> Primero</h2>
+                        <p>Siga de cerca y reciba contenido sobre nuestra empresa y las novedades de las leyes actuales.</p>
                     </div>
                     <div class="col-12 col-md-6">
-                        <form action="php/form.php" id="nexgen-subscribe" class="row m-auto items">
-                            <input type="hidden" name="section" value="nexgen_subscribe">
-
-                            <input type="hidden" name="reCAPTCHA">
-                            <!-- Remove this field if you want to disable recaptcha -->
-
+                        <form method="post" action="{% url 'newsletter_subscribe' %}" class="row m-auto items newsletter-subscribe-form">
+                            {% csrf_token %}
                             <div class="col-12 mt-0 input-group align-self-center item">
-                                <input type="text" name="name" class="form-control less-opacity field-name" placeholder="Name">
+                                <input type="text" name="name" class="form-control" placeholder="Nombre">
                             </div>
                             <div class="col-12 input-group align-self-center item">
-                                <input type="email" name="email" class="form-control less-opacity field-email" placeholder="Email">
+                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="col-12 input-group align-self-center item newsletter-consent">
+                                <label>
+                                    <input type="checkbox" name="consentimiento" value="1" required>
+                                    <span>Acepto recibir noticias, novedades, información y comunicaciones de TotalCounts.</span>
+                                </label>
                             </div>
                             <div class="col-12 input-group align-self-center item">
-                                <a data-aos="zoom-in" class="btn primary-button">SUBSCRIBE</a>
-                            </div>
-                            <div class="col-12 item">
-                                <span class="form-alert mt-3 mb-0"></span>
+                                <button type="submit" class="btn primary-button">SUSCRIBIRME</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </section>
-
+        
         <!-- Footer -->
         <footer>
 
