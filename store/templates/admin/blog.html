@@ -95,6 +95,12 @@
   </tbody></table></div>
 </section>
 
+<section class="admin-card blog-tags-card" id="blog-categorias">
+  <div class="admin-card-header"><div><span class="admin-kicker">Organización editorial</span><h2>Categorías</h2></div></div>
+  <form method="post" action="{% url 'admin_blog' %}" class="blog-tag-form">{% csrf_token %}<input type="hidden" name="accion" value="categoria"><label for="blog-category-name">Nueva categoría</label><input id="blog-category-name" name="nombre_categoria" maxlength="100" required placeholder="Ej. Tributario"><input name="descripcion_categoria" maxlength="255" placeholder="Descripción opcional"><button type="submit" class="admin-secondary-button">Crear categoría</button></form>
+  <div class="blog-existing-tags">{% for categoria in categorias %}<span>{{ categoria.nombre }}{% if categoria.descripcion %} <small>{{ categoria.descripcion }}</small>{% endif %}</span>{% empty %}<p class="admin-empty">Aún no hay categorías.</p>{% endfor %}</div>
+</section>
+
 <section class="admin-card blog-tags-card" id="blog-etiquetas">
   <div class="admin-card-header"><div><span class="admin-kicker">Organización editorial</span><h2>Etiquetas</h2></div></div>
   <form method="post" action="{% url 'admin_blog_etiquetas' %}" class="blog-tag-form">{% csrf_token %}<label for="blog-tag-name">Nueva etiqueta</label><input id="blog-tag-name" name="nombre" maxlength="60" required placeholder="Ej. Retenciones"><button type="submit" class="admin-secondary-button">Crear etiqueta</button></form>
