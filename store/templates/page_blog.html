@@ -288,11 +288,12 @@
                                         <span class="mr-3"><i class="icon-folder"></i> {{ noticia_detalle.categoria.nombre }}</span>
                                         {% endif %}
                                         <span class="mr-3"><i class="icon-clock"></i> {{ noticia_detalle.fecha_publicacion|date:"d/m/Y" }}</span>
-                                        <span><i class="icon-user"></i> {% if noticia_detalle.autor %}{{ noticia_detalle.autor.get_full_name|default:noticia_detalle.autor.username }}{% else %}TotalCounts{% endif %}</span>
+                                        <span><i class="icon-user"></i> {% if noticia_detalle.autor_nombre %}{{ noticia_detalle.autor_nombre }}{% elif noticia_detalle.autor %}{{ noticia_detalle.autor.get_full_name|default:noticia_detalle.autor.username }}{% else %}TotalCounts{% endif %}</span>
                                     </div>
                                     <h1>{{ noticia_detalle.titulo }}</h1>
                                     <p class="lead">{{ noticia_detalle.resumen }}</p>
-                                    <div class="blog-article-content">{{ noticia_detalle.contenido|safe }}</div>
+                                    <div class="blog-article-content" style="text-align:justify;text-justify:inter-word;">{{ noticia_detalle.contenido|safe }}</div>
+                                    {% if noticia_detalle.autor_nombre %}<p class="blog-author-signature mt-4"><strong>Autor:</strong> {{ noticia_detalle.autor_nombre }}</p>{% endif %}
                                     {% if noticia_detalle.etiquetas.all %}
                                     <div class="mt-4">
                                         <strong>Etiquetas:</strong>
