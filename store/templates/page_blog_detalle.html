@@ -141,10 +141,9 @@
         <!-- La vista del artículo es limpia: sin cabecera del sitio ni banner de portada. -->
 
         <!-- Artículo individual -->
-        <section id="blog-article" class="section-1 single showcase projects">
-            <div class="container">
-                <div class="row content blog-detail">
-                    <article class="col-12">
+        <main id="blog-article" class="blog-article-page">
+            <div class="blog-article-container">
+                <article class="blog-detail">
                         <div class="card p-0 blog-detail-card">
                             <div class="card-caption col-12 p-0">
                                 <div class="card-body">
@@ -167,15 +166,16 @@
                             </div>
                         </div>
                     </article>
-                </div>
             </div>
-        </section>
+        </main>
         <style>
-            #blog-article { padding-top: 58px; padding-bottom: 80px; background: #f7f9fa; }
+            #blog-article { display:block !important; visibility:visible !important; opacity:1 !important; min-height:300px; padding:58px 0 80px; background:#f7f9fa; color:#293b43; }
+            #blog-article .blog-article-container { width:min(1000px, calc(100% - 36px)); margin:0 auto; }
+            #blog-article .blog-detail { display:block !important; visibility:visible !important; opacity:1 !important; }
             .blog-detail-featured-image { max-width: 1000px; margin-left: auto; margin-right: auto; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 42px rgba(10,35,45,.12); }
             .blog-detail-featured-image img { display: block; width: 100%; max-height: 520px; object-fit: cover; }
-            .blog-detail-card { max-width: 1000px; margin: 0 auto; border: 1px solid #e6ebee; border-radius: 16px; overflow: hidden; box-shadow: 0 14px 40px rgba(10,35,45,.07); }
-            .blog-detail-card .card-body { padding: clamp(24px, 5vw, 56px); }
+            .blog-detail-card { display:block !important; visibility:visible !important; opacity:1 !important; width:100%; max-width:1000px; margin:0 auto; border:1px solid #e6ebee; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 14px 40px rgba(10,35,45,.07); }
+            .blog-detail-card .card-body { display:block !important; visibility:visible !important; opacity:1 !important; padding:clamp(24px, 5vw, 56px); }
             .blog-detail-meta { gap: 8px 0; color: #6c7b83; font-size: .9rem; }
             .blog-detail-title { margin: 0 0 18px; color: #173443; font-size: clamp(2rem, 4vw, 3.1rem); line-height: 1.15; font-weight: 750; }
             .blog-detail-summary { margin-bottom: 30px; color: #53666f; font-size: 1.18rem; line-height: 1.75; }
@@ -188,7 +188,7 @@
             .blog-article-content img { max-width: 100%; height: auto; border-radius: 10px; }
             .blog-detail-tags .badge { margin: 4px; padding: 7px 10px; border: 1px solid #dce9e9; color: #176b73; background: #f1f8f8; }
             .blog-author-signature { color: #53666f; }
-            @media(max-width: 576px) { #blog-article { padding-top: 35px; padding-bottom: 45px; } .blog-detail-card .card-body { padding: 22px 18px; } }
+            @media(max-width:576px) { #blog-article { padding-top:30px; padding-bottom:45px; } #blog-article .blog-article-container { width:calc(100% - 24px); } .blog-detail-card .card-body { padding:22px 18px; } }
         </style>
 
         <!-- Footer -->
