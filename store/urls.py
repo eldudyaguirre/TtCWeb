@@ -120,6 +120,7 @@ urlpatterns = [
     path('servicios/seguridad-ocupacional/', views.servicios_seguridad_ocupacional, name='servicios_seguridad_ocupacional'),
     path('servicios/consultoria-legal/', views.servicios_consultoria_legal, name='servicios_consultoria_legal'),
     path('servicios/tramites-varios/', views.servicios_tramites_varios, name='servicios_tramites_varios'),
+    path('media/blog/noticias/<path:path>', views.blog_media, name='blog_media'),
     path('blog/<slug:slug>/', views.blog_detalle, name='blog_detalle'),
     path('blog/', views.blog, name='blog'),
     path('plantillas/', views.template_catalog, name='template_catalog'),
