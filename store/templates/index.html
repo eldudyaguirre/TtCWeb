@@ -636,200 +636,43 @@
                             <a href="{% url 'blog' %}" class="btn mx-auto mr-md-0 ml-md-auto primary-button">VER TODO</a>
                         </div>
                     </div>
-                    <div class="swiper-container mid-slider items" data-perview="3"> 
+                    {% if noticias_inicio %}
+                    <div class="swiper-container mid-slider items" data-perview="3">
                         <div class="swiper-wrapper">
+                            {% for noticia in noticias_inicio %}
                             <div class="swiper-slide slide-center item">
                                 <div class="row card p-0 text-center">
                                     <div class="image-over">
-                                        <img src="{% static 'images/News/001.jpg' %}" alt="News1">
+                                        {% if noticia.imagen_destacada %}
+                                        <img src="{{ noticia.imagen_destacada.url }}" alt="{{ noticia.texto_alternativo_imagen|default:noticia.titulo }}">
+                                        {% else %}
+                                        <img src="{% static 'images/News/001.jpg' %}" alt="{{ noticia.titulo }}">
+                                        {% endif %}
                                     </div>
                                     <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
+                                        <span class="d-lg-flex align-items-center"><i class="icon-user"></i>{% if noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}TotalCounts{% endif %}</span>
+                                        <span class="d-lg-flex align-items-center"><i class="icon-clock"></i>{{ noticia.fecha_publicacion|date:"d/m/Y" }}</span>
                                     </div>
                                     <div class="card-caption col-12 p-0">
                                         <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Ley de Bancarización Vigente</h4>
-                                                <p>Entérate de la nueva disposición desde el 02/01/2024.</p>
+                                            <a href="{% url 'blog_detalle' slug=noticia.slug %}">
+                                                <h4>{{ noticia.titulo }}</h4>
+                                                <p>{{ noticia.resumen }}</p>
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/News/002.jpg' %}" alt="News2">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Registro de Indices de Gestión</h4>
-                                                <p>Entérate de los plazos de Registro de Indices de Gestión al IESS 2024.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/News/003.jpg' %}" alt="News3">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>TotalCounts</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>Hace 2 Días</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>¿Porqué es importante su plan de Prevención de Riesgos Laborales?</h4>
-                                                <p>Empapate de la ley, obligatoriedad y evita multas por la no realización de tus reglamentos.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-4.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>23 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Tips for having a good relationship at work</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-5.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>David Cooper</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>30 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>David Cooper tells about the opening of the new office in Baltimore</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src= "{% static 'images/news-1.jpg' %}"  alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>Andrea Miller</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>2 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Increasing creativity is possible for everyone</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-2.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>9 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Because market research is part of the business plan</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-3.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>Andrea Miller</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>16 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Working from home is now a trend</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-4.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>John Smith</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>23 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>Tips for having a good relationship at work</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
-                                        <img src="{% static 'images/news-5.jpg' %}" alt="Lorem ipsum">
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-user"></i>David Cooper</a>
-                                        <a href="{% url 'blog' %}" class="d-lg-flex align-items-center"><i class="icon-clock"></i>30 Days Ago</a>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog' %}">
-                                                <h4>David Cooper tells about the opening of the new office in Baltimore</h4>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
+                    {% else %}
+                    <div class="row">
+                        <div class="col-12 text-center py-5">
+                            <p>Estamos preparando nuevas publicaciones. Vuelve pronto para conocer nuestras novedades tributarias.</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </section>
