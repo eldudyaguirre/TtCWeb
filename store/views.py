@@ -4277,9 +4277,8 @@ def blog_detalle(request, slug):
         estado=Noticia.Estado.PUBLICADO,
         fecha_publicacion__lte=timezone.now(),
     )
-    return render(request, 'page_blog.html', {
+    return render(request, 'page_blog_detalle.html', {
         'noticia_detalle': noticia,
-        'page_obj': None,
     })
 
 
