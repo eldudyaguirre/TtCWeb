@@ -140,7 +140,7 @@ def admin_blog_estado(request, noticia_id):
         return redirect("admin_blog")
     noticia = get_object_or_404(Noticia, pk=noticia_id)
     estado = request.POST.get("estado", "").strip()
-    if estado not in {Noticia.Estado.BORRADOR, Noticia.Estado.PUBLICADO}:
+    if estado not in {Noticia.Estado.BORRADOR, Noticia.Estado.PUBLICADO, Noticia.Estado.ARCHIVADO}:
         messages.error(request, "Estado de publicación no válido.")
         return redirect("admin_blog")
     noticia.estado = estado
@@ -176,7 +176,7 @@ def _blog_context_render(request, form, editar=False, noticia=None):
             models.Q(resumen__icontains=query) |
             models.Q(contenido__icontains=query)
         )
-    if estado in {Noticia.Estado.BORRADOR, Noticia.Estado.PUBLICADO}:
+    if estado in {Noticia.Estado.BORRADOR, Noticia.Estado.PUBLICADO, Noticia.Estado.ARCHIVADO}:
         noticias = noticias.filter(estado=estado)
     return render(request, "admin/blog.html", {
         "form": form,
@@ -186,6 +186,7 @@ def _blog_context_render(request, form, editar=False, noticia=None):
         "noticias_total": Noticia.objects.count(),
         "noticias_publicadas": Noticia.objects.filter(estado=Noticia.Estado.PUBLICADO).count(),
         "noticias_borrador": Noticia.objects.filter(estado=Noticia.Estado.BORRADOR).count(),
+        "noticias_archivadas": Noticia.objects.filter(estado=Noticia.Estado.ARCHIVADO).count(),
         "categorias": CategoriaNoticia.objects.filter(activa=True),
         "etiquetas": EtiquetaNoticia.objects.order_by("nombre"),
         "query": query,
