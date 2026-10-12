@@ -4244,18 +4244,24 @@ def blog(request):
     """Listado público de noticias y artículos publicados, con nueve por página."""
     publicaciones = (
         Noticia.objects
-        .filter(estado=Noticia.Estado.PUBLICADO, fecha_publicacion__lte=timezone.now())
+        .filter(
+            estado=Noticia.Estado.PUBLICADO,
+            fecha_publicacion__lte=timezone.now(),
+        )
         .select_related('categoria', 'autor')
         .prefetch_related('etiquetas')
         .order_by('-fecha_publicacion', '-creado_en')
     )
     paginator = Paginator(publicaciones, 9)
     page_obj = paginator.get_page(request.GET.get('page'))
+    # Pasar también la lista como variable explícita simplifica la inspección
+    # del contexto y evita depender de un QuerySet implícito en la plantilla.
+    noticias = list(page_obj.object_list)
     return render(request, 'page_blog.html', {
         'page_obj': page_obj,
+        'noticias': noticias,
         'noticia_detalle': None,
     })
-
 
 def blog_media(request, path):
     """Sirve únicamente imágenes públicas del blog cargadas desde el administrador."""
