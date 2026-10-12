@@ -91,6 +91,7 @@
 .admin-content .admin-kpi:nth-child(6n+4){background:linear-gradient(135deg,#f6b52d 0%,#e88a18 100%)!important}
 .admin-content .admin-kpi:nth-child(6n+5){background:linear-gradient(135deg,#ff8a32 0%,#f15b36 100%)!important}
 .admin-content .admin-kpi:nth-child(6n){background:linear-gradient(135deg,#ff3b30 0%,#c62828 100%)!important}
+.admin-content .admin-kpi.admin-kpi-saldo{background:#CB6120!important}
 .admin-content .admin-visit-kpi{min-height:180px}
 .admin-content .admin-visit-kpi .admin-stat-icon{
     width:42px;height:42px;border-radius:13px;
@@ -257,7 +258,7 @@
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M7 37h14l8 7h12c5 0 8-7 2-7H31"/><path d="M7 37v15h14l8 5h15l13-15c3-4-2-8-6-5l-10 7"/><circle cx="43" cy="17" r="10"/><path d="M46 12c-1-2-7-2-7 2s8 2 7 6-7 4-9 1m4-12v17"/></svg></span>
         <span>Cuentas por cobrar</span><strong>$ {{ cuentas_por_cobrar|floatformat:2 }}</strong><small>Saldo pendiente de cobro</small>
     </div>
-    <div class="admin-kpi" style="background:#CB6120;">
+    <div class="admin-kpi admin-kpi-saldo">
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M15 7h25l10 10v40H15Z"/><path d="M40 7v12h10M23 29h19M23 37h19"/><circle cx="31" cy="47" r="7"/><path d="M33 44c-1-2-5-2-5 1s6 1 5 4-5 2-6 0m3-8v9"/></svg></span>
         <span>Saldo por facturar</span><strong>$ {{ saldo_por_facturar|floatformat:2 }}</strong><small>Valores por facturar</small>
     </div>
