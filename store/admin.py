@@ -9,6 +9,9 @@ from .models import (
     PuntoEmision,
     SecuencialDocumento,
     UsuarioCliente,
+    CategoriaNoticia,
+    EtiquetaNoticia,
+    Noticia,
 )
 
 
@@ -84,3 +87,46 @@ class AceptacionLegalAdmin(admin.ModelAdmin):
     search_fields = ('usuario__username',)
     list_filter = ('tipo', 'version')
     readonly_fields = ('usuario', 'tipo', 'version', 'aceptado_en', 'ip_address', 'user_agent')
+
+
+
+@admin.register(CategoriaNoticia)
+class CategoriaNoticiaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'slug', 'activa', 'creada_en')
+    search_fields = ('nombre', 'descripcion')
+    list_filter = ('activa',)
+    prepopulated_fields = {'slug': ('nombre',)}
+
+
+@admin.register(EtiquetaNoticia)
+class EtiquetaNoticiaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'slug')
+    search_fields = ('nombre',)
+    prepopulated_fields = {'slug': ('nombre',)}
+
+
+@admin.register(Noticia)
+class NoticiaAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'tipo', 'estado', 'categoria', 'autor', 'destacada', 'fecha_publicacion')
+    list_filter = ('estado', 'tipo', 'destacada', 'categoria')
+    search_fields = ('titulo', 'resumen', 'contenido', 'slug')
+    prepopulated_fields = {'slug': ('titulo',)}
+    filter_horizontal = ('etiquetas',)
+    date_hierarchy = 'fecha_publicacion'
+    list_editable = ('estado', 'destacada')
+    readonly_fields = ('creado_en', 'actualizado_en')
+    fieldsets = (
+        ('Contenido', {
+            'fields': ('titulo', 'slug', 'tipo', 'estado', 'resumen', 'contenido', 'imagen_destacada', 'texto_alternativo_imagen')
+        }),
+        ('Clasificación', {
+            'fields': ('categoria', 'etiquetas', 'autor', 'destacada')
+        }),
+        ('Publicación y SEO', {
+            'fields': ('fecha_publicacion', 'meta_titulo', 'meta_descripcion')
+        }),
+        ('Auditoría', {
+            'fields': ('creado_en', 'actualizado_en'),
+            'classes': ('collapse',)
+        }),
+    )

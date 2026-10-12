@@ -11,8 +11,12 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 import re
+import mimetypes
+from pathlib import Path
 
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.core.paginator import Paginator
+from django.utils import timezone
 from io import BytesIO
 from datetime import datetime
 from django.views.decorators.http import require_POST
@@ -27,6 +31,7 @@ from .models import (
     UsuarioCliente,
     Suscriptor,
     RequerimientoContacto,
+    Noticia,
 )
 from .services.acceso import obtener_resumen_cliente, validar_acceso_cliente
 from .services.archivos import eliminar_archivo, guardar_archivo
@@ -4226,7 +4231,46 @@ def servicios_tramites_varios(request):
 
 
 def blog(request):
-    return render(request, 'page_blog.html')
+    """Listado público de noticias y artículos publicados, con nueve por página."""
+    publicaciones = (
+        Noticia.objects
+        .filter(estado=Noticia.Estado.PUBLICADO, fecha_publicacion__lte=timezone.now())
+        .select_related('categoria', 'autor')
+        .prefetch_related('etiquetas')
+        .order_by('-fecha_publicacion', '-creado_en')
+    )
+    paginator = Paginator(publicaciones, 9)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'page_blog.html', {
+        'page_obj': page_obj,
+        'noticia_detalle': None,
+    })
+
+
+def blog_media(request, path):
+    """Sirve únicamente imágenes públicas del blog cargadas desde el administrador."""
+    raiz = (Path(settings.MEDIA_ROOT) / 'blog' / 'noticias').resolve()
+    archivo = (raiz / path).resolve()
+    if raiz not in archivo.parents or not archivo.is_file():
+        raise Http404
+    tipo_contenido, _ = mimetypes.guess_type(str(archivo))
+    respuesta = FileResponse(archivo.open('rb'), content_type=tipo_contenido or 'application/octet-stream')
+    respuesta['Cache-Control'] = 'public, max-age=86400'
+    return respuesta
+
+
+def blog_detalle(request, slug):
+    """Detalle público de una noticia o artículo publicado."""
+    noticia = get_object_or_404(
+        Noticia.objects.select_related('categoria', 'autor').prefetch_related('etiquetas'),
+        slug=slug,
+        estado=Noticia.Estado.PUBLICADO,
+        fecha_publicacion__lte=timezone.now(),
+    )
+    return render(request, 'page_blog.html', {
+        'noticia_detalle': noticia,
+        'page_obj': None,
+    })
 
 
 def error_404(request, exception):
