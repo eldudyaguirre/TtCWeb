@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+{% block title %}Blog y noticias | Administración TotalCounts{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Contenido editorial</span>
+        <h1>Blog y noticias</h1>
+        <p>Crea, organiza y publica novedades tributarias y artículos de TotalCounts.</p>
+    </div>
+</div>
+
+<section class="admin-kpis">
+    <div class="admin-kpi"><span>Total publicaciones</span><strong>{{ noticias_total }}</strong><small>Guardadas en el blog</small></div>
+    <div class="admin-kpi"><span>Publicadas</span><strong>{{ noticias_publicadas }}</strong><small>Disponibles según su fecha</small></div>
+    <div class="admin-kpi"><span>Borradores</span><strong>{{ noticias_borrador }}</strong><small>Pendientes de revisión</small></div>
+</section>
+
+<section class="admin-card blog-create-card">
+    <div class="admin-card-header"><div><span class="admin-kicker">Editor</span><h2>Nueva publicación</h2></div></div>
+    <form method="post" enctype="multipart/form-data" class="blog-editor-form">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="crear">
+        <div class="blog-form-grid">
+            <div class="blog-field blog-field-wide">
+                <label for="blog-titulo">Título *</label>
+                <input id="blog-titulo" name="titulo" type="text" maxlength="220" required placeholder="Ej. Novedades tributarias del mes">
+            </div>
+            <div class="blog-field blog-field-wide">
+                <label for="blog-resumen">Resumen *</label>
+                <textarea id="blog-resumen" name="resumen" maxlength="320" rows="2" required placeholder="Texto breve que aparecerá en las tarjetas del blog."></textarea>
+            </div>
+            <div class="blog-field">
+                <label for="blog-categoria">Categoría</label>
+                <input id="blog-categoria" name="categoria" list="blog-categorias" maxlength="100" placeholder="Tributario">
+                <datalist id="blog-categorias">{% for categoria in categorias %}<option value="{{ categoria.nombre }}">{% endfor %}</datalist>
+            </div>
+            <div class="blog-field">
+                <label for="blog-imagen">Imagen destacada</label>
+                <input id="blog-imagen" name="imagen_destacada" type="file" accept="image/*">
+            </div>
+            <div class="blog-field blog-field-wide">
+                <label for="blog-alt">Texto alternativo de la imagen</label>
+                <input id="blog-alt" name="texto_alternativo_imagen" type="text" maxlength="220" placeholder="Describe la imagen para accesibilidad">
+            </div>
+            <div class="blog-field blog-field-wide">
+                <label for="blog-contenido">Contenido del artículo * (se admite HTML)</label>
+                <textarea id="blog-contenido" name="contenido" rows="10" required placeholder="Escribe aquí el contenido completo de la publicación."></textarea>
+            </div>
+        </div>
+        <div class="blog-editor-actions">
+            <label class="blog-publish-check"><input type="checkbox" name="publicar"> Publicar inmediatamente</label>
+            <button class="admin-primary-button" type="submit">Guardar publicación</button>
+        </div>
+    </form>
+</section>
+
+<div class="admin-page-header blog-list-heading">
+    <div><span class="admin-kicker">Biblioteca</span><h2>Publicaciones existentes</h2></div>
+</div>
+<form method="get" class="admin-filters">
+    <input type="search" name="q" value="{{ query }}" placeholder="Buscar por título o resumen">
+    <select name="estado">
+        <option value="">Todos los estados</option>
+        <option value="PUBLICADO" {% if estado == "PUBLICADO" %}selected{% endif %}>Publicadas</option>
+        <option value="BORRADOR" {% if estado == "BORRADOR" %}selected{% endif %}>Borradores</option>
+    </select>
+    <button type="submit" class="admin-secondary-button">Buscar</button>
+</form>
+<section class="admin-card">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Publicación</th><th>Categoría</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody>
+            {% for noticia in noticias %}
+                <tr>
+                    <td><strong>{{ noticia.titulo }}</strong><br><small>{{ noticia.resumen|truncatechars:100 }}</small></td>
+                    <td>{{ noticia.categoria.nombre|default:"Sin categoría" }}</td>
+                    <td><span class="admin-status {% if noticia.estado == 'PUBLICADO' %}active{% else %}inactive{% endif %}">{{ noticia.get_estado_display }}</span></td>
+                    <td>{% if noticia.fecha_publicacion %}{{ noticia.fecha_publicacion|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+                    <td>
+                        <div class="blog-row-actions">
+                            {% if noticia.estado == "PUBLICADO" %}<a class="admin-secondary-button" href="{% url 'blog_detalle' slug=noticia.slug %}" target="_blank" rel="noopener">Ver</a>{% endif %}
+                            <form method="post">
+                                {% csrf_token %}<input type="hidden" name="accion" value="estado"><input type="hidden" name="noticia_id" value="{{ noticia.pk }}">
+                                <button class="admin-secondary-button" type="submit">{% if noticia.estado == "PUBLICADO" %}Pasar a borrador{% else %}Publicar{% endif %}</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="admin-empty">Todavía no hay publicaciones. Usa el formulario superior para crear la primera noticia.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<style>
+.blog-create-card{padding:24px;margin-bottom:28px}.blog-editor-form{padding-top:8px}.blog-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.blog-field{display:flex;flex-direction:column;gap:7px;min-width:0}.blog-field-wide{grid-column:1/-1}.blog-field label{font-size:13px;font-weight:700;color:var(--admin-dark,#263238)}.blog-field input,.blog-field textarea{width:100%;padding:11px 12px;border:1px solid var(--admin-border,#dbe3e7);border-radius:8px;background:#fff;color:var(--admin-dark,#263238);font:inherit}.blog-field input[type=file]{padding:8px}.blog-field textarea{resize:vertical}.blog-editor-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:20px}.blog-publish-check{display:flex;align-items:center;gap:8px;font-size:14px}.blog-list-heading{margin-top:30px}.blog-row-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.blog-row-actions form{margin:0}.blog-row-actions .admin-secondary-button{white-space:nowrap;font-size:12px;padding:7px 9px}@media(max-width:700px){.blog-form-grid{grid-template-columns:1fr}.blog-field-wide{grid-column:auto}.blog-editor-actions{align-items:flex-start;flex-direction:column}.blog-row-actions{flex-direction:column;align-items:flex-start}}
+</style>
+{% endblock %}
