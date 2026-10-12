@@ -15,7 +15,7 @@ class NoticiaAdminForm(forms.ModelForm):
         model = Noticia
         fields = (
             "titulo", "resumen", "contenido", "imagen_destacada",
-            "texto_alternativo_imagen", "categoria", "etiquetas",
+            "texto_alternativo_imagen", "autor_nombre", "categoria", "etiquetas",
             "estado", "fecha_publicacion", "destacada",
             "meta_titulo", "meta_descripcion",
         )
@@ -24,6 +24,7 @@ class NoticiaAdminForm(forms.ModelForm):
             "resumen": forms.Textarea(attrs={"class": "blog-input", "rows": 3, "maxlength": 320, "placeholder": "Resumen que aparecerá en tarjetas y buscadores"}),
             "contenido": forms.HiddenInput(),
             "texto_alternativo_imagen": forms.TextInput(attrs={"class": "blog-input", "maxlength": 220, "placeholder": "Describe la imagen para accesibilidad"}),
+            "autor_nombre": forms.TextInput(attrs={"class": "blog-input", "maxlength": 150, "placeholder": "Nombre que aparecerá como autor"}),
             "categoria": forms.Select(attrs={"class": "blog-input"}),
             "etiquetas": forms.SelectMultiple(attrs={"class": "blog-input", "size": 5}),
             "estado": forms.Select(attrs={"class": "blog-input"}),
