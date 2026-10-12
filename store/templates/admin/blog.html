@@ -37,6 +37,11 @@
               <button type="button" data-cmd="underline" title="Subrayado"><u>U</u></button>
               <button type="button" data-cmd="strikeThrough" title="Tachado">S</button>
               <span class="blog-toolbar-sep"></span>
+              <button type="button" data-cmd="justifyLeft" title="Alinear a la izquierda">☰ Izquierda</button>
+              <button type="button" data-cmd="justifyCenter" title="Centrar texto">☷ Centro</button>
+              <button type="button" data-cmd="justifyRight" title="Alinear a la derecha">☰ Derecha</button>
+              <button type="button" data-cmd="justifyFull" title="Justificar texto">☰ Justificar</button>
+              <span class="blog-toolbar-sep"></span>
               <button type="button" data-cmd="insertUnorderedList">• Lista</button>
               <button type="button" data-cmd="insertOrderedList">1. Lista</button>
               <button type="button" data-cmd="formatBlock" data-value="blockquote">❝ Cita</button>
@@ -46,7 +51,7 @@
             <div id="blogEditor" class="blog-editor" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
             <div class="blog-editor-status"><span>El formato se conserva al guardar. Se eliminan etiquetas y scripts no permitidos.</span><span id="blogWordCount">0 palabras</span></div>
           </div>
-          <p class="blog-help">Escribe como en un editor de texto: títulos, negrita, listas, citas y enlaces.</p>{{ form.contenido.errors }}
+          <p class="blog-help">Escribe como en un editor de texto: títulos, negrita, alineación, listas, citas y enlaces. Los párrafos se publican justificados por defecto.</p>{{ form.contenido.errors }}
         </div>
       </div>
       <aside class="blog-side-fields">
@@ -55,6 +60,7 @@
         <div class="blog-field"><label for="{{ form.fecha_publicacion.id_for_label }}">Fecha de publicación</label>{{ form.fecha_publicacion }}<p class="blog-help">Al publicar, una fecha vacía o futura se ajusta a la hora actual.</p>{{ form.fecha_publicacion.errors }}</div>
         <div class="blog-field"><label for="{{ form.imagen_destacada.id_for_label }}">Imagen destacada</label>{{ form.imagen_destacada }}<p class="blog-help">Imagen JPG, PNG o WebP. Máximo 8 MB.</p>{% if editar and noticia_actual.imagen_destacada %}<img class="blog-image-preview" src="{{ noticia_actual.imagen_destacada.url }}" alt="{{ noticia_actual.texto_alternativo_imagen|default:noticia_actual.titulo }}">{% endif %}{{ form.imagen_destacada.errors }}</div>
         <div class="blog-field"><label for="{{ form.texto_alternativo_imagen.id_for_label }}">Texto alternativo de imagen</label>{{ form.texto_alternativo_imagen }}{{ form.texto_alternativo_imagen.errors }}</div>
+        <div class="blog-field"><label for="{{ form.autor_nombre.id_for_label }}">Nombre del autor</label>{{ form.autor_nombre }}<p class="blog-help">Firma que se mostrará públicamente al final del artículo. Si lo dejas vacío, se usará el nombre del usuario administrativo.</p>{{ form.autor_nombre.errors }}</div>
         <div class="blog-field"><label for="{{ form.categoria.id_for_label }}">Categoría</label>{{ form.categoria }}{{ form.categoria.errors }}</div>
         <div class="blog-field"><label for="{{ form.etiquetas.id_for_label }}">Etiquetas</label>{{ form.etiquetas }}<p class="blog-help">Selecciona varias con Ctrl o Cmd. Puedes crear etiquetas debajo.</p>{{ form.etiquetas.errors }}</div>
         <label class="blog-featured">{{ form.destacada }} <span>Destacar publicación</span></label>{{ form.destacada.errors }}
