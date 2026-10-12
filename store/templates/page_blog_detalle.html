@@ -138,147 +138,13 @@
 
     <body>
         
-        <!-- Header -->
-        <header id="header">
-
-            <!-- Top Navbar -->
-            <nav class="navbar navbar-expand top">
-                <div class="container header">
-
-                    <!-- Navbar Items [left] -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link pl-0"><i class="fas fa-clock mr-2"></i>Horarios de Atención: Lun - Vier - 9:00 - 18:00</a>
-                        </li>
-                    </ul>
-
-                    <!-- Nav holder -->
-                    <div class="ml-auto"></div>
-
-                    <!-- Navbar Items [right] -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a href="tel:+593964208139" class="nav-link"><i class="fas fa-phone-alt mr-2"></i>(+593) 96 420 8139</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="fas fa-envelope mr-2"></i>totalcounts@hotmail.com</a>
-                        </li>
-                    </ul>
-
-                    <!-- Navbar Icons -->
-                    <ul class="navbar-nav icons">
-                        <li class="nav-item social">
-                            <a href="https://www.facebook.com/TotalCounts/" class="nav-link"><i class="fab fa-facebook-f"></i></a>
-                        </li>
-                        <li class="nav-item social">
-                            <a href="mailto:totalcounts@hotmail.com" class="nav-link"><i class="far fa-envelope"></i></a>
-                        </li>
-                        <li class="nav-item social">
-                            <a href="https://wa.me/593964208139" class="nav-link pr-0"><i class="fab fa-whatsapp"></i></a>
-                        </li>
-                    </ul>
-
-                </div>
-            </nav>
-
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand navbar-fixed sub">
-                <div class="container header">
-
-                    <!-- Navbar Brand-->
-                    <a class="navbar-brand" href="/">
-                        <img src="{% static 'images/logo.svg' %}">
-                        <span class="brand">
-                            <span class="featured">
-                                <span class="first"> TOTAL</span>
-                            </span>
-                            <span class="last"> COUNTS</span>
-                        </span>
-                
-                        
-                    </a>
-
-                    <!-- Nav holder -->
-                    <div class="ml-auto"></div>
-
-                    <!-- Navbar Items -->
-                    <ul class="navbar-nav items">
-                        <li class="nav-item">
-                            <a href="{% url 'home' %}" class="nav-link">INICIO</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'about' %}" class="nav-link">ACERCA</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'servicios' %}" class="nav-link">SERVICIOS</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'contactanos' %}" class="nav-link desktop-contact-link">CONTACTANOS</a>
-                        </li>
-                    </ul>
-
-
-                    <!-- Navbar Toggle -->
-                    <ul class="navbar-nav toggle">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-toggle="modal" data-target="#menu">
-                                <i class="icon-menu m-0"></i>
-                            </a>
-                        </li>
-                    </ul>
-
-                    <!-- Navbar Action -->
-                    <ul class="navbar-nav action">
-                        <li class="nav-item ml-3">
-                            <a href="{% url 'contactanos' %}" class="btn ml-lg-auto primary-button">CONTACTANOS</a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
-        </header>
-
-        <!-- Hero -->
-        <section id="slider" class="hero p-0 odd featured">
-            <div class="swiper-container no-slider animation slider-h-50 slider-h-auto">
-                <div class="swiper-wrapper">
-
-                    <!-- Item 1 -->
-                    <div class="swiper-slide slide-center">
-
-                        <!-- Media -->
-                        <img src="{% static 'images/blogynoticias.png' %}" alt="Full Image" class="full-image" data-mask="80">
-
-                        <div class="slide-content row text-center">
-                            <div class="col-12 mx-auto inner">
-
-                                <!-- Content -->
-                                <nav data-aos="zoom-out-up" data-aos-delay="800" aria-label="breadcrumb">
-                                    <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
-                                        <li class="breadcrumb-item"><a href="{% url 'blog' %}">Blog y Noticias</a></li>{% if noticia_detalle %}<li class="breadcrumb-item active" aria-current="page">{{ noticia_detalle.titulo }}</li>{% else %}<li class="breadcrumb-item active" aria-current="page">Blog y Noticias</li>{% endif %}
-                                    </ol>
-                                </nav>
-
-                                <h1 class="mb-0 title effect-static-text">{% if noticia_detalle %}{{ noticia_detalle.titulo }}{% else %}Blog y Noticias{% endif %}</h1>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
+        <!-- La vista del artículo es limpia: sin cabecera del sitio ni banner de portada. -->
 
         <!-- Artículo individual -->
         <section id="blog-article" class="section-1 single showcase projects">
             <div class="container">
                 <div class="row content blog-detail">
                     <article class="col-12">
-                        {% if noticia_detalle.imagen_destacada %}
-                        <div class="blog-detail-featured-image mb-4">
-                            <img src="{{ noticia_detalle.imagen_destacada.url }}" alt="{{ noticia_detalle.texto_alternativo_imagen|default:noticia_detalle.titulo }}" class="img-fluid">
-                        </div>
-                        {% endif %}
                         <div class="card p-0 blog-detail-card">
                             <div class="card-caption col-12 p-0">
                                 <div class="card-body">
@@ -305,7 +171,7 @@
             </div>
         </section>
         <style>
-            #blog-article { padding-top: 70px; padding-bottom: 80px; background: #f7f9fa; }
+            #blog-article { padding-top: 58px; padding-bottom: 80px; background: #f7f9fa; }
             .blog-detail-featured-image { max-width: 1000px; margin-left: auto; margin-right: auto; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 42px rgba(10,35,45,.12); }
             .blog-detail-featured-image img { display: block; width: 100%; max-height: 520px; object-fit: cover; }
             .blog-detail-card { max-width: 1000px; margin: 0 auto; border: 1px solid #e6ebee; border-radius: 16px; overflow: hidden; box-shadow: 0 14px 40px rgba(10,35,45,.07); }
