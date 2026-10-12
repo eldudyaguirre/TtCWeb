@@ -70,7 +70,7 @@ def home(request):
             fecha_publicacion__lte=timezone.now(),
         )
         .select_related('categoria', 'autor')
-        .order_by('-fecha_publicacion', '-creado_en')[:6]
+        .order_by('-fecha_publicacion', '-creado_en')[:3]
     )
     return render(request, 'index.html', {
         'empresas_administradas': total_registros_clientes,
