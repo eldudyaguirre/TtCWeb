@@ -549,22 +549,7 @@
                         <div class="row blog-pagination-row">
                             <div class="col-12">
                                 <nav aria-label="Paginación del blog">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" tabindex="-1">
-                                                <i class="icon-arrow-left"></i>
-                                            </a>
-                                        </li>
-                                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">4</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">
-                                                <i class="icon-arrow-right"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
+                                    <ul class="pagination justify-content-center" id="blog-pagination"></ul>
                                 </nav>
                             </div>
                         </div>
@@ -1087,6 +1072,64 @@
         <script src="{% static 'js/vendor/cookie-notice.min.js' %}"></script>
         <script src="{% static 'js/vendor/particles.min.js' %}"></script>
         <script src="{% static 'js/main.js' %}"></script>
+
+        <script>
+            // Mostrar como máximo 9 noticias por página.
+            document.addEventListener('DOMContentLoaded', function () {
+                const grid = document.querySelector('#blog .blog-grid .row.items');
+                const pagination = document.getElementById('blog-pagination');
+                if (!grid || !pagination) return;
+
+                const cards = Array.from(grid.querySelectorAll(':scope > .item'));
+                const perPage = 9;
+                const pageCount = Math.ceil(cards.length / perPage);
+                const params = new URLSearchParams(window.location.search);
+                let currentPage = parseInt(params.get('page') || '1', 10);
+                if (!Number.isFinite(currentPage)) currentPage = 1;
+                currentPage = Math.min(Math.max(currentPage, 1), Math.max(pageCount, 1));
+
+                function addPageLink(label, page, active, disabled, ariaLabel) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
+                    const a = document.createElement('a');
+                    a.className = 'page-link';
+                    a.href = '?page=' + page + '#blog';
+                    a.textContent = label;
+                    if (ariaLabel) a.setAttribute('aria-label', ariaLabel);
+                    if (active) a.setAttribute('aria-current', 'page');
+                    if (disabled) a.setAttribute('tabindex', '-1');
+                    li.appendChild(a);
+                    pagination.appendChild(li);
+                }
+
+                function renderPage(page) {
+                    currentPage = page;
+                    cards.forEach(function (card, index) {
+                        card.hidden = index < (page - 1) * perPage || index >= page * perPage;
+                    });
+                    pagination.innerHTML = '';
+                    if (pageCount <= 1) {
+                        pagination.closest('.blog-pagination-row').hidden = true;
+                        return;
+                    }
+                    pagination.closest('.blog-pagination-row').hidden = false;
+                    const prev = document.createElement('li');
+                    prev.className = 'page-item' + (page === 1 ? ' disabled' : '');
+                    prev.innerHTML = '<a class="page-link" href="?page=' + Math.max(1, page - 1) + '#blog" aria-label="Página anterior"><i class="icon-arrow-left"></i></a>';
+                    pagination.appendChild(prev);
+                    for (let p = 1; p <= pageCount; p++) {
+                        addPageLink(String(p), p, p === page, false, 'Página ' + p);
+                    }
+                    const next = document.createElement('li');
+                    next.className = 'page-item' + (page === pageCount ? ' disabled' : '');
+                    next.innerHTML = '<a class="page-link" href="?page=' + Math.min(pageCount, page + 1) + '#blog" aria-label="Página siguiente"><i class="icon-arrow-right"></i></a>';
+                    pagination.appendChild(next);
+                }
+
+                renderPage(currentPage);
+            });
+        </script>
+
 
     </body>
 </html>
