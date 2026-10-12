@@ -63,8 +63,18 @@ TEMPLATE_PREVIEWS = {
 
 def home(request):
     total_registros_clientes = Cliente.objects.count()
+    noticias_inicio = (
+        Noticia.objects
+        .filter(
+            estado=Noticia.Estado.PUBLICADO,
+            fecha_publicacion__lte=timezone.now(),
+        )
+        .select_related('categoria', 'autor')
+        .order_by('-fecha_publicacion', '-creado_en')[:6]
+    )
     return render(request, 'index.html', {
         'empresas_administradas': total_registros_clientes,
+        'noticias_inicio': noticias_inicio,
     })
 
 
