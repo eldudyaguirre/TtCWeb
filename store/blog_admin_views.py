@@ -83,7 +83,19 @@ def _save_noticia_form(request, form, noticia=None):
 
 @admin_required
 def admin_blog(request):
-    if request.method == "POST":
+    if request.method == "POST" and request.POST.get("accion") == "categoria":
+        nombre = request.POST.get("nombre_categoria", "").strip()
+        descripcion = request.POST.get("descripcion_categoria", "").strip()
+        if not nombre or len(nombre) > 100:
+            messages.error(request, "El nombre de la categoría es obligatorio y admite hasta 100 caracteres.")
+        else:
+            _, creada = CategoriaNoticia.objects.get_or_create(
+                nombre=nombre,
+                defaults={"descripcion": descripcion[:255]},
+            )
+            messages.success(request, "Categoría creada." if creada else "La categoría ya existía.")
+            return redirect("admin_blog")
+    if request.method == "POST" and request.POST.get("accion") != "categoria":
         form = NoticiaAdminForm(request.POST, request.FILES)
         noticia = _save_noticia_form(request, form)
         if noticia:
