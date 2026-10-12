@@ -11,6 +11,8 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 import re
+import mimetypes
+from pathlib import Path
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
@@ -4243,6 +4245,18 @@ def blog(request):
         'page_obj': page_obj,
         'noticia_detalle': None,
     })
+
+
+def blog_media(request, path):
+    """Sirve únicamente imágenes públicas del blog cargadas desde el administrador."""
+    raiz = (Path(settings.MEDIA_ROOT) / 'blog' / 'noticias').resolve()
+    archivo = (raiz / path).resolve()
+    if raiz not in archivo.parents or not archivo.is_file():
+        raise Http404
+    tipo_contenido, _ = mimetypes.guess_type(str(archivo))
+    respuesta = FileResponse(archivo.open('rb'), content_type=tipo_contenido or 'application/octet-stream')
+    respuesta['Cache-Control'] = 'public, max-age=86400'
+    return respuesta
 
 
 def blog_detalle(request, slug):
