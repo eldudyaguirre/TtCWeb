@@ -148,9 +148,16 @@ def _notificar_si_se_publico(request, noticia, ya_estaba_publicada):
 
 
 def _save_noticia_form(request, form, noticia=None):
+    # Leer el estado persistido antes de validar el ModelForm, porque la validación
+    # puede actualizar form.instance con el estado enviado desde el formulario.
+    pk_existente = getattr(form.instance, "pk", None)
+    estado_anterior = (
+        Noticia.objects.filter(pk=pk_existente).values_list("estado", flat=True).first()
+        if pk_existente else None
+    )
     if not form.is_valid():
         return None
-    ya_estaba_publicada = bool(noticia and noticia.estado == Noticia.Estado.PUBLICADO)
+    ya_estaba_publicada = estado_anterior == Noticia.Estado.PUBLICADO
     noticia = form.save(commit=False)
     noticia._ya_estaba_publicada = ya_estaba_publicada
     usuario = getattr(request, "user", None)
