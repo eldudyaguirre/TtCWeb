@@ -327,7 +327,7 @@
                                         </a>
                                     </div>
                                     <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <span class="d-lg-flex align-items-center"><i class="icon-user"></i>{% if noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}TotalCounts{% endif %}</span>
+                                        <span class="d-lg-flex align-items-center"><i class="icon-user"></i>{% if noticia.autor_nombre %}{{ noticia.autor_nombre }}{% elif noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}TotalCounts{% endif %}</span>
                                         <span class="d-lg-flex align-items-center"><i class="icon-clock"></i>{{ noticia.fecha_publicacion|date:"d/m/Y" }}</span>
                                     </div>
                                     <div class="card-caption col-12 p-0">
