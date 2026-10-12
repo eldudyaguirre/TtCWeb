@@ -103,12 +103,20 @@ def _enviar_aviso_publicacion(request, noticia):
         "Si ya no deseas recibir comunicaciones, utiliza las opciones de gestión disponibles en TotalCounts."
     )
     html = (
-        '<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#263238">'
-        '<div style="background:#12343b;padding:24px;color:#fff"><h2 style="margin:0">TotalCounts | Blog</h2></div>'
-        f'<div style="padding:24px"><p>Se ha publicado una nueva entrada:</p>'
-        f'<h1 style="font-size:24px">{titulo}</h1><p>{resumen}</p>'
-        f'<p><a href="{escape(url)}" style="display:inline-block;background:#00a6a6;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">Leer artículo completo</a></p>'
-        '<p style="font-size:12px;color:#718096">TotalCounts · Información tributaria y empresarial.</p></div></div>'
+        '<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#263238;background:#ffffff">'
+        '<div style="padding:24px 28px;text-align:center;background:#ffffff">'
+        '<img src="https://www.totalcounts.com.ec/static/images/logosvg.svg" '
+        'alt="TotalCounts - Cuentas con nosotros" width="190" '
+        'style="display:block;width:190px;max-width:100%;height:auto;margin:0 auto">'
+        '</div>'
+        '<div style="padding:20px 28px 28px">'
+        '<p style="color:#bd1020;font-size:12px;font-weight:bold;letter-spacing:1px">BLOG Y NOTICIAS</p>'
+        f'<h1 style="font-size:25px;line-height:1.3;color:#263238;margin:12px 0">{titulo}</h1>'
+        f'<p style="font-size:15px;line-height:1.7;color:#4b5563">{resumen}</p>'
+        f'<div style="margin:28px 0"><a href="{escape(url)}" style="display:inline-block;background:#00a6a6;color:#ffffff;padding:13px 22px;text-decoration:none;border-radius:5px;font-weight:bold">Leer artículo completo</a></div>'
+        '<hr style="border:0;border-top:1px solid #e5e7eb">'
+        '<p style="font-size:12px;color:#718096;text-align:center">TotalCounts · Información tributaria y empresarial</p>'
+        '</div></div>'
     )
 
     enviados = 0
