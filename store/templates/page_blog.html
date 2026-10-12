@@ -98,6 +98,27 @@
         =============================================== -->
         <meta name="theme-color" content="#bd1020">
 
+        <style>
+            /* Centra la paginación respecto al ancho de la pantalla,
+               no solamente respecto a la columna de artículos. */
+            .blog-pagination-row {
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100vw;
+                max-width: 100vw;
+                margin-right: 0;
+                margin-left: 0;
+            }
+            .blog-pagination-row > .col-12 {
+                display: flex;
+                justify-content: center;
+            }
+            .blog-pagination-row nav {
+                max-width: 100%;
+            }
+        </style>
+
         <!-- ==============================================
         Theme Settings
         =============================================== -->
@@ -525,9 +546,9 @@
                         </div>
 
                         <!-- Pagination -->
-                        <div class="row">
+                        <div class="row blog-pagination-row">
                             <div class="col-12">
-                                <nav>
+                                <nav aria-label="Paginación del blog">
                                     <ul class="pagination justify-content-center">
                                         <li class="page-item">
                                             <a class="page-link" href="#" tabindex="-1">
