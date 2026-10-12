@@ -63,6 +63,36 @@
         =============================================== -->
         <link rel="stylesheet" href="{% static 'css/default.css' %}">
 
+        <style>
+            .newsletter-subscribe-form .newsletter-consent label {
+                display:flex;
+                align-items:flex-start;
+                gap:10px;
+                width:100%;
+                color:rgba(255,255,255,.78);
+                font-size:.82rem;
+                line-height:1.45;
+                cursor:pointer;
+            }
+            .newsletter-subscribe-form .newsletter-consent input[type="checkbox"] {
+                flex:0 0 auto;
+                width:18px;
+                height:18px;
+                margin-top:1px;
+                accent-color:#00a6a6;
+            }
+            .newsletter-subscribe-form .primary-button {
+                border:1px solid #058283;
+                cursor:pointer;
+            }
+            @media (max-width:576px) {
+                .newsletter-subscribe-form .newsletter-consent label {
+                    font-size:.78rem;
+                }
+            }
+
+        </style>
+
         <!-- ==============================================
         Theme Color
         =============================================== -->
@@ -76,7 +106,8 @@
                 --hero-bg-color: #080d10;
                 --section-1-bg-color: #eef4ed;
                 --section-2-bg-color: #ffffff;
-                --section-3-bg-color: #111117; --section-3-bg-image: url("{% static 'images/blogynoticias.png' %}");
+                --section-3-bg-color: #111117;
+                --section-6-bg-color: #111117; --section-3-bg-image: url("{% static 'images/blogynoticias.png' %}");
                 --footer-bg-color: #080d10;
                 --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
             }
