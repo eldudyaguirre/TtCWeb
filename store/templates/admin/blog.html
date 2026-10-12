@@ -1,100 +1,153 @@
 {% extends "admin/base.html" %}
 {% block title %}Blog y noticias | Administración TotalCounts{% endblock %}
 {% block content %}
-<div class="admin-page-header">
-    <div>
-        <span class="admin-kicker">Contenido editorial</span>
-        <h1>Blog y noticias</h1>
-        <p>Crea, organiza y publica novedades tributarias y artículos de TotalCounts.</p>
-    </div>
+<div class="admin-page-header blog-head">
+  <div><span class="admin-kicker">Contenido editorial</span><h1>Blog y noticias</h1><p>Administra publicaciones tributarias, artículos, categorías, etiquetas y SEO.</p></div>
+  <a class="admin-primary-button admin-button-link" href="#blog-editor">{% if editar %}Editar publicación{% else %}Nueva publicación{% endif %}</a>
 </div>
-
 <section class="admin-kpis">
-    <div class="admin-kpi"><span>Total publicaciones</span><strong>{{ noticias_total }}</strong><small>Guardadas en el blog</small></div>
-    <div class="admin-kpi"><span>Publicadas</span><strong>{{ noticias_publicadas }}</strong><small>Disponibles según su fecha</small></div>
-    <div class="admin-kpi"><span>Borradores</span><strong>{{ noticias_borrador }}</strong><small>Pendientes de revisión</small></div>
+  <div class="admin-kpi"><span>Total publicaciones</span><strong>{{ noticias_total }}</strong><small>Artículos almacenados</small></div>
+  <div class="admin-kpi"><span>Publicadas</span><strong>{{ noticias_publicadas }}</strong><small>Visibles según fecha</small></div>
+  <div class="admin-kpi"><span>Borradores</span><strong>{{ noticias_borrador }}</strong><small>En preparación</small></div>
 </section>
 
-<section class="admin-card blog-create-card">
-    <div class="admin-card-header"><div><span class="admin-kicker">Editor</span><h2>Nueva publicación</h2></div></div>
-    <form method="post" enctype="multipart/form-data" class="blog-editor-form">
-        {% csrf_token %}
-        <input type="hidden" name="accion" value="crear">
-        <div class="blog-form-grid">
-            <div class="blog-field blog-field-wide">
-                <label for="blog-titulo">Título *</label>
-                <input id="blog-titulo" name="titulo" type="text" maxlength="220" required placeholder="Ej. Novedades tributarias del mes">
-            </div>
-            <div class="blog-field blog-field-wide">
-                <label for="blog-resumen">Resumen *</label>
-                <textarea id="blog-resumen" name="resumen" maxlength="320" rows="2" required placeholder="Texto breve que aparecerá en las tarjetas del blog."></textarea>
-            </div>
-            <div class="blog-field">
-                <label for="blog-categoria">Categoría</label>
-                <input id="blog-categoria" name="categoria" list="blog-categorias" maxlength="100" placeholder="Tributario">
-                <datalist id="blog-categorias">{% for categoria in categorias %}<option value="{{ categoria.nombre }}">{% endfor %}</datalist>
-            </div>
-            <div class="blog-field">
-                <label for="blog-imagen">Imagen destacada</label>
-                <input id="blog-imagen" name="imagen_destacada" type="file" accept="image/*">
-            </div>
-            <div class="blog-field blog-field-wide">
-                <label for="blog-alt">Texto alternativo de la imagen</label>
-                <input id="blog-alt" name="texto_alternativo_imagen" type="text" maxlength="220" placeholder="Describe la imagen para accesibilidad">
-            </div>
-            <div class="blog-field blog-field-wide">
-                <label for="blog-contenido">Contenido del artículo * (se admite HTML)</label>
-                <textarea id="blog-contenido" name="contenido" rows="10" required placeholder="Escribe aquí el contenido completo de la publicación."></textarea>
-            </div>
+<section class="admin-card blog-form-card" id="blog-editor">
+  <div class="admin-card-header"><div><span class="admin-kicker">Editor editorial</span><h2>{% if editar %}Editar: {{ noticia_actual.titulo }}{% else %}Crear nueva publicación{% endif %}</h2></div></div>
+  <form method="post" enctype="multipart/form-data" class="blog-form">
+    {% csrf_token %}
+    <div class="blog-layout">
+      <div class="blog-main-fields">
+        <div class="blog-field">
+          <label for="{{ form.titulo.id_for_label }}">Título *</label>
+          {{ form.titulo }}{{ form.titulo.errors }}
         </div>
-        <div class="blog-editor-actions">
-            <label class="blog-publish-check"><input type="checkbox" name="publicar"> Publicar inmediatamente</label>
-            <button class="admin-primary-button" type="submit">Guardar publicación</button>
+        <div class="blog-field">
+          <label for="{{ form.resumen.id_for_label }}">Resumen *</label>
+          {{ form.resumen }}<p class="blog-help">Se utiliza en las tarjetas del blog y como descripción predeterminada para SEO.</p>{{ form.resumen.errors }}
         </div>
-    </form>
-</section>
-
-<div class="admin-page-header blog-list-heading">
-    <div><span class="admin-kicker">Biblioteca</span><h2>Publicaciones existentes</h2></div>
-</div>
-<form method="get" class="admin-filters">
-    <input type="search" name="q" value="{{ query }}" placeholder="Buscar por título o resumen">
-    <select name="estado">
-        <option value="">Todos los estados</option>
-        <option value="PUBLICADO" {% if estado == "PUBLICADO" %}selected{% endif %}>Publicadas</option>
-        <option value="BORRADOR" {% if estado == "BORRADOR" %}selected{% endif %}>Borradores</option>
-    </select>
-    <button type="submit" class="admin-secondary-button">Buscar</button>
-</form>
-<section class="admin-card">
-    <div class="admin-table-wrap">
-        <table class="admin-table">
-            <thead><tr><th>Publicación</th><th>Categoría</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
-            <tbody>
-            {% for noticia in noticias %}
-                <tr>
-                    <td><strong>{{ noticia.titulo }}</strong><br><small>{{ noticia.resumen|truncatechars:100 }}</small></td>
-                    <td>{{ noticia.categoria.nombre|default:"Sin categoría" }}</td>
-                    <td><span class="admin-status {% if noticia.estado == 'PUBLICADO' %}active{% else %}inactive{% endif %}">{{ noticia.get_estado_display }}</span></td>
-                    <td>{% if noticia.fecha_publicacion %}{{ noticia.fecha_publicacion|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
-                    <td>
-                        <div class="blog-row-actions">
-                            {% if noticia.estado == "PUBLICADO" %}<a class="admin-secondary-button" href="{% url 'blog_detalle' slug=noticia.slug %}" target="_blank" rel="noopener">Ver</a>{% endif %}
-                            <form method="post">
-                                {% csrf_token %}<input type="hidden" name="accion" value="estado"><input type="hidden" name="noticia_id" value="{{ noticia.pk }}">
-                                <button class="admin-secondary-button" type="submit">{% if noticia.estado == "PUBLICADO" %}Pasar a borrador{% else %}Publicar{% endif %}</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="5" class="admin-empty">Todavía no hay publicaciones. Usa el formulario superior para crear la primera noticia.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div class="blog-field">
+          <label for="blogEditor">Contenido del artículo *</label>
+          {{ form.contenido }}
+          <div class="blog-editor-shell">
+            <div class="blog-toolbar" role="toolbar" aria-label="Formato del artículo">
+              <select id="blogFormat" aria-label="Formato"><option value="p">Párrafo</option><option value="h2">Título</option><option value="h3">Subtítulo</option><option value="h4">Encabezado pequeño</option></select>
+              <button type="button" data-cmd="bold" title="Negrita"><strong>B</strong></button>
+              <button type="button" data-cmd="italic" title="Cursiva"><em>I</em></button>
+              <button type="button" data-cmd="underline" title="Subrayado"><u>U</u></button>
+              <button type="button" data-cmd="strikeThrough" title="Tachado">S</button>
+              <span class="blog-toolbar-sep"></span>
+              <button type="button" data-cmd="insertUnorderedList">• Lista</button>
+              <button type="button" data-cmd="insertOrderedList">1. Lista</button>
+              <button type="button" data-cmd="formatBlock" data-value="blockquote">❝ Cita</button>
+              <button type="button" id="blogLink">↗ Enlace</button>
+              <button type="button" data-cmd="removeFormat">Limpiar</button>
+            </div>
+            <div id="blogEditor" class="blog-editor" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
+            <div class="blog-editor-status"><span>El formato se conserva al guardar. Se eliminan etiquetas y scripts no permitidos.</span><span id="blogWordCount">0 palabras</span></div>
+          </div>
+          <p class="blog-help">Escribe como en un editor de texto: títulos, negrita, listas, citas y enlaces.</p>{{ form.contenido.errors }}
+        </div>
+      </div>
+      <aside class="blog-side-fields">
+        <h3>Publicación</h3>
+        <div class="blog-field"><label for="{{ form.estado.id_for_label }}">Estado</label>{{ form.estado }}{{ form.estado.errors }}</div>
+        <div class="blog-field"><label for="{{ form.fecha_publicacion.id_for_label }}">Fecha de publicación</label>{{ form.fecha_publicacion }}<p class="blog-help">Al publicar, una fecha vacía o futura se ajusta a la hora actual.</p>{{ form.fecha_publicacion.errors }}</div>
+        <div class="blog-field"><label for="{{ form.imagen_destacada.id_for_label }}">Imagen destacada</label>{{ form.imagen_destacada }}<p class="blog-help">Imagen JPG, PNG o WebP. Máximo 8 MB.</p>{% if editar and noticia_actual.imagen_destacada %}<img class="blog-image-preview" src="{{ noticia_actual.imagen_destacada.url }}" alt="{{ noticia_actual.texto_alternativo_imagen|default:noticia_actual.titulo }}">{% endif %}{{ form.imagen_destacada.errors }}</div>
+        <div class="blog-field"><label for="{{ form.texto_alternativo_imagen.id_for_label }}">Texto alternativo de imagen</label>{{ form.texto_alternativo_imagen }}{{ form.texto_alternativo_imagen.errors }}</div>
+        <div class="blog-field"><label for="{{ form.categoria.id_for_label }}">Categoría</label>{{ form.categoria }}{{ form.categoria.errors }}</div>
+        <div class="blog-field"><label for="{{ form.etiquetas.id_for_label }}">Etiquetas</label>{{ form.etiquetas }}<p class="blog-help">Selecciona varias con Ctrl o Cmd. Puedes crear etiquetas debajo.</p>{{ form.etiquetas.errors }}</div>
+        <label class="blog-featured">{{ form.destacada }} <span>Destacar publicación</span></label>{{ form.destacada.errors }}
+        <details class="blog-seo" open><summary>SEO para buscadores</summary>
+          <div class="blog-field"><label for="{{ form.meta_titulo.id_for_label }}">Meta título</label>{{ form.meta_titulo }}{{ form.meta_titulo.errors }}</div>
+          <div class="blog-field"><label for="{{ form.meta_descripcion.id_for_label }}">Meta descripción</label>{{ form.meta_descripcion }}{{ form.meta_descripcion.errors }}</div>
+        </details>
+      </aside>
     </div>
+    {% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}
+    <div class="blog-form-actions"><a class="admin-secondary-button" href="{% url 'admin_blog' %}">Cancelar</a><button class="admin-primary-button" type="submit">{% if editar %}Guardar cambios{% else %}Guardar publicación{% endif %}</button></div>
+  </form>
 </section>
+
+<section class="blog-section-heading"><div><span class="admin-kicker">Biblioteca editorial</span><h2>Publicaciones existentes</h2></div><a class="admin-secondary-button" href="#blog-etiquetas">Gestionar etiquetas</a></section>
+<form method="get" class="admin-filters blog-filter-form">
+  <input class="blog-search-input" type="search" name="q" value="{{ query }}" placeholder="Buscar por título, resumen o contenido">
+  <select name="estado"><option value="">Todos los estados</option><option value="PUBLICADO" {% if estado == "PUBLICADO" %}selected{% endif %}>Publicadas</option><option value="BORRADOR" {% if estado == "BORRADOR" %}selected{% endif %}>Borradores</option></select>
+  <button type="submit" class="admin-secondary-button">Filtrar</button><a class="admin-secondary-button" href="{% url 'admin_blog' %}">Limpiar</a>
+</form>
+<section class="admin-card blog-table-card">
+  <div class="admin-table-wrap"><table class="admin-table blog-table"><thead><tr><th>Imagen</th><th>Publicación</th><th>Categoría / etiquetas</th><th>Autor</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>
+  {% for noticia in noticias %}
+    <tr>
+      <td>{% if noticia.imagen_destacada %}<img class="blog-thumb" src="{{ noticia.imagen_destacada.url }}" alt="{{ noticia.texto_alternativo_imagen|default:noticia.titulo }}">{% else %}<div class="blog-thumb blog-thumb-empty"><i class="fi fi-rr-picture"></i></div>{% endif %}</td>
+      <td><strong>{{ noticia.titulo }}</strong><div class="blog-subtitle">{{ noticia.resumen|truncatechars:100 }}</div></td>
+      <td>{% if noticia.categoria %}{{ noticia.categoria.nombre }}{% else %}Sin categoría{% endif %}<div class="blog-tags">{% for etiqueta in noticia.etiquetas.all %}<span>{{ etiqueta.nombre }}</span>{% endfor %}</div></td>
+      <td>{% if noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}—{% endif %}</td>
+      <td><span class="blog-badge {% if noticia.estado == 'PUBLICADO' %}published{% else %}draft{% endif %}">{{ noticia.get_estado_display }}</span></td>
+      <td>{% if noticia.fecha_publicacion %}{{ noticia.fecha_publicacion|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+      <td><div class="blog-action-menu">
+        <a class="admin-secondary-button" href="{% url 'admin_blog_editar' noticia.id %}">Editar</a>
+        {% if noticia.estado == 'PUBLICADO' %}<a class="admin-secondary-button" href="{% url 'blog_detalle' slug=noticia.slug %}" target="_blank" rel="noopener">Ver</a>{% endif %}
+        <form method="post" action="{% url 'admin_blog_estado' noticia.id %}">{% csrf_token %}<input type="hidden" name="estado" value="{% if noticia.estado == 'PUBLICADO' %}BORRADOR{% else %}PUBLICADO{% endif %}"><button class="admin-secondary-button" type="submit">{% if noticia.estado == 'PUBLICADO' %}A borrador{% else %}Publicar{% endif %}</button></form>
+        <form method="post" action="{% url 'admin_blog_eliminar' noticia.id %}" onsubmit="return confirm('¿Eliminar definitivamente esta publicación?');">{% csrf_token %}<button class="admin-danger-button" type="submit">Eliminar</button></form>
+      </div></td>
+    </tr>
+  {% empty %}<tr><td colspan="7" class="admin-empty">Todavía no hay publicaciones. Crea el primer artículo en el editor superior.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+
+<section class="admin-card blog-tags-card" id="blog-etiquetas">
+  <div class="admin-card-header"><div><span class="admin-kicker">Organización editorial</span><h2>Etiquetas</h2></div></div>
+  <form method="post" action="{% url 'admin_blog_etiquetas' %}" class="blog-tag-form">{% csrf_token %}<label for="blog-tag-name">Nueva etiqueta</label><input id="blog-tag-name" name="nombre" maxlength="60" required placeholder="Ej. Retenciones"><button type="submit" class="admin-secondary-button">Crear etiqueta</button></form>
+  <div class="blog-existing-tags">{% for etiqueta in etiquetas %}<span>{{ etiqueta.nombre }} <small>{{ etiqueta.total|default:0 }} publicaciones</small></span>{% empty %}<p class="admin-empty">Aún no hay etiquetas.</p>{% endfor %}</div>
+</section>
+
 <style>
-.blog-create-card{padding:24px;margin-bottom:28px}.blog-editor-form{padding-top:8px}.blog-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.blog-field{display:flex;flex-direction:column;gap:7px;min-width:0}.blog-field-wide{grid-column:1/-1}.blog-field label{font-size:13px;font-weight:700;color:var(--admin-dark,#263238)}.blog-field input,.blog-field textarea{width:100%;padding:11px 12px;border:1px solid var(--admin-border,#dbe3e7);border-radius:8px;background:#fff;color:var(--admin-dark,#263238);font:inherit}.blog-field input[type=file]{padding:8px}.blog-field textarea{resize:vertical}.blog-editor-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:20px}.blog-publish-check{display:flex;align-items:center;gap:8px;font-size:14px}.blog-list-heading{margin-top:30px}.blog-row-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.blog-row-actions form{margin:0}.blog-row-actions .admin-secondary-button{white-space:nowrap;font-size:12px;padding:7px 9px}@media(max-width:700px){.blog-form-grid{grid-template-columns:1fr}.blog-field-wide{grid-column:auto}.blog-editor-actions{align-items:flex-start;flex-direction:column}.blog-row-actions{flex-direction:column;align-items:flex-start}}
+.blog-head{align-items:center}.blog-head h1{margin:4px 0}.blog-form-card{padding:24px;margin-bottom:28px}.blog-layout{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:24px}.blog-main-fields,.blog-side-fields{min-width:0}.blog-side-fields{background:#f6f9f8;border:1px solid #e1e9e7;border-radius:12px;padding:17px;height:max-content}.blog-side-fields h3{font-size:16px;margin:0 0 15px;color:var(--admin-dark,#243841)}.blog-field{display:flex;flex-direction:column;gap:7px;margin-bottom:17px;min-width:0}.blog-field label,.blog-tag-form label{font-size:13px;font-weight:700;color:var(--admin-dark,#263238)}.blog-input,.blog-field input:not([type=checkbox]),.blog-field textarea,.blog-field select,.blog-tag-form input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d7e2df;border-radius:8px;background:#fff;color:#283b39;font:inherit}.blog-field textarea{resize:vertical}.blog-help,.blog-field .helptext{font-size:12px;color:#7b8986;margin:0}.blog-field .errorlist{list-style:none;color:#b42318;padding:0;margin:0;font-size:12px}.blog-editor-shell{border:1px solid #d7e2df;border-radius:10px;overflow:hidden;background:#fff}.blog-toolbar{display:flex;gap:5px;flex-wrap:wrap;padding:9px;background:#f4f8f7;border-bottom:1px solid #dfe8e5}.blog-toolbar button,.blog-toolbar select{min-height:34px;border:1px solid #d5e1de;border-radius:6px;background:#fff;color:#38504d;cursor:pointer;padding:0 9px;font-size:13px}.blog-toolbar button:hover{background:#eaf4f2}.blog-toolbar-sep{width:1px;background:#d8e3e0;margin:4px}.blog-editor{min-height:430px;padding:18px 20px;outline:none;color:#283b39;font-size:16px;line-height:1.8;overflow-wrap:anywhere}.blog-editor:empty:before{content:"Escribe aquí el artículo… Usa títulos, negrita, listas, citas y enlaces.";color:#9aa8a5;pointer-events:none}.blog-editor:focus{box-shadow:inset 0 0 0 2px rgba(23,123,123,.12)}.blog-editor h2,.blog-editor h3,.blog-editor h4{color:#203b48;margin:22px 0 10px}.blog-editor p{margin:0 0 15px}.blog-editor blockquote{margin:20px 0;padding:14px 18px;border-left:4px solid #177b7b;background:#f0f7f6;color:#536563}.blog-editor ul,.blog-editor ol{padding-left:28px;margin:10px 0 18px}.blog-editor a{color:#087f83;text-decoration:underline}.blog-editor-status{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid #edf1f0;color:#899693;font-size:11px}.blog-side-fields .blog-image-preview{max-width:100%;height:auto;border-radius:8px;margin-top:8px}.blog-featured{display:flex;gap:9px;align-items:center;font-size:13px;margin:10px 0 20px}.blog-featured input{width:auto!important}.blog-seo{border-top:1px solid #e1e9e7;padding-top:14px}.blog-seo summary{font-weight:750;color:#29423f;cursor:pointer;margin-bottom:15px}.blog-form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px;padding-top:18px;border-top:1px solid #edf1f0}.blog-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:30px 0 15px}.blog-section-heading h2{margin:4px 0}.blog-search-input{flex:1;min-width:200px}.blog-table-card{margin-top:15px}.blog-table td:last-child{min-width:170px}.blog-thumb{width:64px;height:48px;border-radius:7px;object-fit:cover;background:#eef3f1}.blog-thumb-empty{display:flex;align-items:center;justify-content:center;color:#8d9a97;font-size:23px}.blog-subtitle{font-size:12px;color:#82908d;margin-top:4px}.blog-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.blog-tags span,.blog-existing-tags>span{display:inline-flex;background:#edf6f5;color:#286e68;border-radius:100px;padding:4px 7px;font-size:11px}.blog-action-menu{display:flex;gap:5px;flex-wrap:wrap;align-items:center}.blog-action-menu form{margin:0}.blog-action-menu .admin-secondary-button,.blog-action-menu .admin-danger-button{font-size:11px;padding:6px 8px;white-space:nowrap}.blog-badge{display:inline-block;padding:5px 9px;border-radius:100px;font-size:11px;font-weight:700}.blog-badge.published{background:#e4f5eb;color:#287047}.blog-badge.draft{background:#fff1d6;color:#8a6113}.blog-tags-card{padding:22px;margin-top:28px}.blog-tag-form{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.blog-tag-form input{max-width:340px}.blog-existing-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.blog-existing-tags small{margin-left:6px;color:#71817e}.admin-danger-button{background:#fff;border:1px solid #f0caca;color:#a33333;border-radius:7px;padding:7px 10px;cursor:pointer;font:inherit}.admin-danger-button:hover{background:#fff2f2}
+@media(max-width:1000px){.blog-layout{grid-template-columns:minmax(0,1fr) 280px}.blog-table{min-width:1050px}.blog-table-card .admin-table-wrap{overflow-x:auto}}
+@media(max-width:800px){.blog-layout{grid-template-columns:1fr}.blog-side-fields{order:-1}.blog-section-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.blog-form-card{padding:16px}.blog-editor{min-height:340px;padding:14px}.blog-editor-status{flex-direction:column}.blog-toolbar button,.blog-toolbar select{padding:0 7px}.blog-action-menu{min-width:145px}}
 </style>
+<script>
+(function(){
+  const editor=document.getElementById("blogEditor");
+  const hidden=document.getElementById("id_contenido");
+  const format=document.getElementById("blogFormat");
+  const count=document.getElementById("blogWordCount");
+  if(!editor||!hidden)return;
+  editor.innerHTML=hidden.value||"";
+  function sync(){
+    hidden.value=editor.innerHTML.trim();
+    const t=(editor.innerText||editor.textContent||"").trim();
+    const words=t?t.split(/\s+/).length:0;
+    count.textContent=words+(words===1?" palabra":" palabras");
+  }
+  document.querySelectorAll(".blog-toolbar button[data-cmd]").forEach(function(button){
+    button.addEventListener("mousedown",function(e){e.preventDefault()});
+    button.addEventListener("click",function(){
+      editor.focus();
+      document.execCommand(button.dataset.cmd,false,button.dataset.value||null);
+      sync();
+    });
+  });
+  format.addEventListener("change",function(){editor.focus();document.execCommand("formatBlock",false,format.value);sync()});
+  document.getElementById("blogLink").addEventListener("click",function(){
+    editor.focus();
+    const url=prompt("Escribe la dirección del enlace (https://, http:// o mailto:)");
+    if(url)document.execCommand("createLink",false,url.trim());
+    sync();
+  });
+  editor.addEventListener("input",sync);
+  editor.addEventListener("paste",function(e){
+    e.preventDefault();
+    const text=(e.clipboardData||window.clipboardData).getData("text/plain");
+    const html=text.split(/\r?\n/).map(function(line){
+      const safe=line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return "<p>"+(safe||"<br>")+"</p>";
+    }).join("");
+    document.execCommand("insertHTML",false,html);sync();
+  });
+  editor.closest("form").addEventListener("submit",sync);
+  sync();
+})();
+</script>
 {% endblock %}
