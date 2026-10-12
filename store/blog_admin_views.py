@@ -71,7 +71,11 @@ def _save_noticia_form(request, form, noticia=None):
     if not form.is_valid():
         return None
     noticia = form.save(commit=False)
-    noticia.autor = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+    usuario = getattr(request, "user", None)
+    if usuario is not None and usuario.is_authenticated:
+        noticia.autor = usuario
+    elif noticia.pk is None:
+        noticia.autor = None
     if noticia.estado == Noticia.Estado.PUBLICADO and (
         noticia.fecha_publicacion is None or noticia.fecha_publicacion > timezone.now()
     ):
@@ -188,7 +192,7 @@ def _blog_context_render(request, form, editar=False, noticia=None):
         "noticias_borrador": Noticia.objects.filter(estado=Noticia.Estado.BORRADOR).count(),
         "noticias_archivadas": Noticia.objects.filter(estado=Noticia.Estado.ARCHIVADO).count(),
         "categorias": CategoriaNoticia.objects.filter(activa=True),
-        "etiquetas": EtiquetaNoticia.objects.order_by("nombre"),
+        "etiquetas": EtiquetaNoticia.objects.annotate(total=models.Count("noticias")).order_by("nombre"),
         "query": query,
         "estado": estado,
         "admin_usuario": request.session.get("admin_username", ""),
