@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import ingresos_views
 from . import admin_views
+from . import blog_admin_views
 from .admin_trabajadores_pdf import admin_trabajadores_pdf
 
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path('totalcounts/conta/sri/status/', admin_views.admin_conta_sri_status, name='admin_conta_sri_status'),
     path('totalcounts/conta/sri/cancelar/', admin_views.admin_conta_sri_cancelar, name='admin_conta_sri_cancelar'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
+    path('totalcounts/blog/', blog_admin_views.admin_blog, name='admin_blog'),
     path('totalcounts/suscriptores/', admin_views.admin_suscriptores, name='admin_suscriptores'),
     path('totalcounts/requerimientos-contacto/', admin_views.admin_requerimientos_contacto, name='admin_requerimientos_contacto'),
     path('totalcounts/requerimientos-contacto/<int:requerimiento_id>/', admin_views.admin_requerimiento_contacto_detalle, name='admin_requerimiento_contacto_detalle'),
