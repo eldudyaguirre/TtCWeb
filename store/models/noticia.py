@@ -72,6 +72,10 @@ class Noticia(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='noticias_blog',
     )
+    autor_nombre = models.CharField(
+        max_length=150, blank=True,
+        help_text="Nombre que se mostrará como firma pública del artículo.",
+    )
     destacada = models.BooleanField(default=False, db_index=True)
     fecha_publicacion = models.DateTimeField(blank=True, null=True, db_index=True)
     meta_titulo = models.CharField(max_length=220, blank=True)
