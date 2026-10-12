@@ -31,12 +31,12 @@
         <meta property="og:description" content="{% if noticia_detalle %}{{ noticia_detalle.descripcion_seo|truncatechars:160 }}{% else %}Información útil sobre tributación, contabilidad, obligaciones laborales y gestión empresarial en Ecuador.{% endif %}">
         <meta property="og:url" content="{% if noticia_detalle %}https://www.totalcounts.com.ec{% url 'blog_detalle' noticia_detalle.slug %}{% else %}https://www.totalcounts.com.ec/blog/{% endif %}">
         <meta property="og:locale" content="es_EC">
-        <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/blogynoticias.png">
+        <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/blogynoticiasv2.png">
         <meta property="og:image:alt" content="Blog y Noticias de TotalCounts">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{% if noticia_detalle %}{{ noticia_detalle.titulo_seo }} | TotalCounts{% else %}Blog y Noticias | TotalCounts{% endif %}">
         <meta name="twitter:description" content="{% if noticia_detalle %}{{ noticia_detalle.descripcion_seo|truncatechars:160 }}{% else %}Información útil sobre tributación, contabilidad y gestión empresarial en Ecuador.{% endif %}">
-        <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/blogynoticias.png">
+        <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/blogynoticiasv2.png">
 
         <!-- ==============================================
         Favicons
@@ -168,7 +168,7 @@
                 --section-1-bg-color: #eef4ed;
                 --section-2-bg-color: #ffffff;
                 --section-3-bg-color: #111117;
-                --section-6-bg-color: #111117; --section-3-bg-image: url("{% static 'images/blogynoticias.png' %}");
+                --section-6-bg-color: #111117; --section-3-bg-image: url("{% static 'images/blogynoticiasv2.png' %}");
                 --footer-bg-color: #080d10;
                 --footer-bg-image: url("{% static 'images/bg-7.jpg' %}");
             }
@@ -287,7 +287,7 @@
                     <div class="swiper-slide slide-center">
 
                         <!-- Media -->
-                        <img src="{% static 'images/blogynoticias.png' %}" alt="Full Image" class="full-image" data-mask="80">
+                        <img src="{% static 'images/blogynoticiasv2.png' %}" alt="Full Image" class="full-image" data-mask="80">
 
                         <div class="slide-content row text-center">
                             <div class="col-12 mx-auto inner">
