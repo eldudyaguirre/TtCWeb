@@ -38,15 +38,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     const tabId = tab.id;
     let delivered = false;
+    let deliveryInProgress = false;
     const deadline = Date.now() + 30000;
     const listener = (updatedTabId, changeInfo, updatedTab) => {
-      if (updatedTabId !== tabId || delivered) return;
+      if (updatedTabId !== tabId || delivered || deliveryInProgress) return;
       const url = updatedTab?.url || "";
       if (url && !url.startsWith(destination.allowed)) return;
       if (changeInfo.status !== "complete" && Date.now() < deadline) return;
 
+      // Bloquea eventos onUpdated concurrentes antes de enviar el mensaje.
+      // Sin esta marca, varias cargas pueden programar varios clics en Ingresar.
+      deliveryInProgress = true;
       chrome.tabs.sendMessage(tabId, { type: destination.message, usuario, ruc: usuario, clave }, () => {
         if (chrome.runtime.lastError) {
+          deliveryInProgress = false;
           if (Date.now() >= deadline) chrome.tabs.onUpdated.removeListener(listener);
           return;
         }
