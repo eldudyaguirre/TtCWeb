@@ -24,18 +24,18 @@
         <meta name="keywords" content="blog TotalCounts, noticias tributarias Ecuador, contabilidad, SRI, obligaciones tributarias, gestión empresarial, novedades laborales, tecnología contable">
         <meta name="language" content="Spanish">
         <meta name="theme-color" content="#bd1020">
-        <link rel="canonical" href="https://www.totalcounts.com.ec/blog/">
+        <link rel="canonical" href="{% if noticia_detalle %}https://www.totalcounts.com.ec{% url 'blog_detalle' noticia_detalle.slug %}{% else %}https://www.totalcounts.com.ec/blog/{% endif %}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="TotalCounts">
-        <meta property="og:title" content="Blog y Noticias | TotalCounts">
-        <meta property="og:description" content="Información útil sobre tributación, contabilidad, obligaciones laborales y gestión empresarial en Ecuador.">
-        <meta property="og:url" content="https://www.totalcounts.com.ec/blog/">
+        <meta property="og:title" content="{% if noticia_detalle %}{{ noticia_detalle.titulo_seo }} | TotalCounts{% else %}Blog y Noticias | TotalCounts{% endif %}">
+        <meta property="og:description" content="{% if noticia_detalle %}{{ noticia_detalle.descripcion_seo|truncatechars:160 }}{% else %}Información útil sobre tributación, contabilidad, obligaciones laborales y gestión empresarial en Ecuador.{% endif %}">
+        <meta property="og:url" content="{% if noticia_detalle %}https://www.totalcounts.com.ec{% url 'blog_detalle' noticia_detalle.slug %}{% else %}https://www.totalcounts.com.ec/blog/{% endif %}">
         <meta property="og:locale" content="es_EC">
         <meta property="og:image" content="https://www.totalcounts.com.ec/static/images/blogynoticias.png">
         <meta property="og:image:alt" content="Blog y Noticias de TotalCounts">
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="Blog y Noticias | TotalCounts">
-        <meta name="twitter:description" content="Información útil sobre tributación, contabilidad y gestión empresarial en Ecuador.">
+        <meta name="twitter:title" content="{% if noticia_detalle %}{{ noticia_detalle.titulo_seo }} | TotalCounts{% else %}Blog y Noticias | TotalCounts{% endif %}">
+        <meta name="twitter:description" content="{% if noticia_detalle %}{{ noticia_detalle.descripcion_seo|truncatechars:160 }}{% else %}Información útil sobre tributación, contabilidad y gestión empresarial en Ecuador.{% endif %}">
         <meta name="twitter:image" content="https://www.totalcounts.com.ec/static/images/blogynoticias.png">
 
         <!-- ==============================================
