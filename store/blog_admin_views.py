@@ -155,20 +155,15 @@ def admin_blog_estado(request, noticia_id):
 
 @admin_required
 def admin_blog_etiquetas(request):
-    if request.method == "POST":
-        nombre = request.POST.get("nombre", "").strip()
-        if not nombre or len(nombre) > 60:
-            messages.error(request, "El nombre de etiqueta es obligatorio y debe tener hasta 60 caracteres.")
-        else:
-            _, creada = EtiquetaNoticia.objects.get_or_create(nombre=nombre)
-            messages.success(request, "Etiqueta creada." if creada else "La etiqueta ya existía.")
-            return redirect("admin_blog_etiquetas")
-    etiquetas = EtiquetaNoticia.objects.annotate(total= models.Count("noticias")).order_by("nombre")
-    return render(request, "admin/blog_etiquetas.html", {
-        "etiquetas": etiquetas,
-        "admin_usuario": request.session.get("admin_username", ""),
-        "admin_nombre": request.session.get("admin_name", ""),
-    })
+    if request.method != "POST":
+        return redirect("admin_blog")
+    nombre = request.POST.get("nombre", "").strip()
+    if not nombre or len(nombre) > 60:
+        messages.error(request, "El nombre de etiqueta es obligatorio y debe tener hasta 60 caracteres.")
+    else:
+        _, creada = EtiquetaNoticia.objects.get_or_create(nombre=nombre)
+        messages.success(request, "Etiqueta creada." if creada else "La etiqueta ya existía.")
+    return redirect("admin_blog")
 
 
 def _blog_context_render(request, form, editar=False, noticia=None):
