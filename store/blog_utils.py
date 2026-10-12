@@ -43,7 +43,16 @@ class BlogHTMLSanitizer(HTMLParser):
                     allowed.append(f'title="{escape(value, quote=True)}"')
             self.parts.append("<a" + (" " + " ".join(allowed) if allowed else "") + ">")
         else:
-            self.parts.append(f"<{tag}>")
+            attrs_html = ""
+            if tag in {"p", "h2", "h3", "h4", "blockquote"}:
+                for name, value in attrs:
+                    if name.lower() == "style" and value:
+                        for declaration in value.split(";"):
+                            key, sep, val = declaration.partition(":")
+                            if sep and key.strip().lower() == "text-align" and val.strip().lower() in {"left", "center", "right", "justify"}:
+                                attrs_html = f' style="text-align:{val.strip().lower()}"'
+                                break
+            self.parts.append(f"<{tag}{attrs_html}>")
 
     def handle_endtag(self, tag):
         tag = tag.lower()
