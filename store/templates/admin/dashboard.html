@@ -92,6 +92,7 @@
 .admin-content .admin-kpi:nth-child(6n+5){background:linear-gradient(135deg,#ff8a32 0%,#f15b36 100%)!important}
 .admin-content .admin-kpi:nth-child(6n){background:linear-gradient(135deg,#ff3b30 0%,#c62828 100%)!important}
 .admin-content .admin-kpi.admin-kpi-saldo{background:#CB6120!important}
+.admin-content .admin-kpi.admin-kpi-usuarios{background:#A3BD31!important}
 .admin-content .admin-visit-kpi{min-height:180px}
 .admin-content .admin-visit-kpi .admin-stat-icon{
     width:42px;height:42px;border-radius:13px;
@@ -249,7 +250,7 @@
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="19" r="9"/><path d="M7 49v-5c0-8 7-14 18-14s18 6 18 14v5H7Z"/><path d="m43 15 13 13m0-13L43 28"/></svg></span>
         <span>Clientes inactivos</span><strong>{{ clientes_inactivos }}</strong><small>Sin servicio activo</small>
     </div>
-    <div class="admin-kpi">
+    <div class="admin-kpi admin-kpi-usuarios">
         <span class="admin-kpi-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="25" cy="18" r="9"/><path d="M7 49v-5c0-8 7-14 18-14 5 0 9 1 12 4"/><circle cx="47" cy="43" r="8"/><path d="M47 31v4m0 16v4m-12-12h4m16 0h4m-20-8 3 3m10 10 3 3m0-16-3 3m-10 10-3 3"/></svg></span>
         <span>Usuarios clientes</span><strong>{{ usuarios_clientes }}</strong><small>Asignaciones activas</small>
     </div>
