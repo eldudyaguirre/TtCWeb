@@ -53,6 +53,7 @@ class Noticia(models.Model):
     class Estado(models.TextChoices):
         BORRADOR = 'BORRADOR', 'Borrador'
         PUBLICADO = 'PUBLICADO', 'Publicado'
+        ARCHIVADO = 'ARCHIVADO', 'Archivado'
 
     titulo = models.CharField(max_length=220)
     slug = models.SlugField(max_length=240, unique=True, blank=True)
