@@ -1997,8 +1997,7 @@ def rol_pago_pdf(request, numero):
     resumen = [
         ['RESUMEN', 'VALORES'],
         ['Salario Unificado', money(row[5])],
-        ['Horas Extras', money(row[7])],        ['Fondo de Reserva (8.33%)', money(row[6])],        ['XIV Mensualizado', money(row[8])],
-        ['XIII Mensualizado', money(row[9])],
+        ['Horas Extras', money(row[7])],        ['Fondo de Reserva (8.33%)', money(row[6])],        ['XIV Mensualizado', money(row[8])],        ['XIII Mensualizado', money(row[9])],
         ['Comisiones y/o Bonos', money((row[10] or 0) + (row[11] or 0))],
         ['', ''],
         ['TOTAL DE INGRESOS', money(row[12])],
@@ -3998,7 +3997,8 @@ def liquidacion_compra_emitir(request):
 @login_required
 
 def guia_remision_emitir(request):
-    cliente = _cliente_portal(request)    if cliente is None:
+    cliente = _cliente_portal(request)
+    if cliente is None:
         return redirect('portal')
 
     return render(
