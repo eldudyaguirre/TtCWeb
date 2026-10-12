@@ -334,7 +334,7 @@
                                         <div class="card-body">
                                             <a href="{% url 'blog_detalle' noticia.slug %}">
                                                 <h4>{{ noticia.titulo }}</h4>
-                                                <p>{{ noticia.resumen }}</p>
+                                                <p>{{ noticia.resumen|truncatewords:12 }}</p>
                                             </a>
                                         </div>
                                     </div>
