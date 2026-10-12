@@ -637,34 +637,34 @@
                         </div>
                     </div>
                     {% if noticias_inicio %}
-                    <div class="swiper-container mid-slider items" data-perview="3">
-                        <div class="swiper-wrapper">
-                            {% for noticia in noticias_inicio %}
-                            <div class="swiper-slide slide-center item">
-                                <div class="row card p-0 text-center">
-                                    <div class="image-over">
+                    <div class="row items blog-home-grid">
+                        {% for noticia in noticias_inicio %}
+                        <div class="col-12 col-md-4 item mb-4">
+                            <div class="row card p-0 text-center h-100">
+                                <div class="image-over">
+                                    <a href="{% url 'blog_detalle' slug=noticia.slug %}">
                                         {% if noticia.imagen_destacada %}
                                         <img src="{{ noticia.imagen_destacada.url }}" alt="{{ noticia.texto_alternativo_imagen|default:noticia.titulo }}">
                                         {% else %}
                                         <img src="{% static 'images/News/001.jpg' %}" alt="{{ noticia.titulo }}">
                                         {% endif %}
-                                    </div>
-                                    <div class="card-footer d-lg-flex align-items-center justify-content-center">
-                                        <span class="d-lg-flex align-items-center"><i class="icon-user"></i>{% if noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}TotalCounts{% endif %}</span>
-                                        <span class="d-lg-flex align-items-center"><i class="icon-clock"></i>{{ noticia.fecha_publicacion|date:"d/m/Y" }}</span>
-                                    </div>
-                                    <div class="card-caption col-12 p-0">
-                                        <div class="card-body">
-                                            <a href="{% url 'blog_detalle' slug=noticia.slug %}">
-                                                <h4>{{ noticia.titulo }}</h4>
-                                                <p>{{ noticia.resumen }}</p>
-                                            </a>
-                                        </div>
+                                    </a>
+                                </div>
+                                <div class="card-footer d-flex flex-wrap align-items-center justify-content-center">
+                                    <span><i class="icon-user"></i> {% if noticia.autor_nombre %}{{ noticia.autor_nombre }}{% elif noticia.autor %}{{ noticia.autor.get_full_name|default:noticia.autor.username }}{% else %}TotalCounts{% endif %}</span>
+                                    <span><i class="icon-clock"></i> {{ noticia.fecha_publicacion|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="card-caption col-12 p-0">
+                                    <div class="card-body">
+                                        <a href="{% url 'blog_detalle' slug=noticia.slug %}">
+                                            <h4>{{ noticia.titulo }}</h4>
+                                            <p>{{ noticia.resumen|truncatewords:12 }}</p>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                            {% endfor %}
                         </div>
+                        {% endfor %}
                     </div>
                     {% else %}
                     <div class="row">
