@@ -1,1 +1,130 @@
-{% extends "admin/base.html" %}{% block content %}<style>.com-page{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:24px}.com-input{width:100%;box-sizing:border-box;border:1px solid #dbe2e8;border-radius:10px;padding:12px 14px;font:inherit}.com-field{margin-bottom:16px}.com-field label{display:block;font-weight:700;margin-bottom:7px}.com-actions{display:flex;gap:10px}.com-primary{border:0;border-radius:8px;padding:12px 18px;background:#bd1020;color:#fff;font-weight:700;cursor:pointer}.com-secondary{border:1px solid #d6dde3;border-radius:8px;padding:11px 16px;background:#fff;font-weight:600}.com-stat{display:flex;justify-content:space-between;padding:15px 0;border-bottom:1px solid #edf0f2}.com-history{overflow:auto}.com-history table{width:100%;border-collapse:collapse}.com-history th,.com-history td{text-align:left;padding:12px;border-bottom:1px solid #edf0f2}.com-pendiente{font-weight:700}.com-enviando{font-weight:700}@media(max-width:900px){.com-page{grid-template-columns:1fr}}</style><div class="admin-page-header"><div><span class="admin-kicker">Comunicación</span><h1>Comunicaciones</h1><p>Envía avisos importantes a los clientes activos.</p></div></div><div class="com-page"><section class="admin-card" style="padding:24px"><h2>Nueva comunicación</h2><form method="post">{% csrf_token %}<div class="com-field"><label>Asunto</label>{{ form.asunto }}</div><div class="com-field"><label>Título</label>{{ form.titulo }}</div><div class="com-field"><label>Mensaje</label>{{ form.mensaje }}</div><div class="com-actions"><button class="com-primary" name="accion" value="guardar">Guardar borrador</button><button class="com-secondary" name="accion" value="prueba" onclick="return prueba()">Enviar prueba</button></div><div style="margin-top:12px"><input class="com-input" name="correo_prueba" id="correo-prueba" type="email" placeholder="Correo para prueba"></div></form></section><aside class="admin-card" style="padding:24px"><h2>Destinatarios</h2><div class="com-stat"><span>Clientes activos</span><strong>{{ total_activos }}</strong></div><div class="com-stat"><span>Con correo válido</span><strong>{{ con_correo }}</strong></div><p>El envío se ejecuta en segundo plano mediante el worker. Los correos usan BCC para proteger las direcciones.</p></aside></div><section class="admin-card com-history" style="padding:24px;margin-top:24px"><h2>Historial de envíos</h2><table><thead><tr><th>Fecha</th><th>Asunto</th><th>Destinatarios</th><th>Resultado</th><th></th></tr></thead><tbody>{% for item in comunicaciones %}<tr><td>{{ item.creado_en|date:"d/m/Y H:i" }}</td><td>{{ item.asunto }}</td><td>{{ item.destinatarios }}</td><td>{% if item.estado == "PENDIENTE" %}<span class="com-pendiente">En cola</span>{% elif item.estado == "ENVIANDO" %}<span class="com-enviando">Enviando · {{ item.enviados }}/{{ item.destinatarios }}</span>{% else %}{{ item.get_estado_display }} · {{ item.enviados }} enviados{% if item.fallidos %}, {{ item.fallidos }} fallidos{% endif %}{% endif %}</td><td>{% if item.estado == "BORRADOR" or item.estado == "ERROR" %}<form method="post" action="{% url 'admin_comunicacion_enviar' item.id %}" onsubmit="return confirm('Enviar a los clientes activos con correo válido?')">{% csrf_token %}<button class="com-primary" style="padding:8px 12px">{% if item.estado == "ERROR" %}Reintentar{% else %}Enviar ahora{% endif %}</button></form>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">Todavía no hay comunicaciones.</td></tr>{% endfor %}</tbody></table></section><script>function prueba(){const e=document.getElementById("correo-prueba");if(!e.value){alert("Ingresa un correo para la prueba.");e.focus();return false}return true}</script>{% endblock %}
+{% extends "admin/base.html" %}
+{% block title %}Comunicaciones | Administración TotalCounts{% endblock %}
+{% block content %}
+<style>
+.com-page{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:24px}
+.com-input{width:100%;box-sizing:border-box;border:1px solid #dbe2e8;border-radius:10px;padding:12px 14px;font:inherit;background:#fff}
+.com-field{margin-bottom:16px}.com-field label{display:block;font-weight:700;margin-bottom:7px}
+.com-help{font-size:12px;color:#718096;margin:6px 0}.com-field .errorlist{color:#b42318;font-size:12px}
+.com-actions{display:flex;gap:10px;flex-wrap:wrap}.com-primary{border:0;border-radius:8px;padding:12px 18px;background:#bd1020;color:#fff;font-weight:700;cursor:pointer}
+.com-secondary{border:1px solid #d6dde3;border-radius:8px;padding:11px 16px;background:#fff;font-weight:600;cursor:pointer}
+.com-stat{display:flex;justify-content:space-between;padding:15px 0;border-bottom:1px solid #edf0f2}
+.com-history{overflow:auto}.com-history table{width:100%;border-collapse:collapse;min-width:700px}
+.com-history th,.com-history td{text-align:left;padding:12px;border-bottom:1px solid #edf0f2;vertical-align:top}
+.com-editor-shell{border:1px solid #dbe2e8;border-radius:10px;overflow:hidden;background:#fff}
+.com-toolbar{display:flex;gap:5px;flex-wrap:wrap;padding:9px;background:#f4f8f7;border-bottom:1px solid #dfe8e5}
+.com-toolbar button,.com-toolbar select{min-height:34px;border:1px solid #d5e1de;border-radius:6px;background:#fff;color:#38504d;cursor:pointer;padding:0 9px;font-size:13px}
+.com-toolbar button:hover{background:#eaf4f2}.com-toolbar-sep{width:1px;background:#d8e3e0;margin:4px}
+.com-editor{min-height:280px;padding:18px 20px;outline:none;color:#283b39;font-size:15px;line-height:1.8;overflow-wrap:anywhere}
+.com-editor:empty:before{content:"Escribe aquí el mensaje… Puedes usar títulos, negrita, listas, citas y enlaces.";color:#9aa8a5;pointer-events:none}
+.com-editor:focus{box-shadow:inset 0 0 0 2px rgba(23,123,123,.12)}
+.com-editor h2,.com-editor h3,.com-editor h4{color:#203b48;margin:22px 0 10px}
+.com-editor p{margin:0 0 15px}.com-editor blockquote{margin:20px 0;padding:14px 18px;border-left:4px solid #bd1020;background:#f7f7f7;color:#536563}
+.com-editor ul,.com-editor ol{padding-left:28px;margin:10px 0 18px}.com-editor a{color:#087f83;text-decoration:underline}
+.com-history .com-primary{padding:8px 12px}.com-badge{font-weight:700}
+@media(max-width:900px){.com-page{grid-template-columns:1fr}}
+</style>
+<div class="admin-page-header"><div><span class="admin-kicker">Comunicación</span><h1>Comunicaciones</h1><p>Envía avisos a todos los clientes activos o selecciona un destinatario individual.</p></div></div>
+
+<div class="com-page">
+  <section class="admin-card" style="padding:24px">
+    <h2>Nueva comunicación</h2>
+    <form method="post" enctype="multipart/form-data" id="com-form">
+      {% csrf_token %}
+      <div class="com-field"><label for="{{ form.asunto.id_for_label }}">Asunto del correo *</label>{{ form.asunto }}{{ form.asunto.errors }}</div>
+      <div class="com-field"><label for="{{ form.titulo.id_for_label }}">Título del mensaje</label>{{ form.titulo }}{{ form.titulo.errors }}</div>
+      <div class="com-field"><label for="{{ form.destinatario_tipo.id_for_label }}">Destinatarios *</label>{{ form.destinatario_tipo }}{{ form.destinatario_tipo.errors }}<p class="com-help">Elige envío masivo a todos los clientes con correo válido o un solo destinatario.</p></div>
+      <div class="com-field" id="com-destinatario-individual"><label for="{{ form.destinatario_email.id_for_label }}">Seleccionar cliente</label>{{ form.destinatario_email }}{{ form.destinatario_email.errors }}</div>
+      <div class="com-field">
+        <label for="comEditor">Cuerpo del mensaje *</label>
+        {{ form.mensaje }}
+        <div class="com-editor-shell">
+          <div class="com-toolbar" role="toolbar" aria-label="Formato del mensaje">
+            <select id="comFormat" aria-label="Formato"><option value="p">Párrafo</option><option value="h2">Título</option><option value="h3">Subtítulo</option><option value="h4">Encabezado pequeño</option></select>
+            <button type="button" data-cmd="bold" title="Negrita"><strong>B</strong></button>
+            <button type="button" data-cmd="italic" title="Cursiva"><em>I</em></button>
+            <button type="button" data-cmd="underline" title="Subrayado"><u>U</u></button>
+            <button type="button" data-cmd="strikeThrough" title="Tachado">S</button>
+            <span class="com-toolbar-sep"></span>
+            <button type="button" data-cmd="justifyLeft">Izquierda</button>
+            <button type="button" data-cmd="justifyCenter">Centro</button>
+            <button type="button" data-cmd="justifyRight">Derecha</button>
+            <button type="button" data-cmd="justifyFull">Justificar</button>
+            <span class="com-toolbar-sep"></span>
+            <button type="button" data-cmd="insertUnorderedList">• Lista</button>
+            <button type="button" data-cmd="insertOrderedList">1. Lista</button>
+            <button type="button" data-cmd="formatBlock" data-value="blockquote">❝ Cita</button>
+            <button type="button" id="comLink">↗ Enlace</button>
+            <button type="button" data-cmd="removeFormat">Limpiar</button>
+          </div>
+          <div id="comEditor" class="com-editor" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
+          <div style="padding:8px 12px;border-top:1px solid #edf1f0;color:#899693;font-size:11px">El contenido se sanitiza para retirar código no permitido y conservar el formato editorial.</div>
+        </div>
+        {{ form.mensaje.errors }}
+      </div>
+      <div class="com-field"><label for="{{ form.imagen_adjunto.id_for_label }}">Imagen adjunta (opcional)</label>{{ form.imagen_adjunto }}{{ form.imagen_adjunto.errors }}<p class="com-help">Se enviará como archivo adjunto. Formatos de imagen, máximo 8 MB.</p></div>
+      <div class="com-actions">
+        <button class="com-primary" name="accion" value="guardar">Guardar borrador</button>
+        <button class="com-secondary" name="accion" value="prueba" onclick="return comPrueba()">Enviar prueba</button>
+      </div>
+      <div class="com-field" style="margin-top:12px"><label for="correo-prueba">Correo para la prueba</label><input class="com-input" name="correo_prueba" id="correo-prueba" type="email" placeholder="tucorreo@ejemplo.com"></div>
+    </form>
+  </section>
+  <aside class="admin-card" style="padding:24px">
+    <h2>Destinatarios</h2>
+    <div class="com-stat"><span>Clientes activos</span><strong>{{ total_activos }}</strong></div>
+    <div class="com-stat"><span>Con correo válido</span><strong>{{ con_correo }}</strong></div>
+    <p>Los envíos se procesan en segundo plano. Para envíos masivos, las direcciones se ocultan usando copia oculta (BCC).</p>
+    <p>La opción individual envía únicamente al correo del cliente seleccionado.</p>
+  </aside>
+</div>
+
+<section class="admin-card com-history" style="padding:24px;margin-top:24px">
+  <h2>Historial de envíos</h2>
+  <table><thead><tr><th>Fecha</th><th>Asunto</th><th>Destinatario(s)</th><th>Resultado</th><th></th></tr></thead>
+  <tbody>
+  {% for item in comunicaciones %}
+    <tr>
+      <td>{{ item.creado_en|date:"d/m/Y H:i" }}</td>
+      <td>{{ item.asunto }}{% if item.imagen_adjunto %}<div class="com-help">Incluye imagen adjunta</div>{% endif %}</td>
+      <td>{% if item.destinatario_tipo == "INDIVIDUAL" %}Individual<br>{{ item.destinatario_email }}{% else %}Todos los clientes{% endif %}<br>{{ item.destinatarios }} correo(s)</td>
+      <td>{% if item.estado == "PENDIENTE" %}<span class="com-badge">En cola</span>{% elif item.estado == "ENVIANDO" %}<span class="com-badge">Enviando · {{ item.enviados }}/{{ item.destinatarios }}</span>{% else %}{{ item.get_estado_display }} · {{ item.enviados }} enviados{% if item.fallidos %}, {{ item.fallidos }} pendientes/fallidos{% endif %}{% endif %}</td>
+      <td>{% if item.estado == "BORRADOR" or item.estado == "ERROR" %}<form method="post" action="{% url 'admin_comunicacion_enviar' item.id %}" onsubmit="return confirm('¿Confirmas encolar esta comunicación para su destinatario seleccionado?')">{% csrf_token %}<button class="com-primary">{% if item.estado == "ERROR" %}Reintentar{% else %}Encolar envío{% endif %}</button></form>{% endif %}</td>
+    </tr>
+  {% empty %}<tr><td colspan="5">Todavía no hay comunicaciones.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<script>
+(function(){
+  const editor=document.getElementById("comEditor");
+  const hidden=document.getElementById("id_mensaje");
+  const format=document.getElementById("comFormat");
+  const tipo=document.getElementById("id_destinatario_tipo");
+  const individual=document.getElementById("com-destinatario-individual");
+  if(editor&&hidden){
+    editor.innerHTML=hidden.value||"";
+    function sync(){hidden.value=editor.innerHTML.trim();}
+    document.querySelectorAll(".com-toolbar button[data-cmd]").forEach(function(button){
+      button.addEventListener("mousedown",function(e){e.preventDefault()});
+      button.addEventListener("click",function(){editor.focus();document.execCommand(button.dataset.cmd,false,button.dataset.value||null);sync();});
+    });
+    format.addEventListener("change",function(){editor.focus();document.execCommand("formatBlock",false,format.value);sync();});
+    document.getElementById("comLink").addEventListener("click",function(){
+      editor.focus();const url=prompt("Escribe una dirección https://, http:// o mailto:");
+      if(url)document.execCommand("createLink",false,url.trim());sync();
+    });
+    editor.addEventListener("input",sync);
+    editor.addEventListener("paste",function(e){
+      e.preventDefault();const text=(e.clipboardData||window.clipboardData).getData("text/plain");
+      const html=text.split(/\r?\n/).map(function(line){const safe=line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");return "<p>"+(safe||"<br>")+"</p>";}).join("");
+      document.execCommand("insertHTML",false,html);sync();
+    });
+    editor.closest("form").addEventListener("submit",sync);sync();
+  }
+  function toggleDestinatario(){if(individual&&tipo)individual.style.display=tipo.value==="INDIVIDUAL"?"block":"none";}
+  if(tipo){tipo.addEventListener("change",toggleDestinatario);toggleDestinatario();}
+})();
+function comPrueba(){const e=document.getElementById("correo-prueba");if(!e.value){alert("Ingresa un correo para la prueba.");e.focus();return false;}return true;}
+</script>
+{% endblock %}
