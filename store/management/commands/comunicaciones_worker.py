@@ -3,30 +3,14 @@ import time
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from django.utils.html import escape
 
-from store.models.cliente import Cliente
 from store.models.comunicacion_cliente import ComunicacionCliente
 
 BATCH_SIZE = 40
 POLL_SECONDS = 5
-
-
-def destinatarios():
-    valores = Cliente.objects.filter(activo=True).exclude(corelectr__isnull=True).exclude(corelectr__exact="").values_list("corelectr", flat=True)
-    resultado = set()
-    for valor in valores:
-        correo = (valor or "").strip().lower()
-        try:
-            validate_email(correo)
-        except ValidationError:
-            continue
-        resultado.add(correo)
-    return sorted(resultado)
 
 
 def html_comunicacion(c):
@@ -53,28 +37,24 @@ class Command(BaseCommand):
 
     def procesar_una(self):
         with transaction.atomic():
-            comunicacion = (ComunicacionCliente.objects.select_for_update(skip_locked=True).filter(estado=ComunicacionCliente.Estado.PENDIENTE).order_by("creado_en").first())
+            comunicacion = (ComunicacionCliente.objects.select_for_update(skip_locked=True)
+                .filter(estado=ComunicacionCliente.Estado.PENDIENTE)
+                .order_by("creado_en").first())
             if not comunicacion:
                 return False
             comunicacion.estado = ComunicacionCliente.Estado.ENVIANDO
             comunicacion.save(update_fields=["estado"])
 
-        lista = destinatarios()
-        if not lista:
-            comunicacion.estado = ComunicacionCliente.Estado.ERROR
-            comunicacion.error_detalle = "No existen clientes activos con correo válido al iniciar el envío."
+        pendientes = [e.strip() for e in comunicacion.correos_pendientes.splitlines() if e.strip()]
+        if not pendientes:
+            comunicacion.estado = ComunicacionCliente.Estado.ENVIADO
             comunicacion.enviado_en = timezone.now()
-            comunicacion.save(update_fields=["estado", "error_detalle", "enviado_en"])
+            comunicacion.save(update_fields=["estado", "enviado_en"])
             return True
 
-        comunicacion.destinatarios = len(lista)
-        comunicacion.save(update_fields=["destinatarios"])
-        enviados = 0
-        fallidos = 0
         errores = []
-
-        for inicio in range(0, len(lista), BATCH_SIZE):
-            grupo = lista[inicio:inicio + BATCH_SIZE]
+        for inicio in range(0, len(pendientes), BATCH_SIZE):
+            grupo = pendientes[inicio:inicio + BATCH_SIZE]
             try:
                 mensaje = EmailMultiAlternatives(
                     comunicacion.asunto,
@@ -85,18 +65,26 @@ class Command(BaseCommand):
                 )
                 mensaje.attach_alternative(html_comunicacion(comunicacion), "text/html")
                 mensaje.send(fail_silently=False)
-                enviados += len(grupo)
+                comunicacion.enviados += len(grupo)
+                pendientes = pendientes[len(grupo):]
+                comunicacion.correos_pendientes = "\\n".join(pendientes)
             except Exception as exc:
-                fallidos += len(grupo)
+                comunicacion.fallidos = len(pendientes)
                 errores.append(f"Grupo {inicio + 1}-{inicio + len(grupo)}: {str(exc)[:500]}")
+                comunicacion.error_detalle = "\\n".join(errores)
+                comunicacion.estado = ComunicacionCliente.Estado.ERROR
+                comunicacion.enviado_en = timezone.now()
+                comunicacion.save(update_fields=["fallidos", "error_detalle", "estado", "enviado_en", "correos_pendientes"])
+                self.stdout.write(self.style.ERROR(f"Comunicación {comunicacion.id}: error; quedan {len(pendientes)} pendientes."))
+                return True
 
-            comunicacion.enviados = enviados
-            comunicacion.fallidos = fallidos
-            comunicacion.error_detalle = "\\n".join(errores)
-            comunicacion.save(update_fields=["enviados", "fallidos", "error_detalle"])
-            self.stdout.write(f"Comunicación {comunicacion.id}: {enviados} enviados, {fallidos} fallidos.")
+            comunicacion.fallidos = len(pendientes)
+            comunicacion.save(update_fields=["enviados", "fallidos", "correos_pendientes"])
+            self.stdout.write(f"Comunicación {comunicacion.id}: {comunicacion.enviados} enviados, {len(pendientes)} pendientes.")
 
-        comunicacion.estado = ComunicacionCliente.Estado.ENVIADO if not fallidos else ComunicacionCliente.Estado.ERROR
+        comunicacion.estado = ComunicacionCliente.Estado.ENVIADO
+        comunicacion.fallidos = 0
         comunicacion.enviado_en = timezone.now()
-        comunicacion.save(update_fields=["estado", "enviado_en"])
+        comunicacion.error_detalle = ""
+        comunicacion.save(update_fields=["estado", "fallidos", "enviado_en", "error_detalle"])
         return True
