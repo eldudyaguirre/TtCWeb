@@ -9,9 +9,18 @@ class ComunicacionCliente(models.Model):
         ENVIADO = "ENVIADO", "Enviado"
         ERROR = "ERROR", "Con errores"
 
+    class TipoDestinatario(models.TextChoices):
+        TODOS = "TODOS", "Todos los clientes"
+        INDIVIDUAL = "INDIVIDUAL", "Un destinatario"
+
     asunto = models.CharField(max_length=220)
     titulo = models.CharField(max_length=220, blank=True)
     mensaje = models.TextField()
+    destinatario_tipo = models.CharField(
+        max_length=12, choices=TipoDestinatario.choices, default=TipoDestinatario.TODOS
+    )
+    destinatario_email = models.EmailField(blank=True)
+    imagen_adjunto = models.ImageField(upload_to="comunicaciones/%Y/%m/", blank=True, null=True)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.BORRADOR, db_index=True)
     destinatarios = models.PositiveIntegerField(default=0)
     enviados = models.PositiveIntegerField(default=0)
