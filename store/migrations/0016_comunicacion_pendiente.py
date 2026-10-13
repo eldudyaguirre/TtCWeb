@@ -15,10 +15,11 @@ class Migration(migrations.Migration):
                     ("ENVIANDO", "Enviando"),
                     ("ENVIADO", "Enviado"),
                     ("ERROR", "Con errores"),
-                ],
-                db_index=True,
-                default="BORRADOR",
-                max_length=12,
-            ),
+                ], db_index=True, default="BORRADOR", max_length=12),
+        ),
+        migrations.AddField(
+            model_name="comunicacioncliente",
+            name="correos_pendientes",
+            field=models.TextField(blank=True),
         ),
     ]
