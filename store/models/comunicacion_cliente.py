@@ -4,6 +4,7 @@ from django.db import models
 class ComunicacionCliente(models.Model):
     class Estado(models.TextChoices):
         BORRADOR = "BORRADOR", "Borrador"
+        PENDIENTE = "PENDIENTE", "Pendiente"
         ENVIANDO = "ENVIANDO", "Enviando"
         ENVIADO = "ENVIADO", "Enviado"
         ERROR = "ERROR", "Con errores"
