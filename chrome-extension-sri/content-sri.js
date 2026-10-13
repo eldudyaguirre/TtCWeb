@@ -4,6 +4,9 @@
 
   let credentials = null;
   let attempts = 0;
+  let fillLoopStarted = false;
+  let submissionScheduled = false;
+  let loginSubmitted = false;
   const maxAttempts = 45;
 
   function visible(el) {
@@ -43,7 +46,7 @@
   }
 
   function attemptFill() {
-    if (!credentials) return;
+    if (!credentials || submissionScheduled || loginSubmitted) return;
     attempts += 1;
     const user = findUserInput();
     const password = Array.from(document.querySelectorAll('input[type="password"]')).find(visible);
@@ -54,8 +57,12 @@
 
       if (user.value === credentials.ruc && password.value === credentials.clave) {
         document.documentElement.dataset.ttcSriFillStatus = "filled";
+        // Solo se permite programar un envío por pestaña, aunque lleguen mensajes duplicados.
+        if (submissionScheduled || loginSubmitted) return;
+        submissionScheduled = true;
         // Give the SRI page a moment to process input/change events before clicking.
         setTimeout(() => {
+          if (loginSubmitted) return;
           const currentUser = findUserInput();
           const currentPassword = Array.from(document.querySelectorAll('input[type="password"]')).find(visible);
           const submit = findSubmitButton();
@@ -63,16 +70,21 @@
           if (!currentUser || !currentPassword ||
               currentUser.value !== credentials.ruc ||
               currentPassword.value !== credentials.clave) {
+            submissionScheduled = false;
             document.documentElement.dataset.ttcSriFillStatus = "verification-failed";
             console.warn("[TotalCounts SRI] No se envió el formulario: los campos cambiaron antes del envío.");
             return;
           }
           if (!submit) {
+            submissionScheduled = false;
             document.documentElement.dataset.ttcSriFillStatus = "submit-not-found";
             console.warn("[TotalCounts SRI] Campos rellenados, pero no se encontró el botón Ingresar.");
             return;
           }
 
+          // Marcar antes del clic evita que otro mensaje vuelva a enviar el formulario.
+          loginSubmitted = true;
+          credentials = null;
           document.documentElement.dataset.ttcSriFillStatus = "submitting";
           submit.click();
         }, 400);
@@ -89,11 +101,13 @@
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type !== "TTCWEB_FILL_SRI_CREDENTIALS") return;
+    if (fillLoopStarted || submissionScheduled || loginSubmitted) return;
     credentials = { ruc: String(message.ruc || ""), clave: String(message.clave || "") };
     if (!/^\d{13}$/.test(credentials.ruc) || !credentials.clave) {
       document.documentElement.dataset.ttcSriFillStatus = "invalid-credentials";
       return;
     }
+    fillLoopStarted = true;
     document.documentElement.dataset.ttcSriFillStatus = "credentials-received";
     attemptFill();
   });
