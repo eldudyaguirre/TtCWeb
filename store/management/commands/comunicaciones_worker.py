@@ -40,3 +40,98 @@ def adjuntar_imagen(mensaje, comunicacion):
         finally:
             imagen.close()
         mensaje.attach(nombre, contenido, tipo)
+
+
+
+class Command(BaseCommand):
+    help = "Procesa las comunicaciones a clientes pendientes."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--once", action="store_true", help="Procesa una comunicación y termina.")
+        parser.add_argument("--interval", type=int, default=POLL_SECONDS, help="Segundos entre revisiones.")
+
+    def handle(self, *args, **options):
+        once = options["once"]
+        interval = max(1, options["interval"])
+        self.stdout.write(self.style.SUCCESS("Comunicaciones worker iniciado."))
+        while True:
+            procesada = self.procesar_una()
+            if once:
+                return
+            if not procesada:
+                time.sleep(interval)
+
+    def procesar_una(self):
+        with transaction.atomic():
+            comunicacion = (
+                ComunicacionCliente.objects.select_for_update(skip_locked=True)
+                .filter(estado=ComunicacionCliente.Estado.PENDIENTE)
+                .order_by("creado_en")
+                .first()
+            )
+            if not comunicacion:
+                return False
+            comunicacion.estado = ComunicacionCliente.Estado.ENVIANDO
+            comunicacion.save(update_fields=["estado"])
+
+        pendientes = [
+            correo.strip()
+            for correo in (comunicacion.correos_pendientes or "").splitlines()
+            if correo.strip()
+        ]
+        if not pendientes:
+            comunicacion.estado = ComunicacionCliente.Estado.ENVIADO
+            comunicacion.fallidos = 0
+            comunicacion.enviado_en = timezone.now()
+            comunicacion.save(update_fields=["estado", "fallidos", "enviado_en"])
+            return True
+
+        while pendientes:
+            grupo = pendientes[:BATCH_SIZE]
+            try:
+                mensaje = EmailMultiAlternatives(
+                    subject=comunicacion.asunto,
+                    body=strip_tags(comunicacion.mensaje or "").strip(),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.DEFAULT_FROM_EMAIL],
+                    bcc=grupo,
+                )
+                mensaje.attach_alternative(html_comunicacion(comunicacion), "text/html")
+                adjuntar_imagen(mensaje, comunicacion)
+                mensaje.send(fail_silently=False)
+
+                comunicacion.enviados += len(grupo)
+                pendientes = pendientes[len(grupo):]
+                comunicacion.correos_pendientes = "\\n".join(pendientes)
+                comunicacion.fallidos = len(pendientes)
+                comunicacion.save(update_fields=[
+                    "enviados", "fallidos", "correos_pendientes"
+                ])
+                self.stdout.write(
+                    f"Comunicación {comunicacion.id}: {comunicacion.enviados} enviados, "
+                    f"{len(pendientes)} pendientes."
+                )
+            except Exception as exc:
+                comunicacion.fallidos = len(pendientes)
+                comunicacion.error_detalle = str(exc)[:2000]
+                comunicacion.estado = ComunicacionCliente.Estado.ERROR
+                comunicacion.enviado_en = timezone.now()
+                comunicacion.correos_pendientes = "\\n".join(pendientes)
+                comunicacion.save(update_fields=[
+                    "fallidos", "error_detalle", "estado", "enviado_en",
+                    "correos_pendientes"
+                ])
+                self.stdout.write(self.style.ERROR(
+                    f"Comunicación {comunicacion.id}: error; quedan {len(pendientes)} pendientes."
+                ))
+                return True
+
+        comunicacion.estado = ComunicacionCliente.Estado.ENVIADO
+        comunicacion.fallidos = 0
+        comunicacion.enviado_en = timezone.now()
+        comunicacion.error_detalle = ""
+        comunicacion.correos_pendientes = ""
+        comunicacion.save(update_fields=[
+            "estado", "fallidos", "enviado_en", "error_detalle", "correos_pendientes"
+        ])
+        return True
