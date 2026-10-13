@@ -5,8 +5,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from django.utils.html import escape
+from django.utils.html import strip_tags
 
+from store.blog_utils import sanitize_blog_html
 from store.models.comunicacion_cliente import ComunicacionCliente
 
 BATCH_SIZE = 40
@@ -14,7 +15,30 @@ POLL_SECONDS = 5
 
 
 def html_comunicacion(c):
-    return f'<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto"><div style="padding:25px;text-align:center"><img src="https://www.totalcounts.com.ec/static/images/logosvg.svg" alt="TotalCounts" width="190"></div><div style="padding:30px"><div style="color:#bd1020;font-weight:bold">COMUNICACIÓN A CLIENTES</div><h1>{escape(c.titulo or c.asunto)}</h1><div style="font-size:15px;line-height:1.75">{escape(c.mensaje).replace(chr(10), "<br>")}</div></div><div style="padding:18px;text-align:center;color:#718096">TotalCounts · Cuentas con nosotros</div></div>'
+    contenido = sanitize_blog_html(c.mensaje or "")
+    titulo = (c.titulo or c.asunto).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return (
+        '<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#263238;background:#fff">'
+        '<div style="padding:25px;text-align:center"><img src="https://www.totalcounts.com.ec/static/images/logosvg.svg" '
+        'alt="TotalCounts" width="190" style="max-width:100%;height:auto"></div>'
+        '<div style="padding:30px"><div style="color:#bd1020;font-weight:bold">COMUNICACIÓN A CLIENTES</div>'
+        f'<h1 style="font-size:26px;line-height:1.3">{titulo}</h1>'
+        f'<div style="font-size:15px;line-height:1.75">{contenido}</div></div>'
+        '<div style="padding:18px;text-align:center;color:#718096">TotalCounts · Cuentas con nosotros</div></div>'
+    )
+
+
+def adjuntar_imagen(mensaje, comunicacion):
+    imagen = comunicacion.imagen_adjunto
+    if imagen and imagen.name:
+        imagen.open("rb")
+        try:
+            nombre = imagen.name.rsplit("/", 1)[-1].rsplit("\\\\", 1)[-1]
+            contenido = imagen.read()
+        finally:
+            imagen.close()
+        tipo = getattr(imagen.file, "content_type", None) or "application/octet-stream"
+        mensaje.attach(nombre, contenido, tipo)
 
 
 class Command(BaseCommand):
@@ -37,9 +61,11 @@ class Command(BaseCommand):
 
     def procesar_una(self):
         with transaction.atomic():
-            comunicacion = (ComunicacionCliente.objects.select_for_update(skip_locked=True)
+            comunicacion = (
+                ComunicacionCliente.objects.select_for_update(skip_locked=True)
                 .filter(estado=ComunicacionCliente.Estado.PENDIENTE)
-                .order_by("creado_en").first())
+                .order_by("creado_en").first()
+            )
             if not comunicacion:
                 return False
             comunicacion.estado = ComunicacionCliente.Estado.ENVIANDO
@@ -53,34 +79,40 @@ class Command(BaseCommand):
             return True
 
         errores = []
-        for inicio in range(0, len(pendientes), BATCH_SIZE):
-            grupo = pendientes[inicio:inicio + BATCH_SIZE]
+        while pendientes:
+            grupo = pendientes[:BATCH_SIZE]
             try:
                 mensaje = EmailMultiAlternatives(
-                    comunicacion.asunto,
-                    comunicacion.mensaje,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.DEFAULT_FROM_EMAIL],
+                    subject=comunicacion.asunto,
+                    body=strip_tags(comunicacion.mensaje).strip(),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.DEFAULT_FROM_EMAIL],
                     bcc=grupo,
                 )
                 mensaje.attach_alternative(html_comunicacion(comunicacion), "text/html")
+                adjuntar_imagen(mensaje, comunicacion)
                 mensaje.send(fail_silently=False)
                 comunicacion.enviados += len(grupo)
                 pendientes = pendientes[len(grupo):]
-                comunicacion.correos_pendientes = "\\n".join(pendientes)
-            except Exception as exc:
+                comunicacion.correos_pendientes = "\n".join(pendientes)
                 comunicacion.fallidos = len(pendientes)
-                errores.append(f"Grupo {inicio + 1}-{inicio + len(grupo)}: {str(exc)[:500]}")
-                comunicacion.error_detalle = "\\n".join(errores)
+                comunicacion.save(update_fields=["enviados", "fallidos", "correos_pendientes"])
+                self.stdout.write(
+                    f"Comunicación {comunicacion.id}: {comunicacion.enviados} enviados, {len(pendientes)} pendientes."
+                )
+            except Exception as exc:
+                errores.append(str(exc)[:500])
+                comunicacion.fallidos = len(pendientes)
+                comunicacion.error_detalle = "\n".join(errores)
                 comunicacion.estado = ComunicacionCliente.Estado.ERROR
                 comunicacion.enviado_en = timezone.now()
-                comunicacion.save(update_fields=["fallidos", "error_detalle", "estado", "enviado_en", "correos_pendientes"])
-                self.stdout.write(self.style.ERROR(f"Comunicación {comunicacion.id}: error; quedan {len(pendientes)} pendientes."))
+                comunicacion.save(update_fields=[
+                    "fallidos", "error_detalle", "estado", "enviado_en", "correos_pendientes"
+                ])
+                self.stdout.write(self.style.ERROR(
+                    f"Comunicación {comunicacion.id}: error; quedan {len(pendientes)} pendientes."
+                ))
                 return True
-
-            comunicacion.fallidos = len(pendientes)
-            comunicacion.save(update_fields=["enviados", "fallidos", "correos_pendientes"])
-            self.stdout.write(f"Comunicación {comunicacion.id}: {comunicacion.enviados} enviados, {len(pendientes)} pendientes.")
 
         comunicacion.estado = ComunicacionCliente.Estado.ENVIADO
         comunicacion.fallidos = 0
