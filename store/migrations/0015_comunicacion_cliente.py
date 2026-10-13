@@ -1,5 +1,54 @@
 from django.db import migrations, models
 
+
 class Migration(migrations.Migration):
-    dependencies = [("store", "0014_catalogos_iniciales_blog")]
-    operations = [migrations.CreateModel(name="ComunicacionCliente", fields=[("id",models.BigAutoField(auto_created=True,primary_key=True,serialize=False,verbose_name="ID")),("asunto",models.CharField(max_length=220)),("titulo",models.CharField(blank=True,max_length=220)),("mensaje",models.TextField()),("estado",models.CharField(choices=[("BORRADOR","Borrador"),("ENVIANDO","Enviando"),("ENVIADO","Enviado"),("ERROR","Con errores")],db_index=True,default="BORRADOR",max_length=12)),("destinatarios",models.PositiveIntegerField(default=0)),("enviados",models.PositiveIntegerField(default=0)),("fallidos",models.PositiveIntegerField(default=0)),("creado_por",models.CharField(blank=True,max_length=150)),("creado_en",models.DateTimeField(auto_now_add=True,db_index=True)),("enviado_en",models.DateTimeField(blank=True,null=True)),("error_detalle",models.TextField(blank=True))],options={"db_table":"comunicaciones_clientes","ordering":["-creado_en"],"verbose_name":"Comunicación a clientes","verbose_name_plural":"Comunicaciones a clientes"})]}
+    dependencies = [
+        ("store", "0014_catalogos_iniciales_blog"),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name="ComunicacionCliente",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("asunto", models.CharField(max_length=220)),
+                ("titulo", models.CharField(blank=True, max_length=220)),
+                ("mensaje", models.TextField()),
+                (
+                    "estado",
+                    models.CharField(
+                        choices=[
+                            ("BORRADOR", "Borrador"),
+                            ("ENVIANDO", "Enviando"),
+                            ("ENVIADO", "Enviado"),
+                            ("ERROR", "Con errores"),
+                        ],
+                        db_index=True,
+                        default="BORRADOR",
+                        max_length=12,
+                    ),
+                ),
+                ("destinatarios", models.PositiveIntegerField(default=0)),
+                ("enviados", models.PositiveIntegerField(default=0)),
+                ("fallidos", models.PositiveIntegerField(default=0)),
+                ("creado_por", models.CharField(blank=True, max_length=150)),
+                ("creado_en", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("enviado_en", models.DateTimeField(blank=True, null=True)),
+                ("error_detalle", models.TextField(blank=True)),
+            ],
+            options={
+                "db_table": "comunicaciones_clientes",
+                "ordering": ["-creado_en"],
+                "verbose_name": "Comunicación a clientes",
+                "verbose_name_plural": "Comunicaciones a clientes",
+            },
+        ),
+    ]
