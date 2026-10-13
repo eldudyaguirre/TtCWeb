@@ -27,8 +27,6 @@ def _destinatarios():
     resultado = set()
     for valor in valores:
         correo = (valor or "").strip().lower()
-        if not correo:
-            continue
         try:
             validate_email(correo)
         except ValidationError:
@@ -39,6 +37,17 @@ def _destinatarios():
 
 def _html(c):
     return f'<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto"><div style="padding:25px;text-align:center"><img src="https://www.totalcounts.com.ec/static/images/logosvg.svg" alt="TotalCounts" width="190"></div><div style="padding:30px"><div style="color:#bd1020;font-weight:bold">COMUNICACIÓN A CLIENTES</div><h1>{escape(c.titulo or c.asunto)}</h1><div style="font-size:15px;line-height:1.75">{escape(c.mensaje).replace(chr(10), "<br>")}</div></div><div style="padding:18px;text-align:center;color:#718096">TotalCounts · Cuentas con nosotros</div></div>'
+
+
+def _encolar(c, lista):
+    c.estado = ComunicacionCliente.Estado.PENDIENTE
+    c.destinatarios = len(lista)
+    c.correos_pendientes = "\\n".join(lista)
+    c.error_detalle = ""
+    c.enviado_en = None
+    if not c.enviados:
+        c.fallidos = 0
+    c.save(update_fields=["estado", "destinatarios", "correos_pendientes", "error_detalle", "enviado_en", "fallidos"])
 
 
 @admin_required
@@ -75,17 +84,13 @@ def admin_comunicaciones(request):
                 messages.error(request, "Esta comunicación ya está en proceso o fue enviada.")
             else:
                 lista = _destinatarios()
+                if c.estado == ComunicacionCliente.Estado.ERROR and c.correos_pendientes:
+                    lista = [e for e in c.correos_pendientes.splitlines() if e.strip()]
                 if not lista:
-                    messages.error(request, "No existen clientes activos con correo válido.")
+                    messages.error(request, "No existen destinatarios pendientes para esta comunicación.")
                 else:
-                    c.estado = ComunicacionCliente.Estado.PENDIENTE
-                    c.destinatarios = len(lista)
-                    c.enviados = 0
-                    c.fallidos = 0
-                    c.error_detalle = ""
-                    c.enviado_en = None
-                    c.save(update_fields=["estado", "destinatarios", "enviados", "fallidos", "error_detalle", "enviado_en"])
-                    messages.success(request, f"Comunicación puesta en cola para {len(lista)} clientes.")
+                    _encolar(c, lista)
+                    messages.success(request, f"Comunicación puesta en cola para {len(lista)} correos pendientes.")
             return redirect("admin_comunicaciones")
     else:
         form = ComunicacionClienteForm()
@@ -101,24 +106,20 @@ def admin_comunicaciones(request):
 def admin_comunicacion_enviar(request, comunicacion_id):
     if request.method != "POST":
         return redirect("admin_comunicaciones")
-    return _encolar_comunicacion(request, comunicacion_id)
+    return _encolar_desde_id(request, comunicacion_id)
 
 
-def _encolar_comunicacion(request, comunicacion_id):
+def _encolar_desde_id(request, comunicacion_id):
     c = get_object_or_404(ComunicacionCliente, pk=comunicacion_id)
     if c.estado not in (ComunicacionCliente.Estado.BORRADOR, ComunicacionCliente.Estado.ERROR):
         messages.error(request, "Esta comunicación ya está en proceso o fue enviada.")
         return redirect("admin_comunicaciones")
     lista = _destinatarios()
+    if c.estado == ComunicacionCliente.Estado.ERROR and c.correos_pendientes:
+        lista = [e for e in c.correos_pendientes.splitlines() if e.strip()]
     if not lista:
-        messages.error(request, "No existen clientes activos con correo válido.")
+        messages.error(request, "No existen destinatarios pendientes para esta comunicación.")
         return redirect("admin_comunicaciones")
-    c.estado = ComunicacionCliente.Estado.PENDIENTE
-    c.destinatarios = len(lista)
-    c.enviados = 0
-    c.fallidos = 0
-    c.error_detalle = ""
-    c.enviado_en = None
-    c.save(update_fields=["estado", "destinatarios", "enviados", "fallidos", "error_detalle", "enviado_en"])
-    messages.success(request, f"Comunicación puesta en cola para {len(lista)} clientes.")
+    _encolar(c, lista)
+    messages.success(request, f"Comunicación puesta en cola para {len(lista)} correos pendientes.")
     return redirect("admin_comunicaciones")
