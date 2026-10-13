@@ -4,6 +4,7 @@ from . import views
 from . import ingresos_views
 from . import admin_views
 from . import blog_admin_views
+from . import comunicaciones_views
 from .admin_trabajadores_pdf import admin_trabajadores_pdf
 
 
@@ -22,6 +23,8 @@ urlpatterns = [
     path('totalcounts/conta/sri/cancelar/', admin_views.admin_conta_sri_cancelar, name='admin_conta_sri_cancelar'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
     path('totalcounts/blog/', blog_admin_views.admin_blog, name='admin_blog'),
+    path('totalcounts/comunicaciones/', comunicaciones_views.admin_comunicaciones, name='admin_comunicaciones'),
+    path('totalcounts/comunicaciones/enviar/<int:comunicacion_id>/', comunicaciones_views.admin_comunicacion_enviar, name='admin_comunicacion_enviar'),
     path('totalcounts/blog/editar/<int:noticia_id>/', blog_admin_views.admin_blog_editar, name='admin_blog_editar'),
     path('totalcounts/blog/eliminar/<int:noticia_id>/', blog_admin_views.admin_blog_eliminar, name='admin_blog_eliminar'),
     path('totalcounts/blog/estado/<int:noticia_id>/', blog_admin_views.admin_blog_estado, name='admin_blog_estado'),
