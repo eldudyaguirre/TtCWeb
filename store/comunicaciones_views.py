@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils.html import escape, strip_tags
+import mimetypes
 
 from .admin_views import admin_required
 from .models.cliente import Cliente
@@ -115,24 +116,26 @@ def _html(c):
 def _adjuntar_imagen(mensaje, comunicacion):
     imagen = comunicacion.imagen_adjunto
     if imagen and imagen.name:
+        nombre = imagen.name.rsplit("/", 1)[-1].rsplit("\\\\", 1)[-1]
+        tipo = mimetypes.guess_type(nombre)[0] or "application/octet-stream"
         imagen.open("rb")
         try:
-            nombre = imagen.name.rsplit("/", 1)[-1].rsplit("\\\\", 1)[-1]
             contenido = imagen.read()
         finally:
             imagen.close()
-        tipo = getattr(imagen.file, "content_type", None) or "application/octet-stream"
         mensaje.attach(nombre, contenido, tipo)
 
 
 def _encolar(c, lista):
+    reintento = c.estado == ComunicacionCliente.Estado.ERROR and bool(c.correos_pendientes)
     c.estado = ComunicacionCliente.Estado.PENDIENTE
-    c.destinatarios = len(lista)
-    c.correos_pendientes = "\n".join(lista)
+    if not reintento:
+        c.destinatarios = len(lista)
+        c.enviados = 0
+        c.fallidos = 0
+    c.correos_pendientes = "\\n".join(lista)
     c.error_detalle = ""
     c.enviado_en = None
-    c.enviados = 0
-    c.fallidos = 0
     c.save(update_fields=["estado", "destinatarios", "correos_pendientes", "error_detalle", "enviado_en", "enviados", "fallidos"])
 
 
