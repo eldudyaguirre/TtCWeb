@@ -192,6 +192,23 @@ def admin_comunicaciones(request):
 
 
 @admin_required
+def admin_comunicacion_eliminar(request, comunicacion_id):
+    if request.method != "POST":
+        return redirect("admin_comunicaciones")
+
+    c = get_object_or_404(ComunicacionCliente, pk=comunicacion_id)
+    if c.estado != ComunicacionCliente.Estado.BORRADOR:
+        messages.error(request, "Solo se pueden eliminar comunicaciones que sigan en estado Borrador.")
+        return redirect("admin_comunicaciones")
+
+    if c.imagen_adjunto:
+        c.imagen_adjunto.delete(save=False)
+    c.delete()
+    messages.success(request, "Borrador eliminado correctamente.")
+    return redirect("admin_comunicaciones")
+
+
+@admin_required
 def admin_comunicacion_enviar(request, comunicacion_id):
     if request.method != "POST":
         return redirect("admin_comunicaciones")
