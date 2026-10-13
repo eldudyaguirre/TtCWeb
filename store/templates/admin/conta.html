@@ -489,8 +489,12 @@
             }
 
             if (data.estado === "finalizado" || data.estado === "error" || data.estado === "cancelado") {
-                if (data.estado === "finalizado" && !sinComprobantes) {
-                    mensaje.textContent = "Proceso terminado. La información ya fue procesada por Conta.";
+                if (data.estado === "finalizado") {
+                    if (!sinComprobantes) {
+                        mensaje.textContent = "Proceso terminado. La información ya fue procesada por Conta.";
+                    }
+                    cancelar.disabled = true;
+                    cancelar.textContent = "✓ Sincronización finalizada";
                 }
                 if (data.estado === "cancelado") {
                     estado.textContent = "⏹ Detenido";
