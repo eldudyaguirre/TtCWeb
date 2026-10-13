@@ -22,6 +22,15 @@
 .com-editor p{margin:0 0 15px}.com-editor blockquote{margin:20px 0;padding:14px 18px;border-left:4px solid #bd1020;background:#f7f7f7;color:#536563}
 .com-editor ul,.com-editor ol{padding-left:28px;margin:10px 0 18px}.com-editor a{color:#087f83;text-decoration:underline}
 .com-history .com-primary{padding:8px 12px}.com-badge{font-weight:700}
+.com-row-menu{position:relative;display:inline-block}
+.com-menu-trigger{width:38px;height:38px;border:1px solid #dbe2e8;border-radius:9px;background:#fff;color:#273746;font-size:24px;line-height:1;cursor:pointer}
+.com-menu-trigger:hover,.com-menu-trigger:focus{background:#f7f9fb;border-color:#bd1020}
+.com-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:175px;padding:6px;background:#fff;border:1px solid #e0e5ea;border-radius:10px;box-shadow:0 10px 28px rgba(20,30,40,.14)}
+.com-menu form{margin:0}
+.com-menu button{display:block;width:100%;padding:10px 12px;border:0;border-radius:6px;text-align:left;background:#fff;color:#273746;font:inherit;font-size:14px;cursor:pointer}
+.com-menu button:hover{background:#f3f5f7}
+.com-menu button.com-delete{color:#b42318}
+.com-menu[hidden]{display:none}
 @media(max-width:900px){.com-page{grid-template-columns:1fr}}
 </style>
 <div class="admin-page-header"><div><span class="admin-kicker">Comunicación</span><h1>Comunicaciones</h1><p>Envía avisos a todos los clientes activos o selecciona un destinatario individual.</p></div></div>
@@ -89,7 +98,25 @@
       <td>{{ item.asunto }}{% if item.imagen_adjunto %}<div class="com-help">Incluye imagen adjunta</div>{% endif %}</td>
       <td>{% if item.destinatario_tipo == "INDIVIDUAL" %}Individual<br>{{ item.destinatario_email }}{% else %}Todos los clientes{% endif %}<br>{{ item.destinatarios }} correo(s)</td>
       <td>{% if item.estado == "PENDIENTE" %}<span class="com-badge">En cola</span>{% elif item.estado == "ENVIANDO" %}<span class="com-badge">Enviando · {{ item.enviados }}/{{ item.destinatarios }}</span>{% else %}{{ item.get_estado_display }} · {{ item.enviados }} enviados{% if item.fallidos %}, {{ item.fallidos }} pendientes/fallidos{% endif %}{% endif %}</td>
-      <td>{% if item.estado == "BORRADOR" or item.estado == "ERROR" %}<form method="post" action="{% url 'admin_comunicacion_enviar' item.id %}" onsubmit="return confirm('¿Confirmas encolar esta comunicación para su destinatario seleccionado?')">{% csrf_token %}<button class="com-primary">{% if item.estado == "ERROR" %}Reintentar{% else %}Encolar envío{% endif %}</button></form>{% endif %}</td>
+      <td>
+        {% if item.estado == "BORRADOR" or item.estado == "ERROR" %}
+          <div class="com-row-menu">
+            <button type="button" class="com-menu-trigger" aria-label="Opciones de {{ item.asunto }}" aria-expanded="false" aria-haspopup="true" onclick="comToggleMenu(this)">⋯</button>
+            <div class="com-menu" hidden>
+              <form method="post" action="{% url 'admin_comunicacion_enviar' item.id %}" onsubmit="return confirm('¿Confirmas encolar esta comunicación para su destinatario seleccionado?')">
+                {% csrf_token %}
+                <button type="submit">{% if item.estado == "ERROR" %}Reintentar envío{% else %}Encolar envío{% endif %}</button>
+              </form>
+              {% if item.estado == "BORRADOR" %}
+                <form method="post" action="{% url 'admin_comunicacion_eliminar' item.id %}" onsubmit="return confirm('¿Eliminar definitivamente este borrador? Esta acción no se puede deshacer.')">
+                  {% csrf_token %}
+                  <button type="submit" class="com-delete">Eliminar envío</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </td>
     </tr>
   {% empty %}<tr><td colspan="5">Todavía no hay comunicaciones.</td></tr>{% endfor %}
   </tbody></table>
@@ -125,6 +152,19 @@
   function toggleDestinatario(){if(individual&&tipo)individual.style.display=tipo.value==="INDIVIDUAL"?"block":"none";}
   if(tipo){tipo.addEventListener("change",toggleDestinatario);toggleDestinatario();}
 })();
+function comToggleMenu(trigger){
+  const menu=trigger.parentElement.querySelector(".com-menu");
+  const wasOpen=!menu.hidden;
+  document.querySelectorAll(".com-menu").forEach(function(item){item.hidden=true;});
+  document.querySelectorAll(".com-menu-trigger").forEach(function(item){item.setAttribute("aria-expanded","false");});
+  if(!wasOpen){menu.hidden=false;trigger.setAttribute("aria-expanded","true");}
+}
+document.addEventListener("click",function(event){
+  if(!event.target.closest(".com-row-menu")){
+    document.querySelectorAll(".com-menu").forEach(function(item){item.hidden=true;});
+    document.querySelectorAll(".com-menu-trigger").forEach(function(item){item.setAttribute("aria-expanded","false");});
+  }
+});
 function comPrueba(){const e=document.getElementById("correo-prueba");if(!e.value){alert("Ingresa un correo para la prueba.");e.focus();return false;}return true;}
 </script>
 {% endblock %}
