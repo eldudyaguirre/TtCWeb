@@ -2,6 +2,49 @@
 {% block title %}Suscriptores | Administración TotalCounts{% endblock %}
 
 {% block content %}
+<style>
+/* Igualar las tarjetas de Suscriptores a la paleta del dashboard administrativo. */
+.admin-content .admin-kpis{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:16px!important;
+    margin-bottom:28px!important;
+}
+.admin-content .admin-kpi{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    min-height:132px;
+    padding:22px 22px 20px!important;
+    border:0!important;
+    border-radius:16px!important;
+    color:#fff!important;
+    box-shadow:0 10px 22px rgba(20,43,53,.13)!important;
+    transition:transform .2s ease,box-shadow .2s ease;
+}
+.admin-content .admin-kpi:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 28px rgba(20,43,53,.20)!important;
+}
+.admin-content .admin-kpi::after{
+    content:"";position:absolute;z-index:-1;width:145px;height:145px;
+    right:-24px;bottom:-58px;border-radius:50%;background:rgba(255,255,255,.13);
+}
+.admin-content .admin-kpi::before{
+    content:"";position:absolute;z-index:-1;width:94px;height:94px;
+    right:24px;bottom:-54px;border:1px solid rgba(255,255,255,.20);border-radius:50%;
+}
+.admin-content .admin-kpi span,
+.admin-content .admin-kpi strong,
+.admin-content .admin-kpi small{position:relative;z-index:1;color:#fff!important}
+.admin-content .admin-kpi span{display:block;font-size:13px;font-weight:600;opacity:.94}
+.admin-content .admin-kpi strong{display:block;font-size:30px!important;line-height:1.15;margin:12px 0 8px!important;letter-spacing:-.5px}
+.admin-content .admin-kpi small{display:block;font-size:12px;opacity:.88}
+.admin-content .admin-kpi:nth-child(6n+1){background:linear-gradient(135deg,#177B7B 0%,#177B7B 100%)!important}
+.admin-content .admin-kpi:nth-child(6n+2){background:linear-gradient(135deg,#24c99a 0%,#079b7a 100%)!important}
+@media(max-width:700px){.admin-content .admin-kpis{grid-template-columns:1fr!important;gap:10px!important}}
+</style>
+
 <div class="admin-page-header">
     <div>
         <span class="admin-kicker">Comunicación</span>
