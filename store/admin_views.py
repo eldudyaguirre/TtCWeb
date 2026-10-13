@@ -6099,3 +6099,205 @@ def admin_requerimiento_contacto_detalle(request, requerimiento_id):
         'estados': RequerimientoContacto.ESTADOS,
         'historial': item.historial.all(),
     })
+
+
+# Módulos de anexos tributarios con almacenamiento privado por cliente.
+ANEXOS_CLIENTE = {
+    'aice': {
+        'titulo': 'AICE',
+        'nombre': 'Anexo ICE',
+        'descripcion': 'Carga, consulta y descarga archivos del anexo relacionado con ICE.',
+        'carpeta': 'aice',
+    },
+    'adi': {
+        'titulo': 'ADI',
+        'nombre': 'Anexo de Dividendos',
+        'descripcion': 'Carga, consulta y descarga archivos del Anexo de Dividendos.',
+        'carpeta': 'adi',
+    },
+    'rdep': {
+        'titulo': 'RDEP',
+        'nombre': 'Anexo de Relación de Dependencia',
+        'descripcion': 'Carga, consulta y descarga archivos RDEP del cliente.',
+        'carpeta': 'rdep',
+    },
+    'dpt': {
+        'titulo': 'DPT',
+        'nombre': 'Declaración Patrimonial',
+        'descripcion': 'Carga, consulta y descarga documentos de declaración patrimonial.',
+        'carpeta': 'dpt',
+    },
+}
+
+
+@admin_required
+def admin_anexo_archivos(request, ruc, modulo):
+    """Gestiona los archivos de AICE, ADI, RDEP o DPT para un cliente."""
+    import hashlib
+    import mimetypes
+    import xml.etree.ElementTree as ET
+    import zipfile
+    from datetime import datetime
+    from pathlib import Path
+    from .models.archivo import Archivo
+    from .services.archivos.storage import data_root
+
+    config = ANEXOS_CLIENTE.get(str(modulo).lower())
+    if config is None:
+        raise Http404('Módulo de anexos no válido.')
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    raiz = data_root() / ruc_cliente / 'anexos' / config['carpeta']
+    error = ''
+    exito = ''
+    extensiones = {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}
+    limite_bytes = 20 * 1024 * 1024
+
+    if request.method == 'POST':
+        try:
+            anio = int(request.POST.get('anio', ''))
+        except (TypeError, ValueError):
+            anio = 0
+        subido = request.FILES.get('archivo_anexo')
+        if not 2000 <= anio <= 2100:
+            error = 'Selecciona un año válido.'
+        elif not subido:
+            error = 'Selecciona un archivo para cargar.'
+        else:
+            extension = Path(subido.name).suffix.lower()
+            nombre = Path(subido.name).name.strip()
+            if extension not in extensiones:
+                error = 'Formato no permitido. Usa XML, ZIP, PDF, XLSX o XLS.'
+            elif subido.size > limite_bytes:
+                error = 'El archivo no puede superar los 20 MB.'
+            elif not nombre or nombre in {'.', '..'}:
+                error = 'El nombre del archivo no es válido.'
+            else:
+                carpeta = raiz / str(anio)
+                destino = carpeta / nombre
+                relativo = (Path(ruc_cliente) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+                existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).exists()
+                if existente or destino.exists():
+                    error = f'Ya existe un archivo llamado {nombre} para {anio}.'
+                else:
+                    contenido = subido.read()
+                    valido = True
+                    if extension == '.xml':
+                        try:
+                            ET.fromstring(contenido)
+                        except ET.ParseError:
+                            valido = False
+                    elif extension == '.pdf':
+                        valido = contenido.startswith(b'%PDF')
+                    elif extension in {'.zip', '.xlsx'}:
+                        try:
+                            with zipfile.ZipFile(__import__('io').BytesIO(contenido)) as paquete:
+                                valido = paquete.testzip() is None
+                        except zipfile.BadZipFile:
+                            valido = False
+                    if not valido:
+                        error = 'El archivo está dañado o no corresponde al formato indicado.'
+                    else:
+                        carpeta.mkdir(parents=True, exist_ok=True)
+                        destino.write_bytes(contenido)
+                        tipo = (
+                            Archivo.Tipo.XML if extension == '.xml'
+                            else Archivo.Tipo.PDF if extension == '.pdf'
+                            else Archivo.Tipo.DOCUMENTO
+                        )
+                        try:
+                            Archivo.objects.create(
+                                cliente=cliente,
+                                tipo=tipo,
+                                nombre_original=nombre,
+                                nombre_fisico=nombre,
+                                ruta_relativa=relativo,
+                                extension=extension,
+                                mime_type=mimetypes.guess_type(nombre)[0] or 'application/octet-stream',
+                                tamano=len(contenido),
+                                sha256=hashlib.sha256(contenido).hexdigest(),
+                                creado_por=None,
+                                activo=True,
+                            )
+                        except Exception:
+                            destino.unlink(missing_ok=True)
+                            raise
+                        exito = f'El archivo {nombre} se cargó correctamente.'
+
+    registros = []
+    anios_disponibles = set()
+    for archivo in Archivo.objects.filter(
+        cliente=cliente, activo=True,
+        ruta_relativa__contains=f'/anexos/{config["carpeta"]}/',
+    ).order_by('-creado_en'):
+        ruta = data_root() / Path(archivo.ruta_relativa)
+        if not ruta.is_file():
+            continue
+        try:
+            anio_archivo = int(ruta.parent.name)
+        except ValueError:
+            continue
+        anios_disponibles.add(anio_archivo)
+        registros.append({
+            'nombre': ruta.name, 'anio': anio_archivo,
+            'tamano': archivo.tamano, 'fecha': archivo.creado_en,
+        })
+
+    # Mostrar también archivos históricos que ya existan en la carpeta privada.
+    if raiz.is_dir():
+        for ruta in raiz.glob('*/*'):
+            if not ruta.is_file():
+                continue
+            try:
+                anio_archivo = int(ruta.parent.name)
+            except ValueError:
+                continue
+            if not any(item['nombre'] == ruta.name and item['anio'] == anio_archivo for item in registros):
+                stat = ruta.stat()
+                registros.append({
+                    'nombre': ruta.name, 'anio': anio_archivo,
+                    'tamano': stat.st_size, 'fecha': datetime.fromtimestamp(stat.st_mtime),
+                })
+            anios_disponibles.add(anio_archivo)
+
+    registros.sort(key=lambda item: (item['anio'], item['nombre']), reverse=True)
+    try:
+        anio_filtro = int(request.GET.get('anio', ''))
+    except (TypeError, ValueError):
+        anio_filtro = 0
+    if anio_filtro:
+        registros = [item for item in registros if item['anio'] == anio_filtro]
+
+    anio_actual = timezone.localdate().year
+    anios_formulario = sorted(anios_disponibles | {anio_actual, anio_actual - 1}, reverse=True)
+    return render(request, 'admin/anexo_archivos.html', {
+        'cliente': cliente, 'config': config, 'modulo': modulo,
+        'registros': registros, 'anios': sorted(anios_disponibles, reverse=True),
+        'anios_formulario': anios_formulario, 'anio_filtro': anio_filtro,
+        'anio_actual': anio_actual, 'error_anexo': error, 'exito_anexo': exito,
+        'total_registros': len(registros),
+    })
+
+
+@admin_required
+def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
+    """Descarga un archivo del módulo tributario indicado, validando su ruta."""
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+
+    config = ANEXOS_CLIENTE.get(str(modulo).lower())
+    if config is None:
+        raise Http404('Módulo de anexos no válido.')
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if not 2000 <= int(anio) <= 2100 or Path(nombre).name != nombre:
+        raise Http404('Archivo o año no válido.')
+    if Path(nombre).suffix.lower() not in {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}:
+        raise Http404('Tipo de archivo no válido.')
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    ruta = data_root() / relativo
+    if not ruta.is_file():
+        raise Http404('El archivo ya no está disponible.')
+    response = FileResponse(ruta.open('rb'), content_type=mimetypes.guess_type(nombre)[0] or 'application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{nombre}"'
+    return response
