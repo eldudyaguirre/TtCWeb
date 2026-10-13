@@ -16,6 +16,7 @@ class ComunicacionCliente(models.Model):
     destinatarios = models.PositiveIntegerField(default=0)
     enviados = models.PositiveIntegerField(default=0)
     fallidos = models.PositiveIntegerField(default=0)
+    correos_pendientes = models.TextField(blank=True)
     creado_por = models.CharField(max_length=150, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True, db_index=True)
     enviado_en = models.DateTimeField(null=True, blank=True)
