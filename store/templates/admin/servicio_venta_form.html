@@ -28,7 +28,7 @@
     {% endif %}
 
     <section class="svf-card">
-        <p class="svf-help">{% if is_new %}Completa los datos para crear un item.{% else %}En edición solo puedes cambiar el precio unitario, la descripción, si aplica IVA y si el item está activo. El código no se puede modificar.{% endif %}</p>
+        {% if is_new %}<p class="svf-help">Completa los datos para crear un item.</p>{% endif %}
         <form method="post">
             {% csrf_token %}
             <div class="svf-grid">
@@ -45,7 +45,7 @@
                     {% else %}
                         <input id="field-{{ field.name }}" name="{{ field.name }}" value="{{ field.value }}" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %} {% if field.max_length %}maxlength="{{ field.max_length }}"{% endif %}>
                     {% endif %}
-                    <span class="svf-type">{{ field.type }}{% if field.max_length %} · máximo {{ field.max_length }} caracteres{% endif %}{% if field.default %} · tiene valor predeterminado{% endif %}</span>
+                    {% if field.default %}<span class="svf-type">Valor predeterminado disponible</span>{% endif %}
                 </div>
                 {% endfor %}
             </div>
