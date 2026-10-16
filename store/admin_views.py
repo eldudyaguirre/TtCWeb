@@ -349,54 +349,6 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\d{1,2}$'
-                  AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                  AND TRIM(tipcom::text) IN ('01', '02', '03', '04', '11')
-                GROUP BY TRIM(mes::text)::integer
-            )
-            SELECT
-                m.mes,
-                COALESCE(v.ventas, 0),
-                COALESCE(c.compras, 0),
-                COALESCE(v.retrenta, 0),
-                COALESCE(v.retiva, 0)
-            FROM meses m
-            LEFT JOIN ventas_mes v ON v.mes = m.mes
-            LEFT JOIN compras_mes c ON c.mes = m.mes
-            ORDER BY m.mes
-        """, [str(anio), str(anio)])
-        rows = cursor.fetchall()
-
-    nombres = [
-        'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
-        'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
-    ]
-
-    meses = []
-    for mes, ventas, compras, retrenta, retiva in rows:
-        meses.append({
-            'nombre': nombres[int(mes) - 1],
-            'ventas': ventas or 0,
-            'compras': compras or 0,
-            'retrenta': retrenta or 0,
-            'retiva': retiva or 0,
-        })
-
-    totales = {
-        campo: sum((m[campo] for m in meses), 0)
-        for campo in ('ventas', 'compras', 'retrenta', 'retiva')
-    }
-    totales['resultado'] = totales['ventas'] - totales['compras']
-    totales['retenciones'] = totales['retrenta'] + totales['retiva']
-
-    return {
-        'anio': anio,
-        'anios': anios,
-        'meses': meses,
-        'mes_final_nombre': 'DICIEMBRE',
-        'totales': totales,
-    }
-
-
 @admin_required
 def admin_workers(request):
     """Administra qué usuarios administrativos tienen habilitado el worker SRI."""
