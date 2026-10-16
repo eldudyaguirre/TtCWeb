@@ -56,7 +56,7 @@
                     <a href="{% url 'admin_workers' %}" class="admin-submenu-item {% if request.resolver_match.url_name == 'admin_workers' %}active{% endif %}">Workers</a>
                     <div class="admin-submenu-separator"></div>
                     <a href="{% url 'admin_servicios_venta' %}" class="admin-submenu-item {% if request.resolver_match.url_name == 'admin_servicios_venta' or request.resolver_match.url_name == 'admin_servicio_venta_nuevo' or request.resolver_match.url_name == 'admin_servicio_venta_editar' %}active{% endif %}">Datos de Servicios a la Venta</a>
-                    <a href="#" class="admin-submenu-item">Parámetros</a>
+                    <a href="{% url 'admin_parametros' %}" class="admin-submenu-item {% if request.resolver_match.url_name == 'admin_parametros' %}active{% endif %}">Parámetros</a>
                 </div>
             </div>
 
