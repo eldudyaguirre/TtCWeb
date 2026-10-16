@@ -69,31 +69,45 @@ def _input_value(column, value):
 def admin_servicios_venta(request):
     try:
         columns = _items_table()
+        names = {column['name'] for column in columns}
+        required = ('coditem', 'desitem', 'cositem', 'iteactivo')
+        missing = [name for name in required if name not in names]
+        if missing:
+            raise RuntimeError(
+                "Faltan columnas requeridas en public.items: " + ", ".join(missing)
+            )
+
+        # El listado muestra exclusivamente código, descripción y precio unitario.
+        list_columns = [
+            next(column for column in columns if column['name'] == name)
+            for name in ('coditem', 'desitem', 'cositem')
+        ]
         search = request.GET.get('q', '').strip()
-        quoted_columns = ', '.join(_quote(column['name']) for column in columns)
-        sql = f"SELECT {quoted_columns} FROM public.{_quote(TABLE)}"
+        selected = ', '.join(_quote(name) for name in ('coditem', 'desitem', 'cositem'))
+        sql = (
+            f"SELECT {selected} FROM public.{_quote(TABLE)} "
+            f"WHERE {_quote('iteactivo')} IS TRUE"
+        )
         params = []
         if search:
-            sql += f" WHERE CAST({_quote(KEY_FIELD)} AS text) ILIKE %s"
-            params.append(f'%{search}%')
-            name_fields = [
-                column['name'] for column in columns
-                if any(term in column['name'].lower() for term in ('nombre', 'descripcion', 'detalle', 'item'))
-                and column['name'] != KEY_FIELD
-            ]
-            for field in name_fields:
-                sql += f" OR CAST({_quote(field)} AS text) ILIKE %s"
-                params.append(f'%{search}%')
-        sql += f" ORDER BY {_quote(KEY_FIELD)}"
+            sql += (
+                f" AND (CAST({_quote('coditem')} AS text) ILIKE %s "
+                f"OR CAST({_quote('desitem')} AS text) ILIKE %s)"
+            )
+            params.extend([f'%{search}%', f'%{search}%'])
+        sql += f" ORDER BY {_quote('coditem')}"
+
         with _items_db().cursor() as cursor:
             cursor.execute(sql, params)
             rows = cursor.fetchall()
+
+        key_index = 0
         items = [
-            {'values': row, 'key': row[next(i for i, c in enumerate(columns) if c['name'] == KEY_FIELD)]}
+            {'values': row, 'key': row[key_index]}
             for row in rows
         ]
         return render(request, 'admin/servicios_venta.html', {
-            'columns': columns,
+            'columns': list_columns,
             'items': items,
             'search': search,
             'total': len(items),
@@ -104,7 +118,6 @@ def admin_servicios_venta(request):
             'columns': [], 'items': [], 'search': request.GET.get('q', '').strip(),
             'total': 0, 'load_error': True,
         })
-
 
 @admin_required
 @require_http_methods(["GET", "POST"])
