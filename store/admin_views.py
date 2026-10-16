@@ -348,7 +348,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
-                  AND TRIM(mes::text) ~ '^\\d{1,2}$'
+                  AND TRIM(mes::text) ~ '^\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
                   AND TRIM(tipcom::text) IN ('01', '02', '03', '04', '11')
                 GROUP BY TRIM(mes::text)::integer
