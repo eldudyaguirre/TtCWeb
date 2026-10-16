@@ -69,6 +69,22 @@
         </section>
 
         <section class="par-card">
+            <h2 class="par-section-title">Firma electrónica para comprobantes SRI</h2>
+            <div class="par-grid">
+                <div class="par-field">
+                    <label for="ubifirelec">Ubicación del certificado electrónico (.p12)</label>
+                    <input id="ubifirelec" name="ubifirelec" type="text" value="{{ parametros.ubifirelec }}" placeholder="D:\\Certificados\\firma.p12" autocomplete="off">
+                    <small>Introduce la ruta local del servidor donde está guardado el archivo .p12. El servicio de TtCWeb debe tener permiso para leerlo.</small>
+                </div>
+                <div class="par-field">
+                    <label for="passp12">Clave del certificado electrónico</label>
+                    <input id="passp12" name="passp12" type="password" placeholder="{% if parametros.passp12_configurada %}Clave configurada; deja vacío para conservarla{% else %}Escribe la clave del archivo P12{% endif %}" autocomplete="new-password">
+                    <small>{% if parametros.passp12_configurada %}Ya existe una clave guardada. Si no deseas cambiarla, deja este campo vacío.{% else %}La clave se guardará al enviar el formulario.{% endif %}</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="par-card">
             <h2 class="par-section-title">Valores tributarios y laborales</h2>
             <div class="par-grid">
                 <div class="par-field">
