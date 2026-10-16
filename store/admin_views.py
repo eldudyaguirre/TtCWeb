@@ -324,7 +324,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
                         CASE
-                            WHEN TRIM(tipcom::text) IN ('01', '02') THEN
+                            WHEN TRIM(tipcom::text) IN ('01', '02', '03', '11') THEN
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
@@ -6313,7 +6313,7 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
     return response
 
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                  AND TRIM(tipcom::text) IN ('01', '02', '04')
+                  AND TRIM(tipcom::text) IN ('01', '02', '03', '04', '11')
                 GROUP BY TRIM(mes::text)::integer
             )
             SELECT
