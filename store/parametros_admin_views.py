@@ -87,7 +87,7 @@ def admin_parametros(request):
         numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.') or str(parametros['poriva'])
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.') or str(parametros['basico'])
-        ubifirelec = request.POST.get('ubifirelec', '').strip()
+        ubifirelec = request.POST.get('ubifirelec', '').strip() or parametros['ubifirelec']
         passp12 = request.POST.get('passp12', '')
 
         errors = []
