@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if is_new %}Nuevo item{% else %}Editar item {{ coditem }}{% endif %} | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.svf-page{max-width:1100px;margin:0 auto}.svf-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.svf-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.svf-heading h1{font-size:27px;margin:5px 0;color:#203440}.svf-heading p{margin:0;color:#71808a;font-size:13px}
+.svf-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);padding:24px}
+.svf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.svf-field{min-width:0}.svf-field label{display:block;font-size:12px;font-weight:750;color:#394d57;margin-bottom:7px}.svf-field label small{font-size:10px;font-weight:500;color:#87949a;margin-left:5px}.svf-field input,.svf-field textarea{width:100%;min-height:42px;border:1px solid #d5dfe3;border-radius:8px;padding:10px 12px;font:13px inherit;color:#263c46;outline:none;background:#fff}.svf-field input:focus,.svf-field textarea:focus{border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.1)}.svf-field input[readonly]{background:#f2f5f6;color:#6e7b82}.svf-field .svf-type{display:block;margin-top:5px;color:#9aa5aa;font-size:10px}
+.svf-alert{margin:0 0 10px;padding:11px 13px;border-radius:8px;background:#fff4f3;color:#a53b36;font-size:12px}.svf-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid #edf1f3}.svf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.svf-btn-primary{background:#168c88;color:#fff}.svf-btn-primary:hover{background:#11736f;color:#fff}.svf-btn-light{background:#fff;border:1px solid #dce4e7;color:#334751}.svf-help{font-size:11px;color:#77858c;margin:0 0 18px}
+@media(max-width:700px){.svf-grid{grid-template-columns:1fr}.svf-card{padding:16px}.svf-heading h1{font-size:22px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="svf-page">
+    <div class="svf-heading">
+        <div>
+            <div class="svf-kicker">Configuración · Catálogo de servicios</div>
+            <h1>{% if is_new %}Crear nuevo item{% else %}Editar item {{ coditem }}{% endif %}</h1>
+            <p>Completa los campos del registro y guarda los cambios.</p>
+        </div>
+        <a href="{% url 'admin_servicios_venta' %}" class="svf-btn svf-btn-light"><i class="fi fi-rr-arrow-left"></i> Volver al catálogo</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}<div class="svf-alert">{{ message }}</div>{% endfor %}
+    {% endif %}
+
+    <section class="svf-card">
+        <p class="svf-help">Los campos se generan desde la estructura actual de la tabla <strong>items</strong>. Los campos obligatorios deben completarse. {% if not is_new %}El código del item no se puede cambiar desde esta pantalla.{% endif %}</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="svf-grid">
+                {% for field in fields %}
+                <div class="svf-field">
+                    <label for="field-{{ field.name }}">{{ field.name }}{% if not field.nullable and not field.default %}<small>obligatorio</small>{% endif %}</label>
+                    {% if field.type == 'text' %}
+                        <textarea id="field-{{ field.name }}" name="{{ field.name }}" rows="3" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %}>{{ field.value }}</textarea>
+                    {% else %}
+                        <input id="field-{{ field.name }}" name="{{ field.name }}" value="{{ field.value }}" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %} {% if field.max_length %}maxlength="{{ field.max_length }}"{% endif %}>
+                    {% endif %}
+                    <span class="svf-type">{{ field.type }}{% if field.max_length %} · máximo {{ field.max_length }} caracteres{% endif %}{% if field.default %} · tiene valor predeterminado{% endif %}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="svf-actions">
+                <a href="{% url 'admin_servicios_venta' %}" class="svf-btn svf-btn-light">Cancelar</a>
+                <button type="submit" class="svf-btn svf-btn-primary"><i class="fi fi-rr-disk"></i> {% if is_new %}Crear item{% else %}Guardar cambios{% endif %}</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
