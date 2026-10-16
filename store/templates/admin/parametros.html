@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Parámetros | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.par-page{max-width:1100px;margin:0 auto}
+.par-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.par-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}
+.par-heading h1{font-size:27px;margin:5px 0;color:#203440}
+.par-heading p{margin:0;color:#71808a;font-size:13px}
+.par-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);padding:24px;margin-bottom:18px}
+.par-section-title{font-size:15px;font-weight:800;color:#263c46;margin:0 0 18px}
+.par-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.par-field{min-width:0}
+.par-field label{display:block;font-size:12px;font-weight:750;color:#394d57;margin-bottom:7px}
+.par-field input{width:100%;min-height:42px;border:1px solid #d5dfe3;border-radius:8px;padding:10px 12px;font:inherit;font-size:13px;color:#263c46;outline:none;background:#fff}
+.par-field input:focus{border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.1)}
+.par-field input[readonly]{background:#f2f5f6;color:#6e7b82}
+.par-field small{display:block;margin-top:6px;color:#849198;font-size:11px}
+.par-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #edf1f3}
+.par-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}
+.par-btn-primary{background:#168c88;color:#fff}.par-btn-primary:hover{background:#11736f;color:#fff}
+.par-btn-light{background:#fff;border:1px solid #dce4e7;color:#334751}.par-btn-light:hover{background:#f5f8f9;color:#203440}
+.par-info{display:flex;gap:12px;align-items:flex-start;background:#f3f8f8;border:1px solid #dceaea;border-radius:9px;padding:13px 15px;color:#52666d;font-size:12px;line-height:1.55}
+.par-info i{font-size:16px;color:#168c88;margin-top:1px}
+@media(max-width:700px){.par-grid{grid-template-columns:1fr}.par-card{padding:16px}.par-heading h1{font-size:22px}.par-actions{flex-direction:column-reverse}.par-btn{width:100%}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="par-page">
+    <div class="par-heading">
+        <div>
+            <div class="par-kicker">Configuración · Sistema</div>
+            <h1>Parámetros</h1>
+            <p>Configura los valores generales utilizados por TotalCounts.</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="par-btn par-btn-light"><i class="fi fi-rr-arrow-left"></i> Volver al panel</a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <section class="par-card">
+            <h2 class="par-section-title">Facturación</h2>
+            <div class="par-grid">
+                <div class="par-field">
+                    <label for="establecimiento">Número de establecimiento</label>
+                    <input id="establecimiento" name="establecimiento" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" value="{{ parametros.establecimiento }}" required>
+                    <small>Se guardará con tres dígitos, por ejemplo: 001.</small>
+                </div>
+                <div class="par-field">
+                    <label for="punto_emision">Punto de emisión</label>
+                    <input id="punto_emision" name="punto_emision" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" value="{{ parametros.punto_emision }}" required>
+                    <small>Se guardará con tres dígitos, por ejemplo: 001.</small>
+                </div>
+                <div class="par-field">
+                    <label for="numfactur">Último número de factura emitido</label>
+                    <input id="numfactur" value="{{ parametros.numfactur }}" readonly aria-readonly="true">
+                    <small>Es informativo. El secuencial se incrementa al facturar mediante siguiente_parametro().</small>
+                </div>
+                <div class="par-field">
+                    <label for="serie_actual">Serie almacenada</label>
+                    <input id="serie_actual" value="{{ serie_actual }}" readonly aria-readonly="true">
+                    <small>Formato almacenado en numserfac: establecimiento-punto de emisión.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="par-card">
+            <h2 class="par-section-title">Valores tributarios y laborales</h2>
+            <div class="par-grid">
+                <div class="par-field">
+                    <label for="poriva">Porcentaje de IVA (%)</label>
+                    <input id="poriva" name="poriva" type="number" min="0" max="100" step="0.01" value="{{ parametros.poriva }}" required>
+                </div>
+                <div class="par-field">
+                    <label for="basico">Salario básico unificado vigente (USD)</label>
+                    <input id="basico" name="basico" type="number" min="0.01" step="0.01" value="{{ parametros.basico }}" required>
+                    <small>Actualiza este valor al salario básico del año en curso.</small>
+                </div>
+            </div>
+            <div class="par-actions">
+                <a href="{% url 'admin_parametros' %}" class="par-btn par-btn-light">Cancelar</a>
+                <button type="submit" class="par-btn par-btn-primary"><i class="fi fi-rr-disk"></i> Guardar parámetros</button>
+            </div>
+        </section>
+    </form>
+
+    <div class="par-info">
+        <i class="fi fi-rr-info"></i>
+        <div>El guardado actualiza únicamente <strong>numserfac</strong>, <strong>poriva</strong> y <strong>basico</strong> en la tabla <strong>public.parametros</strong> de BdTotal. Los demás consecutivos permanecen intactos.</div>
+    </div>
+</div>
+{% endblock %}
