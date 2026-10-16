@@ -81,12 +81,10 @@ def admin_parametros(request):
     if request.method == 'POST':
         establecimiento = request.POST.get('establecimiento', '').strip()
         punto_emision = request.POST.get('punto_emision', '').strip()
+        # Los campos establecimiento y punto_emision son la fuente de verdad.
+        # No sobrescribirlos con serie_actual, porque ese campo puede contener
+        # la serie anterior y descartar el punto de emisión recién editado.
         serie_raw = request.POST.get('serie_actual', '').strip()
-        if serie_raw:
-            serie_match = re.fullmatch(r'(\d{1,3})\s*-\s*(\d{1,3})', serie_raw)
-            if serie_match:
-                establecimiento = serie_match.group(1)
-                punto_emision = serie_match.group(2)
         numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.') or str(parametros['poriva'])
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.') or str(parametros['basico'])
