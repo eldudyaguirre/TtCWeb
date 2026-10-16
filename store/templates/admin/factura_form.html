@@ -40,7 +40,15 @@ document.addEventListener('DOMContentLoaded', function () {
       const gravado = opcion && opcion.value && opcion.getAttribute('data-tax') === '1';
       subtotal += base;
       if (gravado) baseGravada += base;
-      row.querySelector('.subtotal').textContent = '
+      const importeLinea = base + (gravado ? base * iva / 100 : 0);
+      row.querySelector('.subtotal').textContent = '$' + importeLinea.toFixed(2);
+    });
+    const ivaTotal = Math.round((baseGravada * iva / 100 + Number.EPSILON) * 100) / 100;
+    const total = Math.round((subtotal + ivaTotal + Number.EPSILON) * 100) / 100;
+    document.getElementById('subtotal-factura').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('iva-factura').textContent = '$' + ivaTotal.toFixed(2);
+    document.getElementById('total-factura').textContent = '$' + total.toFixed(2);
+  }
 
   function manejarCambioArticulo(selector) {
     const fila = selector.closest('tr.linea');
