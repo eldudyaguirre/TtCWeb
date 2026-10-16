@@ -81,7 +81,7 @@ def admin_factura_nueva(request):
             SELECT coditem, desitem, pvpunoite, aplivaite
             FROM public.items
             WHERE iteactivo IS TRUE
-            ORDER BY desitem NULLS LAST
+            ORDER BY coditem
         """)
         datos = _rows("SELECT numserfac, poriva FROM public.parametros ORDER BY id LIMIT 1")
         parametros = datos[0] if datos else {}
