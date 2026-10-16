@@ -74,6 +74,7 @@ def admin_parametros(request):
     if request.method == 'POST':
         establecimiento = request.POST.get('establecimiento', '').strip()
         punto_emision = request.POST.get('punto_emision', '').strip()
+        numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.')
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.')
 
@@ -82,6 +83,14 @@ def admin_parametros(request):
             errors.append('El número de establecimiento debe contener de 1 a 3 dígitos.')
         if not re.fullmatch(r'\d{1,3}', punto_emision):
             errors.append('El punto de emisión debe contener de 1 a 3 dígitos.')
+
+        try:
+            numfactur = int(numfactur_raw)
+            if numfactur < 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            numfactur = None
+            errors.append('El secuencial debe ser un número entero igual o mayor que cero.')
 
         try:
             poriva = Decimal(poriva_raw)
@@ -102,7 +111,7 @@ def admin_parametros(request):
         initial = {
             'establecimiento': establecimiento,
             'punto_emision': punto_emision,
-            'numfactur': parametros['numfactur'] if parametros['numfactur'] is not None else '',
+            'numfactur': numfactur_raw,
             'poriva': poriva_raw,
             'basico': basico_raw,
         }
@@ -118,10 +127,10 @@ def admin_parametros(request):
                         cursor.execute(
                             """
                             UPDATE public.parametros
-                            SET numserfac = %s, poriva = %s, basico = %s
+                            SET numserfac = %s, numfactur = %s, poriva = %s, basico = %s
                             WHERE id = %s
                             """,
-                            [serie, float(poriva), float(basico), parametros['id']],
+                            [serie, numfactur, float(poriva), float(basico), parametros['id']],
                         )
                         if cursor.rowcount != 1:
                             raise RuntimeError('No se actualizó un único registro de parámetros.')
