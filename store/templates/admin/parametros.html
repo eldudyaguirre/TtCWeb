@@ -18,6 +18,9 @@
 .par-field input{width:100%;min-height:42px;border:1px solid #d5dfe3;border-radius:8px;padding:10px 12px;font:inherit;font-size:13px;color:#263c46;outline:none;background:#fff}
 .par-field input:focus{border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.1)}
 .par-field input[readonly]{background:#f2f5f6;color:#6e7b82}
+.par-file-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)}
+.par-file-label{display:inline-flex;align-items:center;gap:8px;margin-top:2px;padding:11px 14px;border:1px solid #dce4e7;border-radius:8px;background:#f7f9fa;color:#334751;font-size:13px;font-weight:750;cursor:pointer}
+.par-file-label:hover{background:#eef4f5}.par-file-name{display:block;margin-top:8px;color:#52666d;font-size:12px;overflow-wrap:anywhere}
 .par-field small{display:block;margin-top:6px;color:#849198;font-size:11px}
 .par-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #edf1f3}
 .par-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}
@@ -40,7 +43,7 @@
         <a href="{% url 'admin_dashboard' %}" class="par-btn par-btn-light"><i class="fi fi-rr-arrow-left"></i> Volver al panel</a>
     </div>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <section class="par-card">
             <h2 class="par-section-title">Facturación</h2>
@@ -72,9 +75,11 @@
             <h2 class="par-section-title">Firma electrónica para comprobantes SRI</h2>
             <div class="par-grid">
                 <div class="par-field">
-                    <label for="ubifirelec">Ubicación del certificado electrónico (.p12)</label>
-                    <input id="ubifirelec" name="ubifirelec" type="text" value="{{ parametros.ubifirelec }}" placeholder="D:\Certificados\firma.p12" autocomplete="off">
-                    <small>Introduce la ruta local del servidor donde está guardado el archivo .p12. El servicio de TtCWeb debe tener permiso para leerlo.</small>
+                    <label for="certificado_p12">Archivo de firma electrónica (.p12)</label>
+                    <input class="par-file-input" id="certificado_p12" name="certificado_p12" type="file" accept=".p12,application/x-pkcs12">
+                    <label class="par-file-label" for="certificado_p12"><i class="fi fi-rr-folder-open"></i> Seleccionar certificado</label>
+                    <span class="par-file-name" id="certificado_p12_nombre">{% if parametros.firma_nombre %}Certificado guardado: {{ parametros.firma_nombre }}{% else %}No hay ningún certificado cargado.{% endif %}</span>
+                    <small>Selecciona el archivo .p12 desde tu computadora. Django lo guardará en una carpeta privada del servidor (máximo 10 MB).</small>
                 </div>
                 <div class="par-field">
                     <label for="passp12">Clave del certificado electrónico</label>
@@ -105,4 +110,19 @@
     </form>
 
 </div>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('certificado_p12');
+    const nombre = document.getElementById('certificado_p12_nombre');
+    if (input && nombre) {
+        input.addEventListener('change', function () {
+            if (this.files && this.files.length) {
+                nombre.textContent = 'Archivo seleccionado: ' + this.files[0].name;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}
