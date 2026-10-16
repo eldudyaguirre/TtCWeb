@@ -28,7 +28,7 @@
     {% endif %}
 
     <section class="svf-card">
-        {% if is_new %}<p class="svf-help">Completa los datos para crear un item.</p>{% endif %}
+
         <form method="post">
             {% csrf_token %}
             <div class="svf-grid">
@@ -45,7 +45,7 @@
                     {% else %}
                         <input id="field-{{ field.name }}" name="{{ field.name }}" value="{{ field.value }}" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %} {% if field.max_length %}maxlength="{{ field.max_length }}"{% endif %}>
                     {% endif %}
-                    {% if field.default %}<span class="svf-type">Valor predeterminado disponible</span>{% endif %}
+
                 </div>
                 {% endfor %}
             </div>
