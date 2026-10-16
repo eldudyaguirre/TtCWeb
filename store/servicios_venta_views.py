@@ -1,5 +1,6 @@
 from django.contrib import messages
-from django.db import connection, transaction
+from django.conf import settings
+from django.db import connections, transaction
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
@@ -8,10 +9,20 @@ from .admin_views import admin_required
 
 TABLE = 'items'
 KEY_FIELD = 'coditem'
+DB_ALIAS = 'bdtotal_items_catalog'
+
+
+def _items_db():
+    if DB_ALIAS not in connections.databases:
+        config = settings.DATABASES['default'].copy()
+        config['NAME'] = 'BdTotal'
+        connections.databases[DB_ALIAS] = config
+    return connections[DB_ALIAS]
 
 
 def _items_columns():
-    with connection.cursor() as cursor:
+    db = _items_db()
+    with db.cursor() as cursor:
         cursor.execute("""
             SELECT column_name, data_type, is_nullable, column_default,
                    character_maximum_length, ordinal_position
@@ -43,7 +54,7 @@ def _items_table():
 
 
 def _quote(name):
-    return connection.ops.quote_name(name)
+    return _items_db().ops.quote_name(name)
 
 
 def _input_value(column, value):
@@ -74,7 +85,7 @@ def admin_servicios_venta(request):
                 sql += f" OR CAST({_quote(field)} AS text) ILIKE %s"
                 params.append(f'%{search}%')
         sql += f" ORDER BY {_quote(KEY_FIELD)}"
-        with connection.cursor() as cursor:
+        with _items_db().cursor() as cursor:
             cursor.execute(sql, params)
             rows = cursor.fetchall()
         items = [
@@ -101,7 +112,7 @@ def admin_servicio_venta_form(request, coditem=None):
     is_new = coditem is None
     try:
         columns = _items_table()
-        with connection.cursor() as cursor:
+        with _items_db().cursor() as cursor:
             existing = None
             if not is_new:
                 cursor.execute(
@@ -144,7 +155,7 @@ def admin_servicio_venta_form(request, coditem=None):
             initial = {column['name']: request.POST.get(column['name'], '') for column in columns}
         else:
             try:
-                with transaction.atomic(), connection.cursor() as cursor:
+                with transaction.atomic(using=DB_ALIAS), _items_db().cursor() as cursor:
                     if is_new:
                         fields = list(values)
                         if not fields:
