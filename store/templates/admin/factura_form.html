@@ -25,7 +25,26 @@
 document.addEventListener('DOMContentLoaded',function(){
  const body=document.getElementById('lineas-body'); const iva=Number('{{ parametros.poriva|default:"0" }}')||0;
  function actualizar(){let total=0;body.querySelectorAll('tr.linea').forEach(row=>{const q=Number(row.querySelector('[name="cantidad[]"]').value)||0;const p=Number(row.querySelector('[name="precio[]"]').value)||0;const d=Math.min(100,Math.max(0,Number(row.querySelector('[name="descuento[]"]').value)||0));const sel=row.querySelector('.item-select');const opt=sel.selectedOptions[0];const base=q*p*(1-d/100);const importe=base+(opt&&sel.value&&opt.dataset.tax==='1'?base*iva/100:0);row.querySelector('.subtotal').textContent='$'+importe.toFixed(2);total+=importe;});document.getElementById('total-estimado').textContent='$'+total.toFixed(2);}
- function enlazar(row){row.querySelectorAll('input').forEach(el=>el.addEventListener('input',actualizar));row.querySelectorAll('select').forEach(el=>el.addEventListener('change',()=>{if(el.classList.contains('item-select')){const opt=el.selectedOptions[0];row.querySelector('[name="precio[]"]').value=opt&&opt.dataset.price!==undefined?opt.dataset.price:0;}actualizar();}));row.querySelector('.quitar').addEventListener('click',()=>{if(body.querySelectorAll('tr.linea').length>1){row.remove();}else{row.querySelector('.item-select').value='';row.querySelector('[name="cantidad[]"]').value='1';row.querySelector('[name="precio[]"]').value='0';row.querySelector('[name="descuento[]"]').value='0';}actualizar();});}
+ function enlazar(row){
+  row.querySelectorAll('input').forEach(el=>el.addEventListener('input',actualizar));
+  const selector=row.querySelector('.item-select');
+  selector.addEventListener('change',()=>{
+    const opt=selector.options[selector.selectedIndex];
+    const precio=row.querySelector('[name="precio[]"]');
+    precio.value=(opt && opt.value) ? (opt.dataset.price || '0') : '';
+    actualizar();
+  });
+  row.querySelector('.quitar').addEventListener('click',()=>{
+    if(body.querySelectorAll('tr.linea').length>1){row.remove();}
+    else{
+      selector.value='';
+      row.querySelector('[name="cantidad[]"]').value='1';
+      row.querySelector('[name="precio[]"]').value='';
+      row.querySelector('[name="descuento[]"]').value='0';
+    }
+    actualizar();
+  });
+}
  const original=body.querySelector('tr.linea');enlazar(original);
  document.getElementById('agregar').addEventListener('click',()=>{const row=original.cloneNode(true);row.querySelector('.item-select').value='';row.querySelector('[name="cantidad[]"]').value='1';row.querySelector('[name="precio[]"]').value='0';row.querySelector('[name="descuento[]"]').value='0';row.querySelector('.subtotal').textContent='$0.00';body.appendChild(row);enlazar(row);actualizar();});
  actualizar();
