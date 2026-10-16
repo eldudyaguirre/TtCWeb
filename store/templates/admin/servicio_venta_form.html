@@ -34,11 +34,11 @@
             <div class="svf-grid">
                 {% for field in fields %}
                 <div class="svf-field">
-                    <label for="field-{{ field.name }}">{{ field.name }}{% if not field.nullable and not field.default %}<small>obligatorio</small>{% endif %}</label>
+                    <label for="field-{{ field.name }}">{% if field.name == 'cositem' %}Precio Unitario{% elif field.name == 'desitem' %}Descripción{% elif field.name == 'aplivaite' %}Aplica IVA{% elif field.name == 'iteactivo' %}Activo{% else %}{{ field.name }}{% endif %}{% if not field.nullable and not field.default and not field.is_boolean %}<small>obligatorio</small>{% endif %}</label>
                     {% if field.is_boolean %}
                         <select id="field-{{ field.name }}" name="{{ field.name }}" required>
-                            <option value="true" {% if field.checked_value == 'true' %}selected{% endif %}>True — Sí</option>
-                            <option value="false" {% if field.checked_value == 'false' %}selected{% endif %}>False — No</option>
+                            <option value="true" {% if field.checked_value == 'true' %}selected{% endif %}>Sí</option>
+                            <option value="false" {% if field.checked_value == 'false' %}selected{% endif %}>No</option>
                         </select>
                     {% elif field.type == 'text' %}
                         <textarea id="field-{{ field.name }}" name="{{ field.name }}" rows="3" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %}>{{ field.value }}</textarea>
