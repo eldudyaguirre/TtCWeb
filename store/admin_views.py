@@ -324,7 +324,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
                         CASE
-                            WHEN TRIM(tipcom::text) IN ('01', '02', '03', '11') THEN
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '11') THEN
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
@@ -333,7 +333,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
-                            WHEN TRIM(tipcom::text) = '04' THEN -(
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') = '04' THEN -(
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
                                 COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
@@ -350,7 +350,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                  AND TRIM(tipcom::text) IN ('01', '02', '03', '04', '11')
+                  AND LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '04', '11')
                 GROUP BY TRIM(mes::text)::integer
             )
             SELECT
