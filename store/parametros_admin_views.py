@@ -67,8 +67,8 @@ def admin_parametros(request):
         'establecimiento': establecimiento,
         'punto_emision': punto_emision,
         'numfactur': parametros['numfactur'] if parametros['numfactur'] is not None else '',
-        'poriva': parametros['poriva'] if parametros['poriva'] is not None else '',
-        'basico': parametros['basico'] if parametros['basico'] is not None else '',
+        'poriva': parametros['poriva'] if parametros['poriva'] not in (None, '') else 15,
+        'basico': parametros['basico'] if parametros['basico'] not in (None, '') else 482,
     }
 
     if request.method == 'POST':
@@ -152,5 +152,5 @@ def admin_parametros(request):
 
     return render(request, 'admin/parametros.html', {
         'parametros': initial,
-        'serie_actual': initial.get('serie_actual', parametros['numserfac']),
+        'serie_actual': initial.get('serie_actual') or parametros['numserfac'],
     })
