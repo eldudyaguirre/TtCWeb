@@ -5,6 +5,7 @@ from . import ingresos_views
 from . import admin_views
 from . import blog_admin_views
 from . import comunicaciones_views
+from . import servicios_venta_views
 from .admin_trabajadores_pdf import admin_trabajadores_pdf
 
 
@@ -39,6 +40,9 @@ urlpatterns = [
     path('totalcounts/datos-usuario/', admin_views.admin_datos_usuario, name='admin_datos_usuario'),
     path('totalcounts/cambiar-contrasena/', admin_views.admin_cambiar_contrasena, name='admin_cambiar_contrasena'),
     path('totalcounts/workers/', admin_views.admin_workers, name='admin_workers'),
+    path('totalcounts/servicios-venta/', servicios_venta_views.admin_servicios_venta, name='admin_servicios_venta'),
+    path('totalcounts/servicios-venta/nuevo/', servicios_venta_views.admin_servicio_venta_form, name='admin_servicio_venta_nuevo'),
+    path('totalcounts/servicios-venta/<str:coditem>/editar/', servicios_venta_views.admin_servicio_venta_form, name='admin_servicio_venta_editar'),
     path('totalcounts/foto-usuario/', admin_views.admin_foto_usuario, name='admin_foto_usuario'),
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('totalcounts/clientes/<str:ruc>/certificado-ruc/', admin_views.admin_cliente_certificado_ruc, name='admin_cliente_certificado_ruc'),
