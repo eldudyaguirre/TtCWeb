@@ -24,7 +24,7 @@ def _parametros_db():
 def _leer_parametros():
     with _parametros_db().cursor() as cursor:
         cursor.execute("""
-            SELECT id, numserfac, numfactur, poriva, basico
+            SELECT id, numserfac, numfactur, poriva, basico, ubifirelec, passp12
             FROM public.parametros
             ORDER BY id
             LIMIT 1
@@ -39,6 +39,8 @@ def _leer_parametros():
         'numfactur': row[2],
         'poriva': row[3] if row[3] is not None else 15,
         'basico': row[4] if row[4] is not None else 482,
+        'ubifirelec': str(row[5] or '').strip(),
+        'passp12_configurada': bool(row[6]),
     }
 
 
@@ -69,6 +71,8 @@ def admin_parametros(request):
         'numfactur': parametros['numfactur'] if parametros['numfactur'] is not None else '',
         'poriva': parametros['poriva'] if parametros['poriva'] not in (None, '') else 15,
         'basico': parametros['basico'] if parametros['basico'] not in (None, '') else 482,
+        'ubifirelec': parametros['ubifirelec'],
+        'passp12_configurada': parametros['passp12_configurada'],
     }
 
     if request.method == 'POST':
@@ -83,6 +87,8 @@ def admin_parametros(request):
         numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.') or str(parametros['poriva'])
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.') or str(parametros['basico'])
+        ubifirelec = request.POST.get('ubifirelec', '').strip()
+        passp12 = request.POST.get('passp12', '')
 
         errors = []
         if not re.fullmatch(r'\d{1,3}', establecimiento):
@@ -114,6 +120,9 @@ def admin_parametros(request):
             basico = None
             errors.append('Ingresa un salario básico unificado mayor que cero.')
 
+        if ubifirelec and not ubifirelec.lower().endswith('.p12'):
+            errors.append('La ubicación de la firma electrónica debe apuntar a un archivo con extensión .p12.')
+
         initial = {
             'establecimiento': establecimiento,
             'punto_emision': punto_emision,
@@ -121,6 +130,8 @@ def admin_parametros(request):
             'numfactur': numfactur_raw,
             'poriva': poriva_raw or parametros['poriva'],
             'basico': basico_raw or parametros['basico'],
+            'ubifirelec': ubifirelec or parametros['ubifirelec'],
+            'passp12_configurada': parametros['passp12_configurada'] or bool(passp12),
         }
 
         if errors:
@@ -134,10 +145,13 @@ def admin_parametros(request):
                         cursor.execute(
                             """
                             UPDATE public.parametros
-                            SET numserfac = %s, numfactur = %s, poriva = %s, basico = %s
+                            SET numserfac = %s, numfactur = %s, poriva = %s, basico = %s,
+                                ubifirelec = %s,
+                                passp12 = CASE WHEN %s <> '' THEN %s ELSE passp12 END
                             WHERE id = %s
                             """,
-                            [serie, numfactur, float(poriva), float(basico), parametros['id']],
+                            [serie, numfactur, float(poriva), float(basico), ubifirelec,
+                             passp12, passp12, parametros['id']],
                         )
                         if cursor.rowcount != 1:
                             raise RuntimeError('No se actualizó un único registro de parámetros.')
