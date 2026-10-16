@@ -3,7 +3,7 @@
 {% block title %}Nueva factura | TotalCounts{% endblock %}
 {% block extra_head %}
 <style>
-.nf-page{max-width:1400px;margin:0 auto}.nf-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.nf-head h1{font-size:27px;margin:5px 0;color:#203440}.nf-head p{margin:0;color:#71808a;font-size:13px}.nf-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.nf-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);padding:22px;margin-bottom:18px}.nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.nf-field label{display:block;font-size:12px;font-weight:750;color:#394d57;margin-bottom:7px}.nf-field input,.nf-field select{width:100%;min-height:43px;border:1px solid #cfdadd;border-radius:9px;padding:10px 12px;font:inherit;font-size:13px;color:#263c46;background:#fff;box-shadow:0 1px 2px rgba(25,47,57,.03);transition:border-color .15s,box-shadow .15s}.nf-field select:focus,.nf-field input:focus,.nf-table select:focus,.nf-table input:focus{outline:none;border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.12)}.nf-field select,.nf-table select{cursor:pointer;color-scheme:light}.nf-title{font-size:15px;font-weight:800;color:#263c46;margin:0 0 17px}.nf-table-wrap{overflow:auto}.nf-table{width:100%;border-collapse:collapse;min-width:820px}.nf-table th{background:#f3f6f7;text-align:left;font-size:10px;color:#65747d;padding:11px}.nf-table td{padding:9px;border-top:1px solid #edf1f3}.nf-table input,.nf-table select{width:100%;min-width:80px;min-height:39px;border:1px solid #cfdadd;border-radius:8px;padding:8px;font-size:12px;background:#fff;color:#263c46}.nf-table select{max-width:420px}.nf-table tbody tr:hover{background:#f8fbfb}.nf-table .subtotal{font-weight:800;color:#203440;white-space:nowrap}.nf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.nf-primary{background:#168c88;color:#fff}.nf-light{background:#fff;border:1px solid #dce4e7;color:#334751}.nf-danger{background:#fff0f0;color:#a33131;border:1px solid #f2d3d3}.nf-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}.nf-errors{padding:12px 16px;background:#fff0f0;border:1px solid #f2d3d3;border-radius:8px;color:#963434;font-size:12px;margin-bottom:15px}.nf-total{font-size:21px;font-weight:850;color:#203440;text-align:right;margin-top:12px}.nf-help{font-size:11px;color:#71808a;margin-top:8px}@media(max-width:700px){.nf-grid{grid-template-columns:1fr}.nf-card{padding:15px}.nf-head h1{font-size:22px}}
+.nf-page{max-width:1400px;margin:0 auto}.nf-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.nf-head h1{font-size:27px;margin:5px 0;color:#203440}.nf-head p{margin:0;color:#71808a;font-size:13px}.nf-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.nf-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);padding:22px;margin-bottom:18px}.nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.nf-field label{display:block;font-size:12px;font-weight:750;color:#394d57;margin-bottom:7px}.nf-field input,.nf-field select{width:100%;min-height:43px;border:1px solid #cfdadd;border-radius:9px;padding:10px 12px;font:inherit;font-size:13px;color:#263c46;background:#fff;box-shadow:0 1px 2px rgba(25,47,57,.03);transition:border-color .15s,box-shadow .15s}.nf-field select:focus,.nf-field input:focus,.nf-table select:focus,.nf-table input:focus{outline:none;border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.12)}.nf-field select,.nf-table select{cursor:pointer;color-scheme:light}.nf-title{font-size:15px;font-weight:800;color:#263c46;margin:0 0 17px}.nf-table-wrap{overflow:auto}.nf-table{width:100%;border-collapse:collapse;min-width:820px}.nf-table th{background:#f3f6f7;text-align:left;font-size:10px;color:#65747d;padding:11px}.nf-table td{padding:9px;border-top:1px solid #edf1f3}.nf-table input,.nf-table select{width:100%;min-width:80px;min-height:39px;border:1px solid #cfdadd;border-radius:8px;padding:8px;font-size:12px;background:#fff;color:#263c46}.nf-table select{max-width:420px}.nf-table tbody tr:hover{background:#f8fbfb}.nf-table .subtotal{font-weight:800;color:#203440;white-space:nowrap}.nf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.nf-primary{background:#168c88;color:#fff}.nf-light{background:#fff;border:1px solid #dce4e7;color:#334751}.nf-danger{background:#fff0f0;color:#a33131;border:1px solid #f2d3d3}.nf-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}.nf-errors{padding:12px 16px;background:#fff0f0;border:1px solid #f2d3d3;border-radius:8px;color:#963434;font-size:12px;margin-bottom:15px}.nf-total{font-size:21px;font-weight:850;color:#203440;text-align:right;margin-top:12px}.nf-totals{display:grid;gap:7px;min-width:220px;margin-top:12px}.nf-total-row{display:flex;justify-content:space-between;gap:22px;color:#536771;font-size:13px}.nf-total-row strong{color:#203440;font-variant-numeric:tabular-nums}.nf-total-row.final{border-top:1px solid #dce5e8;padding-top:9px;margin-top:2px;font-size:19px;font-weight:850;color:#203440}.nf-total-row.final strong{font-size:21px}.nf-help{font-size:11px;color:#71808a;margin-top:8px}@media(max-width:700px){.nf-grid{grid-template-columns:1fr}.nf-card{padding:15px}.nf-head h1{font-size:22px}}
 </style>
 {% endblock %}
 {% block content %}
@@ -18,7 +18,7 @@
  <div class="nf-field"><label for="forpagfac">Forma de pago</label><select id="forpagfac" name="forpagfac"><option {% if forma_pago == "CONTADO" %}selected{% endif %}>CONTADO</option><option {% if forma_pago == "CREDITO" %}selected{% endif %}>CREDITO</option><option {% if forma_pago == "CHEQUE A LA VISTA" %}selected{% endif %}>CHEQUE A LA VISTA</option><option {% if forma_pago == "TARJETA DE CREDITO" %}selected{% endif %}>TARJETA DE CREDITO</option></select></div>
  <div class="nf-field"><label for="observ">Observación</label><input id="observ" name="observ" value="{{ observ }}" maxlength="250"></div>
  </div></section>
- <section class="nf-card"><h2 class="nf-title">Productos y servicios</h2><div class="nf-table-wrap"><table class="nf-table"><thead><tr><th>Producto / servicio</th><th>Cantidad</th><th>Precio unitario</th><th>Descuento %</th><th>Subtotal con IVA estimado</th><th></th></tr></thead><tbody id="lineas-body"><tr class="linea"><td><select name="coditem[]" class="item-select"><option value="">Selecciona item</option>{% for it in items %}<option value="{{ it.coditem }}" data-tax="{{ it.aplivaite|yesno:'1,0' }}" data-price="{{ it.pvpunoite|unlocalize }}">{{ it.coditem }} — {{ it.desitem }}</option>{% endfor %}</select></td><td><input name="cantidad[]" type="number" min="0.0001" step="0.0001" value="1" required></td><td><input name="precio[]" type="number" min="0" step="0.0001" value="0" required></td><td><input name="descuento[]" type="number" min="0" max="100" step="0.01" value="0"></td><td class="subtotal">$0.00</td><td><button type="button" class="nf-btn nf-danger quitar">Quitar</button></td></tr></tbody></table></div><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px"><button type="button" class="nf-btn nf-light" id="agregar">+ Agregar línea</button><div><div class="nf-help">IVA configurado: {{ parametros.poriva|default:"0" }}%. El servidor recalcula los valores al guardar.</div><div class="nf-total">Total estimado: <span id="total-estimado">$0.00</span></div></div></div></section>
+ <section class="nf-card"><h2 class="nf-title">Productos y servicios</h2><div class="nf-table-wrap"><table class="nf-table"><thead><tr><th>Producto / servicio</th><th>Cantidad</th><th>Precio unitario</th><th>Descuento %</th><th>Subtotal con IVA estimado</th><th></th></tr></thead><tbody id="lineas-body"><tr class="linea"><td><select name="coditem[]" class="item-select"><option value="">Selecciona item</option>{% for it in items %}<option value="{{ it.coditem }}" data-tax="{{ it.aplivaite|yesno:'1,0' }}" data-price="{{ it.pvpunoite|unlocalize }}">{{ it.coditem }} — {{ it.desitem }}</option>{% endfor %}</select></td><td><input name="cantidad[]" type="number" min="0.0001" step="0.0001" value="1" required></td><td><input name="precio[]" type="number" min="0" step="0.0001" value="0" required></td><td><input name="descuento[]" type="number" min="0" max="100" step="0.01" value="0"></td><td class="subtotal">$0.00</td><td><button type="button" class="nf-btn nf-danger quitar">Quitar</button></td></tr></tbody></table></div><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px"><button type="button" class="nf-btn nf-light" id="agregar">+ Agregar línea</button><div><div class="nf-help">IVA configurado: {{ parametros.poriva|default:"0" }}%. El servidor recalcula los valores al guardar.</div><div class="nf-totals"><div class="nf-total-row"><span>Subtotal</span><strong id="subtotal-factura">$0.00</strong></div><div class="nf-total-row"><span>IVA ({{ parametros.poriva|default:"0" }}%)</span><strong id="iva-factura">$0.00</strong></div><div class="nf-total-row final"><span>Total</span><strong id="total-factura">$0.00</strong></div></div></div></div></section>
  <div class="nf-actions"><a href="{% url 'admin_facturacion' %}" class="nf-btn nf-light">Cancelar</a><button type="submit" class="nf-btn nf-primary"><i class="fi fi-rr-disk"></i> Guardar factura pendiente</button></div>
  </form>
 </div>
@@ -28,20 +28,257 @@ document.addEventListener('DOMContentLoaded', function () {
   const iva = Number('{{ parametros.poriva|unlocalize }}') || 0;
 
   function actualizarTotales() {
-    let total = 0;
+    let subtotal = 0;
+    let baseGravada = 0;
     body.querySelectorAll('tr.linea').forEach(function (row) {
       const cantidad = Number(row.querySelector('[name="cantidad[]"]').value) || 0;
       const precio = Number(row.querySelector('[name="precio[]"]').value) || 0;
       const descuento = Math.min(100, Math.max(0, Number(row.querySelector('[name="descuento[]"]').value) || 0));
       const selector = row.querySelector('.item-select');
       const opcion = selector.options[selector.selectedIndex];
-      const base = cantidad * precio * (1 - descuento / 100);
+      const base = Math.round((cantidad * precio * (1 - descuento / 100) + Number.EPSILON) * 100) / 100;
       const gravado = opcion && opcion.value && opcion.getAttribute('data-tax') === '1';
-      const importe = base + (gravado ? base * iva / 100 : 0);
-      row.querySelector('.subtotal').textContent = '$' + importe.toFixed(2);
-      total += importe;
+      subtotal += base;
+      if (gravado) baseGravada += base;
+      row.querySelector('.subtotal').textContent = '
+
+  function manejarCambioArticulo(selector) {
+    const fila = selector.closest('tr.linea');
+    const opcion = selector.options[selector.selectedIndex];
+    const campoPrecio = fila.querySelector('[name="precio[]"]');
+    if (!opcion || !opcion.value) {
+      campoPrecio.value = '';
+    } else {
+      const precio = opcion.getAttribute('data-price');
+      campoPrecio.value = precio === null || precio.trim() === '' ? '0' : precio.trim().replace(',', '.');
+    }
+    actualizarTotales();
+  }
+
+  body.addEventListener('change', function (event) {
+    if (event.target.classList.contains('item-select')) {
+      manejarCambioArticulo(event.target);
+    } else if (event.target.matches('input')) {
+      actualizarTotales();
+    }
+  });
+  body.addEventListener('input', function (event) {
+    if (event.target.matches('input')) actualizarTotales();
+  });
+
+  body.addEventListener('click', function (event) {
+    const boton = event.target.closest('.quitar');
+    if (!boton) return;
+    const fila = boton.closest('tr.linea');
+    if (body.querySelectorAll('tr.linea').length > 1) {
+      fila.remove();
+    } else {
+      const selector = fila.querySelector('.item-select');
+      selector.value = '';
+      fila.querySelector('[name="cantidad[]"]').value = '1';
+      fila.querySelector('[name="precio[]"]').value = '';
+      fila.querySelector('[name="descuento[]"]').value = '0';
+    }
+    actualizarTotales();
+  });
+
+  const original = body.querySelector('tr.linea');
+  document.getElementById('agregar').addEventListener('click', function () {
+    const fila = original.cloneNode(true);
+    fila.querySelector('.item-select').value = '';
+    fila.querySelector('[name="cantidad[]"]').value = '1';
+    fila.querySelector('[name="precio[]"]').value = '';
+    fila.querySelector('[name="descuento[]"]').value = '0';
+    fila.querySelector('.subtotal').textContent = '$0.00';
+    body.appendChild(fila);
+    actualizarTotales();
+  });
+
+  actualizarTotales();
+});
+</script>
+{% endblock %}
+ + (base + (gravado ? base * iva / 100 : 0)).toFixed(2);
     });
-    document.getElementById('total-estimado').textContent = '$' + total.toFixed(2);
+    const ivaTotal = Math.round((baseGravada * iva / 100 + Number.EPSILON) * 100) / 100;
+    const total = Math.round((subtotal + ivaTotal + Number.EPSILON) * 100) / 100;
+    document.getElementById('subtotal-factura').textContent = '
+
+  function manejarCambioArticulo(selector) {
+    const fila = selector.closest('tr.linea');
+    const opcion = selector.options[selector.selectedIndex];
+    const campoPrecio = fila.querySelector('[name="precio[]"]');
+    if (!opcion || !opcion.value) {
+      campoPrecio.value = '';
+    } else {
+      const precio = opcion.getAttribute('data-price');
+      campoPrecio.value = precio === null || precio.trim() === '' ? '0' : precio.trim().replace(',', '.');
+    }
+    actualizarTotales();
+  }
+
+  body.addEventListener('change', function (event) {
+    if (event.target.classList.contains('item-select')) {
+      manejarCambioArticulo(event.target);
+    } else if (event.target.matches('input')) {
+      actualizarTotales();
+    }
+  });
+  body.addEventListener('input', function (event) {
+    if (event.target.matches('input')) actualizarTotales();
+  });
+
+  body.addEventListener('click', function (event) {
+    const boton = event.target.closest('.quitar');
+    if (!boton) return;
+    const fila = boton.closest('tr.linea');
+    if (body.querySelectorAll('tr.linea').length > 1) {
+      fila.remove();
+    } else {
+      const selector = fila.querySelector('.item-select');
+      selector.value = '';
+      fila.querySelector('[name="cantidad[]"]').value = '1';
+      fila.querySelector('[name="precio[]"]').value = '';
+      fila.querySelector('[name="descuento[]"]').value = '0';
+    }
+    actualizarTotales();
+  });
+
+  const original = body.querySelector('tr.linea');
+  document.getElementById('agregar').addEventListener('click', function () {
+    const fila = original.cloneNode(true);
+    fila.querySelector('.item-select').value = '';
+    fila.querySelector('[name="cantidad[]"]').value = '1';
+    fila.querySelector('[name="precio[]"]').value = '';
+    fila.querySelector('[name="descuento[]"]').value = '0';
+    fila.querySelector('.subtotal').textContent = '$0.00';
+    body.appendChild(fila);
+    actualizarTotales();
+  });
+
+  actualizarTotales();
+});
+</script>
+{% endblock %}
+ + subtotal.toFixed(2);
+    document.getElementById('iva-factura').textContent = '
+
+  function manejarCambioArticulo(selector) {
+    const fila = selector.closest('tr.linea');
+    const opcion = selector.options[selector.selectedIndex];
+    const campoPrecio = fila.querySelector('[name="precio[]"]');
+    if (!opcion || !opcion.value) {
+      campoPrecio.value = '';
+    } else {
+      const precio = opcion.getAttribute('data-price');
+      campoPrecio.value = precio === null || precio.trim() === '' ? '0' : precio.trim().replace(',', '.');
+    }
+    actualizarTotales();
+  }
+
+  body.addEventListener('change', function (event) {
+    if (event.target.classList.contains('item-select')) {
+      manejarCambioArticulo(event.target);
+    } else if (event.target.matches('input')) {
+      actualizarTotales();
+    }
+  });
+  body.addEventListener('input', function (event) {
+    if (event.target.matches('input')) actualizarTotales();
+  });
+
+  body.addEventListener('click', function (event) {
+    const boton = event.target.closest('.quitar');
+    if (!boton) return;
+    const fila = boton.closest('tr.linea');
+    if (body.querySelectorAll('tr.linea').length > 1) {
+      fila.remove();
+    } else {
+      const selector = fila.querySelector('.item-select');
+      selector.value = '';
+      fila.querySelector('[name="cantidad[]"]').value = '1';
+      fila.querySelector('[name="precio[]"]').value = '';
+      fila.querySelector('[name="descuento[]"]').value = '0';
+    }
+    actualizarTotales();
+  });
+
+  const original = body.querySelector('tr.linea');
+  document.getElementById('agregar').addEventListener('click', function () {
+    const fila = original.cloneNode(true);
+    fila.querySelector('.item-select').value = '';
+    fila.querySelector('[name="cantidad[]"]').value = '1';
+    fila.querySelector('[name="precio[]"]').value = '';
+    fila.querySelector('[name="descuento[]"]').value = '0';
+    fila.querySelector('.subtotal').textContent = '$0.00';
+    body.appendChild(fila);
+    actualizarTotales();
+  });
+
+  actualizarTotales();
+});
+</script>
+{% endblock %}
+ + ivaTotal.toFixed(2);
+    document.getElementById('total-factura').textContent = '
+
+  function manejarCambioArticulo(selector) {
+    const fila = selector.closest('tr.linea');
+    const opcion = selector.options[selector.selectedIndex];
+    const campoPrecio = fila.querySelector('[name="precio[]"]');
+    if (!opcion || !opcion.value) {
+      campoPrecio.value = '';
+    } else {
+      const precio = opcion.getAttribute('data-price');
+      campoPrecio.value = precio === null || precio.trim() === '' ? '0' : precio.trim().replace(',', '.');
+    }
+    actualizarTotales();
+  }
+
+  body.addEventListener('change', function (event) {
+    if (event.target.classList.contains('item-select')) {
+      manejarCambioArticulo(event.target);
+    } else if (event.target.matches('input')) {
+      actualizarTotales();
+    }
+  });
+  body.addEventListener('input', function (event) {
+    if (event.target.matches('input')) actualizarTotales();
+  });
+
+  body.addEventListener('click', function (event) {
+    const boton = event.target.closest('.quitar');
+    if (!boton) return;
+    const fila = boton.closest('tr.linea');
+    if (body.querySelectorAll('tr.linea').length > 1) {
+      fila.remove();
+    } else {
+      const selector = fila.querySelector('.item-select');
+      selector.value = '';
+      fila.querySelector('[name="cantidad[]"]').value = '1';
+      fila.querySelector('[name="precio[]"]').value = '';
+      fila.querySelector('[name="descuento[]"]').value = '0';
+    }
+    actualizarTotales();
+  });
+
+  const original = body.querySelector('tr.linea');
+  document.getElementById('agregar').addEventListener('click', function () {
+    const fila = original.cloneNode(true);
+    fila.querySelector('.item-select').value = '';
+    fila.querySelector('[name="cantidad[]"]').value = '1';
+    fila.querySelector('[name="precio[]"]').value = '';
+    fila.querySelector('[name="descuento[]"]').value = '0';
+    fila.querySelector('.subtotal').textContent = '$0.00';
+    body.appendChild(fila);
+    actualizarTotales();
+  });
+
+  actualizarTotales();
+});
+</script>
+{% endblock %}
+ + total.toFixed(2);
   }
 
   function manejarCambioArticulo(selector) {
