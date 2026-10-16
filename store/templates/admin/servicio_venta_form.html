@@ -28,14 +28,19 @@
     {% endif %}
 
     <section class="svf-card">
-        <p class="svf-help">Los campos se generan desde la estructura actual de la tabla <strong>items</strong>. Los campos obligatorios deben completarse. {% if not is_new %}El código del item no se puede cambiar desde esta pantalla.{% endif %}</p>
+        <p class="svf-help">{% if is_new %}Completa los datos para crear un item.{% else %}En edición solo puedes cambiar el precio unitario, la descripción, si aplica IVA y si el item está activo. El código no se puede modificar.{% endif %}</p>
         <form method="post">
             {% csrf_token %}
             <div class="svf-grid">
                 {% for field in fields %}
                 <div class="svf-field">
                     <label for="field-{{ field.name }}">{{ field.name }}{% if not field.nullable and not field.default %}<small>obligatorio</small>{% endif %}</label>
-                    {% if field.type == 'text' %}
+                    {% if field.is_boolean %}
+                        <select id="field-{{ field.name }}" name="{{ field.name }}" required>
+                            <option value="true" {% if field.checked_value == 'true' %}selected{% endif %}>True — Sí</option>
+                            <option value="false" {% if field.checked_value == 'false' %}selected{% endif %}>False — No</option>
+                        </select>
+                    {% elif field.type == 'text' %}
                         <textarea id="field-{{ field.name }}" name="{{ field.name }}" rows="3" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %}>{{ field.value }}</textarea>
                     {% else %}
                         <input id="field-{{ field.name }}" name="{{ field.name }}" value="{{ field.value }}" {% if field.readonly %}readonly{% endif %} {% if not field.nullable and not field.default %}required{% endif %} {% if field.max_length %}maxlength="{{ field.max_length }}"{% endif %}>
