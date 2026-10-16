@@ -1,4 +1,6 @@
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
+from uuid import uuid4
 import re
 
 from django.conf import settings
@@ -87,8 +89,9 @@ def admin_parametros(request):
         numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.') or str(parametros['poriva'])
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.') or str(parametros['basico'])
-        ubifirelec = request.POST.get('ubifirelec', '').strip() or parametros['ubifirelec']
+        certificado_subido = request.FILES.get('certificado_p12')
         passp12 = request.POST.get('passp12', '')
+        ubifirelec = parametros['ubifirelec']
 
         errors = []
         if not re.fullmatch(r'\d{1,3}', establecimiento):
@@ -120,8 +123,11 @@ def admin_parametros(request):
             basico = None
             errors.append('Ingresa un salario básico unificado mayor que cero.')
 
-        if ubifirelec and not ubifirelec.lower().endswith('.p12'):
-            errors.append('La ubicación de la firma electrónica debe apuntar a un archivo con extensión .p12.')
+        if certificado_subido:
+            if not certificado_subido.name.lower().endswith('.p12'):
+                errors.append('El certificado debe ser un archivo con extensión .p12.')
+            if certificado_subido.size > 10 * 1024 * 1024:
+                errors.append('El certificado no puede superar los 10 MB.')
 
         initial = {
             'establecimiento': establecimiento,
@@ -130,7 +136,7 @@ def admin_parametros(request):
             'numfactur': numfactur_raw,
             'poriva': poriva_raw or parametros['poriva'],
             'basico': basico_raw or parametros['basico'],
-            'ubifirelec': ubifirelec or parametros['ubifirelec'],
+            'ubifirelec': parametros['ubifirelec'],
             'passp12_configurada': parametros['passp12_configurada'] or bool(passp12),
         }
 
@@ -139,7 +145,18 @@ def admin_parametros(request):
                 messages.error(request, item)
         else:
             serie = f'{establecimiento.zfill(3)}-{punto_emision.zfill(3)}'
+            ruta_nuevo_certificado = None
             try:
+                # El certificado se almacena fuera de MEDIA_ROOT, en una carpeta privada del servidor.
+                if certificado_subido:
+                    carpeta_firmas = Path(settings.TOTALCOUNTS_DATA_ROOT) / 'configuracion' / 'firma_electronica'
+                    carpeta_firmas.mkdir(parents=True, exist_ok=True)
+                    ruta_nuevo_certificado = carpeta_firmas / f'{uuid4().hex}.p12'
+                    with ruta_nuevo_certificado.open('wb') as destino:
+                        for bloque in certificado_subido.chunks():
+                            destino.write(bloque)
+                    ubifirelec = str(ruta_nuevo_certificado.resolve())
+
                 with transaction.atomic(using=DB_ALIAS):
                     with _parametros_db().cursor() as cursor:
                         cursor.execute(
@@ -156,12 +173,19 @@ def admin_parametros(request):
                         if cursor.rowcount != 1:
                             raise RuntimeError('No se actualizó un único registro de parámetros.')
 
-                messages.success(request, 'Parámetros actualizados correctamente.')
+                messages.success(
+                    request,
+                    'Parámetros actualizados correctamente.'
+                    if not certificado_subido
+                    else 'Parámetros actualizados y certificado electrónico guardado en el servidor.',
+                )
                 return redirect('admin_parametros')
             except Exception:
+                if ruta_nuevo_certificado:
+                    ruta_nuevo_certificado.unlink(missing_ok=True)
                 messages.error(
                     request,
-                    'No se pudieron guardar los parámetros. No se modificó el secuencial de facturación.',
+                    'No se pudieron guardar los parámetros. Verifica la base de datos y los permisos de la carpeta de firmas.',
                 )
 
     return render(request, 'admin/parametros.html', {
