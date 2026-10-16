@@ -74,6 +74,7 @@ def admin_parametros(request):
         'poriva': parametros['poriva'] if parametros['poriva'] not in (None, '') else 15,
         'basico': parametros['basico'] if parametros['basico'] not in (None, '') else 482,
         'ubifirelec': parametros['ubifirelec'],
+        'firma_nombre': Path(parametros['ubifirelec']).name if parametros['ubifirelec'] else '',
         'passp12_configurada': parametros['passp12_configurada'],
     }
 
@@ -137,6 +138,7 @@ def admin_parametros(request):
             'poriva': poriva_raw or parametros['poriva'],
             'basico': basico_raw or parametros['basico'],
             'ubifirelec': parametros['ubifirelec'],
+            'firma_nombre': Path(parametros['ubifirelec']).name if parametros['ubifirelec'] else '',
             'passp12_configurada': parametros['passp12_configurada'] or bool(passp12),
         }
 
