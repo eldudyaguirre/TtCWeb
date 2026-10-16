@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Datos de Servicios a la Venta | TotalCounts{% endblock %}
+
+{% block extra_head %}
+<style>
+.sv-page{max-width:1500px;margin:0 auto}
+.sv-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.sv-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}
+.sv-heading h1{font-size:27px;margin:5px 0;color:#203440}
+.sv-heading p{margin:0;color:#71808a;font-size:13px}
+.sv-actions{display:flex;gap:10px;flex-wrap:wrap}
+.sv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}
+.sv-btn-primary{background:#168c88;color:#fff}.sv-btn-primary:hover{background:#11736f;color:#fff}
+.sv-btn-light{background:#fff;border:1px solid #dce4e7;color:#334751}.sv-btn-light:hover{background:#f5f8f9;color:#203440}
+.sv-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);overflow:hidden}
+.sv-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid #edf1f3}
+.sv-count{font-size:12px;color:#73818a}.sv-count strong{font-size:16px;color:#233943;margin-right:5px}
+.sv-search{display:flex;gap:8px;align-items:center}.sv-search input{height:39px;width:min(340px,55vw);border:1px solid #d5dfe3;border-radius:8px;padding:0 12px;font-size:13px;outline:none}.sv-search input:focus{border-color:#168c88;box-shadow:0 0 0 3px rgba(22,140,136,.1)}
+.sv-table-wrap{overflow:auto}.sv-table{border-collapse:collapse;width:100%;min-width:760px}
+.sv-table th{background:#f3f6f7;color:#65747d;font-size:10px;text-transform:uppercase;letter-spacing:.6px;text-align:left;padding:13px 14px;white-space:nowrap;border-bottom:1px solid #e3e9ec}
+.sv-table td{font-size:12px;color:#30434d;padding:12px 14px;border-bottom:1px solid #eef2f3;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.sv-table tbody tr:hover{background:#f8fbfb}.sv-table tbody tr:last-child td{border-bottom:0}
+.sv-code{font-weight:800;color:#168c88}.sv-row-action{display:inline-flex;padding:7px 10px;border:1px solid #d9e4e6;border-radius:7px;text-decoration:none;color:#29424b;font-size:11px;font-weight:750}.sv-row-action:hover{border-color:#168c88;color:#11736f;background:#f4fbfa}
+.sv-empty{padding:44px 20px;text-align:center;color:#75838b}.sv-empty strong{display:block;color:#344952;margin-bottom:6px}
+.sv-note{margin:0 0 14px;padding:12px 14px;border-radius:8px;background:#fff8e8;color:#795b19;font-size:12px}
+@media(max-width:700px){.sv-heading h1{font-size:22px}.sv-toolbar{align-items:stretch}.sv-search{width:100%}.sv-search input{width:100%;flex:1}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page">
+    <div class="sv-heading">
+        <div>
+            <div class="sv-kicker">Configuración · Catálogo</div>
+            <h1>Datos de Servicios a la Venta</h1>
+            <p>Consulta, crea y edita los items del catálogo de servicios.</p>
+        </div>
+        <div class="sv-actions">
+            <a href="{% url 'admin_dashboard' %}" class="sv-btn sv-btn-light"><i class="fi fi-rr-arrow-left"></i> Volver al panel</a>
+            <a href="{% url 'admin_servicio_venta_nuevo' %}" class="sv-btn sv-btn-primary"><i class="fi fi-rr-plus"></i> Nuevo item</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="sv-note">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% if load_error %}
+        <div class="sv-note">No fue posible consultar el catálogo. Confirma que la tabla <strong>items</strong> exista en la base de datos configurada y revisa el mensaje de error.</div>
+    {% endif %}
+
+    <section class="sv-card">
+        <div class="sv-toolbar">
+            <div class="sv-count"><strong>{{ total }}</strong> item{{ total|pluralize:"s" }} encontrado{{ total|pluralize:"s" }}</div>
+            <form method="get" class="sv-search">
+                <input type="search" name="q" value="{{ search }}" placeholder="Buscar por código o descripción…" aria-label="Buscar items">
+                <button class="sv-btn sv-btn-light" type="submit"><i class="fi fi-rr-search"></i> Buscar</button>
+                {% if search %}<a class="sv-btn sv-btn-light" href="{% url 'admin_servicios_venta' %}">Limpiar</a>{% endif %}
+            </form>
+        </div>
+        {% if columns %}
+        <div class="sv-table-wrap">
+            <table class="sv-table">
+                <thead><tr>
+                    {% for column in columns %}<th>{{ column.name }}</th>{% endfor %}
+                    <th>Acciones</th>
+                </tr></thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        {% for value in item.values %}
+                            <td title="{{ value|default_if_none:'' }}">{% if forloop.first %}<span class="sv-code">{{ value|default_if_none:"—" }}</span>{% else %}{{ value|default_if_none:"—" }}{% endif %}</td>
+                        {% endfor %}
+                        <td><a class="sv-row-action" href="{% url 'admin_servicio_venta_editar' coditem=item.key %}"><i class="fi fi-rr-pencil"></i> Editar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{{ columns|length|add:1 }}"><div class="sv-empty"><strong>No hay items para mostrar</strong>{% if search %}Prueba con otro término de búsqueda.{% else %}Crea el primer item con el botón “Nuevo item”.{% endif %}</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="sv-empty"><strong>Catálogo no disponible</strong>Revisa la configuración de la base de datos y la tabla items.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
