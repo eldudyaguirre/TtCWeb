@@ -81,8 +81,8 @@ def admin_parametros(request):
                 establecimiento = serie_match.group(1)
                 punto_emision = serie_match.group(2)
         numfactur_raw = request.POST.get('numfactur', '').strip()
-        poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.')
-        basico_raw = request.POST.get('basico', '').strip().replace(',', '.')
+        poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.') or str(parametros['poriva'])
+        basico_raw = request.POST.get('basico', '').strip().replace(',', '.') or str(parametros['basico'])
 
         errors = []
         if not re.fullmatch(r'\d{1,3}', establecimiento):
@@ -119,8 +119,8 @@ def admin_parametros(request):
             'punto_emision': punto_emision,
             'serie_actual': serie_raw,
             'numfactur': numfactur_raw,
-            'poriva': poriva_raw,
-            'basico': basico_raw,
+            'poriva': poriva_raw or parametros['poriva'],
+            'basico': basico_raw or parametros['basico'],
         }
 
         if errors:
