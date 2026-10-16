@@ -12191,20 +12191,34 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                        CASE
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '11') THEN
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') = '04' THEN -(
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                            )
+                            ELSE 0
+                        END
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                  AND TRIM(tipcom::text) IN ('01', '02')
+                  AND LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '04', '11')
                 GROUP BY TRIM(mes::text)::integer
             )
             SELECT
@@ -18110,20 +18124,34 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                 SELECT
                     TRIM(mes::text)::integer AS mes,
                     COALESCE(SUM(
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
-                        COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                        CASE
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '11') THEN
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                            WHEN LPAD(TRIM(tipcom::text), 2, '0') = '04' THEN -(
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpnoobj::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva0::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseexenta::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva5::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva8::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva12::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva14::text), ''), '.'), '0')::numeric +
+                                COALESCE(NULLIF(NULLIF(TRIM(baseimpiva15::text), ''), '.'), '0')::numeric
+                            )
+                            ELSE 0
+                        END
                     ), 0) AS compras
                 FROM comprasnue
                 WHERE TRIM("año"::text) = %s
                   AND TRIM(mes::text) ~ '^\\d{1,2}$'
                   AND TRIM(mes::text)::integer BETWEEN 1 AND 12
-                  AND TRIM(tipcom::text) IN ('01', '02')
+                  AND LPAD(TRIM(tipcom::text), 2, '0') IN ('01', '02', '03', '04', '11')
                 GROUP BY TRIM(mes::text)::integer
             )
             SELECT
