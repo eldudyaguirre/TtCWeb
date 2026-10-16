@@ -78,7 +78,7 @@ def admin_factura_nueva(request):
             ORDER BY nomclient NULLS LAST
         """)
         items = _rows("""
-            SELECT coditem, desitem, pvpunoite, aplivaite
+            SELECT coditem, desitem, pvpunoite, pvpunoiva, aplivaite
             FROM public.items
             WHERE iteactivo IS TRUE
             ORDER BY coditem
