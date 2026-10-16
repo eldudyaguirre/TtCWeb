@@ -123,13 +123,28 @@ def admin_servicios_venta(request):
 @require_http_methods(["GET", "POST"])
 def admin_servicio_venta_form(request, coditem=None):
     is_new = coditem is None
+    editable_fields = ('cositem', 'desitem', 'aplivaite', 'iteactivo')
+    boolean_fields = ('aplivaite', 'iteactivo')
+
     try:
-        columns = _items_table()
+        all_columns = _items_table()
+        columns_by_name = {column['name']: column for column in all_columns}
+        if is_new:
+            columns = all_columns
+        else:
+            missing = [name for name in editable_fields if name not in columns_by_name]
+            if missing:
+                raise RuntimeError(
+                    "Faltan columnas editables en public.items: " + ", ".join(missing)
+                )
+            # En edición solo se exponen los cuatro campos autorizados.
+            columns = [columns_by_name[name] for name in editable_fields]
+
         with _items_db().cursor() as cursor:
             existing = None
             if not is_new:
                 cursor.execute(
-                    f"SELECT {', '.join(_quote(c['name']) for c in columns)} "
+                    f"SELECT {', '.join(_quote(name) for name in editable_fields)} "
                     f"FROM public.{_quote(TABLE)} WHERE {_quote(KEY_FIELD)}::text = %s",
                     [str(coditem)],
                 )
@@ -143,23 +158,28 @@ def admin_servicio_venta_form(request, coditem=None):
 
     initial = {}
     if existing is not None:
-        initial = {column['name']: existing[index] for index, column in enumerate(columns)}
+        initial = {name: existing[index] for index, name in enumerate(editable_fields)}
 
     if request.method == 'POST':
         values = {}
         errors = []
         for column in columns:
             name = column['name']
-            raw = request.POST.get(name, '')
-            if is_new and raw == '' and column['default'] is not None:
+            if not is_new and name not in editable_fields:
                 continue
-            if not column['nullable'] and column['default'] is None and raw == '':
-                if column['type'] in ('character varying', 'character', 'text', 'varchar', 'char'):
-                    errors.append(f'El campo {name} es obligatorio.')
+
+            if name in boolean_fields:
+                raw = request.POST.get(name)
+                if raw not in ('true', 'false'):
+                    errors.append(f'Selecciona un valor válido para {name}.')
                     continue
-                if name == KEY_FIELD:
-                    errors.append(f'El campo {name} es obligatorio.')
-                    continue
+                values[name] = raw == 'true'
+                continue
+
+            raw = request.POST.get(name, '').strip()
+            if raw == '' and not column['nullable'] and column['default'] is None:
+                errors.append(f'El campo {name} es obligatorio.')
+                continue
             values[name] = _input_value(column, raw)
 
         if errors:
@@ -179,18 +199,21 @@ def admin_servicio_venta_form(request, coditem=None):
                             f"VALUES ({', '.join(['%s'] * len(fields))})"
                         )
                         cursor.execute(sql, [values[field] for field in fields])
-                        saved_key = values.get(KEY_FIELD)
+                        saved_key = values.get(KEY_FIELD, '(código generado)')
                         messages.success(request, f'Item {saved_key} creado correctamente.')
                     else:
-                        fields = [field for field in values if field != KEY_FIELD]
-                        if not fields:
-                            raise ValueError('No hay campos para actualizar.')
+                        # Lista blanca: ningún otro campo puede modificarse desde edición.
                         sql = (
                             f"UPDATE public.{_quote(TABLE)} SET "
-                            + ', '.join(f"{_quote(field)} = %s" for field in fields)
+                            + ', '.join(f"{_quote(field)} = %s" for field in editable_fields)
                             + f" WHERE {_quote(KEY_FIELD)}::text = %s"
                         )
-                        cursor.execute(sql, [values[field] for field in fields] + [str(coditem)])
+                        cursor.execute(
+                            sql,
+                            [values[field] for field in editable_fields] + [str(coditem)],
+                        )
+                        if cursor.rowcount != 1:
+                            raise ValueError('No se encontró un único item para actualizar.')
                         messages.success(request, f'Item {coditem} actualizado correctamente.')
                 return redirect('admin_servicios_venta')
             except Exception as exc:
@@ -199,14 +222,17 @@ def admin_servicio_venta_form(request, coditem=None):
 
     fields = []
     for column in columns:
-        value = initial.get(column['name'], '')
+        name = column['name']
+        value = initial.get(name, '')
         if value is None:
             value = ''
         fields.append({
             **column,
             'value': str(value),
-            'is_key': column['name'] == KEY_FIELD,
-            'readonly': (not is_new and column['name'] == KEY_FIELD),
+            'is_key': name == KEY_FIELD,
+            'is_boolean': name in boolean_fields,
+            'checked_value': 'true' if value is True or str(value).lower() in ('true', 't', '1', 'yes') else 'false',
+            'readonly': (not is_new and name == KEY_FIELD),
         })
 
     return render(request, 'admin/servicio_venta_form.html', {
