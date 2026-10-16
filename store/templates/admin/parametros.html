@@ -56,13 +56,13 @@
                 </div>
                 <div class="par-field">
                     <label for="numfactur">Último número de factura emitido</label>
-                    <input id="numfactur" value="{{ parametros.numfactur }}" readonly aria-readonly="true">
-                    <small>Es informativo. El secuencial se incrementa al facturar mediante siguiente_parametro().</small>
+                    <input id="numfactur" name="numfactur" type="number" min="0" step="1" value="{{ parametros.numfactur }}" required>
+                    <small>Puedes ajustar el último número emitido; al facturar, siguiente_parametro() lo incrementará.</small>
                 </div>
                 <div class="par-field">
                     <label for="serie_actual">Serie almacenada</label>
-                    <input id="serie_actual" value="{{ serie_actual }}" readonly aria-readonly="true">
-                    <small>Formato almacenado en numserfac: establecimiento-punto de emisión.</small>
+                    <input id="serie_actual" name="serie_actual" value="{{ serie_actual }}" pattern="[0-9]{1,3}-[0-9]{1,3}" maxlength="7" required>
+                    <small>Formato editable: establecimiento-punto de emisión (por ejemplo, 001-001).</small>
                 </div>
             </div>
         </section>
@@ -89,7 +89,7 @@
 
     <div class="par-info">
         <i class="fi fi-rr-info"></i>
-        <div>El guardado actualiza únicamente <strong>numserfac</strong>, <strong>poriva</strong> y <strong>basico</strong> en la tabla <strong>public.parametros</strong> de BdTotal. Los demás consecutivos permanecen intactos.</div>
+        <div>El guardado actualiza únicamente <strong>numserfac</strong>, <strong>numfactur</strong>, <strong>poriva</strong> y <strong>basico</strong> en la tabla <strong>public.parametros</strong> de BdTotal. Los demás consecutivos permanecen intactos.</div>
     </div>
 </div>
 {% endblock %}
