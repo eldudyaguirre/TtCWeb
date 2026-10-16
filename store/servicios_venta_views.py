@@ -124,13 +124,19 @@ def admin_servicios_venta(request):
 def admin_servicio_venta_form(request, coditem=None):
     is_new = coditem is None
     editable_fields = ('cositem', 'desitem', 'aplivaite', 'iteactivo')
+    create_fields = ('coditem', 'desitem', 'cositem', 'aplivaite')
     boolean_fields = ('aplivaite', 'iteactivo')
 
     try:
         all_columns = _items_table()
         columns_by_name = {column['name']: column for column in all_columns}
         if is_new:
-            columns = all_columns
+            missing = [name for name in create_fields if name not in columns_by_name]
+            if missing:
+                raise RuntimeError(
+                    "Faltan campos para crear el item: " + ", ".join(missing)
+                )
+            columns = [columns_by_name[name] for name in create_fields]
         else:
             missing = [name for name in editable_fields if name not in columns_by_name]
             if missing:
@@ -165,6 +171,8 @@ def admin_servicio_venta_form(request, coditem=None):
         errors = []
         for column in columns:
             name = column['name']
+            if is_new and name not in create_fields:
+                continue
             if not is_new and name not in editable_fields:
                 continue
 
@@ -190,6 +198,8 @@ def admin_servicio_venta_form(request, coditem=None):
             try:
                 with transaction.atomic(using=DB_ALIAS), _items_db().cursor() as cursor:
                     if is_new:
+                        # Los items nuevos se crean activos por defecto; ese campo no se muestra en el formulario.
+                        values['iteactivo'] = True
                         fields = list(values)
                         if not fields:
                             raise ValueError('No se recibieron datos para guardar.')
