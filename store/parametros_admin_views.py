@@ -37,8 +37,8 @@ def _leer_parametros():
         'id': row[0],
         'numserfac': str(row[1] or '').strip(),
         'numfactur': row[2],
-        'poriva': row[3],
-        'basico': row[4],
+        'poriva': row[3] if row[3] is not None else 15,
+        'basico': row[4] if row[4] is not None else 482,
     }
 
 
@@ -74,6 +74,12 @@ def admin_parametros(request):
     if request.method == 'POST':
         establecimiento = request.POST.get('establecimiento', '').strip()
         punto_emision = request.POST.get('punto_emision', '').strip()
+        serie_raw = request.POST.get('serie_actual', '').strip()
+        if serie_raw:
+            serie_match = re.fullmatch(r'(\d{1,3})\s*-\s*(\d{1,3})', serie_raw)
+            if serie_match:
+                establecimiento = serie_match.group(1)
+                punto_emision = serie_match.group(2)
         numfactur_raw = request.POST.get('numfactur', '').strip()
         poriva_raw = request.POST.get('poriva', '').strip().replace(',', '.')
         basico_raw = request.POST.get('basico', '').strip().replace(',', '.')
@@ -111,6 +117,7 @@ def admin_parametros(request):
         initial = {
             'establecimiento': establecimiento,
             'punto_emision': punto_emision,
+            'serie_actual': serie_raw,
             'numfactur': numfactur_raw,
             'poriva': poriva_raw,
             'basico': basico_raw,
@@ -145,5 +152,5 @@ def admin_parametros(request):
 
     return render(request, 'admin/parametros.html', {
         'parametros': initial,
-        'serie_actual': parametros['numserfac'],
+        'serie_actual': initial.get('serie_actual', parametros['numserfac']),
     })
