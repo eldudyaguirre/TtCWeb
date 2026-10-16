@@ -72,11 +72,11 @@
             <div class="par-grid">
                 <div class="par-field">
                     <label for="poriva">Porcentaje de IVA (%)</label>
-                    <input id="poriva" name="poriva" type="number" min="0" max="100" step="0.01" value="{{ parametros.poriva }}" required>
+                    <input id="poriva" name="poriva" type="number" min="0" max="100" step="0.01" value="{{ parametros.poriva|default:15 }}" required>
                 </div>
                 <div class="par-field">
                     <label for="basico">Salario básico unificado vigente (USD)</label>
-                    <input id="basico" name="basico" type="number" min="0.01" step="0.01" value="{{ parametros.basico }}" required>
+                    <input id="basico" name="basico" type="number" min="0.01" step="0.01" value="{{ parametros.basico|default:482 }}" required>
                     <small>Actualiza este valor al salario básico del año en curso.</small>
                 </div>
             </div>
