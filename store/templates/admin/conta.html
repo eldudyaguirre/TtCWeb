@@ -219,7 +219,7 @@
         const fechas = Array.from({length: ultimoDia}, (_, i) =>
             String(anio).padStart(4, "0") + "-" + String(mes).padStart(2, "0") + "-" + String(i + 1).padStart(2, "0")
         );
-        if (!confirm("Se revisarán las facturas del mes completo (" + fechas.length + " días) para comparar bases e IVA con el SRI. Solo se corregirán valores tributarios distintos y se guardará auditoría. No se modificarán retenciones ni asientos. ¿Continuar?")) return;
+        if (!confirm("Se revisarán las facturas del mes completo (" + fechas.length + " días) contra el SRI. Se corregirán bases e IVA distintos con auditoría y también se guardarán comprobantes que falten en la BD. No se modificarán retenciones ni asientos. ¿Continuar?")) return;
         const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
         const payload = new URLSearchParams({
             csrfmiddlewaretoken: csrf,
