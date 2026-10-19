@@ -127,7 +127,7 @@
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;">
             <button id="val-reparar" type="button" class="btn btn-primary" style="display:inline-block;" disabled>
-                🛠 Reparar diferencias y volver a validar
+                🛠 Revisar y corregir valores tributarios del mes
             </button>
             <span id="val-reparar-ayuda" style="font-size:13px;color:#666;"></span>
         </div>
@@ -206,21 +206,6 @@
     let cancelando = false;
 
     repararBtn.addEventListener("click", async function () {
-        const fechas = Array.from(valDetalle.querySelectorAll("tbody tr"))
-            .filter(tr => (tr.textContent || "").includes("DIFERENCIA"))
-            .map(tr => (tr.cells[0]?.textContent || "").trim())
-            .map(fecha => {
-                const iso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                if (iso) return fecha;
-                const local = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                return local ? local[3] + "-" + local[2] + "-" + local[1] : "";
-            })
-            .filter(fecha => /^\d{4}-\d{2}-\d{2}$/.test(fecha));
-        if (!fechas.length) {
-            alert("No hay días con diferencias para reparar.");
-            return;
-        }
-        if (!confirm("Se reprocesarán únicamente " + fechas.length + " día(s): " + fechas.join(", ") + ". ¿Continuar?")) return;
         const origen = document.querySelector('form select[name="ruc"]');
         const formPeriodo = document.querySelector('form select[name="mes"]')?.form;
         const ruc = origen?.value || "{{ ruc|escapejs }}";
@@ -230,6 +215,11 @@
             alert("No se pudo identificar el cliente y período de la validación.");
             return;
         }
+        const ultimoDia = new Date(Number(anio), Number(mes), 0).getDate();
+        const fechas = Array.from({length: ultimoDia}, (_, i) =>
+            String(anio).padStart(4, "0") + "-" + String(mes).padStart(2, "0") + "-" + String(i + 1).padStart(2, "0")
+        );
+        if (!confirm("Se revisarán las facturas del mes completo (" + fechas.length + " días) para comparar bases e IVA con el SRI. Solo se corregirán valores tributarios distintos y se guardará auditoría. No se modificarán retenciones ni asientos. ¿Continuar?")) return;
         const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
         const payload = new URLSearchParams({
             csrfmiddlewaretoken: csrf,
@@ -241,7 +231,7 @@
         });
         repararBtn.disabled = true;
         repararBtn.textContent = "⏳ Iniciando reparación...";
-        repararAyuda.textContent = "Enviando la reparación de " + fechas.length + " día(s), sin cerrar esta pantalla.";
+        repararAyuda.textContent = "Enviando la revisión tributaria de todo el mes, sin cerrar esta pantalla.";
         try {
             const response = await fetch(window.location.pathname + window.location.search, {
                 method: "POST",
@@ -278,13 +268,13 @@
             validador.style.display = "block";
             estado.textContent = "⏳ En cola";
             mensaje.textContent = data.mensaje || "La reparación fue enviada a Conta.";
-            repararAyuda.textContent = "Reparación iniciada para " + fechas.join(", ") + ". El resultado se actualizará aquí.";
+            repararAyuda.textContent = "Revisión y reparación iniciada para el mes completo. El resultado se actualizará aquí.";
             cancelar.disabled = false;
             cancelar.textContent = "⏹ Detener sincronización";
             consultar();
         } catch (error) {
             repararBtn.disabled = false;
-            repararBtn.textContent = "🛠 Reparar diferencias y volver a validar";
+            repararBtn.textContent = "🛠 Revisar y corregir valores tributarios del mes";
             repararAyuda.textContent = error.message || "No se pudo iniciar la reparación.";
         }
     });
@@ -439,15 +429,13 @@
                 }
                 const diferenciasPendientes = valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]').length;
                 repararBtn.style.display = "inline-block";
-                repararBtn.disabled = data.estado !== "finalizado" || diferenciasPendientes === 0;
+                repararBtn.disabled = data.estado !== "finalizado";
                 repararBtn.textContent = data.estado !== "finalizado"
                     ? "⏳ Espera a que termine la validación"
-                    : "🛠 Reparar diferencias y volver a validar";
+                    : "🛠 Revisar y corregir valores tributarios del mes";
                 repararAyuda.textContent = data.estado !== "finalizado"
                     ? "El botón estará disponible cuando termine la validación."
-                    : (diferenciasPendientes
-                        ? "Se repararán solo los " + diferenciasPendientes + " días marcados con DIFERENCIA."
-                        : "No hay días con diferencias pendientes de reparar.");
+                    : "Revisará todas las facturas del mes y corregirá únicamente bases e IVA distintos del SRI. Días con diferencias de cantidad: " + diferenciasPendientes + ".";
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
