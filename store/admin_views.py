@@ -1342,6 +1342,50 @@ def admin_conta_sri_status(request):
 
 
 @admin_required
+def admin_conta_sri_reparar_ventas(request):
+    """Endpoint JSON dedicado para iniciar la reparación tributaria de ventas."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+
+    ruc = request.POST.get('ruc', '').strip()
+    try:
+        anio = int(request.POST.get('anio', ''))
+        mes = int(request.POST.get('mes', ''))
+        if not 2000 <= anio <= 2100 or not 1 <= mes <= 12:
+            raise ValueError('El año o mes seleccionado no es válido.')
+
+        cliente = Cliente.objects.filter(activo=True, ruccedcli=ruc).first()
+        if cliente is None:
+            return JsonResponse({'ok': False, 'error': 'Seleccione un cliente activo válido.'}, status=400)
+
+        ultimo_dia = __import__('calendar').monthrange(anio, mes)[1]
+        fechas = [f'{anio:04d}-{mes:02d}-{dia:02d}' for dia in range(1, ultimo_dia + 1)]
+        resultado = _conta_reparar_ventas_diferencias(
+            usuario=request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'),
+            ruc=str(cliente.ruccedcli).strip(),
+            anio=anio,
+            mes=mes,
+            dias_objetivo=fechas,
+        )
+        if not resultado.get('job_id'):
+            return JsonResponse({
+                'ok': False,
+                'error': resultado.get('aviso') or resultado.get('mensaje') or 'Conta no devolvió un identificador de trabajo.',
+            }, status=502)
+        return JsonResponse({
+            'ok': True,
+            'job_id': resultado['job_id'],
+            'estado': resultado.get('estado', 'pendiente'),
+            'mensaje': resultado.get('mensaje', 'Revisión tributaria enviada a Conta.'),
+            'dias_objetivo': len(fechas),
+        })
+    except ValueError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except RuntimeError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=502)
+
+
+@admin_required
 def admin_conta(request):
     """Panel de Conta dentro del administrador autenticado de TotalCounts."""
     from datetime import datetime
