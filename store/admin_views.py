@@ -1375,6 +1375,38 @@ def admin_conta(request):
             except RuntimeError as exc:
                 error = str(exc)
 
+    elif request.method == 'POST' and request.POST.get('accion') == 'reparar_ventas_diferencias':
+        # Esta acción llega por AJAX desde el panel SRI. La reparación debe
+        # revisar todas las fechas del período, no solo los días con conteos distintos.
+        import json
+        cliente = clientes.filter(ruccedcli=ruc).first()
+        if cliente is None:
+            return JsonResponse({'ok': False, 'error': 'Seleccione un cliente activo válido.'}, status=400)
+        try:
+            anio_num = int(anio)
+            mes_num = int(mes)
+            if not 2000 <= anio_num <= 2100 or not 1 <= mes_num <= 12:
+                raise ValueError('El año o mes seleccionado no es válido.')
+            ultimo_dia = __import__('calendar').monthrange(anio_num, mes_num)[1]
+            fechas = [f'{anio_num:04d}-{mes_num:02d}-{dia:02d}' for dia in range(1, ultimo_dia + 1)]
+            usuario = request.session.get(ADMIN_USERNAME_KEY, 'ADMIN')
+            resultado = _conta_reparar_ventas_diferencias(
+                usuario=usuario,
+                ruc=str(cliente.ruccedcli).strip(),
+                anio=anio_num,
+                mes=mes_num,
+                dias_objetivo=fechas,
+            )
+            return JsonResponse({
+                'ok': True,
+                'job_id': resultado.get('job_id'),
+                'estado': resultado.get('estado', 'pendiente'),
+                'mensaje': resultado.get('mensaje', 'Reparación de valores tributarios enviada a Conta.'),
+                'dias_objetivo': len(fechas),
+            })
+        except (ValueError, RuntimeError) as exc:
+            return JsonResponse({'ok': False, 'error': str(exc)}, status=502)
+
     elif request.method == 'POST' and request.POST.get('accion') in ('sincronizar_compras', 'sincronizar_ventas', 'validar_ventas'):
         cliente = clientes.filter(ruccedcli=ruc).first()
         if cliente is None:
