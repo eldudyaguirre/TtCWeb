@@ -233,7 +233,7 @@
         repararBtn.textContent = "⏳ Iniciando reparación...";
         repararAyuda.textContent = "Enviando la revisión tributaria de todo el mes, sin cerrar esta pantalla.";
         try {
-            const response = await fetch(window.location.pathname + window.location.search, {
+            const response = await fetch("{% url 'admin_conta_sri_reparar_ventas' %}", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
