@@ -26,6 +26,7 @@ urlpatterns = [
     path('totalcounts/conta/sri/status/', admin_views.admin_conta_sri_status, name='admin_conta_sri_status'),
     path('totalcounts/conta/sri/cancelar/', admin_views.admin_conta_sri_cancelar, name='admin_conta_sri_cancelar'),
     path('totalcounts/clientes/', admin_views.admin_clientes, name='admin_clientes'),
+    path('totalcounts/clientes/nuevo/', admin_views.admin_cliente_nuevo, name='admin_cliente_nuevo'),
     path('totalcounts/blog/', blog_admin_views.admin_blog, name='admin_blog'),
     path('totalcounts/comunicaciones/', comunicaciones_views.admin_comunicaciones, name='admin_comunicaciones'),
     path('totalcounts/comunicaciones/enviar/<int:comunicacion_id>/', comunicaciones_views.admin_comunicacion_enviar, name='admin_comunicacion_enviar'),
