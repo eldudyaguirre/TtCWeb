@@ -122,7 +122,7 @@
         ayuda.style.color = error ? '#a52626' : '#176447';
     }
 
-    boton.addEventListener('click', async function () {
+    async function validarIdentificacion() {
         const identificacion = input.value.trim();
         datos.hidden = true;
         identificacionValidada = false;
@@ -161,6 +161,14 @@
             mostrarEstado('No se pudo conectar para validar. Intenta nuevamente.', true);
         } finally {
             if (!identificacionValidada) boton.disabled = false;
+        }
+    }
+
+    boton.addEventListener('click', validarIdentificacion);
+    input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            validarIdentificacion();
         }
     });
 
