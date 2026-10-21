@@ -878,8 +878,8 @@ def admin_cliente_nuevo(request):
         }
         errores = []
         ruc = datos['ruccedcli']
-        if len(ruc) not in (10, 13) or not ruc.isdigit():
-            errores.append('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.')
+        if len(ruc) != 13 or not ruc.isdigit():
+            errores.append('Ingresa un RUC válido de 13 dígitos para crear la base individual de TotalCounts.')
         if not datos['nomclient']:
             errores.append('La razón social o nombre es obligatorio.')
         if not datos['dirclient']:
@@ -959,7 +959,7 @@ def admin_cliente_nuevo(request):
             return redirect('admin_cliente', ruc=ruc)
         except Exception as exc:
             messages.error(request, f'No se pudo registrar el cliente: {exc}')
-            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST})
+            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST, 'dias': (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)})
 
     return render(request, 'admin/cliente_nuevo.html', {'datos': {}, 'dias': (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)})
 
