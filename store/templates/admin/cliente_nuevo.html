@@ -1,85 +1,5 @@
 {% extends "admin/base.html" %}
 {% block title %}Nuevo cliente | Administración TotalCounts
-<script>
-(function () {
-    const input = document.getElementById('ruccedcli');
-    const boton = document.getElementById('validar-identificacion');
-    const ayuda = document.getElementById('identificacion-ayuda');
-    const datos = document.getElementById('datos-cliente');
-    const form = input.closest('form');
-    const nombre = form.querySelector('[name="nomclient"]');
-    let identificacionValidada = false;
-
-    function mostrarEstado(mensaje, error) {
-        ayuda.textContent = mensaje;
-        ayuda.style.color = error ? '#a52626' : '#176447';
-    }
-
-    boton.addEventListener('click', async function () {
-        const identificacion = input.value.trim();
-        datos.hidden = true;
-        identificacionValidada = false;
-        nombre.required = false;
-        if (!/^\d{10}$|^\d{13}$/.test(identificacion)) {
-            mostrarEstado('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.', true);
-            input.focus();
-            return;
-        }
-        boton.disabled = true;
-        mostrarEstado('Verificando identificación…', false);
-        try {
-            const respuesta = await fetch('{% url "admin_cliente_validar_identificacion" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                    'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({ruccedcli: identificacion})
-            });
-            const resultado = await respuesta.json();
-            if (!respuesta.ok || !resultado.ok) {
-                mostrarEstado(resultado.error || 'No se pudo validar la identificación.', true);
-                return;
-            }
-            identificacionValidada = true;
-            datos.hidden = false;
-            nombre.required = true;
-            input.readOnly = true;
-            boton.textContent = 'Identificación validada';
-            boton.disabled = true;
-            mostrarEstado('Identificación disponible. Completa los datos del cliente.', false);
-            nombre.focus();
-        } catch (error) {
-            mostrarEstado('No se pudo conectar para validar. Intenta nuevamente.', true);
-        } finally {
-            if (!identificacionValidada) boton.disabled = false;
-        }
-    });
-
-    input.addEventListener('input', function () {
-        if (input.readOnly) return;
-        identificacionValidada = false;
-        datos.hidden = true;
-        nombre.required = false;
-        mostrarEstado('', false);
-    });
-
-    form.addEventListener('submit', function (event) {
-        if (!identificacionValidada) {
-            event.preventDefault();
-            mostrarEstado('Primero valida la cédula o el RUC.', true);
-            input.focus();
-        }
-    });
-
-    if (input.value.trim() && {{ datos.nomclient|default:""|yesno:"true,false" }}) {
-        // Si el servidor devolvió el formulario por un error, se exige validar de nuevo.
-        datos.hidden = true;
-        nombre.required = false;
-    }
-})();
-</script>
 
 {% endblock %}
 {% block content %}
@@ -217,4 +137,85 @@
 .admin-message.error{background:#fff0f0;color:#a52626}.admin-message.success{background:#eaf8f2;color:#176447}
 @media(max-width:650px){.admin-form-grid{grid-template-columns:1fr}.admin-form-grid .wide{grid-column:auto}}
 </style>
+<script>
+(function () {
+    const input = document.getElementById('ruccedcli');
+    const boton = document.getElementById('validar-identificacion');
+    const ayuda = document.getElementById('identificacion-ayuda');
+    const datos = document.getElementById('datos-cliente');
+    const form = input.closest('form');
+    const nombre = form.querySelector('[name="nomclient"]');
+    let identificacionValidada = false;
+
+    function mostrarEstado(mensaje, error) {
+        ayuda.textContent = mensaje;
+        ayuda.style.color = error ? '#a52626' : '#176447';
+    }
+
+    boton.addEventListener('click', async function () {
+        const identificacion = input.value.trim();
+        datos.hidden = true;
+        identificacionValidada = false;
+        nombre.required = false;
+        if (!/^\d{10}$|^\d{13}$/.test(identificacion)) {
+            mostrarEstado('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.', true);
+            input.focus();
+            return;
+        }
+        boton.disabled = true;
+        mostrarEstado('Verificando identificación…', false);
+        try {
+            const respuesta = await fetch('{% url "admin_cliente_validar_identificacion" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({ruccedcli: identificacion})
+            });
+            const resultado = await respuesta.json();
+            if (!respuesta.ok || !resultado.ok) {
+                mostrarEstado(resultado.error || 'No se pudo validar la identificación.', true);
+                return;
+            }
+            identificacionValidada = true;
+            datos.hidden = false;
+            nombre.required = true;
+            input.readOnly = true;
+            boton.textContent = 'Identificación validada';
+            boton.disabled = true;
+            mostrarEstado('Identificación disponible. Completa los datos del cliente.', false);
+            nombre.focus();
+        } catch (error) {
+            mostrarEstado('No se pudo conectar para validar. Intenta nuevamente.', true);
+        } finally {
+            if (!identificacionValidada) boton.disabled = false;
+        }
+    });
+
+    input.addEventListener('input', function () {
+        if (input.readOnly) return;
+        identificacionValidada = false;
+        datos.hidden = true;
+        nombre.required = false;
+        mostrarEstado('', false);
+    });
+
+    form.addEventListener('submit', function (event) {
+        if (!identificacionValidada) {
+            event.preventDefault();
+            mostrarEstado('Primero valida la cédula o el RUC.', true);
+            input.focus();
+        }
+    });
+
+    if (input.value.trim() && {{ datos.nomclient|default:""|yesno:"true,false" }}) {
+        // Si el servidor devolvió el formulario por un error, se exige validar de nuevo.
+        datos.hidden = true;
+        nombre.required = false;
+    }
+})();
+</script>
+
 {% endblock %}
