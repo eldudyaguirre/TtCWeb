@@ -84,8 +84,8 @@
     </div>
 
     <div class="admin-form-actions">
-        <a class="admin-secondary-button" href="{% url 'admin_clientes' %}">Cancelar</a>
-        <button class="admin-primary-button" type="submit">Guardar cliente</button>
+        <a class="admin-secondary-button admin-cancel-button" href="{% url 'admin_clientes' %}"><span aria-hidden="true">×</span> Cancelar</a>
+        <button class="admin-primary-button admin-save-button" type="submit"><span aria-hidden="true">▣</span> Guardar cliente</button>
     </div>
     </div>
 </form>
@@ -96,8 +96,16 @@
 .admin-form-grid .wide{grid-column:1/-1}
 .admin-card h2{font-size:16px;margin:24px 0 8px;padding-bottom:8px;border-bottom:1px solid #e2e9ed}
 .admin-checkbox-label{flex-direction:row!important;align-items:center}
-.admin-form-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid #e2e9ed}
-.admin-primary-button{border:0;border-radius:8px;background:#1596a3;color:#fff;font-weight:800;padding:12px 18px;cursor:pointer}
+.admin-form-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px;padding-top:22px;margin-top:8px;border-top:1px solid #e2e9ed;flex-wrap:wrap}
+.admin-form-actions a,.admin-form-actions button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 22px;border-radius:9px;font-family:inherit;font-size:15px;font-weight:750;line-height:1.2;text-decoration:none;white-space:nowrap;box-sizing:border-box;transition:background-color .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+.admin-form-actions .admin-cancel-button{border:1px solid #1596a3;background:#fff;color:#128b98}
+.admin-form-actions .admin-cancel-button span{font-size:22px;font-weight:400;line-height:1}
+.admin-form-actions .admin-cancel-button:hover{background:#effbfc;border-color:#117985}
+.admin-form-actions .admin-save-button{border:1px solid #1596a3;background:#1596a3;color:#fff;cursor:pointer;box-shadow:0 2px 4px rgba(21,150,163,.16)}
+.admin-form-actions .admin-save-button span{font-size:18px;line-height:1}
+.admin-form-actions .admin-save-button:hover{background:#117f8a;border-color:#117f8a;box-shadow:0 4px 9px rgba(21,150,163,.2);transform:translateY(-1px)}
+.admin-form-actions .admin-save-button:focus-visible,.admin-form-actions .admin-cancel-button:focus-visible{outline:3px solid rgba(21,150,163,.25);outline-offset:2px}
+@media(max-width:480px){.admin-form-actions{justify-content:stretch}.admin-form-actions a,.admin-form-actions button{flex:1 1 100%;width:100%}}
 .admin-message{padding:12px 16px;border-radius:8px;margin:12px 0}
 .admin-message.error{background:#fff0f0;color:#a52626}.admin-message.success{background:#eaf8f2;color:#176447}
 @media(max-width:650px){.admin-form-grid{grid-template-columns:1fr}.admin-form-grid .wide{grid-column:auto}}
