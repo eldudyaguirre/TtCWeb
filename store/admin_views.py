@@ -858,6 +858,112 @@ def admin_compras_pdf(request, ruc):
 
 
 @admin_required
+@admin_required
+def admin_cliente_nuevo(request):
+    """Formulario para registrar clientes nuevos desde TtCWeb."""
+    if request.method == 'POST':
+        datos = {
+            'nomclient': request.POST.get('nomclient', '').strip(),
+            'ruccedcli': request.POST.get('ruccedcli', '').strip(),
+            'dirclient': request.POST.get('dirclient', '').strip(),
+            'teldomcli': request.POST.get('teldomcli', '').strip(),
+            'teloficli': request.POST.get('teloficli', '').strip(),
+            'telcelcli': request.POST.get('telcelcli', '').strip(),
+            'telfaxcli': request.POST.get('telfaxcli', '').strip(),
+            'corelectr': request.POST.get('corelectr', '').strip(),
+            'ocuclient': request.POST.get('ocuclient', '').strip(),
+            'antperson': request.POST.get('antperson', '').strip(),
+            'semensual': request.POST.get('semensual', 'Mensual').strip(),
+            'diadeclaracion': request.POST.get('diadeclaracion', '').strip(),
+        }
+        errores = []
+        ruc = datos['ruccedcli']
+        if len(ruc) not in (10, 13) or not ruc.isdigit():
+            errores.append('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.')
+        if not datos['nomclient']:
+            errores.append('La razón social o nombre es obligatorio.')
+        if not datos['dirclient']:
+            errores.append('La dirección es obligatoria.')
+        if datos['semensual'] not in ('Mensual', 'Semestral', 'Anual'):
+            errores.append('Selecciona una periodicidad válida.')
+        if datos['diadeclaracion'] and datos['diadeclaracion'] not in {
+            '10', '12', '14', '16', '18', '20', '22', '24', '26', '28'
+        }:
+            errores.append('Selecciona un día de declaración válido.')
+        try:
+            limite_credito = float(request.POST.get('limcredit') or 0)
+            dias_credito = int(request.POST.get('numdiacre') or 0)
+            tarifa = float(request.POST.get('tarifa') or 0)
+            porcentajes = [
+                float(request.POST.get('porretfuebie') or 0),
+                float(request.POST.get('porretivabie') or 0),
+                float(request.POST.get('porretfueser') or 0),
+                float(request.POST.get('porretivaser') or 0),
+            ]
+            if limite_credito < 0 or dias_credito < 0 or tarifa < 0 or any(p < 0 for p in porcentajes):
+                errores.append('Los valores numéricos no pueden ser negativos.')
+        except (TypeError, ValueError):
+            limite_credito, dias_credito, tarifa = 0, 0, 0
+            porcentajes = [0, 0, 0, 0]
+            errores.append('Revisa los valores numéricos ingresados.')
+        if Cliente.objects.filter(ruccedcli=ruc).exists():
+            errores.append('Ya existe un cliente registrado con esa cédula o RUC.')
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST})
+
+        try:
+            # Preparar primero la base individual. Si falla, no se registra
+            # un cliente huérfano en la base maestra.
+            from .services.client_database import ensure_client_database
+            ensure_client_database(ruc)
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO public.clientes (
+                        ruccedcli, nomclient, dirclient, teldomcli, teloficli,
+                        telcelcli, telfaxcli, ocuclient, antperson, limcredit,
+                        salcuenta, salantici, salnotcre, numdiacre, codcuecon,
+                        porretfuebie, porretivabie, porretfueser, porretivaser,
+                        salvencid1, salvencid2, salvencid3, salvencid4, tarifa,
+                        corelectr, codcueant, codcuencr, diadeclaracion, semensual,
+                        automatizado, activo, acceso_ttcweb
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        0, 0, 0, %s, %s, %s, %s, %s, %s,
+                        0, 0, 0, 0, %s, %s, %s, %s, %s, %s,
+                        %s, %s, FALSE
+                    )
+                    """,
+                    [
+                        ruc, datos['nomclient'], datos['dirclient'],
+                        datos['teldomcli'] or ' ', datos['teloficli'] or ' ',
+                        datos['telcelcli'] or ' ', datos['telfaxcli'] or ' ',
+                        datos['ocuclient'] or ' ', datos['antperson'] or ' ',
+                        limite_credito, dias_credito,
+                        request.POST.get('codcuecon', '').strip() or ' ',
+                        porcentajes[0], porcentajes[1], porcentajes[2], porcentajes[3],
+                        tarifa, datos['corelectr'] or ' ',
+                        request.POST.get('codcueant', '').strip() or ' ',
+                        request.POST.get('codcuencr', '').strip() or ' ',
+                        datos['diadeclaracion'] or ' ',
+                        datos['semensual'],
+                        request.POST.get('automatizado') == 'on',
+                        request.POST.get('activo') == 'on',
+                    ],
+                )
+            messages.success(request, 'Cliente registrado y base de datos preparada correctamente.')
+            return redirect('admin_cliente', ruc=ruc)
+        except Exception as exc:
+            messages.error(request, f'No se pudo registrar el cliente: {exc}')
+            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST})
+
+    return render(request, 'admin/cliente_nuevo.html', {'datos': {}})
+
+
 def admin_clientes(request):
     query = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
