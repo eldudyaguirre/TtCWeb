@@ -21277,13 +21277,20 @@ def admin_cliente_validar_identificacion(request):
                 """, [identificacion])
                 fila = cursor.fetchone()
             if fila:
+                # Mostrar una descripción comprensible sin alterar los códigos almacenados en CatastroNacional.
+                clases_contribuyente = {
+                    'GEN': 'Régimen General',
+                    'RMP': 'Régimen RIMPE',
+                    'SIM': 'Régimen Simplificado / Otros',
+                }
+                codigo_clase = str(fila[5] or '').strip().upper()
                 contribuyente = {
                     'nomclient': fila[0] or '',
                     'dirclient': fila[1] or '',
                     'corelectr': fila[2] or '',
                     'teldomcli': fila[3] or '',
                     'tipo_contribuyente': fila[4] or '',
-                    'clase_contribuyente': fila[5] or '',
+                    'clase_contribuyente': clases_contribuyente.get(codigo_clase, codigo_clase),
                     'ocuclient': fila[6] or '',
                 }
         except Exception:
