@@ -20342,9 +20342,12 @@ def admin_cliente(request, ruc):
         },
     }
 
-    # La conexión y la consulta de conciliación se manejan por separado.
-    # Un error en una consulta no debe hacer aparecer la base como desconectada.
+    # Gestionar verifica la base por RUC; si no existe, la crea e instala
+    # el esquema inicial antes de abrir la conexión dinámica de Django.
     try:
+        from .services.client_database import ensure_client_database
+
+        _, db_created = ensure_client_database(db_name)
         alias = f'cliente_{db_name}'
         if alias not in connections.databases:
             base = settings.DATABASES['default'].copy()
@@ -20353,9 +20356,14 @@ def admin_cliente(request, ruc):
         client_connection = connections[alias]
         client_connection.ensure_connection()
         db_status = 'Conectada'
+        if db_created:
+            messages.success(
+                request,
+                f'Base de datos {db_name} creada e inicializada correctamente.',
+            )
     except Exception as exc:
         db_status = 'No disponible'
-        db_error = str(exc)
+        db_error = f'No se pudo preparar o conectar la base {db_name}: {exc}'
 
     if db_status == 'Conectada':
         try:
