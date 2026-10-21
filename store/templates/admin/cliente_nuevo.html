@@ -57,8 +57,6 @@
         <label>Día de declaración
             <select name="diadeclaracion">
                 <option value="">Sin definir</option>
-                {% for dia in "10,12,14,16,18,20,22,24,26,28"|cut:" "|slugify|default:"" %}
-                {% endfor %}
                 {% for dia in dias %}<option value="{{ dia }}" {% if datos.diadeclaracion == dia|stringformat:"s" %}selected{% endif %}>{{ dia }}</option>{% endfor %}
             </select>
         </label>
