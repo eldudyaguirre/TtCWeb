@@ -47,16 +47,13 @@
         <label>Celular
             <input name="telcelcli" maxlength="20" value="{{ datos.telcelcli|default:'' }}">
         </label>
-        <label>Fax
-            <input name="telfaxcli" maxlength="20" value="{{ datos.telfaxcli|default:'' }}">
-        </label>
         <label>Correo electrónico
             <input type="email" name="corelectr" maxlength="35" value="{{ datos.corelectr|default:'' }}">
         </label>
-        <label>Ocupación
+        <label>Actividad Económica
             <input name="ocuclient" maxlength="50" value="{{ datos.ocuclient|default:'' }}">
         </label>
-        <label class="wide">Antecedentes personales
+        <label class="wide">Información Especial
             <textarea name="antperson" rows="3">{{ datos.antperson|default:'' }}</textarea>
         </label>
     </div>
@@ -79,38 +76,8 @@
         <label>Tarifa
             <input type="number" name="tarifa" min="0" step="0.01" value="{{ datos.tarifa|default:'0' }}">
         </label>
-        <label>Límite de crédito
-            <input type="number" name="limcredit" min="0" step="0.01" value="{{ datos.limcredit|default:'0' }}">
-        </label>
-        <label>Días de crédito
-            <input type="number" name="numdiacre" min="0" step="1" value="{{ datos.numdiacre|default:'0' }}">
-        </label>
     </div>
 
-    <h2>Configuración contable y retenciones</h2>
-    <div class="admin-form-grid">
-        <label>Código cuenta contable
-            <input name="codcuecon" maxlength="30" value="{{ datos.codcuecon|default:'' }}">
-        </label>
-        <label>Cuenta de anticipos
-            <input name="codcueant" maxlength="30" value="{{ datos.codcueant|default:'' }}">
-        </label>
-        <label>Cuenta notas de crédito
-            <input name="codcuencr" maxlength="30" value="{{ datos.codcuencr|default:'' }}">
-        </label>
-        <label>Retención fuente bienes (%)
-            <input type="number" name="porretfuebie" min="0" step="0.01" value="{{ datos.porretfuebie|default:'0' }}">
-        </label>
-        <label>Retención IVA bienes (%)
-            <input type="number" name="porretivabie" min="0" step="0.01" value="{{ datos.porretivabie|default:'0' }}">
-        </label>
-        <label>Retención fuente servicios (%)
-            <input type="number" name="porretfueser" min="0" step="0.01" value="{{ datos.porretfueser|default:'0' }}">
-        </label>
-        <label>Retención IVA servicios (%)
-            <input type="number" name="porretivaser" min="0" step="0.01" value="{{ datos.porretivaser|default:'0' }}">
-        </label>
-    </div>
 
     <h2>Estado</h2>
     <div class="admin-form-grid">
