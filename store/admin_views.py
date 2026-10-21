@@ -21250,6 +21250,11 @@ def admin_cliente_validar_identificacion(request):
             'ok': False,
             'error': 'Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.'
         }, status=400)
+    if len(identificacion) == 13 and not identificacion.endswith('001'):
+        return JsonResponse({
+            'ok': False,
+            'error': 'El RUC debe tener 13 dígitos y terminar en 001.'
+        }, status=400)
     if Cliente.objects.filter(ruccedcli=identificacion).exists():
         return JsonResponse({
             'ok': False,
