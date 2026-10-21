@@ -20,7 +20,7 @@
         datos.hidden = true;
         identificacionValidada = false;
         nombre.required = false;
-        if (!/^\\d{10}$|^\\d{13}$/.test(identificacion)) {
+        if (!/^\d{10}$|^\d{13}$/.test(identificacion)) {
             mostrarEstado('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.', true);
             input.focus();
             return;
