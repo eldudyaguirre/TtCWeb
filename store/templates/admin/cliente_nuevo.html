@@ -1,5 +1,87 @@
 {% extends "admin/base.html" %}
-{% block title %}Nuevo cliente | Administración TotalCounts{% endblock %}
+{% block title %}Nuevo cliente | Administración TotalCounts
+<script>
+(function () {
+    const input = document.getElementById('ruccedcli');
+    const boton = document.getElementById('validar-identificacion');
+    const ayuda = document.getElementById('identificacion-ayuda');
+    const datos = document.getElementById('datos-cliente');
+    const form = input.closest('form');
+    const nombre = form.querySelector('[name="nomclient"]');
+    let identificacionValidada = false;
+
+    function mostrarEstado(mensaje, error) {
+        ayuda.textContent = mensaje;
+        ayuda.style.color = error ? '#a52626' : '#176447';
+    }
+
+    boton.addEventListener('click', async function () {
+        const identificacion = input.value.trim();
+        datos.hidden = true;
+        identificacionValidada = false;
+        nombre.required = false;
+        if (!/^\\d{10}$|^\\d{13}$/.test(identificacion)) {
+            mostrarEstado('Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.', true);
+            input.focus();
+            return;
+        }
+        boton.disabled = true;
+        mostrarEstado('Verificando identificación…', false);
+        try {
+            const respuesta = await fetch('{% url "admin_cliente_validar_identificacion" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({ruccedcli: identificacion})
+            });
+            const resultado = await respuesta.json();
+            if (!respuesta.ok || !resultado.ok) {
+                mostrarEstado(resultado.error || 'No se pudo validar la identificación.', true);
+                return;
+            }
+            identificacionValidada = true;
+            datos.hidden = false;
+            nombre.required = true;
+            input.readOnly = true;
+            boton.textContent = 'Identificación validada';
+            boton.disabled = true;
+            mostrarEstado('Identificación disponible. Completa los datos del cliente.', false);
+            nombre.focus();
+        } catch (error) {
+            mostrarEstado('No se pudo conectar para validar. Intenta nuevamente.', true);
+        } finally {
+            if (!identificacionValidada) boton.disabled = false;
+        }
+    });
+
+    input.addEventListener('input', function () {
+        if (input.readOnly) return;
+        identificacionValidada = false;
+        datos.hidden = true;
+        nombre.required = false;
+        mostrarEstado('', false);
+    });
+
+    form.addEventListener('submit', function (event) {
+        if (!identificacionValidada) {
+            event.preventDefault();
+            mostrarEstado('Primero valida la cédula o el RUC.', true);
+            input.focus();
+        }
+    });
+
+    if (input.value.trim() && {{ datos.nomclient|default:""|yesno:"true,false" }}) {
+        // Si el servidor devolvió el formulario por un error, se exige validar de nuevo.
+        datos.hidden = true;
+        nombre.required = false;
+    }
+})();
+</script>
+
+{% endblock %}
 {% block content %}
 <div class="admin-page-header">
     <div>
@@ -19,12 +101,19 @@
 <form method="post" class="admin-card" style="padding:24px">
     {% csrf_token %}
     <h2>Identificación y contacto</h2>
+    <div class="admin-form-grid" id="identificacion-step">
+        <label class="wide">Cédula o RUC *
+            <input id="ruccedcli" name="ruccedcli" inputmode="numeric" autocomplete="off" maxlength="13" required value="{{ datos.ruccedcli|default:'' }}" aria-describedby="identificacion-ayuda">
+        </label>
+        <div class="wide" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button class="admin-primary-button" type="button" id="validar-identificacion">Validar y continuar</button>
+            <span id="identificacion-ayuda" role="status" aria-live="polite"></span>
+        </div>
+    </div>
+    <div id="datos-cliente" hidden>
     <div class="admin-form-grid">
         <label>Nombre o razón social *
             <input name="nomclient" maxlength="65" required value="{{ datos.nomclient|default:'' }}">
-        </label>
-        <label>RUC o cédula *
-            <input name="ruccedcli" inputmode="numeric" maxlength="13" required value="{{ datos.ruccedcli|default:'' }}">
         </label>
         <label class="wide">Dirección *
             <input name="dirclient" maxlength="50" required value="{{ datos.dirclient|default:'' }}">
@@ -112,6 +201,7 @@
     <div class="admin-form-actions">
         <a class="admin-secondary-button" href="{% url 'admin_clientes' %}">Cancelar</a>
         <button class="admin-primary-button" type="submit">Guardar cliente</button>
+    </div>
     </div>
 </form>
 <style>
