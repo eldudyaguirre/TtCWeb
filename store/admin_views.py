@@ -897,7 +897,7 @@ def admin_cliente_nuevo(request):
         try:
             limite_credito = float(request.POST.get('limcredit') or 0)
             dias_credito = int(request.POST.get('numdiacre') or 0)
-            tarifa = float(request.POST.get('tarifa') or 0)
+            tarifa = round(float(request.POST.get('tarifa') or 0), 2)
             porcentajes = [
                 float(request.POST.get('porretfuebie') or 0),
                 float(request.POST.get('porretivabie') or 0),
