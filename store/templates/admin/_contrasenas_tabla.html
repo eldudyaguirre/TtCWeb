@@ -44,6 +44,11 @@
                                     <i class="fi fi-rr-sign-in-alt"></i> Ingreso IESS
                                 </button>
 
+                                <a href="{% url 'admin_cliente' cliente.ruccedcli %}"
+                                   class="admin-passwords-action-item admin-passwords-manage-link">
+                                    <i class="fi fi-rr-user-gear"></i> Gestionar
+                                </a>
+
                                 <button type="button" class="admin-passwords-action-item admin-passwords-edit-button"
                                     data-ruc="{{ cliente.ruccedcli }}"
                                     data-nombre="{{ cliente.nomclient }}"
