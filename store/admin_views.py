@@ -21233,3 +21233,22 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
     response = FileResponse(ruta.open('rb'), content_type=mimetypes.guess_type(nombre)[0] or 'application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{nombre}"'
     return response
+
+
+@admin_required
+def admin_cliente_validar_identificacion(request):
+    """Comprueba en la base maestra si una cédula o RUC ya está registrado."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+    identificacion = request.POST.get('ruccedcli', '').strip()
+    if not identificacion.isdigit() or len(identificacion) not in (10, 13):
+        return JsonResponse({
+            'ok': False,
+            'error': 'Ingresa una cédula de 10 dígitos o un RUC de 13 dígitos.'
+        }, status=400)
+    if Cliente.objects.filter(ruccedcli=identificacion).exists():
+        return JsonResponse({
+            'ok': False,
+            'error': 'Ya existe un cliente registrado con esa cédula o RUC.'
+        }, status=409)
+    return JsonResponse({'ok': True})
