@@ -264,7 +264,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         cursor.execute("""
             SELECT DISTINCT anio
             FROM (
-                SELECT EXTRACT(YEAR FROM CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4})::integer AS anio
+                SELECT EXTRACT(YEAR FROM CASE WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}$' THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') ELSE NULLIF(TRIM(fecfactur::text), '')::date END)::integer AS anio
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
                 UNION
