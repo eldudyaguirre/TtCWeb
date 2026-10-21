@@ -149,6 +149,11 @@
             input.focus();
             return;
         }
+        if (identificacion.length === 13 && !identificacion.endsWith('001')) {
+            mostrarEstado('El RUC debe tener 13 dígitos y terminar en 001.', true);
+            input.focus();
+            return;
+        }
         boton.disabled = true;
         mostrarEstado('Verificando identificación…', false);
         try {
