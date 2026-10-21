@@ -23,7 +23,7 @@
     <h2>Identificación y contacto</h2>
     <div class="admin-form-grid" id="identificacion-step">
         <label class="wide">Cédula o RUC *
-            <input id="ruccedcli" name="ruccedcli" inputmode="numeric" autocomplete="off" maxlength="13" required value="{{ datos.ruccedcli|default:'' }}" aria-describedby="identificacion-ayuda">
+            <input id="ruccedcli" name="ruccedcli" autofocus inputmode="numeric" autocomplete="off" maxlength="13" required value="{{ datos.ruccedcli|default:'' }}" aria-describedby="identificacion-ayuda">
         </label>
         <div class="wide" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <button class="admin-primary-button" type="button" id="validar-identificacion">Validar y continuar</button>
@@ -146,6 +146,9 @@
     const form = input.closest('form');
     const nombre = form.querySelector('[name="nomclient"]');
     let identificacionValidada = false;
+
+    // Al abrir Nuevo cliente, el cursor debe iniciar en cédula/RUC.
+    input.focus();
 
     function mostrarEstado(mensaje, error) {
         ayuda.textContent = mensaje;
