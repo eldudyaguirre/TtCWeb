@@ -912,7 +912,7 @@ def admin_cliente_nuevo(request):
         if errores:
             for error in errores:
                 messages.error(request, error)
-            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST})
+            return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST, 'dias': (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)})
 
         try:
             # Preparar primero la base individual. Si falla, no se registra
@@ -961,7 +961,7 @@ def admin_cliente_nuevo(request):
             messages.error(request, f'No se pudo registrar el cliente: {exc}')
             return render(request, 'admin/cliente_nuevo.html', {'datos': request.POST})
 
-    return render(request, 'admin/cliente_nuevo.html', {'datos': {}})
+    return render(request, 'admin/cliente_nuevo.html', {'datos': {}, 'dias': (10, 12, 14, 16, 18, 20, 22, 24, 26, 28)})
 
 
 def admin_clientes(request):
