@@ -880,6 +880,8 @@ def admin_cliente_nuevo(request):
         ruc = datos['ruccedcli']
         if len(ruc) != 13 or not ruc.isdigit():
             errores.append('Ingresa un RUC válido de 13 dígitos para crear la base individual de TotalCounts.')
+        elif not ruc.endswith('001'):
+            errores.append('El RUC debe tener 13 dígitos y terminar en 001.')
         else:
             # Calcular siempre en el servidor usando el noveno dígito del RUC.
             dias_por_digito = {'1': '10', '2': '12', '3': '14', '4': '16', '5': '18', '6': '20', '7': '22', '8': '24', '9': '26', '0': '28'}
