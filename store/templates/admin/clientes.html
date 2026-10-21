@@ -8,10 +8,10 @@
         <h1>Clientes</h1>
         <p>Selecciona una empresa para gestionar su información y servicios.</p>
     </div>
-    <button type="button" class="admin-new-client-button">
+    <a href="{% url 'admin_cliente_nuevo' %}" class="admin-new-client-button">
         <i class="fi fi-rr-plus"></i>
         <span>Nuevo Cliente</span>
-    </button>
+    </a>
 </div>
 
 <form method="get" class="admin-filters">
