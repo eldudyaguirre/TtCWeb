@@ -21262,4 +21262,40 @@ def admin_cliente_validar_identificacion(request):
             'ok': False,
             'error': 'Ya existe un cliente registrado con esa cédula o RUC.'
         }, status=409)
-    return JsonResponse({'ok': True})
+
+    contribuyente = None
+    if len(identificacion) == 13:
+        try:
+            # Consulta directa y parametrizada en la conexión independiente al catastro.
+            with connections['catastro'].cursor() as cursor:
+                cursor.execute("""
+                    SELECT razon_social, direccion_detalle, email, telefono,
+                           tipo_contribuyente, clase_contribuyente, actividad_economica
+                    FROM public.contribuyentes
+                    WHERE numero_ruc = %s
+                    LIMIT 1
+                """, [identificacion])
+                fila = cursor.fetchone()
+            if fila:
+                contribuyente = {
+                    'nomclient': fila[0] or '',
+                    'dirclient': fila[1] or '',
+                    'corelectr': fila[2] or '',
+                    'teldomcli': fila[3] or '',
+                    'tipo_contribuyente': fila[4] or '',
+                    'clase_contribuyente': fila[5] or '',
+                    'ocuclient': fila[6] or '',
+                }
+        except Exception:
+            # No bloquear el registro manual si el catastro no responde.
+            return JsonResponse({
+                'ok': True,
+                'catastro_error': 'No se pudo consultar CatastroNacional. Puedes ingresar los datos manualmente.',
+                'contribuyente': None,
+            })
+
+    return JsonResponse({
+        'ok': True,
+        'encontrado_catastro': contribuyente is not None,
+        'contribuyente': contribuyente,
+    })
