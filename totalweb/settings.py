@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'totalweb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
+        'NAME': os.getenv('DB_NAME', 'BdTotal'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
@@ -105,7 +105,19 @@ DATABASES = {
         'OPTIONS': {
             'options': '-c lc_messages=C',
         },
-    }
+    },
+    # Catastro nacional comparte servidor y credenciales con BdTotal.
+    'catastro': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('CATASTRO_DB_NAME', 'CatastroNacional'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'options': '-c lc_messages=C',
+        },
+    },
 }
 
 # Password validation
