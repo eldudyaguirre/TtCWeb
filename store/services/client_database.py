@@ -7,7 +7,7 @@ from psycopg2 import sql
 from django.conf import settings
 
 
-RUC_RE = re.compile(r"^\\d{13}$")
+RUC_RE = re.compile(r"^\d{13}$")
 SCHEMA_PATH = Path(settings.BASE_DIR) / "store" / "sql" / "totalcounts_schema.sql"
 LOCK_KEY = 728194063
 
@@ -100,7 +100,7 @@ def ensure_client_database(ruc):
         if created:
             try:
                 schema = SCHEMA_PATH.read_text(encoding="utf-8")
-                schema = re.sub(r"(?m)^\\s*\\(?:restrict|unrestrict)\\s+[^\\n]*\\n?", "", schema)
+                schema = re.sub(r"(?m)^\s*\\(?:restrict|unrestrict)\s+[^\n]*\n?", "", schema)
                 with psycopg2.connect(**_connection_params(db_name)) as client_conn:
                     with client_conn.cursor() as cursor:
                         cursor.execute(schema)
