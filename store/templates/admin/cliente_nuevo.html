@@ -70,8 +70,9 @@
                 <option value="Anual" {% if datos.semensual == "Anual" %}selected{% endif %}>Anual</option>
             </select>
         </label>
-        <label>Tarifa
-            <input type="number" name="tarifa" min="0" step="0.01" value="{{ datos.tarifa|default:'0' }}">
+        <label><span id="tarifa-etiqueta">Tarifa mensual</span>
+            <input type="number" name="tarifa" min="0" step="0.01" inputmode="decimal" value="{{ datos.tarifa|default:'0.00' }}">
+            <small id="tarifa-ayuda">Valor que se cobrará al cliente según la periodicidad seleccionada.</small>
         </label>
     </div>
 
@@ -110,6 +111,16 @@
     const form = input.closest('form');
     const nombre = form.querySelector('[name="nomclient"]');
     const diaDeclaracion = form.querySelector('[name="diadeclaracion"]');
+    const periodicidad = form.querySelector('[name="semensual"]');
+    const tarifaEtiqueta = document.getElementById('tarifa-etiqueta');
+
+    function actualizarEtiquetaTarifa() {
+        const periodo = periodicidad.value || 'Mensual';
+        tarifaEtiqueta.textContent = 'Tarifa ' + periodo.toLowerCase();
+    }
+
+    periodicidad.addEventListener('change', actualizarEtiquetaTarifa);
+    actualizarEtiquetaTarifa();
     let identificacionValidada = false;
 
     // Al abrir Nuevo cliente, el cursor debe iniciar en cédula/RUC.
