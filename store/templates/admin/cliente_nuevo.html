@@ -50,6 +50,12 @@
         <label>Correo electrónico
             <input type="email" name="corelectr" maxlength="35" value="{{ datos.corelectr|default:'' }}">
         </label>
+        <label>Tipo de contribuyente
+            <input name="tipo_contribuyente" maxlength="50" value="{{ datos.tipo_contribuyente|default:'' }}">
+        </label>
+        <label>Clase de contribuyente
+            <input name="clase_contribuyente" maxlength="50" value="{{ datos.clase_contribuyente|default:'' }}">
+        </label>
         <label>Actividad Económica
             <input name="ocuclient" maxlength="50" value="{{ datos.ocuclient|default:'' }}">
         </label>
@@ -172,6 +178,21 @@
                 return;
             }
             identificacionValidada = true;
+            // Si el RUC existe en CatastroNacional, completar los datos disponibles.
+            const contribuyente = resultado.contribuyente || {};
+            const camposCatastro = {
+                nomclient: 'nomclient',
+                dirclient: 'dirclient',
+                corelectr: 'corelectr',
+                teldomcli: 'teldomcli',
+                tipo_contribuyente: 'tipo_contribuyente',
+                clase_contribuyente: 'clase_contribuyente',
+                ocuclient: 'ocuclient'
+            };
+            Object.entries(camposCatastro).forEach(([campo, nombreCampo]) => {
+                const elemento = form.querySelector('[name="' + nombreCampo + '"]');
+                if (elemento && contribuyente[campo]) elemento.value = contribuyente[campo];
+            });
             // El día de declaración se determina con el noveno dígito de la identificación.
             const diasPorDigito = {'1': 10, '2': 12, '3': 14, '4': 16, '5': 18, '6': 20, '7': 22, '8': 24, '9': 26, '0': 28};
             diaDeclaracion.value = String(diasPorDigito[identificacion[8]] || '');
@@ -180,7 +201,13 @@
             input.readOnly = true;
             boton.textContent = 'Identificación validada';
             boton.disabled = true;
-            mostrarEstado('Identificación disponible. Completa los datos del cliente.', false);
+            if (resultado.catastro_error) {
+                mostrarEstado(resultado.catastro_error, true);
+            } else if (resultado.encontrado_catastro) {
+                mostrarEstado('RUC encontrado en CatastroNacional. Datos cargados; puedes revisarlos y modificarlos.', false);
+            } else {
+                mostrarEstado('Identificación disponible. No consta en CatastroNacional; completa los datos manualmente.', false);
+            }
             nombre.focus();
         } catch (error) {
             mostrarEstado('No se pudo conectar para validar. Intenta nuevamente.', true);
