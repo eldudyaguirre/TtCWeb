@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+{% block title %}Nuevo cliente | Administración TotalCounts{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Administración</span>
+        <h1>Nuevo cliente</h1>
+        <p>Registra los datos generales y la configuración tributaria del cliente.</p>
+    </div>
+    <a class="admin-secondary-button" href="{% url 'admin_clientes' %}">← Volver a clientes</a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="admin-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="post" class="admin-card" style="padding:24px">
+    {% csrf_token %}
+    <h2>Identificación y contacto</h2>
+    <div class="admin-form-grid">
+        <label>Nombre o razón social *
+            <input name="nomclient" maxlength="65" required value="{{ datos.nomclient|default:'' }}">
+        </label>
+        <label>RUC o cédula *
+            <input name="ruccedcli" inputmode="numeric" maxlength="13" required value="{{ datos.ruccedcli|default:'' }}">
+        </label>
+        <label class="wide">Dirección *
+            <input name="dirclient" maxlength="50" required value="{{ datos.dirclient|default:'' }}">
+        </label>
+        <label>Teléfono domicilio
+            <input name="teldomcli" maxlength="20" value="{{ datos.teldomcli|default:'' }}">
+        </label>
+        <label>Teléfono oficina
+            <input name="teloficli" maxlength="20" value="{{ datos.teloficli|default:'' }}">
+        </label>
+        <label>Celular
+            <input name="telcelcli" maxlength="20" value="{{ datos.telcelcli|default:'' }}">
+        </label>
+        <label>Fax
+            <input name="telfaxcli" maxlength="20" value="{{ datos.telfaxcli|default:'' }}">
+        </label>
+        <label>Correo electrónico
+            <input type="email" name="corelectr" maxlength="35" value="{{ datos.corelectr|default:'' }}">
+        </label>
+        <label>Ocupación
+            <input name="ocuclient" maxlength="50" value="{{ datos.ocuclient|default:'' }}">
+        </label>
+        <label class="wide">Antecedentes personales
+            <textarea name="antperson" rows="3">{{ datos.antperson|default:'' }}</textarea>
+        </label>
+    </div>
+
+    <h2>Configuración tributaria</h2>
+    <div class="admin-form-grid">
+        <label>Día de declaración
+            <select name="diadeclaracion">
+                <option value="">Sin definir</option>
+                {% for dia in "10,12,14,16,18,20,22,24,26,28"|cut:" "|slugify|default:"" %}
+                {% endfor %}
+                {% for dia in dias %}<option value="{{ dia }}" {% if datos.diadeclaracion == dia|stringformat:"s" %}selected{% endif %}>{{ dia }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Periodicidad *
+            <select name="semensual" required>
+                <option value="Mensual" {% if datos.semensual == "Mensual" or not datos.semensual %}selected{% endif %}>Mensual</option>
+                <option value="Semestral" {% if datos.semensual == "Semestral" %}selected{% endif %}>Semestral</option>
+                <option value="Anual" {% if datos.semensual == "Anual" %}selected{% endif %}>Anual</option>
+            </select>
+        </label>
+        <label>Tarifa
+            <input type="number" name="tarifa" min="0" step="0.01" value="{{ datos.tarifa|default:'0' }}">
+        </label>
+        <label>Límite de crédito
+            <input type="number" name="limcredit" min="0" step="0.01" value="{{ datos.limcredit|default:'0' }}">
+        </label>
+        <label>Días de crédito
+            <input type="number" name="numdiacre" min="0" step="1" value="{{ datos.numdiacre|default:'0' }}">
+        </label>
+    </div>
+
+    <h2>Configuración contable y retenciones</h2>
+    <div class="admin-form-grid">
+        <label>Código cuenta contable
+            <input name="codcuecon" maxlength="30" value="{{ datos.codcuecon|default:'' }}">
+        </label>
+        <label>Cuenta de anticipos
+            <input name="codcueant" maxlength="30" value="{{ datos.codcueant|default:'' }}">
+        </label>
+        <label>Cuenta notas de crédito
+            <input name="codcuencr" maxlength="30" value="{{ datos.codcuencr|default:'' }}">
+        </label>
+        <label>Retención fuente bienes (%)
+            <input type="number" name="porretfuebie" min="0" step="0.01" value="{{ datos.porretfuebie|default:'0' }}">
+        </label>
+        <label>Retención IVA bienes (%)
+            <input type="number" name="porretivabie" min="0" step="0.01" value="{{ datos.porretivabie|default:'0' }}">
+        </label>
+        <label>Retención fuente servicios (%)
+            <input type="number" name="porretfueser" min="0" step="0.01" value="{{ datos.porretfueser|default:'0' }}">
+        </label>
+        <label>Retención IVA servicios (%)
+            <input type="number" name="porretivaser" min="0" step="0.01" value="{{ datos.porretivaser|default:'0' }}">
+        </label>
+    </div>
+
+    <h2>Estado</h2>
+    <div class="admin-form-grid">
+        <label class="admin-checkbox-label"><input type="checkbox" name="activo" {% if datos.activo == 'on' %}checked{% endif %}> Cliente activo</label>
+        <label class="admin-checkbox-label"><input type="checkbox" name="automatizado" {% if datos.automatizado == 'on' %}checked{% endif %}> Procesamiento automatizado</label>
+    </div>
+
+    <div class="admin-form-actions">
+        <a class="admin-secondary-button" href="{% url 'admin_clientes' %}">Cancelar</a>
+        <button class="admin-primary-button" type="submit">Guardar cliente</button>
+    </div>
+</form>
+<style>
+.admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 28px}
+.admin-form-grid label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--admin-text,#243746)}
+.admin-form-grid input:not([type=checkbox]),.admin-form-grid select,.admin-form-grid textarea{width:100%;min-height:42px;padding:10px 12px;border:1px solid #d4dfe5;border-radius:8px;background:#fff;font:inherit;font-weight:400;box-sizing:border-box}
+.admin-form-grid .wide{grid-column:1/-1}
+.admin-card h2{font-size:16px;margin:24px 0 8px;padding-bottom:8px;border-bottom:1px solid #e2e9ed}
+.admin-checkbox-label{flex-direction:row!important;align-items:center}
+.admin-form-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid #e2e9ed}
+.admin-primary-button{border:0;border-radius:8px;background:#1596a3;color:#fff;font-weight:800;padding:12px 18px;cursor:pointer}
+.admin-message{padding:12px 16px;border-radius:8px;margin:12px 0}
+.admin-message.error{background:#fff0f0;color:#a52626}.admin-message.success{background:#eaf8f2;color:#176447}
+@media(max-width:650px){.admin-form-grid{grid-template-columns:1fr}.admin-form-grid .wide{grid-column:auto}}
+</style>
+{% endblock %}
