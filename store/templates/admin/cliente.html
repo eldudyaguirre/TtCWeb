@@ -393,67 +393,68 @@
 </style>
 
 <script>
-(function () {
-    const boton = document.getElementById('adminObtenerRucSri');
-    const estado = document.getElementById('adminObtenerRucSriStatus');
+document.addEventListener('DOMContentLoaded', function () {
+    // Delegación para que el botón funcione aunque el modal se renderice
+    // o se reemplace dinámicamente dentro de la página.
+    document.addEventListener('click', async function (event) {
+        const boton = event.target.closest('#adminObtenerRucSri');
+        if (!boton || boton.disabled) return;
 
-    if (!boton || !estado) return;
-
-    boton.addEventListener('click', async function () {
-        if (boton.disabled) return;
+        const estado = document.getElementById('adminObtenerRucSriStatus');
+        if (!estado) {
+            console.error('No existe adminObtenerRucSriStatus en el DOM.');
+            window.alert('No se encontró el área de estado del proceso. Recargue la página.');
+            return;
+        }
 
         const confirmar = window.confirm(
             'Se abrirá Chromium y se iniciará sesión en el SRI con las credenciales de este cliente.\\n\\n' +
             'La clave se enviará UNA SOLA VEZ. Si el SRI no inicia sesión, no se realizará otro intento.\\n\\n' +
             '¿Desea continuar?'
         );
-
         if (!confirmar) return;
 
         boton.disabled = true;
         estado.className = 'admin-ruc-sri-status';
-        estado.textContent = 'Iniciando conexión con el SRI...';
+        estado.textContent = 'Enviando solicitud al servidor...';
 
         try {
-            const tokenInput = document.querySelector(
-                'input[name="csrfmiddlewaretoken"]'
-            );
+            const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            const respuesta = await fetch(boton.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': tokenInput ? tokenInput.value : '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
 
-            const respuesta = await fetch(
-                boton.dataset.url,
-                {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': tokenInput ? tokenInput.value : '',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                }
-            );
-
-            const data = await respuesta.json();
-
-            if (!respuesta.ok || !data.ok) {
+            const cuerpo = await respuesta.text();
+            let data;
+            try {
+                data = JSON.parse(cuerpo);
+            } catch (_) {
                 throw new Error(
-                    data.mensaje || 'No se pudo iniciar el proceso.'
+                    'El servidor no devolvió JSON (HTTP ' + respuesta.status +
+                    '). Compruebe la sesión de administración y los logs de Django.'
                 );
             }
 
+            if (!respuesta.ok || !data.ok) {
+                throw new Error(data.mensaje || ('Error del servidor (HTTP ' + respuesta.status + ').'));
+            }
+
             estado.className = 'admin-ruc-sri-status ok';
-            estado.textContent =
-                '✓ ' + data.mensaje;
-
+            estado.textContent = '✓ ' + (data.mensaje || 'Solicitud recibida por el servidor.');
         } catch (error) {
-
+            console.error('Error al obtener certificado RUC del SRI:', error);
             estado.className = 'admin-ruc-sri-status error';
-            estado.textContent =
-                '✗ ' + error.message;
-
+            estado.textContent = '✗ ' + (error.message || 'No se pudo contactar con el servidor.');
             boton.disabled = false;
         }
     });
-})();
+});
 </script>
 
 <script>
