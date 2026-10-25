@@ -270,6 +270,7 @@
                     class="admin-ruc-upload-button admin-ruc-sri-button"
                     id="adminObtenerRucSri"
                     data-url="{% url 'admin_cliente_obtener_ruc_sri' ruc=cliente.ruccedcli %}"
+                    data-status-url="{% url 'admin_cliente_estado_ruc_sri' ruc=cliente.ruccedcli %}"
                 >
                     <i class="fi fi-rr-refresh"></i> Obtener RUC del SRI
                 </button>
@@ -394,63 +395,58 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Delegación para que el botón funcione aunque el modal se renderice
-    // o se reemplace dinámicamente dentro de la página.
     document.addEventListener('click', async function (event) {
         const boton = event.target.closest('#adminObtenerRucSri');
         if (!boton || boton.disabled) return;
-
         const estado = document.getElementById('adminObtenerRucSriStatus');
         if (!estado) {
-            console.error('No existe adminObtenerRucSriStatus en el DOM.');
             window.alert('No se encontró el área de estado del proceso. Recargue la página.');
             return;
         }
-
-        const confirmar = window.confirm(
-            'Se abrirá Chromium y se iniciará sesión en el SRI con las credenciales de este cliente.\\n\\n' +
-            'La clave se enviará UNA SOLA VEZ. Si el SRI no inicia sesión, no se realizará otro intento.\\n\\n' +
-            '¿Desea continuar?'
-        );
-        if (!confirmar) return;
+        if (!window.confirm('Conta iniciará Chromium e intentará obtener el Certificado de RUC desde el SRI.\\n\\n¿Desea continuar?')) return;
 
         boton.disabled = true;
         estado.className = 'admin-ruc-sri-status';
-        estado.textContent = 'Enviando solicitud al servidor...';
-
+        estado.textContent = 'Enviando solicitud a Conta...';
         try {
             const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            const headers = {
+                'X-CSRFToken': tokenInput ? tokenInput.value : '',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            };
             const respuesta = await fetch(boton.dataset.url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': tokenInput ? tokenInput.value : '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
+                method: 'POST', headers, credentials: 'same-origin'
             });
+            const data = await respuesta.json().catch(() => ({}));
+            if (!respuesta.ok || !data.ok) throw new Error(data.mensaje || data.detail || ('Error HTTP ' + respuesta.status));
 
-            const cuerpo = await respuesta.text();
-            let data;
-            try {
-                data = JSON.parse(cuerpo);
-            } catch (_) {
-                throw new Error(
-                    'El servidor no devolvió JSON (HTTP ' + respuesta.status +
-                    '). Compruebe la sesión de administración y los logs de Django.'
-                );
+            estado.textContent = 'Solicitud recibida. Esperando respuesta del SRI...';
+            const limite = Date.now() + 5 * 60 * 1000;
+            while (Date.now() < limite) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                const poll = await fetch(boton.dataset.statusUrl, {
+                    method: 'GET',
+                    headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    credentials: 'same-origin', cache: 'no-store'
+                });
+                const actual = await poll.json().catch(() => ({}));
+                if (!poll.ok || !actual.ok) throw new Error(actual.mensaje || actual.detail || ('No se pudo consultar el estado (HTTP ' + poll.status + ').'));
+                if (actual.estado === 'completado') {
+                    estado.className = 'admin-ruc-sri-status ok';
+                    estado.textContent = '✓ Certificado obtenido y guardado correctamente. Actualizando perfil...';
+                    window.location.reload();
+                    return;
+                }
+                if (actual.estado === 'error') throw new Error(actual.error || actual.mensaje || 'Conta no pudo obtener el certificado.');
+                if (actual.estado === 'no_iniciado') throw new Error('Conta no registra el trabajo. Compruebe que el servicio esté actualizado y activo.');
+                estado.textContent = actual.mensaje || 'Conta está procesando la solicitud...';
             }
-
-            if (!respuesta.ok || !data.ok) {
-                throw new Error(data.mensaje || ('Error del servidor (HTTP ' + respuesta.status + ').'));
-            }
-
-            estado.className = 'admin-ruc-sri-status ok';
-            estado.textContent = '✓ ' + (data.mensaje || 'Solicitud recibida por el servidor.');
+            throw new Error('La operación no se confirmó en 5 minutos. Revise los logs de Conta antes de volver a intentarlo.');
         } catch (error) {
-            console.error('Error al obtener certificado RUC del SRI:', error);
+            console.error('Error al obtener Certificado de RUC desde Conta:', error);
             estado.className = 'admin-ruc-sri-status error';
-            estado.textContent = '✗ ' + (error.message || 'No se pudo contactar con el servidor.');
+            estado.textContent = '✗ ' + (error.message || 'No se pudo completar la solicitud.');
             boton.disabled = false;
         }
     });
