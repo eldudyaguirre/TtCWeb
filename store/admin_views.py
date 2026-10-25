@@ -6029,75 +6029,88 @@ def admin_conta_sri_status(request):
         return JsonResponse({'error': str(exc)}, status=502)
 
 
+def _conta_certificado_ruc_request(ruc, usuario, estado=False):
+    """Consulta Conta desde el servidor; el token interno nunca llega al navegador."""
+    import json
+    import os
+    from urllib import error, request
+
+    base_url = os.getenv('CONTA_URL', 'http://127.0.0.1:2408').rstrip('/')
+    token = os.getenv('CONTA_INTERNAL_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
+
+    url = f'{base_url}/api/v1/admin/sri/certificados-ruc/{ruc}/estado'
+    method, payload = 'GET', None
+    if not estado:
+        url = f'{base_url}/api/v1/admin/sri/certificados-ruc/{ruc}/descargar'
+        method, payload = 'POST', b'{}'
+
+    req = request.Request(url, data=payload, headers={
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-TotalCounts-Internal': token,
+        'X-TotalCounts-User': usuario,
+    }, method=method)
+    try:
+        with request.urlopen(req, timeout=20) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(body).get('detail', body)
+        except json.JSONDecodeError:
+            detail = body
+        raise RuntimeError(f'Conta respondió HTTP {exc.code}: {detail}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'No se pudo conectar con Conta: {exc.reason}') from exc
+
+
 @admin_required
 def admin_cliente_obtener_ruc_sri(request, ruc):
-    """Obtiene directamente desde el SRI el Certificado de RUC del cliente."""
+    """Solicita a Conta la obtención del Certificado de RUC del cliente."""
     if request.method != 'POST':
-        return JsonResponse(
-            {'ok': False, 'mensaje': 'Método no permitido.'},
-            status=405,
-        )
+        return JsonResponse({'ok': False, 'mensaje': 'Método no permitido.'}, status=405)
 
-    ruc = ''.join(
-        char for char in str(ruc)
-        if char.isdigit()
-    )
-
-    cliente = Cliente.objects.filter(
-        ruccedcli=ruc,
-        activo=True,
-    ).first()
-
+    ruc = ''.join(char for char in str(ruc) if char.isdigit())
+    cliente = Cliente.objects.filter(ruccedcli=ruc, activo=True).first()
     if cliente is None:
-        return JsonResponse(
-            {'ok': False, 'mensaje': 'Cliente no encontrado o inactivo.'},
-            status=404,
-        )
-
+        return JsonResponse({'ok': False, 'mensaje': 'Cliente no encontrado o inactivo.'}, status=404)
     if not str(cliente.clavesri or '').strip():
-        return JsonResponse(
-            {'ok': False, 'mensaje': 'El cliente no tiene clave SRI registrada.'},
-            status=400,
+        return JsonResponse({'ok': False, 'mensaje': 'El cliente no tiene clave SRI registrada.'}, status=400)
+
+    try:
+        resultado = _conta_certificado_ruc_request(ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'))
+        return JsonResponse({
+            'ok': True,
+            'estado': resultado.get('estado', 'iniciando'),
+            'mensaje': resultado.get('mensaje', 'Conta recibió la solicitud.'),
+        })
+    except RuntimeError as exc:
+        import logging
+        logging.getLogger(__name__).exception('Error solicitando Certificado de RUC a Conta | RUC=%s', ruc)
+        return JsonResponse({'ok': False, 'mensaje': str(exc)}, status=502)
+
+
+@admin_required
+def admin_cliente_estado_ruc_sri(request, ruc):
+    """Devuelve al navegador el estado real del trabajo que ejecuta Conta."""
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'mensaje': 'Método no permitido.'}, status=405)
+
+    ruc = ''.join(char for char in str(ruc) if char.isdigit())
+    if not Cliente.objects.filter(ruccedcli=ruc, activo=True).exists():
+        return JsonResponse({'ok': False, 'mensaje': 'Cliente no encontrado o inactivo.'}, status=404)
+
+    try:
+        resultado = _conta_certificado_ruc_request(
+            ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'), estado=True
         )
-
-    import threading
-
-    def _procesar():
-        try:
-            from .services.sri_certificado_ruc import (
-                obtener_certificado_ruc_sync,
-            )
-
-            resultado = obtener_certificado_ruc_sync(ruc)
-
-            import logging
-            logging.getLogger(__name__).info(
-                'Certificado RUC directo | RUC=%s | resultado=%s',
-                ruc,
-                resultado,
-            )
-        except Exception:
-            import logging
-            logging.getLogger(__name__).exception(
-                'Certificado RUC directo | error | RUC=%s',
-                ruc,
-            )
-
-    threading.Thread(
-        target=_procesar,
-        name=f'TtCWeb-SRI-RUC-{ruc}',
-        daemon=True,
-    ).start()
-
-    return JsonResponse({
-        'ok': True,
-        'estado': 'procesando',
-        'mensaje': (
-            'Se inició la obtención del Certificado de RUC '
-            'directamente desde el SRI. Chromium se ejecutará '
-            'en segundo plano.'
-        ),
-    })
+        return JsonResponse({'ok': True, **resultado})
+    except RuntimeError as exc:
+        import logging
+        logging.getLogger(__name__).exception('Error consultando estado Certificado RUC en Conta | RUC=%s', ruc)
+        return JsonResponse({'ok': False, 'mensaje': str(exc)}, status=502)
 
 
 @admin_required
