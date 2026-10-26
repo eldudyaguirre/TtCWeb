@@ -18304,7 +18304,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         cursor.execute("""
             SELECT DISTINCT anio
             FROM (
-                SELECT EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS anio
+                SELECT EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 2)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '____-__-__' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS anio
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
                 UNION
@@ -18342,7 +18342,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             ),
             ventas_mes AS (
                 SELECT
-                    EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS mes,
+                    EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 2)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '____-__-__' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS mes,
                     COALESCE(SUM(
                         COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.'), '0')::numeric +
                         COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.'), '0')::numeric +
@@ -18356,8 +18356,8 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retiva::text), ''), '.'), '0')::numeric), 0) AS retiva
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
-                  AND EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer = %s
-                GROUP BY EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer
+                  AND EXTRACT(YEAR FROM (CASE WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 2)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '____-__-__' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer = %s
+                GROUP BY EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 1)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' AND split_part(TRIM(fecfactur::text), '/', 2)::integer > 12 THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) LIKE '%/%' THEN to_date(TRIM(fecfactur::text), 'DD/MM/YYYY') WHEN TRIM(fecfactur::text) LIKE '____-__-__' THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer
             ),
             compras_mes AS (
                 SELECT
