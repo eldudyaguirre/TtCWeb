@@ -6457,7 +6457,13 @@ def _admin_conciliacion_cliente(cliente, anio=None):
             ),
             ventas_mes AS (
                 SELECT
-                    EXTRACT(MONTH FROM fecfactur::date)::integer AS mes,
+                    EXTRACT(
+                        MONTH FROM CASE
+                            WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}$'
+                                THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY')
+                            ELSE NULLIF(TRIM(fecfactur::text), '')::date
+                        END
+                    )::integer AS mes,                    
                     COALESCE(SUM(
                         COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.'), '0')::numeric +
                         COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.'), '0')::numeric +
@@ -6471,8 +6477,21 @@ def _admin_conciliacion_cliente(cliente, anio=None):
                     COALESCE(SUM(COALESCE(NULLIF(NULLIF(TRIM(retiva::text), ''), '.'), '0')::numeric), 0) AS retiva
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
-                  AND EXTRACT(YEAR FROM fecfactur::date)::integer = %s
-                GROUP BY EXTRACT(MONTH FROM fecfactur::date)::integer
+                    AND EXTRACT(
+                        YEAR FROM CASE
+                            WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}$'
+                                THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY')
+                            ELSE NULLIF(TRIM(fecfactur::text), '')::date
+                        END
+                    )::integer = %s
+                    
+                    GROUP BY EXTRACT(
+                        MONTH FROM CASE
+                            WHEN TRIM(fecfactur::text) ~ '^\\d{1,2}/\\d{1,2}/\\d{4}$'
+                                THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY')
+                            ELSE NULLIF(TRIM(fecfactur::text), '')::date
+                        END
+                    )::integer
             ),
             compras_mes AS (
                 SELECT
