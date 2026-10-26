@@ -18434,10 +18434,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer AS anio
+    } THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer AS anio
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
                 UNION
@@ -18567,10 +18564,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS anio
+    } THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS anio
                 FROM ventas
                 WHERE fecfactur IS NOT NULL
                 UNION
@@ -18700,10 +18694,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer AS mes,
+    } THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer AS mes,
                     COALESCE(SUM(
                         COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.'), '0')::numeric +
                         COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.'), '0')::numeric +
@@ -18795,10 +18786,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS mes,
+    } THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer AS mes,
                     COALESCE(SUM(
                         COALESCE(NULLIF(NULLIF(TRIM(basenoobj::text), ''), '.'), '0')::numeric +
                         COALESCE(NULLIF(NULLIF(TRIM(baseiva0::text), ''), '.'), '0')::numeric +
@@ -18890,10 +18878,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer = %s
+    } THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer = %s
                 GROUP BY EXTRACT(MONTH FROM fecfactur::date)::integer
             ),
             compras_mes AS (
@@ -18971,10 +18956,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer = %s
+    } THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer = %s
                 GROUP BY EXTRACT(MONTH FROM (CASE WHEN TRIM(fecfactur::text) ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})::integer
             ),
             compras_mes AS (
@@ -19052,10 +19034,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer
+    } THEN to_date(TRIM(fecfactur::text), 'MM/DD/YYYY') WHEN TRIM(fecfactur::text) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2})::integer
             ),
             compras_mes AS (
                 SELECT
@@ -19132,10 +19111,7 @@ def _admin_conciliacion_cliente(cliente, anio=None):
         'meses': meses,
         'mes_final_nombre': 'DICIEMBRE',
         'totales': totales,
-    }
-
-
-@admin_required THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer
+    } THEN TRIM(fecfactur::text)::date ELSE NULL END))::integer
             ),
             compras_mes AS (
                 SELECT
