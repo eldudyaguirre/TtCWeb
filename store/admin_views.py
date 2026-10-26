@@ -20143,6 +20143,11 @@ def admin_cliente(request, ruc):
         try:
             conciliacion = _admin_conciliacion_cliente(cliente, request.GET.get('anio'))
         except Exception as exc:
+            import logging
+            logging.getLogger(__name__).exception(
+                'Error en conciliación del cliente | RUC=%s | anio=%s',
+                getattr(cliente, 'ruccedcli', None), request.GET.get('anio'),
+            )
             db_error = f'Error consultando datos: {exc}'
 
     # Estado de los documentos legales del cliente.
