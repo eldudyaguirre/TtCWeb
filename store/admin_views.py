@@ -21574,10 +21574,13 @@ def admin_declaraciones_renta(request, ruc):
 
 @admin_required
 def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
-    """Entrega únicamente un PDF de declaración perteneciente al cliente indicado."""
+    """Entrega un PDF de declaración del cliente, aunque tenga subcarpetas internas."""
+    import logging
     from pathlib import Path
     from django.http import FileResponse, Http404
     from .services.archivos.storage import data_root
+
+    logger = logging.getLogger(__name__)
 
     if tipo not in {'iva', 'renta'} or anio < 2011 or anio > 2100:
         raise Http404('Declaración no válida.')
@@ -21596,21 +21599,54 @@ def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
         / str(anio)
     ).resolve()
 
-    # Los PDF heredados podían estar directamente dentro de la carpeta del año;
-    # los nuevos se guardan dentro de la carpeta del mes.
-    candidatos = [carpeta_anio / nombre] if mes == '00' else [carpeta_anio / mes / nombre]
-    if mes == '00':
-        candidatos.append(carpeta_anio / '00' / nombre)
-    destino = next((ruta.resolve() for ruta in candidatos if ruta.is_file()), None)
+    if not carpeta_anio.is_dir():
+        logger.warning(
+            'Descarga de declaración: no existe la carpeta del año | ruc=%s | tipo=%s | año=%s | ruta=%s',
+            cliente.ruccedcli, tipo, anio, carpeta_anio,
+        )
+        raise Http404('No existe la carpeta de declaraciones de este período.')
 
-    if destino is None or not carpeta_anio in destino.parents:
-        raise Http404('No existe la declaración solicitada.')
-    try:
-        with destino.open('rb') as documento:
-            if documento.read(5) != b'%PDF':
-                raise Http404('El archivo almacenado no es un PDF válido.')
-    except OSError as exc:
-        raise Http404('No se pudo leer la declaración solicitada.') from exc
+    # La tabla puede listar archivos ubicados directamente en el año o dentro
+    # de carpetas mensuales/subcarpetas. Buscamos el nombre exacto bajo ese año.
+    # Se valida además que el archivo pertenezca al mes seleccionado en el enlace.
+    candidatos = []
+    for ruta in carpeta_anio.rglob(nombre):
+        try:
+            ruta_real = ruta.resolve()
+            relativo = ruta_real.relative_to(carpeta_anio)
+        except (OSError, ValueError):
+            continue
+
+        if not ruta_real.is_file() or carpeta_anio not in ruta_real.parents:
+            continue
+
+        partes = relativo.parts
+        mes_en_ruta = partes[0] if len(partes) >= 2 else '00'
+        if mes != '00' and mes_en_ruta != mes:
+            continue
+        candidatos.append(ruta_real)
+
+    destino = None
+    for candidato in candidatos:
+        try:
+            with candidato.open('rb') as documento:
+                # Misma validación de PDF usada por el listado.
+                cabecera = documento.read(1024)
+            if b'%PDF-' in cabecera:
+                destino = candidato
+                break
+        except OSError:
+            logger.exception(
+                'No se pudo leer el PDF de declaración | ruc=%s | archivo=%s',
+                cliente.ruccedcli, candidato,
+            )
+
+    if destino is None:
+        logger.warning(
+            'Descarga de declaración: archivo no encontrado o PDF inválido | ruc=%s | tipo=%s | año=%s | mes=%s | nombre=%s | carpeta=%s | candidatos=%s',
+            cliente.ruccedcli, tipo, anio, mes, nombre, carpeta_anio, len(candidatos),
+        )
+        raise Http404('No se encontró el PDF de declaración solicitado. Actualiza la lista y vuelve a intentarlo.')
 
     respuesta = FileResponse(destino.open('rb'), content_type='application/pdf')
     respuesta['Content-Disposition'] = f'inline; filename="{nombre}"'
