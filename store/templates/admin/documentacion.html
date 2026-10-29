@@ -15,23 +15,6 @@
 </div>
 
 <section class="admin-documentacion-grid">
-    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
-        <div>
-            <strong>Declaraciones IVA</strong>
-            <span>Consultar, sincronizar y revisar declaraciones mensuales de IVA por año</span>
-        </div>
-        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
-    </a>
-
-    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
-        <div>
-            <strong>Declaraciones Renta</strong>
-            <span>Consultar, sincronizar y revisar declaraciones anuales de Impuesto a la Renta</span>
-        </div>
-        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
-    </a>
     <a href="{% url 'admin_compras' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-shopping-cart"></i></span>
         <div>
@@ -68,20 +51,42 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='aice' %}" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-calculator"></i></span>
+    <div class="admin-documentacion-separador" aria-hidden="true"></div>
+
+    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
         <div>
-            <strong>AICE</strong>
-            <span>Registros y documentación ICE</span>
+            <strong>Declaraciones IVA</strong>
+            <span>Consultar, sincronizar y revisar declaraciones mensuales de IVA por año</span>
         </div>
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
+
+    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
+        <div>
+            <strong>Declaraciones Renta</strong>
+            <span>Consultar, sincronizar y revisar declaraciones anuales de Impuesto a la Renta</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <div class="admin-documentacion-separador" aria-hidden="true"></div>
 
     <a href="{% url 'admin_ats' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>ATS</strong>
             <span>Anexo Transaccional Simplificado</span>
+        </div>
+        <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
+    </a>
+
+    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='aice' %}" class="admin-documentacion-card">
+        <span class="admin-documentacion-icon"><i class="fi fi-rr-calculator"></i></span>
+        <div>
+            <strong>AICE</strong>
+            <span>Registros y documentación ICE</span>
         </div>
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
@@ -122,6 +127,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
+    <div class="admin-documentacion-separador" aria-hidden="true"></div>
+
     <a href="#" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-building"></i></span>
         <div>
@@ -131,13 +138,30 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 </section>
-
 <style>
 .admin-documentacion-grid{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
     gap:16px;
     margin-top:22px;
+}
+.admin-documentacion-separador{
+    grid-column:1 / -1;
+    height:1px;
+    width:100%;
+    margin:3px 0;
+    background:linear-gradient(90deg,rgba(21,150,163,.45),#dce6e9 28%,#dce6e9 72%,rgba(21,150,163,.45));
+    position:relative;
+}
+.admin-documentacion-separador:after{
+    content:"";
+    position:absolute;
+    top:-2px;
+    left:0;
+    width:44px;
+    height:5px;
+    border-radius:5px;
+    background:#1596a3;
 }
 .admin-documentacion-card{
     min-width:0;
