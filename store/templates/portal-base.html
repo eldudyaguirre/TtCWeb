@@ -83,7 +83,7 @@
                         {% if request.user.is_staff or request.user.is_superuser %}
                         <a href="{% url 'sri_anexos_admin' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'sri_anexos_admin' %}active{% endif %}">Administrar Anexos</a>
                         {% endif %}
-                        <a href="#" class="portal-submenu-item">Declaraciones</a>
+                        <a href="{% url 'sri_declaraciones' %}" class="portal-submenu-item {% if request.resolver_match.url_name == 'sri_declaraciones' %}active{% endif %}">Declaraciones</a>
                     </div>
                 </div>
 
