@@ -37,6 +37,59 @@
         </button>
         <span class="admin-ruc-sri-status" id="declaracionesEstado" aria-live="polite"></span>
     </div>
+
+</section>
+
+<section class="admin-card declaraciones-email-card">
+    <div class="declaraciones-email-heading">
+        <span class="declaraciones-email-icon"><i class="fi fi-rr-envelope"></i></span>
+        <div>
+            <span class="admin-kicker">Atención al cliente</span>
+            <h2>Enviar declaraciones IVA por correo</h2>
+            <p>Envía las últimas declaraciones de IVA que estén guardadas en el servidor. Se ordenan por período y se pueden incluir meses de años anteriores si hace falta para completar la cantidad seleccionada.</p>
+        </div>
+    </div>
+
+    <form
+        id="enviarDeclaracionesForm"
+        class="declaraciones-email-form"
+        method="post"
+        action="{% url 'admin_enviar_declaraciones_correo' ruc=cliente.ruccedcli tipo='iva' %}"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="anio" value="{{ anio }}">
+        <div class="declaraciones-email-field">
+            <label for="correoDeclaracionesDestino">Correo destinatario</label>
+            <input
+                type="email"
+                id="correoDeclaracionesDestino"
+                name="destinatario"
+                value="{{ cliente.corelectr|default:'' }}"
+                placeholder="correo@cliente.com"
+                autocomplete="email"
+                required
+            >
+            <span>Este correo se usa solo para este envío; no cambia los datos del cliente.</span>
+        </div>
+
+        <div class="declaraciones-email-field">
+            <label for="cantidadDeclaraciones">Cantidad de declaraciones</label>
+            <select id="cantidadDeclaraciones" name="cantidad" required>
+                <option value="3" selected>3 últimas declaraciones</option>
+                <option value="6" >6 últimas declaraciones</option>
+                <option value="9" >9 últimas declaraciones</option>
+            </select>
+            <span>Se enviarán las más recientes hasta el año {{ anio }}.</span>
+        </div>
+
+        <div class="declaraciones-email-action">
+            <button type="submit" class="declaraciones-email-button">
+                <i class="fi fi-rr-paper-plane"></i> Enviar al cliente
+            </button>
+        </div>
+    </form>
+
+    <div id="estadoEnvioDeclaraciones" class="declaraciones-email-status" role="status" aria-live="polite"></div>
 </section>
 
 <section class="admin-card declaraciones-list-card">
@@ -240,6 +293,123 @@
     background:#f1fbf5;
     color:#237347;
 }
+.declaraciones-email-card{
+    margin-top:20px;
+    padding:22px 24px;
+    border:1px solid #dce8eb;
+    border-radius:16px;
+    background:linear-gradient(135deg,#fff 0%,#fbfdfe 100%);
+    box-shadow:0 9px 24px rgba(33,51,62,.045);
+}
+.declaraciones-email-heading{
+    display:flex;
+    align-items:flex-start;
+    gap:13px;
+    margin-bottom:18px;
+}
+.declaraciones-email-icon{
+    flex:0 0 44px;
+    width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:12px;
+    background:#e7f5f6;
+    color:#118b96;
+    font-size:19px;
+}
+.declaraciones-email-heading > div{min-width:0;flex:1}
+.declaraciones-email-heading .admin-kicker{display:block;margin:1px 0 5px}
+.declaraciones-email-heading h2{
+    margin:0 0 6px;
+    color:var(--admin-dark);
+    font-size:18px;
+    font-weight:800;
+    line-height:1.35;
+}
+.declaraciones-email-heading p{
+    margin:0;
+    max-width:850px;
+    color:var(--admin-muted);
+    font-size:12px;
+    line-height:1.65;
+}
+.declaraciones-email-form{
+    display:grid;
+    grid-template-columns:minmax(230px,1.25fr) minmax(200px,.8fr) auto;
+    gap:16px;
+    align-items:end;
+}
+.declaraciones-email-field{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    min-width:0;
+}
+.declaraciones-email-field label{
+    color:#536871;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.045em;
+}
+.declaraciones-email-field input,
+.declaraciones-email-field select{
+    width:100%;
+    min-width:0;
+    height:43px;
+    padding:0 12px;
+    border:1px solid #d6e2e6;
+    border-radius:9px;
+    background:#fff;
+    color:#21333e;
+    font:600 13px Arial,sans-serif;
+    outline:none;
+    transition:border-color .15s ease,box-shadow .15s ease;
+}
+.declaraciones-email-field input:focus,
+.declaraciones-email-field select:focus{
+    border-color:#1596a3;
+    box-shadow:0 0 0 3px rgba(21,150,163,.11);
+}
+.declaraciones-email-field > span{
+    color:#7b8790;
+    font-size:10px;
+    line-height:1.45;
+}
+.declaraciones-email-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:43px;
+    padding:0 17px;
+    border:1px solid #0f8c98;
+    border-radius:9px;
+    background:linear-gradient(135deg,#1596a3,#087e89);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    white-space:nowrap;
+    cursor:pointer;
+    box-shadow:0 5px 13px rgba(21,150,163,.16);
+    transition:filter .15s ease,transform .15s ease,box-shadow .15s ease;
+}
+.declaraciones-email-button:hover:not(:disabled){
+    filter:brightness(1.04);
+    transform:translateY(-1px);
+    box-shadow:0 8px 17px rgba(21,150,163,.22);
+}
+.declaraciones-email-button:disabled{opacity:.65;cursor:wait}
+.declaraciones-email-status{
+    display:none;
+    margin-top:15px;
+    padding:11px 13px;
+    border-radius:9px;
+    overflow-wrap:anywhere;
+    font-size:12px;
+    line-height:1.6;
+}
+.declaraciones-email-status:not(:empty){display:block}
+.declaraciones-email-status.ok{border:1px solid #b8e4ce;background:#f1fbf5;color:#237347}
+.declaraciones-email-status.error{border:1px solid #f3c6c4;background:#fff5f4;color:#b42318}
 .declaraciones-list-card{
     margin-top:22px;
     padding:23px;
@@ -358,6 +528,10 @@
 @media(max-width:700px){
     .admin-page-header h1{font-size:25px}
     .declaraciones-tools{grid-template-columns:1fr;gap:16px;padding:16px;border-radius:13px}
+    .declaraciones-email-card{padding:16px;border-radius:13px}
+    .declaraciones-email-form{grid-template-columns:1fr;gap:13px}
+    .declaraciones-email-button{width:100%}
+    .declaraciones-email-heading h2{font-size:16px}
     .declaraciones-filter{padding:14px}
     .declaraciones-sync{padding:0}
     .declaraciones-sync p{font-size:12px;line-height:1.7}
@@ -444,4 +618,79 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const formulario = document.getElementById('enviarDeclaracionesForm');
+    const estado = document.getElementById('estadoEnvioDeclaraciones');
+    if (!formulario || !estado) return;
+
+    formulario.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (formulario.dataset.enviando === '1') return;
+
+        const destinatario = formulario.elements.destinatario.value.trim();
+        const cantidad = Number.parseInt(formulario.elements.cantidad.value, 10);
+        const anio = formulario.elements.anio.value;
+        if (!destinatario) {
+            estado.className = 'declaraciones-email-status error';
+            estado.textContent = 'Ingresa el correo del cliente.';
+            return;
+        }
+
+        const confirmacion = window.confirm(
+            'Se enviarán ' + cantidad + ' declaración(es) de IVA a ' + destinatario +
+            ', con los períodos más recientes hasta el año fiscal ' + anio +
+            '.\\n\\n¿Deseas continuar?'
+        );
+        if (!confirmacion) return;
+
+        const boton = formulario.querySelector('button[type="submit"]');
+        formulario.dataset.enviando = '1';
+        if (boton) {
+            boton.disabled = true;
+            boton.innerHTML = '<i class="fi fi-rr-hourglass"></i> Enviando...';
+        }
+        estado.className = 'declaraciones-email-status';
+        estado.textContent = 'Preparando adjuntos y enviando el correo...';
+
+        try {
+            const respuesta = await fetch(formulario.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new FormData(formulario)
+            });
+            const datos = await respuesta.json().catch(() => ({}));
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(datos.mensaje || datos.detail || ('No se pudo enviar el correo (HTTP ' + respuesta.status + ').'));
+            }
+
+            estado.className = 'declaraciones-email-status ok';
+            estado.textContent = datos.mensaje +
+                (Array.isArray(datos.archivos) && datos.archivos.length
+                    ? ' Archivos adjuntos: ' + datos.archivos.join(', ')
+                    : '');
+            formulario.reset();
+            // Mantener el correo que estaba escrito y la selección de cantidad.
+            formulario.elements.destinatario.value = destinatario;
+            formulario.elements.anio.value = anio;
+            formulario.elements.cantidad.value = String(cantidad);
+        } catch (error) {
+            console.error('Error enviando declaraciones IVA:', error);
+            estado.className = 'declaraciones-email-status error';
+            estado.textContent = '✗ ' + (error.message || 'No se pudo enviar el correo.');
+        } finally {
+            formulario.dataset.enviando = '0';
+            if (boton) {
+                boton.disabled = false;
+                boton.innerHTML = '<i class="fi fi-rr-paper-plane"></i> Enviar al cliente';
+            }
+        }
+    });
+});
+</script>
+
 {% endblock %}
