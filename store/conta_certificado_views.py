@@ -159,7 +159,8 @@ def conta_declaraciones_sri(request, ruc):
         return JsonResponse({'ok': False, 'mensaje': 'El RUC no existe o el cliente no está activo.'}, status=404)
 
     raiz_cliente = data_root() / ruc
-    raiz = raiz_cliente / 'anexos'
+    # Las declaraciones tributarias se conservan en Documentos, separadas de Anexos.
+    raiz = raiz_cliente / 'documentos'
     raiz.mkdir(parents=True, exist_ok=True)
 
     if request.method == 'GET':
