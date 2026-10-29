@@ -1731,6 +1731,8 @@ def sri_anexos(request):
     # o dentro de subcarpetas mensuales. Recorrer recursivamente evita
     # ocultar archivos válidos que no estén organizados por mes.
     raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'anexos'
+    nombre_ruta = getattr(request.resolver_match, 'url_name', '') if request.resolver_match else ''
+    solo_declaraciones = nombre_ruta == 'sri_declaraciones'
     tipos = [
         {'nombre': 'Anexo Transaccional Simplificado', 'carpeta': 'ats', 'icono': 'fi-rr-document'},
         {'nombre': 'Anexo Relación Dependencia', 'carpeta': 'relacion_dependencia', 'icono': 'fi-rr-users'},
@@ -1738,7 +1740,11 @@ def sri_anexos(request):
         {'nombre': 'Anexo ICE', 'carpeta': 'ice', 'icono': 'fi-rr-box'},
         {'nombre': 'Anexo ADI', 'carpeta': 'adi', 'icono': 'fi-rr-folder'},
         {'nombre': 'Anexo REBEFICS', 'carpeta': 'rebefics', 'icono': 'fi-rr-file'},
+        {'nombre': 'Declaraciones de IVA', 'carpeta': 'declaraciones_iva', 'icono': 'fi-rr-file-invoice-dollar'},
+        {'nombre': 'Declaraciones de Impuesto a la Renta', 'carpeta': 'declaraciones_renta', 'icono': 'fi-rr-file-invoice'},
     ]
+    if solo_declaraciones:
+        tipos = [tipo for tipo in tipos if tipo['carpeta'] in {'declaraciones_iva', 'declaraciones_renta'}]
 
     nombres_meses = {
         '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
@@ -1781,6 +1787,7 @@ def sri_anexos(request):
                 stat = archivo.stat()
                 item = {
                     'nombre': archivo.name,
+                    'ruta': archivo.relative_to(raiz_cliente).as_posix(),
                     'extension': archivo.suffix.replace('.', '').upper() or 'ARCHIVO',
                     'tamano': (
                         f'{stat.st_size / 1024:.1f} KB'
@@ -1817,7 +1824,35 @@ def sri_anexos(request):
         'cliente': cliente,
         'tipos_anexos': tipos,
         'anios_anexos': sorted(anios, reverse=True),
+        'solo_declaraciones': solo_declaraciones,
     })
+
+
+def sri_anexo_descargar(request, ruta):
+    """Sirve de forma privada un archivo del cliente autenticado desde SRI/Anexos."""
+    from pathlib import Path
+    import mimetypes
+    from django.http import FileResponse, Http404
+
+    cliente = _cliente_portal(request)
+    if cliente is None:
+        raise Http404('No tienes acceso a los documentos de esta empresa.')
+
+    try:
+        relativo = Path(str(ruta))
+        raiz = (Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'anexos').resolve()
+        destino = (raiz / relativo).resolve()
+    except (OSError, ValueError, TypeError):
+        raise Http404('Ruta de documento inválida.')
+
+    if relativo.is_absolute() or destino == raiz or raiz not in destino.parents or not destino.is_file():
+        raise Http404('No existe el documento solicitado.')
+
+    mime = mimetypes.guess_type(destino.name)[0] or 'application/octet-stream'
+    respuesta = FileResponse(destino.open('rb'), content_type=mime)
+    modo = 'inline' if destino.suffix.lower() == '.pdf' else 'attachment'
+    respuesta['Content-Disposition'] = f'{modo}; filename="{destino.name}"'
+    return respuesta
 
 @login_required
 def roles_pago(request):
