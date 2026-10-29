@@ -336,7 +336,12 @@
     display:grid;
     grid-template-columns:minmax(230px,1.25fr) minmax(200px,.8fr) auto;
     gap:16px;
-    align-items:end;
+    align-items:start;
+}
+.declaraciones-email-action{
+    display:flex;
+    align-items:flex-start;
+    padding-top:20px;
 }
 .declaraciones-email-field{
     display:flex;
@@ -530,6 +535,7 @@
     .declaraciones-tools{grid-template-columns:1fr;gap:16px;padding:16px;border-radius:13px}
     .declaraciones-email-card{padding:16px;border-radius:13px}
     .declaraciones-email-form{grid-template-columns:1fr;gap:13px}
+    .declaraciones-email-action{padding-top:0}
     .declaraciones-email-button{width:100%}
     .declaraciones-email-heading h2{font-size:16px}
     .declaraciones-filter{padding:14px}
