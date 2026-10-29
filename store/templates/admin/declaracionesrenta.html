@@ -160,6 +160,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.location.reload();
                     return;
                 }
+                if (actual.estado === 'no_iniciado') {
+                    throw new Error('Conta no registra la solicitud. Comprueba que el servicio esté actualizado y activo.');
+                }
                 if (actual.estado === 'error') {
                     const detalle = Array.isArray(actual.detalle_errores) && actual.detalle_errores.length ? ' Detalle: ' + actual.detalle_errores[0] : '';
                     throw new Error((actual.mensaje || 'Conta no pudo completar la sincronización.') + detalle);
