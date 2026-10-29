@@ -21364,6 +21364,81 @@ def admin_cliente_validar_identificacion(request):
     })
 
 
+def _migrar_declaraciones_legacy(ruc, carpeta_tipo):
+    """Mueve de forma segura los PDF de declaraciones desde anexos a documentos."""
+    import hashlib
+    import shutil
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+
+    raiz_cliente = data_root() / str(ruc).strip()
+    origen_raiz = raiz_cliente / 'anexos' / carpeta_tipo
+    destino_raiz = raiz_cliente / 'documentos' / carpeta_tipo
+    if not origen_raiz.is_dir():
+        return 0
+
+    movidos = 0
+
+    def huella(ruta):
+        digest = hashlib.sha256()
+        with ruta.open('rb') as stream:
+            for bloque in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(bloque)
+        return digest.hexdigest()
+
+    # Solo migramos PDFs guardados dentro de un directorio de año fiscal.
+    for origen in origen_raiz.rglob('*.pdf'):
+        if not origen.is_file():
+            continue
+        try:
+            relativo = origen.relative_to(origen_raiz)
+        except ValueError:
+            continue
+        if not relativo.parts or not re.fullmatch(r'20\d{2}', relativo.parts[0]):
+            continue
+
+        destino = destino_raiz / relativo
+        try:
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            if destino.exists():
+                try:
+                    iguales = huella(origen) == huella(destino)
+                except OSError:
+                    iguales = False
+                if iguales:
+                    origen.unlink(missing_ok=True)
+                    movidos += 1
+                    continue
+
+                # Si ambos archivos tienen nombre igual pero contenido distinto,
+                # conservamos los dos sin sobrescribir ninguna declaración.
+                sufijo = huella(origen)[:10]
+                destino = destino.with_name(f'{destino.stem}_migrado_{sufijo}{destino.suffix}')
+                if destino.exists():
+                    if huella(origen) == huella(destino):
+                        origen.unlink(missing_ok=True)
+                        movidos += 1
+                        continue
+                    destino = destino.with_name(
+                        f'{destino.stem}_{datetime.now().strftime("%Y%m%d%H%M%S%f")}{destino.suffix}'
+                    )
+
+            shutil.move(str(origen), str(destino))
+            movidos += 1
+        except (OSError, ValueError):
+            logger.exception(
+                'No se pudo migrar una declaración del cliente | ruc=%s | archivo=%s',
+                ruc, origen,
+            )
+
+    if movidos:
+        logger.info(
+            'Declaraciones migradas de anexos a documentos | ruc=%s | carpeta=%s | cantidad=%s',
+            ruc, carpeta_tipo, movidos,
+        )
+    return movidos
+
+
 def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
     """Lista las declaraciones archivadas para un cliente y año fiscal."""
     from pathlib import Path
@@ -21383,10 +21458,17 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         anio = anio_predeterminado
 
     carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
-    raiz = data_root() / str(cliente.ruccedcli).strip() / 'anexos' / carpeta_tipo
+    ruc_cliente = str(cliente.ruccedcli).strip()
+
+    # Migra los documentos descargados por la versión anterior, que los colocaba
+    # bajo anexos/<tipo>/<año>, a documentos/<tipo>/<año>. La estructura anual y
+    # mensual se conserva, y los PDF nunca se sobrescriben si son distintos.
+    _migrar_declaraciones_legacy(ruc_cliente, carpeta_tipo)
+
+    raiz = data_root() / ruc_cliente / 'documentos' / carpeta_tipo
     carpeta_anio = raiz / str(anio)
     meses_nombres = {
-        '00': 'Anual / General',
+        '00': 'General / Sin período identificado',
         '01': 'Enero', '02': 'Febrero', '03': 'Marzo',
         '04': 'Abril', '05': 'Mayo', '06': 'Junio',
         '07': 'Julio', '08': 'Agosto', '09': 'Septiembre',
@@ -21394,39 +21476,41 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
     }
     archivos = []
     if carpeta_anio.is_dir():
-        for carpeta_mes in sorted(carpeta_anio.iterdir(), key=lambda item: item.name, reverse=True):
-            if not carpeta_mes.is_dir():
+        # rglob incluye PDF directamente en el año y en subcarpetas mensuales.
+        for ruta in sorted(carpeta_anio.rglob('*.pdf'), key=lambda item: item.name.lower()):
+            if not ruta.is_file():
                 continue
-            mes = carpeta_mes.name
-            for ruta in sorted(carpeta_mes.glob('*.pdf'), key=lambda item: item.name.lower()):
-                if not ruta.is_file():
-                    continue
-                try:
-                    with ruta.open('rb') as documento:
-                        if documento.read(5) != b'%PDF':
-                            continue
-                    stat = ruta.stat()
-                    url = reverse('admin_declaracion_descargar', kwargs={
-                        'ruc': str(cliente.ruccedcli),
-                        'tipo': tipo,
-                        'anio': anio,
-                        'mes': mes,
-                        'nombre': ruta.name,
-                    })
-                except (OSError, ValueError):
-                    continue
-                archivos.append({
-                    'nombre': ruta.name,
+            try:
+                relativa = ruta.relative_to(carpeta_anio)
+                partes = relativa.parts
+                mes = '00'
+                if len(partes) >= 2 and partes[0] in meses_nombres and partes[0] != '00':
+                    mes = partes[0]
+                with ruta.open('rb') as documento:
+                    if documento.read(5) != b'%PDF':
+                        continue
+                stat = ruta.stat()
+                url = reverse('admin_declaracion_descargar', kwargs={
+                    'ruc': ruc_cliente,
+                    'tipo': tipo,
+                    'anio': anio,
                     'mes': mes,
-                    'mes_nombre': meses_nombres.get(mes, 'General'),
-                    'tamano': (
-                        f'{stat.st_size / 1024:.1f} KB'
-                        if stat.st_size < 1024 * 1024
-                        else f'{stat.st_size / (1024 * 1024):.2f} MB'
-                    ),
-                    'fecha': datetime.fromtimestamp(stat.st_mtime),
-                    'url': url,
+                    'nombre': ruta.name,
                 })
+            except (OSError, ValueError):
+                continue
+            archivos.append({
+                'nombre': ruta.name,
+                'mes': mes,
+                'mes_nombre': meses_nombres.get(mes, 'General / Sin período identificado'),
+                'tamano': (
+                    f'{stat.st_size / 1024:.1f} KB'
+                    if stat.st_size < 1024 * 1024
+                    else f'{stat.st_size / (1024 * 1024):.2f} MB'
+                ),
+                'fecha': datetime.fromtimestamp(stat.st_mtime),
+                'url': url,
+            })
 
     archivos.sort(key=lambda item: (item['mes'], item['nombre'].lower()), reverse=True)
     return render(request, plantilla, {
