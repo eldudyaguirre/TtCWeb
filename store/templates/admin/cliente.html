@@ -14,7 +14,7 @@
 </div>
 
 <section class="admin-client-grid">
-    <article class="admin-card">
+    <article class="admin-card admin-cliente-bd-card">
         <span class="admin-kicker">Base de datos</span>
         <h2>{{ db_name }}</h2>
         <p>Base de datos asignada al RUC del cliente.</p>
@@ -28,7 +28,7 @@
         {% endif %}
     </article>
 
-    <article class="admin-card">
+    <article class="admin-card admin-cliente-cuenta-card">
         <span class="admin-kicker">Cuenta</span>
         <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
         <p>Saldo registrado en BDatos.</p>
