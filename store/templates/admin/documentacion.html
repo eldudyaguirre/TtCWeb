@@ -17,7 +17,7 @@
 <section class="admin-documentacion-grid">
     <div class="admin-documentacion-seccion-titulo"><span>01</span><div><h2>Comprobantes</h2><p>Documentos de compras, ventas y notas de crédito</p></div></div>
 
-    <a href="{% url 'admin_compras' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_compras' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-comprobante">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-shopping-cart"></i></span>
         <div>
             <strong>Compras</strong>
@@ -26,7 +26,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_notas_credito_recibidas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_notas_credito_recibidas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-comprobante">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>N/C recibidas</strong>
@@ -35,7 +35,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_ventas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_ventas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-comprobante">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-receipt"></i></span>
         <div>
             <strong>Ventas</strong>
@@ -44,7 +44,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_notas_credito_emitidas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_notas_credito_emitidas' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-comprobante">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>N/C emitidas</strong>
@@ -268,6 +268,73 @@
     color:#91a1a7;
     font-size:11px;
 }
+/* Comprobantes: estilo de dashboard conservando la identidad turquesa del módulo. */
+.admin-documentacion-card-comprobante{
+    isolation:isolate;
+    overflow:hidden;
+    color:#fff;
+    background:linear-gradient(135deg,#177b7b 0%,#1596a3 58%,#087f9f 100%);
+    border:1px solid #1596a3;
+    border-top:3px solid #58c9c4;
+    box-shadow:0 9px 22px rgba(21,150,163,.18);
+}
+.admin-documentacion-card-comprobante:before{
+    content:"";
+    position:absolute;
+    z-index:0;
+    width:132px;
+    height:132px;
+    right:-24px;
+    bottom:-72px;
+    border-radius:50%;
+    background:rgba(255,255,255,.10);
+    pointer-events:none;
+}
+.admin-documentacion-card-comprobante:after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    width:88px;
+    height:88px;
+    right:20px;
+    bottom:-51px;
+    border:1px solid rgba(255,255,255,.20);
+    border-radius:50%;
+    pointer-events:none;
+}
+.admin-documentacion-card-comprobante .admin-documentacion-icon{
+    position:relative;
+    z-index:1;
+    background:rgba(255,255,255,.17);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+}
+.admin-documentacion-card-comprobante div{
+    position:relative;
+    z-index:1;
+}
+.admin-documentacion-card-comprobante strong{
+    color:#fff;
+}
+.admin-documentacion-card-comprobante div span{
+    color:rgba(255,255,255,.88);
+}
+.admin-documentacion-card-comprobante .admin-documentacion-arrow{
+    z-index:2;
+    color:rgba(255,255,255,.88);
+}
+.admin-documentacion-card-comprobante:hover{
+    color:#fff;
+    background:linear-gradient(135deg,#146d6d 0%,#108b98 58%,#076d8b 100%);
+    border-color:#58c9c4;
+    border-top-color:#58c9c4;
+    box-shadow:0 13px 26px rgba(21,116,126,.24);
+}
+.admin-documentacion-card-comprobante:focus-visible{
+    outline:3px solid rgba(21,150,163,.26);
+    outline-offset:3px;
+}
+
 /* Estética basada en las tarjetas del dashboard: color sólido, texto blanco e iconografía translúcida. */
 
 /* Sección 2: declaraciones del SRI. Las dos tarjetas comparten exactamente el mismo acabado. */
