@@ -64,6 +64,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/documentacion/', admin_views.admin_documentacion, name='admin_documentacion'),
     path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones-iva/', admin_views.admin_declaraciones_iva, name='admin_declaraciones_iva'),
     path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones-renta/', admin_views.admin_declaraciones_renta, name='admin_declaraciones_renta'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones/<str:tipo>/enviar-correo/', admin_views.admin_enviar_declaraciones_correo, name='admin_enviar_declaraciones_correo'),
     path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones/<str:tipo>/<int:anio>/<str:mes>/<str:nombre>/', admin_views.admin_declaracion_descargar, name='admin_declaracion_descargar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ats/', admin_views.admin_ats, name='admin_ats'),
     path('totalcounts/clientes/<str:ruc>/documentacion/anexos/<str:modulo>/', admin_views.admin_anexo_archivos, name='admin_anexo_archivos'),
