@@ -21696,7 +21696,7 @@ def admin_enviar_declaraciones_correo(request, ruc, tipo):
             try:
                 relativa = archivo.relative_to(raiz)
                 partes = relativa.parts
-                if not partes or not re.fullmatch(r'20\\d{2}', partes[0]):
+                if not partes or not re.fullmatch(r'20\d{2}', partes[0]):
                     continue
                 anio_archivo = int(partes[0])
                 if anio_archivo > anio_corte:
@@ -21775,12 +21775,12 @@ def admin_enviar_declaraciones_correo(request, ruc, tipo):
             lineas_periodos.append(f"- Ejercicio fiscal {item['anio']} — {item['nombre']}")
 
     cuerpo = (
-        f"Estimado/a {cliente.nomclient},\\n\\n"
-        f"Adjuntamos las últimas {cantidad} {etiqueta} registradas hasta el año fiscal {anio_corte}.\\n\\n"
-        "Documentos incluidos:\\n"
-        + "\\n".join(lineas_periodos)
-        + "\\n\\n"
-        "Este mensaje fue enviado desde la plataforma TotalCounts.\\n"
+        f"Estimado/a {cliente.nomclient},\n\n"
+        f"Adjuntamos las últimas {cantidad} {etiqueta} registradas hasta el año fiscal {anio_corte}.\n\n"
+        "Documentos incluidos:\n"
+        + "\n".join(lineas_periodos)
+        + "\n\n"
+        "Este mensaje fue enviado desde la plataforma TotalCounts.\n"
     )
 
     correo = EmailMessage(
@@ -21792,7 +21792,6 @@ def admin_enviar_declaraciones_correo(request, ruc, tipo):
     try:
         for item in seleccionados:
             if tipo == 'iva':
-                periodo = meses.get(item['mes'], 'General')
                 nombre_adjunto = f"IVA_{item['anio']}_{item['mes']}_{item['nombre']}"
             else:
                 nombre_adjunto = f"RENTA_{item['anio']}_{item['nombre']}"
