@@ -21367,9 +21367,13 @@ def admin_cliente_validar_identificacion(request):
 def _migrar_declaraciones_legacy(ruc, carpeta_tipo):
     """Mueve de forma segura los PDF de declaraciones desde anexos a documentos."""
     import hashlib
+    import logging
+    import re
     import shutil
     from pathlib import Path
     from .services.archivos.storage import data_root
+
+    logger = logging.getLogger(__name__)
 
     raiz_cliente = data_root() / str(ruc).strip()
     origen_raiz = raiz_cliente / 'anexos' / carpeta_tipo
@@ -21552,16 +21556,22 @@ def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
 
     cliente = get_object_or_404(Cliente, pk=ruc)
     carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
-    raiz = (
+    carpeta_anio = (
         data_root()
         / str(cliente.ruccedcli).strip()
-        / 'anexos'
+        / 'documentos'
         / carpeta_tipo
         / str(anio)
-        / mes
     ).resolve()
-    destino = (raiz / nombre).resolve()
-    if destino.parent != raiz or not destino.is_file():
+
+    # Los PDF heredados podían estar directamente dentro de la carpeta del año;
+    # los nuevos se guardan dentro de la carpeta del mes.
+    candidatos = [carpeta_anio / nombre] if mes == '00' else [carpeta_anio / mes / nombre]
+    if mes == '00':
+        candidatos.append(carpeta_anio / '00' / nombre)
+    destino = next((ruta.resolve() for ruta in candidatos if ruta.is_file()), None)
+
+    if destino is None or not carpeta_anio in destino.parents:
         raise Http404('No existe la declaración solicitada.')
     try:
         with destino.open('rb') as documento:
