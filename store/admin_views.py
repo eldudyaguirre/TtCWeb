@@ -21362,3 +21362,128 @@ def admin_cliente_validar_identificacion(request):
         'encontrado_catastro': contribuyente is not None,
         'contribuyente': contribuyente,
     })
+
+
+def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
+    """Lista las declaraciones archivadas para un cliente y año fiscal."""
+    from pathlib import Path
+    from django.urls import reverse
+    from django.utils import timezone
+    from .services.archivos.storage import data_root
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    anio_actual = timezone.localdate().year
+    try:
+        anio = int(request.GET.get('anio', anio_actual))
+    except (TypeError, ValueError):
+        anio = anio_actual
+    if anio < 2011 or anio > anio_actual:
+        anio = anio_actual
+
+    carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
+    raiz = data_root() / str(cliente.ruccedcli).strip() / 'anexos' / carpeta_tipo
+    carpeta_anio = raiz / str(anio)
+    meses_nombres = {
+        '00': 'Anual / General',
+        '01': 'Enero', '02': 'Febrero', '03': 'Marzo',
+        '04': 'Abril', '05': 'Mayo', '06': 'Junio',
+        '07': 'Julio', '08': 'Agosto', '09': 'Septiembre',
+        '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre',
+    }
+    archivos = []
+    if carpeta_anio.is_dir():
+        for carpeta_mes in sorted(carpeta_anio.iterdir(), key=lambda item: item.name, reverse=True):
+            if not carpeta_mes.is_dir():
+                continue
+            mes = carpeta_mes.name
+            for ruta in sorted(carpeta_mes.glob('*.pdf'), key=lambda item: item.name.lower()):
+                if not ruta.is_file():
+                    continue
+                try:
+                    with ruta.open('rb') as documento:
+                        if documento.read(5) != b'%PDF':
+                            continue
+                    stat = ruta.stat()
+                    url = reverse('admin_declaracion_descargar', kwargs={
+                        'ruc': str(cliente.ruccedcli),
+                        'tipo': tipo,
+                        'anio': anio,
+                        'mes': mes,
+                        'nombre': ruta.name,
+                    })
+                except (OSError, ValueError):
+                    continue
+                archivos.append({
+                    'nombre': ruta.name,
+                    'mes': mes,
+                    'mes_nombre': meses_nombres.get(mes, 'General'),
+                    'tamano': (
+                        f'{stat.st_size / 1024:.1f} KB'
+                        if stat.st_size < 1024 * 1024
+                        else f'{stat.st_size / (1024 * 1024):.2f} MB'
+                    ),
+                    'fecha': datetime.fromtimestamp(stat.st_mtime),
+                    'url': url,
+                })
+
+    archivos.sort(key=lambda item: (item['mes'], item['nombre'].lower()), reverse=True)
+    return render(request, plantilla, {
+        'cliente': cliente,
+        'tipo_declaracion': tipo,
+        'titulo_declaracion': 'Declaraciones IVA' if tipo == 'iva' else 'Declaraciones Renta',
+        'anio': anio,
+        'anios': list(range(anio_actual, 2010, -1)),
+        'archivos': archivos,
+        'total_archivos': len(archivos),
+    })
+
+
+@admin_required
+def admin_declaraciones_iva(request, ruc):
+    """Página de declaraciones mensuales de IVA de un cliente."""
+    return _admin_declaraciones_contexto(request, ruc, 'iva', 'admin/declaracionesiva.html')
+
+
+@admin_required
+def admin_declaraciones_renta(request, ruc):
+    """Página de declaraciones anuales de Impuesto a la Renta de un cliente."""
+    return _admin_declaraciones_contexto(request, ruc, 'renta', 'admin/declaracionesrenta.html')
+
+
+@admin_required
+def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
+    """Entrega únicamente un PDF de declaración perteneciente al cliente indicado."""
+    from pathlib import Path
+    from django.http import FileResponse, Http404
+    from .services.archivos.storage import data_root
+
+    if tipo not in {'iva', 'renta'} or anio < 2011 or anio > 2100:
+        raise Http404('Declaración no válida.')
+    if mes not in {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'}:
+        raise Http404('Período no válido.')
+    if Path(nombre).name != nombre or not nombre.lower().endswith('.pdf'):
+        raise Http404('Nombre de archivo no válido.')
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
+    raiz = (
+        data_root()
+        / str(cliente.ruccedcli).strip()
+        / 'anexos'
+        / carpeta_tipo
+        / str(anio)
+        / mes
+    ).resolve()
+    destino = (raiz / nombre).resolve()
+    if destino.parent != raiz or not destino.is_file():
+        raise Http404('No existe la declaración solicitada.')
+    try:
+        with destino.open('rb') as documento:
+            if documento.read(5) != b'%PDF':
+                raise Http404('El archivo almacenado no es un PDF válido.')
+    except OSError as exc:
+        raise Http404('No se pudo leer la declaración solicitada.') from exc
+
+    respuesta = FileResponse(destino.open('rb'), content_type='application/pdf')
+    respuesta['Content-Disposition'] = f'inline; filename="{nombre}"'
+    return respuesta
