@@ -21373,12 +21373,14 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
 
     cliente = get_object_or_404(Cliente, pk=ruc)
     anio_actual = timezone.localdate().year
+    anio_predeterminado = anio_actual if tipo == 'iva' else anio_actual - 1
+    anio_maximo = anio_actual if tipo == 'iva' else anio_actual - 1
     try:
-        anio = int(request.GET.get('anio', anio_actual))
+        anio = int(request.GET.get('anio', anio_predeterminado))
     except (TypeError, ValueError):
-        anio = anio_actual
-    if anio < 2011 or anio > anio_actual:
-        anio = anio_actual
+        anio = anio_predeterminado
+    if anio < 2011 or anio > anio_maximo:
+        anio = anio_predeterminado
 
     carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
     raiz = data_root() / str(cliente.ruccedcli).strip() / 'anexos' / carpeta_tipo
@@ -21432,7 +21434,7 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         'tipo_declaracion': tipo,
         'titulo_declaracion': 'Declaraciones IVA' if tipo == 'iva' else 'Declaraciones Renta',
         'anio': anio,
-        'anios': list(range(anio_actual, 2010, -1)),
+        'anios': list(range(anio_maximo, 2010, -1)),
         'archivos': archivos,
         'total_archivos': len(archivos),
     })
