@@ -268,92 +268,150 @@
     color:#91a1a7;
     font-size:11px;
 }
-/* Paleta SRI: azul institucional con acento dorado. Ambas tarjetas comparten el estilo. */
+/* Estética basada en las tarjetas del dashboard: color sólido, texto blanco e iconografía translúcida. */
+
+/* Sección 2: declaraciones del SRI. Las dos tarjetas comparten exactamente el mismo acabado. */
 .admin-documentacion-seccion-sri > span{
-    background:#e8effb;
-    color:#174a92;
+    background:#087f9f;
+    color:#fff;
+    box-shadow:0 5px 12px rgba(8,127,159,.18);
 }
 .admin-documentacion-seccion-sri:after{
-    background:linear-gradient(180deg,#174a92 0%,#174a92 72%,#f3aa24 72%,#f3aa24 100%);
+    background:linear-gradient(180deg,#087f9f 0%,#087f9f 74%,#f6b52d 74%,#f6b52d 100%);
+    opacity:1;
 }
 .admin-documentacion-card-sri{
-    background:linear-gradient(135deg,#fff 0%,#f3f7ff 100%);
-    border-color:#d1dff4;
-    border-top:3px solid #174a92;
+    isolation:isolate;
+    overflow:hidden;
+    color:#fff;
+    background:linear-gradient(135deg,#087f9f 0%,#146a91 58%,#174a92 100%);
+    border:1px solid #087f9f;
+    border-top:3px solid #f6b52d;
+    box-shadow:0 9px 22px rgba(8,127,159,.18);
 }
-.admin-documentacion-card-sri .admin-documentacion-icon{
-    background:#e4edfb;
-    color:#174a92;
+.admin-documentacion-card-sri:before,
+.admin-documentacion-card-anexo:before,
+.admin-documentacion-card-supercias:before{
+    content:"";
+    position:absolute;
+    z-index:0;
+    width:132px;
+    height:132px;
+    right:-24px;
+    bottom:-72px;
+    border-radius:50%;
+    background:rgba(255,255,255,.10);
+    pointer-events:none;
 }
-.admin-documentacion-card-sri strong{
-    color:#153f7a;
+.admin-documentacion-card-sri:after,
+.admin-documentacion-card-anexo:after,
+.admin-documentacion-card-supercias:after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    width:88px;
+    height:88px;
+    right:20px;
+    bottom:-51px;
+    border:1px solid rgba(255,255,255,.20);
+    border-radius:50%;
+    pointer-events:none;
 }
-.admin-documentacion-card-sri .admin-documentacion-arrow{
-    color:#174a92;
+.admin-documentacion-card-sri .admin-documentacion-icon,
+.admin-documentacion-card-anexo .admin-documentacion-icon,
+.admin-documentacion-card-supercias .admin-documentacion-icon{
+    background:rgba(255,255,255,.17);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+}
+.admin-documentacion-card-sri div,
+.admin-documentacion-card-anexo div,
+.admin-documentacion-card-supercias div{
+    position:relative;
+    z-index:1;
+}
+.admin-documentacion-card-sri strong,
+.admin-documentacion-card-anexo strong,
+.admin-documentacion-card-supercias strong{
+    color:#fff;
+}
+.admin-documentacion-card-sri div span,
+.admin-documentacion-card-anexo div span,
+.admin-documentacion-card-supercias div span{
+    color:rgba(255,255,255,.88);
+}
+.admin-documentacion-card-sri .admin-documentacion-arrow,
+.admin-documentacion-card-anexo .admin-documentacion-arrow,
+.admin-documentacion-card-supercias .admin-documentacion-arrow{
+    z-index:2;
+    color:rgba(255,255,255,.86);
 }
 .admin-documentacion-card-sri:hover{
-    background:linear-gradient(135deg,#fff 0%,#eaf1ff 100%);
-    border-color:#8eaddf;
-    border-top-color:#f3aa24;
-    box-shadow:0 10px 24px rgba(23,74,146,.12);
+    color:#fff;
+    background:linear-gradient(135deg,#096f8e 0%,#105b81 58%,#153f7a 100%);
+    border-color:#f6b52d;
+    border-top-color:#f6b52d;
+    box-shadow:0 13px 26px rgba(8,87,126,.24);
+}
+.admin-documentacion-card-sri:focus-visible,
+.admin-documentacion-card-anexo:focus-visible,
+.admin-documentacion-card-supercias:focus-visible{
+    outline:3px solid rgba(8,127,159,.25);
+    outline-offset:3px;
 }
 
-/* Paleta amarilla suave para los anexos tributarios. */
+/* Sección 3: anexos en dorado y amarillo cálido, con contraste accesible. */
 .admin-documentacion-seccion-anexos > span{
-    background:#fff3cd;
-    color:#946200;
+    background:#d99a15;
+    color:#fff;
+    box-shadow:0 5px 12px rgba(203,138,17,.18);
 }
 .admin-documentacion-seccion-anexos:after{
-    background:#d5a021;
+    background:linear-gradient(180deg,#c9820c 0%,#c9820c 74%,#f6b52d 74%,#f6b52d 100%);
+    opacity:1;
 }
 .admin-documentacion-card-anexo{
-    background:linear-gradient(135deg,#fff 0%,#fffaf0 100%);
-    border-color:#f0dfb3;
-}
-.admin-documentacion-card-anexo .admin-documentacion-icon{
-    background:#fff0c2;
-    color:#a56d00;
-}
-.admin-documentacion-card-anexo strong{
-    color:#694b12;
-}
-.admin-documentacion-card-anexo .admin-documentacion-arrow{
-    color:#b28a35;
+    isolation:isolate;
+    overflow:hidden;
+    color:#fff;
+    background:linear-gradient(135deg,#b77908 0%,#c98a11 55%,#a86b08 100%);
+    border:1px solid #bc800e;
+    border-top:3px solid #f6d365;
+    box-shadow:0 9px 22px rgba(177,119,8,.17);
 }
 .admin-documentacion-card-anexo:hover{
-    background:linear-gradient(135deg,#fff 0%,#fff4d8 100%);
-    border-color:#e5c56f;
-    box-shadow:0 10px 24px rgba(156,112,15,.11);
+    color:#fff;
+    background:linear-gradient(135deg,#a96d06 0%,#bd7d0b 55%,#925b06 100%);
+    border-color:#f6d365;
+    border-top-color:#f6d365;
+    box-shadow:0 13px 26px rgba(156,101,5,.24);
 }
 
-/* Paleta gris y azul inspirada en la identidad institucional de SUPERCIAS. */
+/* Sección 4: gris acero y azul institucional para SUPERCIAS. */
 .admin-documentacion-seccion-supercias > span{
-    background:#e8edf3;
-    color:#345675;
+    background:#536f8b;
+    color:#fff;
+    box-shadow:0 5px 12px rgba(52,86,117,.18);
 }
 .admin-documentacion-seccion-supercias:after{
-    background:#476b8d;
+    background:linear-gradient(180deg,#536f8b 0%,#536f8b 74%,#aebdca 74%,#aebdca 100%);
+    opacity:1;
 }
 .admin-documentacion-card-supercias{
-    background:linear-gradient(135deg,#fff 0%,#f1f5f9 100%);
-    border-color:#d5dee7;
-    border-top:3px solid #476b8d;
-}
-.admin-documentacion-card-supercias .admin-documentacion-icon{
-    background:#e3ebf3;
-    color:#345675;
-}
-.admin-documentacion-card-supercias strong{
-    color:#2e4f6c;
-}
-.admin-documentacion-card-supercias .admin-documentacion-arrow{
-    color:#476b8d;
+    isolation:isolate;
+    overflow:hidden;
+    color:#fff;
+    background:linear-gradient(135deg,#687b8b 0%,#48647f 58%,#2f4e6d 100%);
+    border:1px solid #4e6984;
+    border-top:3px solid #b9c7d3;
+    box-shadow:0 9px 22px rgba(47,78,109,.18);
 }
 .admin-documentacion-card-supercias:hover{
-    background:linear-gradient(135deg,#fff 0%,#e9eff5 100%);
-    border-color:#9eb2c5;
-    border-top-color:#345675;
-    box-shadow:0 10px 24px rgba(52,86,117,.12);
+    color:#fff;
+    background:linear-gradient(135deg,#596d7e 0%,#3f5a74 58%,#253f5c 100%);
+    border-color:#c2d0dc;
+    border-top-color:#c2d0dc;
+    box-shadow:0 13px 26px rgba(47,78,109,.25);
 }
 
 @media(max-width:1050px){
