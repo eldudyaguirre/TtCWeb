@@ -53,9 +53,9 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-seccion-titulo"><span>02</span><div><h2>Declaraciones tributarias</h2><p>Declaraciones de IVA e Impuesto a la Renta</p></div></div>
+    <div class="admin-documentacion-seccion-titulo admin-documentacion-seccion-sri"><span>02</span><div><h2>Declaraciones tributarias</h2><p>Declaraciones de IVA e Impuesto a la Renta</p></div></div>
 
-    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
         <div>
             <strong>Declaraciones IVA</strong>
@@ -64,7 +64,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>Declaraciones Renta</strong>
@@ -73,9 +73,9 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-seccion-titulo"><span>03</span><div><h2>Anexos tributarios</h2><p>Informes y anexos requeridos por el SRI</p></div></div>
+    <div class="admin-documentacion-seccion-titulo admin-documentacion-seccion-anexos"><span>03</span><div><h2>Anexos tributarios</h2><p>Informes y anexos requeridos por el SRI</p></div></div>
 
-    <a href="{% url 'admin_ats' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_ats' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>ATS</strong>
@@ -84,7 +84,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='aice' %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='aice' %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-calculator"></i></span>
         <div>
             <strong>AICE</strong>
@@ -93,7 +93,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='rdep' %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='rdep' %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-users"></i></span>
         <div>
             <strong>RDEP</strong>
@@ -102,7 +102,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='dpt' %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='dpt' %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-document"></i></span>
         <div>
             <strong>DPT</strong>
@@ -111,7 +111,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='adi' %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_anexo_archivos' ruc=cliente.ruccedcli modulo='adi' %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-chart-pie"></i></span>
         <div>
             <strong>ADI</strong>
@@ -120,7 +120,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_rebefics' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
+    <a href="{% url 'admin_rebefics' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-anexo">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-users-alt"></i></span>
         <div>
             <strong>REBEFICS</strong>
@@ -129,9 +129,9 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-seccion-titulo"><span>04</span><div><h2>Documentación societaria</h2><p>Documentos y obligaciones ante la Superintendencia de Compañías</p></div></div>
+    <div class="admin-documentacion-seccion-titulo admin-documentacion-seccion-supercias"><span>04</span><div><h2>Documentación societaria</h2><p>Documentos y obligaciones ante la Superintendencia de Compañías</p></div></div>
 
-    <a href="#" class="admin-documentacion-card">
+    <a href="#" class="admin-documentacion-card admin-documentacion-card-supercias">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-building"></i></span>
         <div>
             <strong>SUPERCIAS</strong>
@@ -268,6 +268,94 @@
     color:#91a1a7;
     font-size:11px;
 }
+/* Paleta SRI: azul institucional con acento dorado. Ambas tarjetas comparten el estilo. */
+.admin-documentacion-seccion-sri > span{
+    background:#e8effb;
+    color:#174a92;
+}
+.admin-documentacion-seccion-sri:after{
+    background:linear-gradient(180deg,#174a92 0%,#174a92 72%,#f3aa24 72%,#f3aa24 100%);
+}
+.admin-documentacion-card-sri{
+    background:linear-gradient(135deg,#fff 0%,#f3f7ff 100%);
+    border-color:#d1dff4;
+    border-top:3px solid #174a92;
+}
+.admin-documentacion-card-sri .admin-documentacion-icon{
+    background:#e4edfb;
+    color:#174a92;
+}
+.admin-documentacion-card-sri strong{
+    color:#153f7a;
+}
+.admin-documentacion-card-sri .admin-documentacion-arrow{
+    color:#174a92;
+}
+.admin-documentacion-card-sri:hover{
+    background:linear-gradient(135deg,#fff 0%,#eaf1ff 100%);
+    border-color:#8eaddf;
+    border-top-color:#f3aa24;
+    box-shadow:0 10px 24px rgba(23,74,146,.12);
+}
+
+/* Paleta amarilla suave para los anexos tributarios. */
+.admin-documentacion-seccion-anexos > span{
+    background:#fff3cd;
+    color:#946200;
+}
+.admin-documentacion-seccion-anexos:after{
+    background:#d5a021;
+}
+.admin-documentacion-card-anexo{
+    background:linear-gradient(135deg,#fff 0%,#fffaf0 100%);
+    border-color:#f0dfb3;
+}
+.admin-documentacion-card-anexo .admin-documentacion-icon{
+    background:#fff0c2;
+    color:#a56d00;
+}
+.admin-documentacion-card-anexo strong{
+    color:#694b12;
+}
+.admin-documentacion-card-anexo .admin-documentacion-arrow{
+    color:#b28a35;
+}
+.admin-documentacion-card-anexo:hover{
+    background:linear-gradient(135deg,#fff 0%,#fff4d8 100%);
+    border-color:#e5c56f;
+    box-shadow:0 10px 24px rgba(156,112,15,.11);
+}
+
+/* Paleta gris y azul inspirada en la identidad institucional de SUPERCIAS. */
+.admin-documentacion-seccion-supercias > span{
+    background:#e8edf3;
+    color:#345675;
+}
+.admin-documentacion-seccion-supercias:after{
+    background:#476b8d;
+}
+.admin-documentacion-card-supercias{
+    background:linear-gradient(135deg,#fff 0%,#f1f5f9 100%);
+    border-color:#d5dee7;
+    border-top:3px solid #476b8d;
+}
+.admin-documentacion-card-supercias .admin-documentacion-icon{
+    background:#e3ebf3;
+    color:#345675;
+}
+.admin-documentacion-card-supercias strong{
+    color:#2e4f6c;
+}
+.admin-documentacion-card-supercias .admin-documentacion-arrow{
+    color:#476b8d;
+}
+.admin-documentacion-card-supercias:hover{
+    background:linear-gradient(135deg,#fff 0%,#e9eff5 100%);
+    border-color:#9eb2c5;
+    border-top-color:#345675;
+    box-shadow:0 10px 24px rgba(52,86,117,.12);
+}
+
 @media(max-width:1050px){
     .admin-documentacion-grid{
         grid-template-columns:repeat(2,minmax(0,1fr));
