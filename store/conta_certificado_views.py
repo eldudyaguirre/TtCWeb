@@ -46,18 +46,21 @@ def admin_cliente_estado_ruc_sri(request, ruc):
 
 
 
-def _conta_declaraciones_sri_request(ruc, usuario, anio, estado=False):
-    """Llama a Conta para iniciar o consultar la sincronización de declaraciones."""
+def _conta_declaraciones_sri_request(ruc, usuario, anio, tipo, estado=False):
+    """Llama a Conta para iniciar o consultar IVA o Renta por separado."""
+    tipo = str(tipo or '').strip().lower()
+    if tipo not in {'iva', 'renta'}:
+        raise RuntimeError('Tipo de declaración inválido; debe ser iva o renta.')
     base_url = str(__import__('os').getenv('CONTA_URL', 'http://127.0.0.1:2408')).rstrip('/')
     token = str(__import__('os').getenv('CONTA_INTERNAL_TOKEN', '')).strip()
     if not token:
         raise RuntimeError('CONTA_INTERNAL_TOKEN no está configurado en TotalCounts.')
 
-    url = f'{base_url}/api/v1/admin/sri/declaraciones/{ruc}/estado?anio={int(anio)}'
+    url = f'{base_url}/api/v1/admin/sri/declaraciones/{ruc}/estado?anio={int(anio)}&tipo={tipo}'
     method, payload = 'GET', None
     if not estado:
         url = f'{base_url}/api/v1/admin/sri/declaraciones/{ruc}/sincronizar'
-        payload = json.dumps({'anio': int(anio)}).encode('utf-8')
+        payload = json.dumps({'anio': int(anio), 'tipo': tipo}).encode('utf-8')
         method = 'POST'
 
     req = request.Request(url, data=payload, headers={
@@ -96,14 +99,15 @@ def admin_cliente_sincronizar_declaraciones_sri(request, ruc):
     try:
         payload = json.loads((request.body or b'{}').decode('utf-8'))
         anio = int(payload.get('anio'))
-        if anio < 2000 or anio > 2100:
+        tipo = str(payload.get('tipo', '')).strip().lower()
+        if anio < 2011 or anio > 2100 or tipo not in {'iva', 'renta'}:
             raise ValueError
     except (json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError):
         return JsonResponse({'ok': False, 'mensaje': 'El año fiscal no es válido.'}, status=400)
 
     try:
         resultado = _conta_declaraciones_sri_request(
-            ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'), anio,
+            ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'), anio, tipo,
         )
         return JsonResponse({'ok': True, **resultado})
     except RuntimeError as exc:
@@ -121,14 +125,15 @@ def admin_cliente_estado_declaraciones_sri(request, ruc):
         return JsonResponse({'ok': False, 'mensaje': 'Cliente no encontrado o inactivo.'}, status=404)
     try:
         anio = int(request.GET.get('anio', ''))
-        if anio < 2000 or anio > 2100:
+        tipo = str(request.GET.get('tipo', '')).strip().lower()
+        if anio < 2011 or anio > 2100 or tipo not in {'iva', 'renta'}:
             raise ValueError
     except (TypeError, ValueError):
         return JsonResponse({'ok': False, 'mensaje': 'El año fiscal no es válido.'}, status=400)
 
     try:
         resultado = _conta_declaraciones_sri_request(
-            ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'), anio, estado=True,
+            ruc, request.session.get(ADMIN_USERNAME_KEY, 'ADMIN'), anio, tipo, estado=True,
         )
         return JsonResponse({'ok': True, **resultado})
     except RuntimeError as exc:
