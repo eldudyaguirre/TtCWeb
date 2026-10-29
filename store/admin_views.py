@@ -21445,11 +21445,12 @@ def _migrar_declaraciones_legacy(ruc, carpeta_tipo):
 
 def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
     """Lista las declaraciones archivadas para un cliente y año fiscal."""
-    from pathlib import Path
+    import logging
     from django.urls import reverse
     from django.utils import timezone
     from .services.archivos.storage import data_root
 
+    logger = logging.getLogger(__name__)
     cliente = get_object_or_404(Cliente, pk=ruc)
     anio_actual = timezone.localdate().year
     anio_predeterminado = anio_actual if tipo == 'iva' else anio_actual - 1
@@ -21463,13 +21464,11 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
 
     carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
     ruc_cliente = str(cliente.ruccedcli).strip()
-
-    # Migra los documentos descargados por la versión anterior, que los colocaba
-    # bajo anexos/<tipo>/<año>, a documentos/<tipo>/<año>. La estructura anual y
-    # mensual se conserva, y los PDF nunca se sobrescriben si son distintos.
+    # Migra de forma segura archivos que hayan quedado bajo anexos en despliegues previos.
     _migrar_declaraciones_legacy(ruc_cliente, carpeta_tipo)
 
-    raiz = data_root() / ruc_cliente / 'documentos' / carpeta_tipo
+    raiz_cliente = (data_root() / ruc_cliente / 'documentos').resolve()
+    raiz = raiz_cliente / carpeta_tipo
     carpeta_anio = raiz / str(anio)
     meses_nombres = {
         '00': 'General / Sin período identificado',
@@ -21479,20 +21478,36 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre',
     }
     archivos = []
-    if carpeta_anio.is_dir():
-        # rglob incluye PDF directamente en el año y en subcarpetas mensuales.
-        for ruta in sorted(carpeta_anio.rglob('*.pdf'), key=lambda item: item.name.lower()):
+    total_archivos_encontrados = 0
+    pdf_candidatos = 0
+    pdf_invalidos = 0
+    directorio_existe = carpeta_anio.is_dir()
+
+    # Enumerar todos los archivos y comprobar la extensión sin distinguir mayúsculas.
+    # Así también se encuentran .PDF y PDF que estén directamente bajo el año.
+    if directorio_existe:
+        for ruta in sorted(carpeta_anio.rglob('*'), key=lambda item: str(item).lower()):
             if not ruta.is_file():
                 continue
+            total_archivos_encontrados += 1
+            if ruta.suffix.lower() != '.pdf':
+                continue
+            pdf_candidatos += 1
             try:
+                # La especificación PDF permite que el marcador aparezca dentro de
+                # los primeros 1024 bytes; no exigimos que esté en offset cero.
+                with ruta.open('rb') as documento:
+                    cabecera = documento.read(1024)
+                if b'%PDF-' not in cabecera:
+                    pdf_invalidos += 1
+                    continue
+
                 relativa = ruta.relative_to(carpeta_anio)
                 partes = relativa.parts
                 mes = '00'
-                if len(partes) >= 2 and partes[0] in meses_nombres and partes[0] != '00':
+                if partes and partes[0] in meses_nombres and partes[0] != '00':
                     mes = partes[0]
-                with ruta.open('rb') as documento:
-                    if documento.read(5) != b'%PDF':
-                        continue
+
                 stat = ruta.stat()
                 url = reverse('admin_declaracion_descargar', kwargs={
                     'ruc': ruc_cliente,
@@ -21502,7 +21517,12 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
                     'nombre': ruta.name,
                 })
             except (OSError, ValueError):
+                logger.exception(
+                    'No se pudo leer una declaración guardada | ruc=%s | tipo=%s | archivo=%s',
+                    ruc_cliente, tipo, ruta,
+                )
                 continue
+
             archivos.append({
                 'nombre': ruta.name,
                 'mes': mes,
@@ -21517,6 +21537,13 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
             })
 
     archivos.sort(key=lambda item: (item['mes'], item['nombre'].lower()), reverse=True)
+    if not archivos:
+        logger.warning(
+            'DECLARACIONES | página sin PDF | ruc=%s | tipo=%s | año=%s | ruta=%s | existe=%s | archivos=%s | pdf=%s | pdf_invalidos=%s',
+            ruc_cliente, tipo, anio, carpeta_anio, directorio_existe,
+            total_archivos_encontrados, pdf_candidatos, pdf_invalidos,
+        )
+
     return render(request, plantilla, {
         'cliente': cliente,
         'tipo_declaracion': tipo,
@@ -21525,6 +21552,11 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         'anios': list(range(anio_maximo, 2010, -1)),
         'archivos': archivos,
         'total_archivos': len(archivos),
+        'diagnostico_ruta': str(carpeta_anio),
+        'diagnostico_directorio_existe': directorio_existe,
+        'diagnostico_archivos': total_archivos_encontrados,
+        'diagnostico_pdfs': pdf_candidatos,
+        'diagnostico_pdf_invalidos': pdf_invalidos,
     })
 
 
