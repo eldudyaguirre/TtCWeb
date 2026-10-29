@@ -268,15 +268,15 @@
     color:#91a1a7;
     font-size:11px;
 }
-/* Comprobantes: estilo de dashboard conservando la identidad turquesa del módulo. */
+/* Comprobantes: tarjeta blanca con acentos turquesa de TotalCounts. */
 .admin-documentacion-card-comprobante{
     isolation:isolate;
     overflow:hidden;
-    color:#fff;
-    background:linear-gradient(135deg,#177b7b 0%,#1596a3 58%,#087f9f 100%);
-    border:1px solid #1596a3;
-    border-top:3px solid #58c9c4;
-    box-shadow:0 9px 22px rgba(21,150,163,.18);
+    color:var(--admin-dark);
+    background:#fff;
+    border:1px solid var(--admin-border);
+    border-top:3px solid #1596a3;
+    box-shadow:0 6px 18px rgba(31,45,52,.05);
 }
 .admin-documentacion-card-comprobante:before{
     content:"";
@@ -287,7 +287,7 @@
     right:-24px;
     bottom:-72px;
     border-radius:50%;
-    background:rgba(255,255,255,.10);
+    background:rgba(21,150,163,.065);
     pointer-events:none;
 }
 .admin-documentacion-card-comprobante:after{
@@ -298,37 +298,37 @@
     height:88px;
     right:20px;
     bottom:-51px;
-    border:1px solid rgba(255,255,255,.20);
+    border:1px solid rgba(21,150,163,.20);
     border-radius:50%;
     pointer-events:none;
 }
 .admin-documentacion-card-comprobante .admin-documentacion-icon{
     position:relative;
     z-index:1;
-    background:rgba(255,255,255,.17);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.12);
+    background:rgba(21,150,163,.11);
+    color:#1596a3;
+    border:1px solid rgba(21,150,163,.08);
 }
 .admin-documentacion-card-comprobante div{
     position:relative;
     z-index:1;
 }
 .admin-documentacion-card-comprobante strong{
-    color:#fff;
+    color:var(--admin-dark);
 }
 .admin-documentacion-card-comprobante div span{
-    color:rgba(255,255,255,.88);
+    color:var(--admin-muted);
 }
 .admin-documentacion-card-comprobante .admin-documentacion-arrow{
     z-index:2;
-    color:rgba(255,255,255,.88);
+    color:#1596a3;
 }
 .admin-documentacion-card-comprobante:hover{
-    color:#fff;
-    background:linear-gradient(135deg,#146d6d 0%,#108b98 58%,#076d8b 100%);
-    border-color:#58c9c4;
-    border-top-color:#58c9c4;
-    box-shadow:0 13px 26px rgba(21,116,126,.24);
+    color:var(--admin-dark);
+    background:#f8fcfc;
+    border-color:#1596a3;
+    border-top-color:#1596a3;
+    box-shadow:0 10px 24px rgba(21,116,126,.11);
 }
 .admin-documentacion-card-comprobante:focus-visible{
     outline:3px solid rgba(21,150,163,.26);
