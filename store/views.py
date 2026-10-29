@@ -1727,12 +1727,18 @@ def sri_anexos(request):
 
     from pathlib import Path
 
-    # Los anexos pueden estar directamente dentro de la carpeta del año
-    # o dentro de subcarpetas mensuales. Recorrer recursivamente evita
-    # ocultar archivos válidos que no estén organizados por mes.
-    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'anexos'
+    # Los anexos y las declaraciones se mantienen en carpetas distintas.
     nombre_ruta = getattr(request.resolver_match, 'url_name', '') if request.resolver_match else ''
     solo_declaraciones = nombre_ruta == 'sri_declaraciones'
+    carpeta_base = 'documentos' if solo_declaraciones else 'anexos'
+    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / carpeta_base
+
+    if solo_declaraciones:
+        # Si aún quedan declaraciones del despliegue anterior bajo anexos,
+        # migralas antes de listarlas en el portal del cliente.
+        from .admin_views import _migrar_declaraciones_legacy
+        _migrar_declaraciones_legacy(str(cliente.ruccedcli).strip(), 'declaraciones_iva')
+        _migrar_declaraciones_legacy(str(cliente.ruccedcli).strip(), 'declaraciones_renta')
     tipos = [
         {'nombre': 'Anexo Transaccional Simplificado', 'carpeta': 'ats', 'icono': 'fi-rr-document'},
         {'nombre': 'Anexo Relación Dependencia', 'carpeta': 'relacion_dependencia', 'icono': 'fi-rr-users'},
