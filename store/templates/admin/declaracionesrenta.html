@@ -1,0 +1,179 @@
+{% extends "admin/base.html" %}
+{% block title %}Declaraciones Renta | {{ cliente.nomclient }}{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb">
+    <a href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}">← Documentación</a>
+</div>
+
+<div class="admin-page-header">
+    <div>
+        <span class="admin-kicker">Documentación tributaria</span>
+        <h1>DECLARACIONES RENTA</h1>
+        <p>{{ cliente.nomclient }} · RUC: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+</div>
+
+<section class="admin-card declaraciones-tools">
+    <div class="declaraciones-filter">
+        <label for="declaracionesAnio">Año fiscal</label>
+        <form method="get" id="declaracionesFiltroForm">
+            <select name="anio" id="declaracionesAnio" onchange="this.form.submit()">
+                {% for opcion in anios %}
+                <option value="{{ opcion }}" {% if opcion == anio %}selected{% endif %}>{{ opcion }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="declaraciones-sync">
+        <p>Conta consultará las declaraciones de Renta presentadas en el SRI durante {{ anio }} y descargará solo los documentos que falten en el servidor. No enviará ni modificará declaraciones.</p>
+        <button type="button"
+            class="admin-modal-save declaraciones-sync-button"
+            id="sincronizarDeclaraciones"
+            data-url="{% url 'admin_cliente_sincronizar_declaraciones_sri' ruc=cliente.ruccedcli %}"
+            data-status-url="{% url 'admin_cliente_estado_declaraciones_sri' ruc=cliente.ruccedcli %}"
+            data-tipo="renta">
+            <i class="fi fi-rr-refresh"></i> Sincronizar Renta {{ anio }}
+        </button>
+        <span class="admin-ruc-sri-status" id="declaracionesEstado" aria-live="polite"></span>
+    </div>
+</section>
+
+<section class="admin-card declaraciones-list-card">
+    <div class="admin-card-header">
+        <div>
+            <span class="admin-kicker">Archivos en el servidor</span>
+            <h2>Declaraciones Renta · {{ anio }}</h2>
+        </div>
+        <span class="declaraciones-total">{{ total_archivos }} documento{% if total_archivos != 1 %}s{% endif %}</span>
+    </div>
+
+    {% if archivos %}
+    <div class="admin-table-wrap">
+        <table class="admin-table declaraciones-table">
+            <thead>
+                <tr>
+                    <th>Período</th>
+                    <th>Archivo</th>
+                    <th>Tamaño</th>
+                    <th>Guardado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for archivo in archivos %}
+                <tr>
+                    <td>{{ archivo.mes_nombre }}</td>
+                    <td>{{ archivo.nombre }}</td>
+                    <td>{{ archivo.tamano }}</td>
+                    <td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td>
+                    <td><a class="declaraciones-ver" href="{{ archivo.url }}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Ver PDF</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="declaraciones-empty">
+        <i class="fi fi-rr-folder-open"></i>
+        <strong>No hay declaraciones de Renta archrentadas para {{ anio }}.</strong>
+        <span>Pulsa «Sincronizar Renta {{ anio }}» para consultar el SRI.</span>
+    </div>
+    {% endif %}
+</section>
+
+<form id="declaracionesCsrfForm" hidden>{% csrf_token %}</form>
+
+<style>
+.declaraciones-tools{display:grid;grid-template-columns:minmax(160px,.3fr) minmax(0,1fr);gap:24px;align-items:start;margin-top:20px}
+.declaraciones-filter{display:flex;flex-direction:column;gap:8px}
+.declaraciones-filter label{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--admin-muted)}
+.declaraciones-filter form{margin:0}
+.declaraciones-filter select{height:42px;max-width:220px;width:100%;border:1px solid var(--admin-border);border-radius:8px;background:#fff;padding:0 12px;color:var(--admin-dark);font:inherit}
+.declaraciones-sync p{margin:0 0 12px;color:var(--admin-muted);font-size:12px;line-height:1.6}
+.declaraciones-sync-button{width:max-content;max-width:100%}
+.declaraciones-sync-button:disabled{opacity:.65;cursor:wait}
+.declaraciones-list-card{margin-top:20px}
+.declaraciones-total{font-size:12px;font-weight:800;color:var(--admin-muted);white-space:nowrap}
+.declaraciones-table td{vertical-align:middle}
+.declaraciones-ver{display:inline-flex;align-items:center;gap:6px;border:1px solid #d6e6e8;border-radius:7px;padding:7px 10px;color:#0c8995;text-decoration:none;font-size:11px;font-weight:800;white-space:nowrap}
+.declaraciones-ver:hover{background:#eef8f9;border-color:#1596a3}
+.declaraciones-empty{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center;padding:46px 16px;color:var(--admin-muted);font-size:12px}
+.declaraciones-empty i{font-size:26px;color:#1596a3}
+.declaraciones-empty strong{color:var(--admin-dark);font-size:14px}
+@media(max-width:700px){.declaraciones-tools{grid-template-columns:1fr;gap:18px}.declaraciones-filter select{max-width:none}.declaraciones-sync-button{width:100%;justify-content:center}.declaraciones-table{min-width:680px}}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const boton = document.getElementById('sincronizarDeclaraciones');
+    const estado = document.getElementById('declaracionesEstado');
+    if (!boton || !estado) return;
+
+    boton.addEventListener('click', async function () {
+        if (boton.disabled) return;
+        const anio = Number.parseInt(document.getElementById('declaracionesAnio').value, 10);
+        const tipo = boton.dataset.tipo;
+        if (!Number.isInteger(anio) || anio < 2011) {
+            estado.className = 'admin-ruc-sri-status error';
+            estado.textContent = 'Selecciona un año fiscal válido.';
+            return;
+        }
+        if (!window.confirm('Se consultarán las declaraciones de Renta del año ' + anio + '. Conta descargará solo los PDF faltantes; no presentará declaraciones. ¿Deseas continuar?')) return;
+
+        boton.disabled = true;
+        estado.className = 'admin-ruc-sri-status';
+        estado.textContent = 'Enviando solicitud a Conta...';
+        try {
+            const csrf = document.querySelector('#declaracionesCsrfForm input[name="csrfmiddlewaretoken"]');
+            const headers = {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrf ? csrf.value : '',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+            const inicio = await fetch(boton.dataset.url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {...headers, 'Content-Type': 'application/json'},
+                body: JSON.stringify({anio: anio, tipo: tipo})
+            });
+            const datosInicio = await inicio.json().catch(() => ({}));
+            if (!inicio.ok || !datosInicio.ok) {
+                throw new Error(datosInicio.mensaje || datosInicio.detail || ('Error HTTP ' + inicio.status));
+            }
+
+            estado.textContent = datosInicio.mensaje || 'Conta inició la sincronización...';
+            const urlEstado = boton.dataset.statusUrl + '?anio=' + encodeURIComponent(anio) + '&tipo=' + encodeURIComponent(tipo);
+            const limite = Date.now() + 10 * 60 * 1000;
+            while (Date.now() < limite) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                const respuesta = await fetch(urlEstado, {
+                    method: 'GET', credentials: 'same-origin', cache: 'no-store', headers
+                });
+                const actual = await respuesta.json().catch(() => ({}));
+                if (!respuesta.ok || !actual.ok) {
+                    throw new Error(actual.mensaje || actual.detail || ('No se pudo consultar el estado (HTTP ' + respuesta.status + ').'));
+                }
+                if (actual.estado === 'completado') {
+                    estado.className = 'admin-ruc-sri-status ok';
+                    estado.textContent = actual.mensaje || 'Sincronización completada.';
+                    window.location.reload();
+                    return;
+                }
+                if (actual.estado === 'error') {
+                    const detalle = Array.isArray(actual.detalle_errores) && actual.detalle_errores.length ? ' Detalle: ' + actual.detalle_errores[0] : '';
+                    throw new Error((actual.mensaje || 'Conta no pudo completar la sincronización.') + detalle);
+                }
+                estado.textContent = actual.mensaje || 'Conta está consultando el SRI...';
+            }
+            throw new Error('La sincronización excedió el tiempo de espera. Revisa el registro de Conta antes de volver a intentarlo.');
+        } catch (error) {
+            console.error('Sincronización de declaraciones Renta:', error);
+            estado.className = 'admin-ruc-sri-status error';
+            estado.textContent = '✗ ' + (error.message || 'No se pudo completar la sincronización.');
+            boton.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}
