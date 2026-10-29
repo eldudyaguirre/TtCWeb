@@ -21615,3 +21615,210 @@ def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
     respuesta = FileResponse(destino.open('rb'), content_type='application/pdf')
     respuesta['Content-Disposition'] = f'inline; filename="{nombre}"'
     return respuesta
+
+
+@admin_required
+def admin_enviar_declaraciones_correo(request, ruc, tipo):
+    """Envía por correo las últimas declaraciones PDF ya archivadas del cliente."""
+    import logging
+    import re
+    from pathlib import Path
+    from django.core.mail import EmailMessage
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    from django.http import JsonResponse
+    from .services.archivos.storage import data_root
+
+    logger = logging.getLogger(__name__)
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'mensaje': 'Método no permitido.'}, status=405)
+    if tipo not in {'iva', 'renta'}:
+        return JsonResponse({'ok': False, 'mensaje': 'Tipo de declaración no válido.'}, status=404)
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    try:
+        anio_corte = int(request.POST.get('anio', ''))
+    except (TypeError, ValueError):
+        return JsonResponse({'ok': False, 'mensaje': 'Selecciona un año fiscal válido.'}, status=400)
+
+    if anio_corte < 2011 or anio_corte > datetime.now().year:
+        return JsonResponse({'ok': False, 'mensaje': 'El año fiscal seleccionado no es válido.'}, status=400)
+
+    try:
+        cantidad = int(request.POST.get('cantidad', ''))
+    except (TypeError, ValueError):
+        return JsonResponse({'ok': False, 'mensaje': 'Selecciona la cantidad de declaraciones que deseas enviar.'}, status=400)
+
+    cantidades_permitidas = {3, 6, 9} if tipo == 'iva' else {1, 2, 3}
+    if cantidad not in cantidades_permitidas:
+        opciones = '3, 6 o 9' if tipo == 'iva' else '1, 2 o 3'
+        return JsonResponse({
+            'ok': False,
+            'mensaje': f'La cantidad permitida para declaraciones de {"IVA" if tipo == "iva" else "Renta"} es {opciones}.',
+        }, status=400)
+
+    destinatario = str(request.POST.get('destinatario', '') or cliente.corelectr or '').strip()
+    try:
+        validate_email(destinatario)
+    except ValidationError:
+        return JsonResponse({
+            'ok': False,
+            'mensaje': 'El cliente no tiene un correo válido. Corrige el correo en el formulario antes de enviar.',
+        }, status=400)
+
+    carpeta_tipo = 'declaraciones_iva' if tipo == 'iva' else 'declaraciones_renta'
+    try:
+        _migrar_declaraciones_legacy(ruc_cliente, carpeta_tipo)
+        raiz = (data_root() / ruc_cliente / 'documentos' / carpeta_tipo).resolve()
+    except Exception as exc:
+        logger.exception(
+            'No se pudo preparar el envío de declaraciones | ruc=%s | tipo=%s',
+            ruc_cliente, tipo,
+        )
+        return JsonResponse({
+            'ok': False,
+            'mensaje': f'No se pudo acceder a los documentos del cliente: {exc}',
+        }, status=500)
+
+    meses = {
+        '01': 'Enero', '02': 'Febrero', '03': 'Marzo',
+        '04': 'Abril', '05': 'Mayo', '06': 'Junio',
+        '07': 'Julio', '08': 'Agosto', '09': 'Septiembre',
+        '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre',
+    }
+    disponibles = []
+    if raiz.is_dir():
+        for archivo in raiz.rglob('*'):
+            if not archivo.is_file() or archivo.suffix.lower() != '.pdf':
+                continue
+            try:
+                relativa = archivo.relative_to(raiz)
+                partes = relativa.parts
+                if not partes or not re.fullmatch(r'20\\d{2}', partes[0]):
+                    continue
+                anio_archivo = int(partes[0])
+                if anio_archivo > anio_corte:
+                    continue
+
+                mes = '00'
+                if len(partes) >= 3 and partes[1].isdigit():
+                    posible_mes = partes[1].zfill(2)
+                    if posible_mes in meses:
+                        mes = posible_mes
+
+                with archivo.open('rb') as pdf:
+                    cabecera = pdf.read(1024)
+                if b'%PDF-' not in cabecera:
+                    continue
+
+                stat = archivo.stat()
+                disponibles.append({
+                    'ruta': archivo,
+                    'nombre': archivo.name,
+                    'anio': anio_archivo,
+                    'mes': mes,
+                    'tamano': stat.st_size,
+                    'modificado': stat.st_mtime,
+                })
+            except (OSError, ValueError):
+                logger.exception(
+                    'No se pudo inspeccionar un PDF para envío | ruc=%s | archivo=%s',
+                    ruc_cliente, archivo,
+                )
+
+    # Más recientes primero. En IVA se ordena por año/mes y luego por fecha de
+    # modificación para distinguir rectificatorias del mismo período.
+    disponibles.sort(
+        key=lambda item: (item['anio'], int(item['mes']), item['modificado'], item['nombre'].lower()),
+        reverse=True,
+    )
+
+    if len(disponibles) < cantidad:
+        return JsonResponse({
+            'ok': False,
+            'mensaje': (
+                f'Solicitaste {cantidad} declaración(es), pero solo hay {len(disponibles)} PDF válido(s) '
+                f'hasta el año {anio_corte}. No se envió el correo.'
+            ),
+            'disponibles': len(disponibles),
+        }, status=400)
+
+    seleccionados = disponibles[:cantidad]
+    total_bytes = sum(item['tamano'] for item in seleccionados)
+    # 18 MiB de adjuntos deja margen para la codificación MIME del correo.
+    limite_bytes = 18 * 1024 * 1024
+    if total_bytes > limite_bytes:
+        return JsonResponse({
+            'ok': False,
+            'mensaje': (
+                f'Los {cantidad} documentos pesan {total_bytes / (1024 * 1024):.1f} MB en total. '
+                'Superan el límite seguro de 18 MB para este envío. Selecciona una cantidad menor.'
+            ),
+            'tamano_mb': round(total_bytes / (1024 * 1024), 1),
+        }, status=413)
+
+    if tipo == 'iva':
+        etiqueta = 'declaraciones de IVA'
+        asunto = f'Envío de declaraciones de IVA - {cliente.nomclient} - {ruc_cliente}'
+    else:
+        etiqueta = 'declaraciones del Impuesto a la Renta'
+        asunto = f'Envío de declaraciones de Impuesto a la Renta - {cliente.nomclient} - {ruc_cliente}'
+
+    lineas_periodos = []
+    for item in seleccionados:
+        if tipo == 'iva':
+            periodo = meses.get(item['mes'], 'Período general')
+            lineas_periodos.append(f"- {periodo} {item['anio']} — {item['nombre']}")
+        else:
+            lineas_periodos.append(f"- Ejercicio fiscal {item['anio']} — {item['nombre']}")
+
+    cuerpo = (
+        f"Estimado/a {cliente.nomclient},\\n\\n"
+        f"Adjuntamos las últimas {cantidad} {etiqueta} registradas hasta el año fiscal {anio_corte}.\\n\\n"
+        "Documentos incluidos:\\n"
+        + "\\n".join(lineas_periodos)
+        + "\\n\\n"
+        "Este mensaje fue enviado desde la plataforma TotalCounts.\\n"
+    )
+
+    correo = EmailMessage(
+        subject=asunto,
+        body=cuerpo,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[destinatario],
+    )
+    try:
+        for item in seleccionados:
+            if tipo == 'iva':
+                periodo = meses.get(item['mes'], 'General')
+                nombre_adjunto = f"IVA_{item['anio']}_{item['mes']}_{item['nombre']}"
+            else:
+                nombre_adjunto = f"RENTA_{item['anio']}_{item['nombre']}"
+            correo.attach(nombre_adjunto, item['ruta'].read_bytes(), 'application/pdf')
+        enviado = correo.send(fail_silently=False)
+        if not enviado:
+            raise RuntimeError('El servidor de correo no confirmó el envío.')
+    except Exception as exc:
+        logger.exception(
+            'Falló el envío de declaraciones por correo | ruc=%s | tipo=%s | cantidad=%s',
+            ruc_cliente, tipo, cantidad,
+        )
+        return JsonResponse({
+            'ok': False,
+            'mensaje': f'No se pudo enviar el correo. Verifica la configuración SMTP. Detalle: {exc}',
+        }, status=502)
+
+    logger.info(
+        'Declaraciones enviadas por correo | ruc=%s | tipo=%s | destinatario=%s | cantidad=%s | anio_corte=%s | bytes=%s',
+        ruc_cliente, tipo, destinatario, len(seleccionados), anio_corte, total_bytes,
+    )
+    return JsonResponse({
+        'ok': True,
+        'mensaje': f'Se enviaron {len(seleccionados)} PDF a {destinatario}.',
+        'destinatario': destinatario,
+        'cantidad': len(seleccionados),
+        'archivos': [item['nombre'] for item in seleccionados],
+        'tamano_mb': round(total_bytes / (1024 * 1024), 2),
+    })
