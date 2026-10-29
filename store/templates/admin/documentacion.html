@@ -51,7 +51,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-separador" aria-hidden="true"></div>
+    <div class="admin-documentacion-seccion-titulo"><span>01</span><div><h2>Comprobantes</h2><p>Documentos de compras, ventas y notas de crédito</p></div></div>
 
     <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
@@ -71,7 +71,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-separador" aria-hidden="true"></div>
+    <div class="admin-documentacion-seccion-titulo"><span>02</span><div><h2>Declaraciones tributarias</h2><p>Declaraciones de IVA e Impuesto a la Renta</p></div></div>
 
     <a href="{% url 'admin_ats' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
@@ -127,7 +127,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <div class="admin-documentacion-separador" aria-hidden="true"></div>
+    <div class="admin-documentacion-seccion-titulo"><span>03</span><div><h2>Anexos tributarios</h2><p>Informes y anexos requeridos por el SRI</p></div></div>
 
     <a href="#" class="admin-documentacion-card">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-building"></i></span>
@@ -145,13 +145,58 @@
     gap:16px;
     margin-top:22px;
 }
-.admin-documentacion-separador{
+.admin-documentacion-seccion-titulo{
     grid-column:1 / -1;
-    height:1px;
-    width:100%;
-    margin:3px 0;
-    background:linear-gradient(90deg,rgba(21,150,163,.45),#dce6e9 28%,#dce6e9 72%,rgba(21,150,163,.45));
-    position:relative;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:8px 2px 2px;
+    margin-top:4px;
+    min-width:0;
+}
+.admin-documentacion-seccion-titulo > span{
+    flex:0 0 36px;
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    background:rgba(21,150,163,.10);
+    color:#128b96;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.04em;
+}
+.admin-documentacion-seccion-titulo > div{
+    min-width:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+.admin-documentacion-seccion-titulo h2{
+    margin:0;
+    color:var(--admin-dark);
+    font-size:16px;
+    font-weight:800;
+    line-height:1.3;
+}
+.admin-documentacion-seccion-titulo p{
+    margin:0;
+    color:var(--admin-muted);
+    font-size:11px;
+    line-height:1.45;
+}
+.admin-documentacion-seccion-titulo:after{
+    content:"";
+    align-self:stretch;
+    width:4px;
+    min-height:30px;
+    margin-left:auto;
+    border-radius:5px;
+    background:#1596a3;
+    opacity:.7;
 }
 .admin-documentacion-separador:after{
     content:"";
