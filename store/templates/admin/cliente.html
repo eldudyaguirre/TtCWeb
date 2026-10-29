@@ -285,27 +285,6 @@
         </div>
 
         <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
-            <label>Declaraciones del SRI</label>
-            <div class="admin-ruc-upload">
-                <div class="admin-modal-field">
-                    <label for="adminAnioDeclaracionesSri">Año de IVA</label>
-                    <input id="adminAnioDeclaracionesSri" type="number" min="2011" max="2100" value="{% now 'Y' %}">
-                </div>
-                <span class="admin-ruc-help">Conta consultará todas las declaraciones presentadas de IVA del año indicado y la declaración anual de Renta Naturales del ejercicio anterior. Solo descargará documentos; no presentará ni modificará declaraciones.</span>
-                <button
-                    type="button"
-                    class="admin-ruc-upload-button"
-                    id="adminSincronizarDeclaracionesSri"
-                    data-url="{% url 'admin_cliente_sincronizar_declaraciones_sri' ruc=cliente.ruccedcli %}"
-                    data-status-url="{% url 'admin_cliente_estado_declaraciones_sri' ruc=cliente.ruccedcli %}"
-                >
-                    <i class="fi fi-rr-refresh"></i> Sincronizar declaraciones del SRI
-                </button>
-                <span class="admin-ruc-sri-status" id="adminDeclaracionesSriStatus"></span>
-            </div>
-        </div>
-
-        <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
             <label>Contrato Constitutivo</label>
             <div class="admin-ruc-upload">
                 <form method="post" action="{% url 'admin_cliente_documento_legal' ruc=cliente.ruccedcli tipo='contrato_constitutivo' %}" enctype="multipart/form-data" class="admin-ruc-form">
@@ -468,91 +447,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error al obtener Certificado de RUC desde Conta:', error);
             estado.className = 'admin-ruc-sri-status error';
             estado.textContent = '✗ ' + (error.message || 'No se pudo completar la solicitud.');
-            boton.disabled = false;
-        }
-    });
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const boton = document.getElementById('adminSincronizarDeclaracionesSri');
-    const estado = document.getElementById('adminDeclaracionesSriStatus');
-    const campoAnio = document.getElementById('adminAnioDeclaracionesSri');
-    if (!boton || !estado || !campoAnio) return;
-
-    boton.addEventListener('click', async function () {
-        if (boton.disabled) return;
-        const anio = Number.parseInt(campoAnio.value, 10);
-        if (!Number.isInteger(anio) || anio < 2011 || anio > 2100) {
-            estado.className = 'admin-ruc-sri-status error';
-            estado.textContent = 'Ingresa un año válido entre 2011 y 2100.';
-            return;
-        }
-        const anioRenta = anio - 1;
-        const confirmar = window.confirm(
-            'Conta consultará las declaraciones de IVA del año ' + anio +
-            ' y la declaración anual de Renta Naturales del ejercicio fiscal ' + anioRenta +
-            '. Solo descargará las declaraciones que falten en el servidor. No enviará formularios nuevos.\n\n¿Deseas continuar?'
-        );
-        if (!confirmar) return;
-
-        boton.disabled = true;
-        estado.className = 'admin-ruc-sri-status';
-        estado.textContent = 'Enviando solicitud a Conta...';
-        try {
-            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            const headers = {
-                'Accept': 'application/json',
-                'X-CSRFToken': csrf ? csrf.value : '',
-                'X-Requested-With': 'XMLHttpRequest'
-            };
-            const inicio = await fetch(boton.dataset.url, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {...headers, 'Content-Type': 'application/json'},
-                body: JSON.stringify({anio: anio})
-            });
-            const inicioData = await inicio.json().catch(() => ({}));
-            if (!inicio.ok || !inicioData.ok) {
-                throw new Error(inicioData.mensaje || inicioData.detail || ('Error HTTP ' + inicio.status));
-            }
-
-            estado.textContent = inicioData.mensaje || 'Conta recibió la solicitud. Consultando el estado...';
-            const urlEstado = boton.dataset.statusUrl + '?anio=' + encodeURIComponent(anio);
-            const limite = Date.now() + 10 * 60 * 1000;
-            while (Date.now() < limite) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                const respuesta = await fetch(urlEstado, {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    cache: 'no-store',
-                    headers
-                });
-                const actual = await respuesta.json().catch(() => ({}));
-                if (!respuesta.ok || !actual.ok) {
-                    throw new Error(actual.mensaje || actual.detail || ('No se pudo consultar el estado (HTTP ' + respuesta.status + ').'));
-                }
-                if (actual.estado === 'completado') {
-                    estado.className = 'admin-ruc-sri-status ok';
-                    estado.textContent = actual.mensaje || 'Sincronización completada.';
-                    boton.disabled = false;
-                    return;
-                }
-                if (actual.estado === 'error') {
-                    let mensaje = actual.mensaje || 'Conta no pudo completar la sincronización.';
-                    if (Array.isArray(actual.detalle_errores) && actual.detalle_errores.length) {
-                        mensaje += ' Detalle: ' + actual.detalle_errores[0];
-                    }
-                    throw new Error(mensaje);
-                }
-                estado.textContent = actual.mensaje || 'Conta está consultando las declaraciones del SRI...';
-            }
-            throw new Error('La operación no se confirmó en 10 minutos. Revisa los registros de Conta antes de volver a intentarlo.');
-        } catch (error) {
-            console.error('Error al sincronizar declaraciones del SRI:', error);
-            estado.className = 'admin-ruc-sri-status error';
-            estado.textContent = '✗ ' + (error.message || 'No se pudo completar la sincronización.');
             boton.disabled = false;
         }
     });
