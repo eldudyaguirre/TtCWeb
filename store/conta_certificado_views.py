@@ -153,27 +153,29 @@ def conta_declaraciones_sri(request, ruc):
     if cliente is None:
         return JsonResponse({'ok': False, 'mensaje': 'El RUC no existe o el cliente no está activo.'}, status=404)
 
-    raiz = data_root() / ruc / 'anexos'
+    raiz_cliente = data_root() / ruc
+    raiz = raiz_cliente / 'anexos'
     raiz.mkdir(parents=True, exist_ok=True)
 
     if request.method == 'GET':
+        # Listamos todos los PDF del cliente, no solo los del nuevo módulo,
+        # para poder reconocer una declaración que ya se guardó anteriormente
+        # bajo otra carpeta o con el nombre original descargado del SRI.
         archivos = []
-        for carpeta in ('declaraciones_iva', 'declaraciones_renta'):
-            directorio = raiz / carpeta
-            if not directorio.is_dir():
+        for archivo in raiz_cliente.rglob('*'):
+            if not archivo.is_file() or archivo.suffix.lower() != '.pdf':
                 continue
-            for archivo in directorio.rglob('*.pdf'):
-                if not archivo.is_file():
-                    continue
-                try:
-                    clave = archivo.relative_to(raiz).as_posix()
-                except ValueError:
-                    continue
-                archivos.append({
-                    'key': clave,
-                    'nombre': archivo.name,
-                    'tamano': archivo.stat().st_size,
-                })
+            if any(parte.startswith('.') for parte in archivo.relative_to(raiz_cliente).parts):
+                continue
+            try:
+                clave = archivo.relative_to(raiz_cliente).as_posix()
+            except ValueError:
+                continue
+            archivos.append({
+                'key': clave,
+                'nombre': archivo.name,
+                'tamano': archivo.stat().st_size,
+            })
         archivos.sort(key=lambda item: item['key'])
         return JsonResponse({'ok': True, 'ruc': ruc, 'files': archivos, 'total': len(archivos)})
 
@@ -205,7 +207,7 @@ def conta_declaraciones_sri(request, ruc):
     carpeta_destino = raiz / carpeta_tipo / anio_txt / mes
     carpeta_destino.mkdir(parents=True, exist_ok=True)
     destino = carpeta_destino / nombre
-    clave = destino.relative_to(raiz).as_posix()
+    clave = destino.relative_to(raiz_cliente).as_posix()
 
     if destino.is_file():
         try:
