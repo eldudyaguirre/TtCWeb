@@ -78,6 +78,12 @@
         <i class="fi fi-rr-folder-open"></i>
         <strong>No hay declaraciones de Renta archivadas para {{ anio }}.</strong>
         <span>Pulsa «Sincronizar Renta {{ anio }}» para consultar el SRI.</span>
+        <div class="declaraciones-diagnostico">
+            <strong>Diagnóstico de almacenamiento</strong>
+            <span>Carpeta consultada: <code>{{ diagnostico_ruta }}</code></span>
+            <span>Carpeta encontrada: {% if diagnostico_directorio_existe %}Sí{% else %}No{% endif %}</span>
+            <span>Archivos: {{ diagnostico_archivos }} · PDF detectados: {{ diagnostico_pdfs }} · PDF no válidos: {{ diagnostico_pdf_invalidos }}</span>
+        </div>
     </div>
     {% endif %}
 </section>
@@ -338,6 +344,14 @@
 }
 .declaraciones-empty strong{color:#344851;font-size:14px;line-height:1.5}
 .declaraciones-empty span{line-height:1.6}
+.declaraciones-diagnostico{
+    display:flex;flex-direction:column;gap:5px;align-items:flex-start;
+    max-width:100%;width:min(780px,100%);margin-top:14px;padding:12px 14px;
+    border:1px solid #e2e8eb;border-radius:9px;background:#f8fafb;
+    color:#657780;text-align:left;font-size:11px;line-height:1.5;
+}
+.declaraciones-diagnostico strong{color:#344851}
+.declaraciones-diagnostico code{overflow-wrap:anywhere;white-space:normal;color:#0b7781}
 @media(max-width:850px){
     .declaraciones-tools{grid-template-columns:minmax(160px,220px) minmax(0,1fr);gap:20px;padding:20px}
 }
