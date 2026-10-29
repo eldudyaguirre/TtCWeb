@@ -1835,7 +1835,7 @@ def sri_anexos(request):
 
 
 def sri_anexo_descargar(request, ruta):
-    """Sirve de forma privada un archivo del cliente autenticado desde SRI/Anexos."""
+    """Sirve archivos tributarios desde Anexos o Declaraciones, respetando el cliente autenticado."""
     from pathlib import Path
     import mimetypes
     from django.http import FileResponse, Http404
@@ -1846,7 +1846,16 @@ def sri_anexo_descargar(request, ruta):
 
     try:
         relativo = Path(str(ruta))
-        raiz = (Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / 'anexos').resolve()
+        partes = relativo.parts
+        if not partes:
+            raise Http404('Ruta de documento inválida.')
+        es_declaracion = partes[0] in {'declaraciones_iva', 'declaraciones_renta'}
+        carpeta_base = 'documentos' if es_declaracion else 'anexos'
+        raiz = (
+            Path(settings.TOTALCOUNTS_DATA_ROOT)
+            / str(cliente.ruccedcli).strip()
+            / carpeta_base
+        ).resolve()
         destino = (raiz / relativo).resolve()
     except (OSError, ValueError, TypeError):
         raise Http404('Ruta de documento inválida.')
@@ -1857,8 +1866,9 @@ def sri_anexo_descargar(request, ruta):
     mime = mimetypes.guess_type(destino.name)[0] or 'application/octet-stream'
     respuesta = FileResponse(destino.open('rb'), content_type=mime)
     modo = 'inline' if destino.suffix.lower() == '.pdf' else 'attachment'
-    respuesta['Content-Disposition'] = f'{modo}; filename="{destino.name}"'
+    respuesta['Content-Disposition'] = f'{"inline" if modo == "inline" else "attachment"}; filename="{destino.name}"'
     return respuesta
+
 
 @login_required
 def roles_pago(request):
