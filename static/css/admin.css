@@ -102,7 +102,6 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
 .admin-client-grid .admin-cliente-cuenta-card .admin-module-button small{
     color:#8c777a;
 }
-.admin-client-grid .admin-client-balance-card:hover,
 .admin-client-grid .admin-cliente-cuenta-card:hover{
     border-color:#e7aeb3;
     box-shadow:0 12px 28px rgba(178,43,54,.12);
