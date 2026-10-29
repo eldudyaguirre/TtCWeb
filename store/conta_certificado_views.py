@@ -168,8 +168,11 @@ def conta_declaraciones_sri(request, ruc):
             if any(parte.startswith('.') for parte in archivo.relative_to(raiz_cliente).parts):
                 continue
             try:
+                with archivo.open('rb') as origen:
+                    if origen.read(5) != b'%PDF':
+                        continue
                 clave = archivo.relative_to(raiz_cliente).as_posix()
-            except ValueError:
+            except (OSError, ValueError):
                 continue
             archivos.append({
                 'key': clave,
