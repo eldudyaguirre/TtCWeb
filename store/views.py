@@ -1786,10 +1786,13 @@ def sri_anexos(request):
                 # agruparlo por mes. Si está directamente en el año (o en una
                 # subcarpeta no mensual), mostrarlo bajo "General".
                 mes = '00'
-                if len(partes) >= 3 and partes[1].isdigit():
-                    posible_mes = partes[1].zfill(2)
-                    if posible_mes in nombres_meses:
-                        mes = posible_mes
+                if len(partes) >= 3:
+                    if partes[1] in {'S1', 'S2'}:
+                        mes = partes[1]
+                    elif partes[1].isdigit():
+                        posible_mes = partes[1].zfill(2)
+                        if posible_mes in nombres_meses:
+                            mes = posible_mes
 
                 stat = archivo.stat()
                 item = {
