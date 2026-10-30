@@ -21771,8 +21771,16 @@ def admin_enviar_declaraciones_correo(request, ruc, tipo):
 
     # Más recientes primero. En IVA se ordena por año/mes y luego por fecha de
     # modificación para distinguir rectificatorias del mismo período.
+    orden_periodo = {
+        'S1': 13, 'S2': 14,
+        **{f'{numero:02d}': numero for numero in range(1, 13)},
+        '00': 0,
+    }
     disponibles.sort(
-        key=lambda item: (item['anio'], int(item['mes']), item['modificado'], item['nombre'].lower()),
+        key=lambda item: (
+            item['anio'], orden_periodo.get(item['mes'], 0),
+            item['modificado'], item['nombre'].lower(),
+        ),
         reverse=True,
     )
 
