@@ -10,6 +10,10 @@ Esta extensión abre el portal oficial del SRI desde el menú **Contraseñas →
 4. Pulsa **Cargar descomprimida** y selecciona la carpeta `chrome-extension-sri`.
 5. Deja la extensión habilitada y abre/recarga TtCWeb.
 
+## Actualizar la extensión
+
+Cuando se publiquen cambios en GitHub, copia los archivos nuevos de `chrome-extension-sri` a la carpeta local que Chrome tiene cargada. Después abre `chrome://extensions` y pulsa **Recargar** en la tarjeta de TotalCounts - Ingreso SRI e IESS. La extensión cargada como «descomprimida» no se actualiza sola.
+
 ## Privacidad
 
 - La extensión declara acceso únicamente a `https://totalcounts.com.ec/*` y `https://srienlinea.sri.gob.ec/*`.
