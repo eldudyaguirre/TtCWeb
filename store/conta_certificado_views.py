@@ -196,8 +196,8 @@ def conta_declaraciones_sri(request, ruc):
         return JsonResponse({'ok': False, 'mensaje': 'Tipo de declaración no válido.'}, status=400)
     if not re.fullmatch(r'20\d{2}', anio_txt):
         return JsonResponse({'ok': False, 'mensaje': 'Año fiscal no válido.'}, status=400)
-    if mes not in {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'}:
-        return JsonResponse({'ok': False, 'mensaje': 'Periodo mensual no válido.'}, status=400)
+    if mes not in {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', 'S1', 'S2'}:
+        return JsonResponse({'ok': False, 'mensaje': 'Período mensual o semestral no válido.'}, status=400)
     if tipo == 'iva' and mes == '00':
         return JsonResponse({'ok': False, 'mensaje': 'La declaración de IVA debe tener un mes válido.'}, status=400)
     if tipo == 'renta':
