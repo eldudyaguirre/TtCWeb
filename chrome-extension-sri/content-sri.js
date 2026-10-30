@@ -67,10 +67,10 @@
     const bodyText = (document.body?.innerText || "").slice(0, 12000);
     const combined = texts.join(" | ") + " | " + bodyText;
     const patterns = [
-      /usuario\\s*(?:o|y)\\s*(?:clave|contraseñ[ao])\\s*(?:es|son)?\\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
-      /(?:clave|contraseñ[ao])\\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
-      /(?:credenciales|datos de acceso)\\s*(?:son|est[aá]n)?\\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
-      /usuario\\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
+      /usuario\s*(?:o|y)\s*(?:clave|contraseñ[ao])\s*(?:es|son)?\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
+      /(?:clave|contraseñ[ao])\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
+      /(?:credenciales|datos de acceso)\s*(?:son|est[aá]n)?\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
+      /usuario\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
       /no se pudo iniciar sesi[oó]n/i,
       /ha excedido.{0,60}intentos|cuenta.{0,60}bloquead[ao]/i
     ];
@@ -205,7 +205,7 @@
     if (message?.type !== "TTCWEB_FILL_SRI_CREDENTIALS") return;
     if (fillLoopStarted || submissionScheduled || loginSubmitted || sessionGet(SESSION_LOCK_KEY)) return;
     credentials = { ruc: String(message.ruc || ""), clave: String(message.clave || "") };
-    if (!/^\\d{13}$/.test(credentials.ruc) || !credentials.clave) {
+    if (!/^\d{13}$/.test(credentials.ruc) || !credentials.clave) {
       document.documentElement.dataset.ttcSriFillStatus = "invalid-credentials";
       return;
     }
