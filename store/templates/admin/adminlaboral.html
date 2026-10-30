@@ -51,7 +51,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-laboral-card">
+    <a href="#" class="admin-laboral-card admin-laboral-card--blue">
         <span class="admin-laboral-icon"><i class="fi fi-rr-gift"></i></span>
         <div class="admin-laboral-copy">
             <strong>Décimo Tercero</strong>
@@ -60,7 +60,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-laboral-card">
+    <a href="#" class="admin-laboral-card admin-laboral-card--blue">
         <span class="admin-laboral-icon"><i class="fi fi-rr-gift"></i></span>
         <div class="admin-laboral-copy">
             <strong>Décimo Cuarto</strong>
@@ -279,6 +279,45 @@
 .admin-laboral-card--gold:hover .admin-laboral-icon i{
     color:#b68218;
 }
+
+/* Fondo azul institucional exclusivo para Décimo Tercero y Décimo Cuarto. */
+.admin-laboral-card--blue{
+    background:#262d84;
+    border-color:#262d84;
+    border-top-color:#1596a3;
+    box-shadow:0 7px 19px rgba(38,45,132,.16);
+}
+.admin-laboral-card--blue .admin-laboral-copy strong{
+    color:#fff;
+}
+.admin-laboral-card--blue .admin-laboral-copy span{
+    color:rgba(255,255,255,.82);
+}
+.admin-laboral-card--blue .admin-laboral-arrow{
+    color:rgba(255,255,255,.85);
+}
+.admin-laboral-card--blue::before{
+    border-color:rgba(255,255,255,.17);
+    background:rgba(255,255,255,.035);
+}
+.admin-laboral-card--blue::after{
+    border-color:rgba(255,255,255,.14);
+}
+.admin-laboral-card--blue:hover{
+    background:#262d84;
+    border-color:#1596a3;
+    border-top-color:#1596a3;
+    box-shadow:0 13px 26px rgba(38,45,132,.25);
+}
+.admin-laboral-card--blue:hover .admin-laboral-icon{
+    background:#1596a3;
+    border-color:#1596a3;
+    color:#fff;
+}
+.admin-laboral-card--blue:hover .admin-laboral-arrow{
+    color:#fff;
+}
+
 .admin-laboral-card--gold:hover .admin-laboral-arrow{
     color:#263640;
 }
