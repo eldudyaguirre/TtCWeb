@@ -33,7 +33,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-laboral-card">
+    <a href="#" class="admin-laboral-card admin-laboral-card--gold">
         <span class="admin-laboral-icon"><i class="fi fi-rr-document-signed"></i></span>
         <div class="admin-laboral-copy">
             <strong>Contratos</strong>
@@ -42,7 +42,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-laboral-card">
+    <a href="#" class="admin-laboral-card admin-laboral-card--gold">
         <span class="admin-laboral-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div class="admin-laboral-copy">
             <strong>Finiquitos</strong>
@@ -233,6 +233,45 @@
     color:#1596a3;
     transform:translate(3px,-50%);
 }
+
+/* Acento dorado exclusivo para Contratos y Finiquitos. */
+.admin-laboral-card--gold{
+    background:#e3ac2f;
+    border-color:#d39b1d;
+    border-top-color:#bd8610;
+    box-shadow:0 7px 19px rgba(157,111,17,.13);
+}
+.admin-laboral-card--gold::before{
+    border-color:rgba(255,255,255,.24);
+    background:rgba(255,255,255,.07);
+}
+.admin-laboral-card--gold::after{
+    border-color:rgba(255,255,255,.22);
+}
+.admin-laboral-card--gold .admin-laboral-copy strong{
+    color:#263640;
+}
+.admin-laboral-card--gold .admin-laboral-copy span{
+    color:#4a4b3e;
+}
+.admin-laboral-card--gold .admin-laboral-arrow{
+    color:#43515a;
+}
+.admin-laboral-card--gold:hover{
+    background:#e3ac2f;
+    border-color:#bd8610;
+    border-top-color:#a97508;
+    box-shadow:0 13px 26px rgba(157,111,17,.23);
+}
+.admin-laboral-card--gold:hover .admin-laboral-icon{
+    background:#1596a3;
+    border-color:#1596a3;
+    color:#fff;
+}
+.admin-laboral-card--gold:hover .admin-laboral-arrow{
+    color:#263640;
+}
+
 .admin-laboral-card:focus-visible{
     outline:3px solid rgba(21,150,163,.25);
     outline-offset:3px;
