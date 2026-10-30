@@ -188,7 +188,7 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     border-color:#a8d5d9;
     border-top-color:#087f89;
     background:linear-gradient(135deg,#fff 0%,#fff 55%,#eef9f9 100%);
-    box-shadow:0 13px 26px rgba(24,103,112,.11);
+    box-shadow:none;
 }
 .admin-cliente-modules .admin-module-card:hover > i{
     background:#1596a3;
