@@ -135,16 +135,14 @@
     loginSubmitted = true;
     document.documentElement.dataset.ttcSriFillStatus =
       sessionGet(SESSION_RESULT_KEY) === "rejected" ? "invalid-credentials" : "attempt-already-submitted";
-    if (sessionGet(SESSION_RESULT_KEY) === "rejected") {
-      const waitForBody = setInterval(() => {
-        if (!document.body) return;
-        clearInterval(waitForBody);
-        monitorCredentialResult();
-        const errorText = findCredentialError();
-        if (errorText) showCredentialError(errorText);
-      }, 200);
-      setTimeout(() => clearInterval(waitForBody), 10000);
-    }
+    const waitForBody = setInterval(() => {
+      if (!document.body) return;
+      clearInterval(waitForBody);
+      monitorCredentialResult();
+      const errorText = findCredentialError();
+      if (errorText) showCredentialError(errorText);
+    }, 200);
+    setTimeout(() => clearInterval(waitForBody), 10000);
   }
 
   function attemptFill() {
