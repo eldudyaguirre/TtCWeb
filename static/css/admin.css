@@ -167,6 +167,13 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     line-height:1;
     transition:background .18s ease,color .18s ease,transform .18s ease;
 }
+.admin-cliente-modules a.admin-module-card,
+.admin-cliente-modules a.admin-module-card:hover,
+.admin-cliente-modules a.admin-module-card:focus,
+.admin-cliente-modules a.admin-module-card > strong,
+.admin-cliente-modules a.admin-module-card > span{
+    text-decoration:none !important;
+}
 .admin-cliente-modules .admin-module-card > strong{
     position:relative;
     z-index:1;
@@ -188,7 +195,8 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     border-color:#a8d5d9;
     border-top-color:#087f89;
     background:linear-gradient(135deg,#fff 0%,#fff 55%,#eef9f9 100%);
-    box-shadow:none;
+    box-shadow:0 13px 26px rgba(24,103,112,.11);
+    text-decoration:none;
 }
 .admin-cliente-modules .admin-module-card:hover > i{
     background:#1596a3;
