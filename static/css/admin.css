@@ -210,7 +210,7 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     text-decoration:none !important;
 }
 .admin-cliente-modules .admin-module-card:hover > i{
-    background:#1596a3;
+    background:#a01127;
     color:#fff;
     transform:translateY(-1px);
 }
