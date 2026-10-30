@@ -1,6 +1,6 @@
 # Extensión Chrome: TotalCounts - Ingreso SRI
 
-Esta extensión abre el portal oficial del SRI desde el menú **Contraseñas → Acciones → Ingreso SRI** y rellena el RUC y la clave del cliente seleccionado. No pulsa **Ingresar**.
+Esta extensión abre el portal oficial del SRI desde el menú **Contraseñas → Acciones → Ingreso SRI**, rellena el RUC y la clave del cliente seleccionado y envía el formulario automáticamente una sola vez por pestaña. Si el SRI rechaza las credenciales, bloquea nuevos envíos automáticos en esa pestaña, incluso después de una recarga.
 
 ## Instalar en la laptop (una sola vez)
 
@@ -15,7 +15,8 @@ Esta extensión abre el portal oficial del SRI desde el menú **Contraseñas →
 - La extensión declara acceso únicamente a `https://totalcounts.com.ec/*` y `https://srienlinea.sri.gob.ec/*`.
 - No guarda las claves en almacenamiento persistente ni las envía a un servicio externo.
 - La clave se transmite desde la página autenticada de TotalCounts a la extensión y al formulario del SRI para rellenarlo.
-- No inicia sesión ni pulsa botones del formulario.
+- El inicio automático se limita a un único envío por pestaña.
+- Si la clave es rechazada, detiene los reintentos automáticos. Corrige la clave registrada en TotalCounts antes de iniciar una nueva sesión.
 
 ## Nota
 
