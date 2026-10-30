@@ -14,9 +14,9 @@
     </div>
 </div>
 
-<section class="admin-documentacion-grid">
-    <a href="{% url 'admin_trabajadores' ruc=cliente.ruccedcli %}" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-users"></i></span>
+<section class="admin-laboral-grid">
+    <a href="{% url 'admin_trabajadores' ruc=cliente.ruccedcli %}" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-users"></i></span>
         <div>
             <strong>Trabajadores</strong>
             <span>Consultar y gestionar trabajadores</span>
@@ -24,8 +24,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-wallet"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-wallet"></i></span>
         <div>
             <strong>Roles de Pagos</strong>
             <span>Consultar roles y pagos de trabajadores</span>
@@ -33,8 +33,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-document-signed"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-document-signed"></i></span>
         <div>
             <strong>Contratos</strong>
             <span>Consultar y gestionar contratos laborales</span>
@@ -42,8 +42,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>Finiquitos</strong>
             <span>Consultar y gestionar finiquitos laborales</span>
@@ -51,8 +51,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-gift"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-gift"></i></span>
         <div>
             <strong>Décimo Tercero</strong>
             <span>Consultar y gestionar décimo tercero</span>
@@ -60,8 +60,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-gift"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-gift"></i></span>
         <div>
             <strong>Décimo Cuarto</strong>
             <span>Consultar y gestionar décimo cuarto</span>
@@ -69,8 +69,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-wallet"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-wallet"></i></span>
         <div>
             <strong>Utilidades</strong>
             <span>Consultar y gestionar utilidades laborales</span>
@@ -78,8 +78,8 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-documentacion-card">
-        <span class="admin-documentacion-icon"><i class="fi fi-rr-book-alt"></i></span>
+    <a href="#" class="admin-laboral-card">
+        <span class="admin-laboral-icon"><i class="fi fi-rr-book-alt"></i></span>
         <div>
             <strong>Reglamentos</strong>
             <span>Consultar reglamentos y documentación laboral</span>
@@ -89,94 +89,197 @@
 </section>
 
 <style>
-.admin-documentacion-grid{
+/* Tarjetas Laboral: identidad visual alineada con los módulos principales de TotalCounts. */
+.admin-laboral-grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:18px;
+    gap:17px;
     margin-top:22px;
 }
-/* Quitar el subrayado de títulos y descripciones en todas las tarjetas laborales. */
-.admin-documentacion-card,
-.admin-documentacion-card:link,
-.admin-documentacion-card:visited,
-.admin-documentacion-card:hover,
-.admin-documentacion-card:focus,
-.admin-documentacion-card:active,
-.admin-documentacion-card *,
-.admin-documentacion-card:hover *,
-.admin-documentacion-card:focus *{
+
+.admin-laboral-card,
+.admin-laboral-card:link,
+.admin-laboral-card:visited,
+.admin-laboral-card:hover,
+.admin-laboral-card:focus,
+.admin-laboral-card:active,
+.admin-laboral-card *,
+.admin-laboral-card:hover *{
     text-decoration:none !important;
 }
-.admin-documentacion-card{
+
+.admin-laboral-card{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    min-width:0;
     min-height:150px;
     box-sizing:border-box;
-    padding:22px;
     display:flex;
     align-items:center;
     gap:16px;
-    position:relative;
-    text-decoration:none;
-    background:#fff;
-    border:1px solid var(--admin-border);
-    border-radius:14px;
+    padding:22px;
+    border:1px solid #dce7e9;
+    border-top:3px solid #1596a3;
+    border-radius:15px;
+    background:linear-gradient(135deg,#fff 0%,#fff 72%,#f4fbfb 100%);
     color:var(--admin-dark);
-    box-shadow:0 6px 18px rgba(31,45,52,.04);
-    transition:.18s ease;
+    box-shadow:0 6px 18px rgba(24,66,74,.045);
+    cursor:pointer;
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
 }
-.admin-documentacion-card:hover{
-    transform:translateY(-2px);
-    border-color:#1596a3;
-    box-shadow:0 10px 24px rgba(31,45,52,.08);
+
+/* Detalle circular sutil en la esquina inferior derecha. */
+.admin-laboral-card::before,
+.admin-laboral-card::after{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    border-radius:50%;
+    pointer-events:none;
 }
-.admin-documentacion-icon{
+.admin-laboral-card::before{
+    width:118px;
+    height:118px;
+    right:-38px;
+    bottom:-68px;
+    border:1px solid rgba(21,150,163,.13);
+    background:rgba(21,150,163,.025);
+}
+.admin-laboral-card::after{
+    width:76px;
+    height:76px;
+    right:20px;
+    bottom:-49px;
+    border:1px solid rgba(21,150,163,.11);
+}
+
+.admin-laboral-icon{
+    position:relative;
+    z-index:1;
     width:50px;
     height:50px;
     flex:0 0 50px;
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:12px;
-    background:rgba(21,150,163,.10);
-    color:#1596a3;
-    font-size:20px;
+    border:1px solid rgba(21,150,163,.08);
+    border-radius:13px;
+    background:#e8f6f7;
+    color:#118b96;
+    font-size:21px;
+    line-height:1;
+    transition:
+        background .2s ease,
+        color .2s ease,
+        border-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
 }
-.admin-documentacion-card div{
+
+.admin-laboral-copy{
+    position:relative;
+    z-index:1;
     min-width:0;
     display:flex;
+    flex:1;
     flex-direction:column;
     gap:7px;
-    padding-right:22px;
+    padding-right:20px;
 }
-.admin-documentacion-card strong{
-    font-size:16px;
-    color:var(--admin-dark);
+.admin-laboral-copy strong{
+    color:#19323c;
+    font-size:15px;
+    font-weight:800;
+    line-height:1.35;
+    letter-spacing:.05px;
 }
-.admin-documentacion-card div span{
+.admin-laboral-copy span{
+    color:#687a82;
     font-size:12px;
-    line-height:1.45;
-    color:var(--admin-muted);
+    line-height:1.5;
 }
-.admin-documentacion-arrow{
+
+.admin-laboral-arrow{
     position:absolute;
+    z-index:1;
     right:18px;
+    top:50%;
+    transform:translateY(-50%);
     color:#91a1a7;
-    font-size:12px;
+    font-size:13px;
+    transition:color .2s ease,transform .2s ease;
 }
-@media(max-width:900px){
-    .admin-documentacion-grid{
+
+.admin-laboral-card:hover{
+    transform:translateY(-3px);
+    border-color:#a8d5d9;
+    border-top-color:#087f89;
+    background:linear-gradient(135deg,#fff 0%,#fff 55%,#eef9f9 100%);
+    box-shadow:0 13px 26px rgba(24,103,112,.11);
+}
+.admin-laboral-card:hover .admin-laboral-icon{
+    background:#1596a3;
+    border-color:#1596a3;
+    color:#fff;
+    transform:translateY(-1px);
+    box-shadow:0 4px 10px rgba(21,150,163,.18);
+}
+.admin-laboral-card:hover .admin-laboral-arrow{
+    color:#1596a3;
+    transform:translate(3px,-50%);
+}
+.admin-laboral-card:focus-visible{
+    outline:3px solid rgba(21,150,163,.25);
+    outline-offset:3px;
+}
+.admin-laboral-card:active{
+    transform:translateY(-1px);
+}
+
+@media(max-width:1000px){
+    .admin-laboral-grid{
         grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:14px;
+    }
+    .admin-laboral-card{
+        min-height:140px;
+        padding:19px;
     }
 }
-@media(max-width:700px){
-    .admin-documentacion-grid{
+@media(max-width:600px){
+    .admin-laboral-grid{
         grid-template-columns:1fr;
         gap:12px;
         margin-top:16px;
     }
-    .admin-documentacion-card{
+    .admin-laboral-card{
         min-height:112px;
-        padding:18px;
-        border-radius:12px;
+        padding:17px;
+        border-radius:13px;
+    }
+    .admin-laboral-icon{
+        width:46px;
+        height:46px;
+        flex-basis:46px;
+        font-size:19px;
+    }
+    .admin-laboral-copy strong{
+        font-size:14px;
+    }
+    .admin-laboral-copy span{
+        font-size:11px;
+    }
+}
+@media(prefers-reduced-motion:reduce){
+    .admin-laboral-card,
+    .admin-laboral-icon,
+    .admin-laboral-arrow{
+        transition:none;
     }
 }
 </style>
