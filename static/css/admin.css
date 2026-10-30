@@ -2854,3 +2854,25 @@ button.admin-new-client-button:focus{
 .admin-nav > .admin-nav-separator{
     display:none !important;
 }
+
+
+/* Botón de regreso "Clientes": gana especificidad al color genérico del breadcrumb. */
+.admin-breadcrumb a.admin-back-button,
+.admin-breadcrumb a.admin-back-button:link,
+.admin-breadcrumb a.admin-back-button:visited,
+.admin-breadcrumb a.admin-back-button:focus,
+.admin-breadcrumb a.admin-back-button:active{
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    text-decoration:none !important;
+}
+.admin-breadcrumb a.admin-back-button > span{
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+}
+.admin-breadcrumb a.admin-back-button:hover{
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    background:#117f8b !important;
+    border-color:#117f8b !important;
+}
