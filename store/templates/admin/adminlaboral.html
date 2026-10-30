@@ -78,7 +78,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="#" class="admin-laboral-card">
+    <a href="#" class="admin-laboral-card admin-laboral-card--reglamentos">
         <span class="admin-laboral-icon"><i class="fi fi-rr-book-alt"></i></span>
         <div class="admin-laboral-copy">
             <strong>Reglamentos</strong>
@@ -232,6 +232,52 @@
 .admin-laboral-card:hover .admin-laboral-arrow{
     color:#1596a3;
     transform:translate(3px,-50%);
+}
+
+/* Estilo exclusivo para la tarjeta Reglamentos. */
+.admin-laboral-card--reglamentos{
+    background:#a01127;
+    border-color:#a01127;
+    border-top-color:#002b3c;
+    box-shadow:0 7px 19px rgba(160,17,39,.16);
+}
+.admin-laboral-card--reglamentos .admin-laboral-copy strong{
+    color:#fff;
+}
+.admin-laboral-card--reglamentos .admin-laboral-copy span{
+    color:rgba(255,255,255,.84);
+}
+.admin-laboral-card--reglamentos .admin-laboral-arrow{
+    color:rgba(255,255,255,.9);
+}
+.admin-laboral-card--reglamentos::before{
+    border-color:rgba(255,255,255,.17);
+    background:rgba(255,255,255,.035);
+}
+.admin-laboral-card--reglamentos::after{
+    border-color:rgba(255,255,255,.14);
+}
+.admin-laboral-card--reglamentos .admin-laboral-icon{
+    background:#002b3c;
+    border-color:#002b3c;
+    color:#fff;
+}
+.admin-laboral-card--reglamentos .admin-laboral-icon i{
+    color:#fff;
+}
+.admin-laboral-card--reglamentos:hover{
+    background:#a01127;
+    border-color:#002b3c;
+    border-top-color:#002b3c;
+    box-shadow:0 13px 26px rgba(160,17,39,.25);
+}
+.admin-laboral-card--reglamentos:hover .admin-laboral-icon{
+    background:#002b3c;
+    border-color:#002b3c;
+    color:#fff;
+}
+.admin-laboral-card--reglamentos:hover .admin-laboral-arrow{
+    color:#fff;
 }
 
 /* Acento dorado exclusivo para Contratos y Finiquitos. */
