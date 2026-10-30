@@ -462,10 +462,10 @@
 }
 .admin-documentacion-card-anexo:hover{
     color:#fff;
-    background:#262d84;
+    background:linear-gradient(135deg,#a96d06 0%,#bd7d0b 55%,#925b06 100%);
     border-color:#f6d365;
     border-top-color:#f6d365;
-    box-shadow:0 13px 26px rgba(38,45,132,.28);
+    box-shadow:0 13px 26px rgba(156,101,5,.24);
 }
 
 /* Sección 4: gris acero y azul institucional para SUPERCIAS. */
@@ -514,6 +514,17 @@
 }
 .admin-documentacion-card-sri:hover .admin-documentacion-icon i{
     color:#075985 !important;
+}
+
+/* Anexos tributarios: solo cambia el recuadro del icono a azul oscuro.
+   La tarjeta conserva su fondo dorado y el símbolo permanece blanco. */
+.admin-documentacion-card-anexo:hover .admin-documentacion-icon{
+    background:#262d84 !important;
+    color:#fff !important;
+    border-color:#262d84 !important;
+}
+.admin-documentacion-card-anexo:hover .admin-documentacion-icon i{
+    color:#fff !important;
 }
 
 @media(max-width:1050px){
