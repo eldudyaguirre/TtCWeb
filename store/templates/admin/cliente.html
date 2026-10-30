@@ -10,97 +10,10 @@
         <h1>{{ cliente.nomclient }}</h1>
         <p>RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
     </div>
-    <div
-        class="admin-client-status {% if cliente.activo %}is-active{% else %}is-inactive{% endif %}"
-        role="status"
-        aria-label="Estado del cliente: {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}"
-        style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;width:max-content!important;min-width:92px!important;min-height:34px!important;box-sizing:border-box!important;padding:8px 12px!important;border:1px solid {% if cliente.activo %}#bfe5cc{% else %}#d8dfe2{% endif %}!important;border-radius:999px!important;background:{% if cliente.activo %}#e8f6ed{% else %}#f1f3f4{% endif %}!important;color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;opacity:1!important;visibility:visible!important;"
-    >
-        <span aria-hidden="true" style="display:inline-block!important;flex:0 0 8px!important;width:8px!important;height:8px!important;min-width:8px!important;min-height:8px!important;padding:0!important;border-radius:50%!important;background:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;"></span>
-        <strong
-            class="admin-client-status-label"
-            style="display:inline-block!important;margin:0!important;padding:0!important;background:transparent!important;color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;-webkit-text-fill-color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;font-family:Arial,sans-serif!important;font-size:11px!important;font-weight:800!important;line-height:1.2!important;letter-spacing:.07em!important;text-indent:0!important;text-transform:uppercase!important;opacity:1!important;visibility:visible!important;"
-        >{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</strong>
-    </div>
+    <span class="admin-status {% if cliente.activo %}active{% else %}inactive{% endif %}">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span>
 </div>
 
-<style>
-/* Indicador de estado del cliente: estilos aislados para evitar colisiones globales. */
-.admin-page-header > div.admin-client-status{
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:8px !important;
-    flex:0 0 auto !important;
-    width:max-content !important;
-    min-width:92px !important;
-    min-height:34px !important;
-    box-sizing:border-box !important;
-    padding:8px 12px !important;
-    border:1px solid transparent !important;
-    border-radius:999px !important;
-    font-family:Arial,sans-serif !important;
-    font-size:11px !important;
-    font-weight:800 !important;
-    line-height:1.2 !important;
-    letter-spacing:.07em !important;
-    text-indent:0 !important;
-    text-transform:uppercase !important;
-    white-space:nowrap !important;
-    opacity:1 !important;
-    visibility:visible !important;
-}
-.admin-page-header > div.admin-client-status.is-active{
-    background:#e8f6ed !important;
-    border-color:#bfe5cc !important;
-    color:#247443 !important;
-}
-.admin-page-header > div.admin-client-status.is-inactive{
-    background:#f1f3f4 !important;
-    border-color:#d8dfe2 !important;
-    color:#59656b !important;
-}
-.admin-page-header > div.admin-client-status.is-active > strong.admin-client-status-label,
-.admin-page-header > div.admin-client-status.is-active:hover > strong.admin-client-status-label{
-    color:#247443 !important;
-    -webkit-text-fill-color:#247443 !important;
-}
-.admin-page-header > div.admin-client-status.is-inactive > strong.admin-client-status-label,
-.admin-page-header > div.admin-client-status.is-inactive:hover > strong.admin-client-status-label{
-    color:#59656b !important;
-    -webkit-text-fill-color:#59656b !important;
-}
-.admin-client-status-dot{
-    display:inline-block !important;
-    flex:0 0 8px !important;
-    width:8px !important;
-    height:8px !important;
-    min-width:8px !important;
-    min-height:8px !important;
-    padding:0 !important;
-    border-radius:50% !important;
-    background:currentColor !important;
-}
-.admin-client-status-label{
-    display:inline-block !important;
-    margin:0 !important;
-    padding:0 !important;
-    font-family:Arial,sans-serif !important;
-    font-size:11px !important;
-    font-weight:800 !important;
-    line-height:1.2 !important;
-    letter-spacing:.07em !important;
-    text-indent:0 !important;
-    text-transform:uppercase !important;
-    opacity:1 !important;
-    visibility:visible !important;
-}
-@media(max-width:700px){
-    .admin-page-header > div.admin-client-status{
-        align-self:flex-start !important;
-    }
-}
-</style>
+
 
 <section class="admin-client-grid">
     <article class="admin-card admin-cliente-bd-card">
