@@ -10,9 +10,17 @@
         <h1>{{ cliente.nomclient }}</h1>
         <p>RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
     </div>
-    <div class="admin-client-status {% if cliente.activo %}is-active{% else %}is-inactive{% endif %}" role="status" aria-label="Estado del cliente: {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}">
-        <span class="admin-client-status-dot" aria-hidden="true"></span>
-        <strong class="admin-client-status-label">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</strong>
+    <div
+        class="admin-client-status {% if cliente.activo %}is-active{% else %}is-inactive{% endif %}"
+        role="status"
+        aria-label="Estado del cliente: {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}"
+        style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;width:max-content!important;min-width:92px!important;min-height:34px!important;box-sizing:border-box!important;padding:8px 12px!important;border:1px solid {% if cliente.activo %}#bfe5cc{% else %}#d8dfe2{% endif %}!important;border-radius:999px!important;background:{% if cliente.activo %}#e8f6ed{% else %}#f1f3f4{% endif %}!important;color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;opacity:1!important;visibility:visible!important;"
+    >
+        <span aria-hidden="true" style="display:inline-block!important;flex:0 0 8px!important;width:8px!important;height:8px!important;min-width:8px!important;min-height:8px!important;padding:0!important;border-radius:50%!important;background:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;"></span>
+        <strong
+            class="admin-client-status-label"
+            style="display:inline-block!important;margin:0!important;padding:0!important;background:transparent!important;color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;-webkit-text-fill-color:{% if cliente.activo %}#247443{% else %}#59656b{% endif %}!important;font-family:Arial,sans-serif!important;font-size:11px!important;font-weight:800!important;line-height:1.2!important;letter-spacing:.07em!important;text-indent:0!important;text-transform:uppercase!important;opacity:1!important;visibility:visible!important;"
+        >{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</strong>
     </div>
 </div>
 
