@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TotalCounts - Ingreso SRI e IESS",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Abre los portales SRI e IESS y rellena las credenciales del cliente seleccionado.",
   "permissions": [
     "tabs",
