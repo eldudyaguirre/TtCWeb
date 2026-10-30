@@ -196,7 +196,18 @@ body{margin:0;font-family:Arial,sans-serif;color:var(--admin-text);background:va
     border-top-color:#087f89;
     background:linear-gradient(135deg,#fff 0%,#fff 55%,#eef9f9 100%);
     box-shadow:0 13px 26px rgba(24,103,112,.11);
-    text-decoration:none;
+    text-decoration:none !important;
+}
+/* Todas las tarjetas de módulos conservan el estilo limpio de Información General. */
+.admin-cliente-modules .admin-module-card,
+.admin-cliente-modules .admin-module-card:link,
+.admin-cliente-modules .admin-module-card:visited,
+.admin-cliente-modules .admin-module-card:hover,
+.admin-cliente-modules .admin-module-card:focus,
+.admin-cliente-modules .admin-module-card:active,
+.admin-cliente-modules .admin-module-card *,
+.admin-cliente-modules .admin-module-card:hover *{
+    text-decoration:none !important;
 }
 .admin-cliente-modules .admin-module-card:hover > i{
     background:#1596a3;
