@@ -21585,7 +21585,7 @@ def admin_declaracion_descargar(request, ruc, tipo, anio, mes, nombre):
 
     if tipo not in {'iva', 'renta'} or anio < 2011 or anio > 2100:
         raise Http404('Declaración no válida.')
-    if mes not in {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'}:
+    if mes not in {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', 'S1', 'S2'}:
         raise Http404('Período no válido.')
     if Path(nombre).name != nombre or not nombre.lower().endswith('.pdf'):
         raise Http404('Nombre de archivo no válido.')
