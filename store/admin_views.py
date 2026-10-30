@@ -21741,10 +21741,13 @@ def admin_enviar_declaraciones_correo(request, ruc, tipo):
                     continue
 
                 mes = '00'
-                if len(partes) >= 3 and partes[1].isdigit():
-                    posible_mes = partes[1].zfill(2)
-                    if posible_mes in meses:
-                        mes = posible_mes
+                if len(partes) >= 3:
+                    if partes[1] in {'S1', 'S2'}:
+                        mes = partes[1]
+                    elif partes[1].isdigit():
+                        posible_mes = partes[1].zfill(2)
+                        if posible_mes in meses:
+                            mes = posible_mes
 
                 with archivo.open('rb') as pdf:
                     cabecera = pdf.read(1024)
