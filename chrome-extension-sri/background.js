@@ -49,7 +49,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Bloquea eventos onUpdated concurrentes antes de enviar el mensaje.
       // Sin esta marca, varias cargas pueden programar varios clics en Ingresar.
       deliveryInProgress = true;
-      chrome.tabs.sendMessage(tabId, { type: destination.message, usuario, ruc: usuario, clave }, () => {
+      const attemptId = crypto.randomUUID();
+      chrome.tabs.sendMessage(tabId, { type: destination.message, usuario, ruc: usuario, clave, attemptId }, () => {
         if (chrome.runtime.lastError) {
           deliveryInProgress = false;
           if (Date.now() >= deadline) chrome.tabs.onUpdated.removeListener(listener);
