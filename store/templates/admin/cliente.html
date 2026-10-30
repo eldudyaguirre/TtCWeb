@@ -10,15 +10,15 @@
         <h1>{{ cliente.nomclient }}</h1>
         <p>RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
     </div>
-    <span class="admin-client-status {% if cliente.activo %}is-active{% else %}is-inactive{% endif %}" role="status" aria-label="Estado del cliente: {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}">
+    <div class="admin-client-status {% if cliente.activo %}is-active{% else %}is-inactive{% endif %}" role="status" aria-label="Estado del cliente: {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}">
         <span class="admin-client-status-dot" aria-hidden="true"></span>
-        <span class="admin-client-status-label">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</span>
-    </span>
+        <strong class="admin-client-status-label">{% if cliente.activo %}ACTIVO{% else %}INACTIVO{% endif %}</strong>
+    </div>
 </div>
 
 <style>
 /* Indicador de estado del cliente: estilos aislados para evitar colisiones globales. */
-.admin-page-header > .admin-client-status{
+.admin-page-header > div.admin-client-status{
     display:inline-flex !important;
     align-items:center !important;
     justify-content:center !important;
@@ -42,15 +42,25 @@
     opacity:1 !important;
     visibility:visible !important;
 }
-.admin-page-header > .admin-client-status.is-active{
+.admin-page-header > div.admin-client-status.is-active{
     background:#e8f6ed !important;
     border-color:#bfe5cc !important;
     color:#247443 !important;
 }
-.admin-page-header > .admin-client-status.is-inactive{
+.admin-page-header > div.admin-client-status.is-inactive{
     background:#f1f3f4 !important;
     border-color:#d8dfe2 !important;
     color:#59656b !important;
+}
+.admin-page-header > div.admin-client-status.is-active > strong.admin-client-status-label,
+.admin-page-header > div.admin-client-status.is-active:hover > strong.admin-client-status-label{
+    color:#247443 !important;
+    -webkit-text-fill-color:#247443 !important;
+}
+.admin-page-header > div.admin-client-status.is-inactive > strong.admin-client-status-label,
+.admin-page-header > div.admin-client-status.is-inactive:hover > strong.admin-client-status-label{
+    color:#59656b !important;
+    -webkit-text-fill-color:#59656b !important;
 }
 .admin-client-status-dot{
     display:inline-block !important;
@@ -65,15 +75,20 @@
 }
 .admin-client-status-label{
     display:inline-block !important;
-    color:inherit !important;
-    font-size:inherit !important;
-    font-weight:inherit !important;
-    line-height:inherit !important;
+    margin:0 !important;
+    padding:0 !important;
+    font-family:Arial,sans-serif !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    line-height:1.2 !important;
+    letter-spacing:.07em !important;
+    text-indent:0 !important;
+    text-transform:uppercase !important;
     opacity:1 !important;
     visibility:visible !important;
 }
 @media(max-width:700px){
-    .admin-page-header > .admin-client-status{
+    .admin-page-header > div.admin-client-status{
         align-self:flex-start !important;
     }
 }
