@@ -1,0 +1,47 @@
+{% load humanize %}
+<style>
+.cob-pago-form{display:grid;gap:16px}
+.cob-pago-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.cob-pago-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cob-pago-field.full{grid-column:1/-1}
+.cob-pago-field label{font-size:12px;font-weight:700;color:#536b77}
+.cob-pago-field input,.cob-pago-field select,.cob-pago-field textarea{width:100%;min-height:42px;padding:9px 11px;border:1px solid #d4e0e5;border-radius:9px;background:#fff;color:#213b48;font:inherit}
+.cob-pago-field input[readonly]{background:#f3f7f8;color:#526a75}
+.cob-pago-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cob-pago-summary>div{padding:13px;border:1px solid #dce7eb;border-radius:11px;background:#f7fafb}
+.cob-pago-summary small{display:block;color:#627985;font-size:11px;margin-bottom:5px}
+.cob-pago-summary strong{font-size:18px;color:#1d4050}
+.cob-pago-help{font-size:12px;color:#6b7e87;margin:0}
+.cob-pago-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding-top:4px}
+.cob-pago-actions button{border:1px solid #d3e0e5;border-radius:9px;padding:11px 17px;font-weight:700;cursor:pointer}
+.cob-pago-actions .primary{background:#129ba7;color:#fff;border-color:#129ba7}
+.cob-pago-feedback{font-size:13px;font-weight:600}
+.cob-pago-feedback.is-error{color:#b42332}.cob-pago-feedback.is-success{color:#16834b}
+@media(max-width:650px){.cob-pago-grid,.cob-pago-summary{grid-template-columns:1fr}.cob-pago-field.full{grid-column:auto}}
+</style>
+{% if error %}<p class="cob-modal-error">{{ error }}</p>{% else %}
+<form id="cobPagoForm" class="cob-pago-form" method="post" action="{% url 'admin_factura_pago_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">
+ {% csrf_token %}
+ <div class="cob-pago-summary">
+  <div><small>Cliente</small><strong>{{ factura.nomclient }}</strong></div>
+  <div><small>Factura</small><strong>{{ factura.numfactur }}</strong></div>
+  <div><small>Saldo actual de la factura</small><strong>$ {{ factura.valsalfac|floatformat:2 }}</strong></div>
+ </div>
+ <div class="cob-pago-grid">
+  <div class="cob-pago-field"><label for="pago-vencimiento">Vencimiento a cancelar</label><select id="pago-vencimiento" name="numcuecob" required>{% for v in vencimientos %}<option value="{{ v.numcuecob }}" data-saldo="{{ v.saldo }}" data-fecha="{{ v.fecvencim|date:'Y-m-d' }}"> {{ v.fecvencim|date:"d/m/Y" }} · $ {{ v.saldo|floatformat:2 }}</option>{% endfor %}</select></div>
+  <div class="cob-pago-field"><label for="pago-saldo-venc">Saldo del vencimiento</label><input id="pago-saldo-venc" readonly value="{{ vencimientos.0.saldo|floatformat:2 }}"></div>
+  <div class="cob-pago-field"><label for="pago-fecha">Fecha del pago</label><input id="pago-fecha" type="date" name="fecha_pago" value="{{ hoy|date:'Y-m-d' }}" max="{{ hoy|date:'Y-m-d' }}" required></div>
+  <div class="cob-pago-field"><label for="pago-forma">Forma de pago</label><select id="pago-forma" name="forma_pago" required><option value="">Seleccionar…</option><option>EFECTIVO</option><option>CAJA</option><option>CHEQUE A LA VISTA</option><option>TRANSFERENCIA BANCARIA</option><option>ANTICIPO</option><option>NOTA DE CREDITO</option><option>DESCUENTO</option></select></div>
+  <div class="cob-pago-field" id="pago-cuenta-wrap" hidden><label for="pago-cuenta">Cuenta bancaria</label><select id="pago-cuenta" name="cuenta_banco"><option value="">Seleccionar cuenta…</option>{% for b in bancos %}<option value="{{ b.codigo }}">{{ b.codigo }} · {{ b.banco }} (saldo $ {{ b.saldo|floatformat:2 }})</option>{% endfor %}</select></div>
+  <div class="cob-pago-field" id="pago-documento-wrap" hidden><label for="pago-documento">Número de cheque / transferencia</label><input id="pago-documento" name="numero_documento" maxlength="25" placeholder="Número de documento"></div>
+  <div class="cob-pago-field" id="pago-anticipo-wrap" hidden><label for="pago-anticipo">Anticipo disponible</label><select id="pago-anticipo" name="numero_anticipo"><option value="">Seleccionar anticipo…</option>{% for a in anticipos %}<option value="{{ a.numero }}" data-saldo="{{ a.saldo }}">#{{ a.numero }} · {{ a.fecha|date:"d/m/Y" }} · $ {{ a.saldo|floatformat:2 }}</option>{% endfor %}</select></div>
+  <div class="cob-pago-field"><label for="pago-importe">Pago actual / abono</label><input id="pago-importe" name="valor_abono" type="number" min="0.01" step="0.01" max="{{ vencimientos.0.saldo }}" placeholder="0.00" required></div>
+  <div class="cob-pago-field"><label for="pago-cobrador">Cobrador</label><input id="pago-cobrador" name="cobrador" maxlength="50" placeholder="Nombre del cobrador (opcional)"></div>
+  <div class="cob-pago-field full"><label for="pago-referencia">Referencia del movimiento</label><input id="pago-referencia" name="referencia" maxlength="100" value="PAGO DE FACTURA {{ factura.numfactur }}" required></div>
+ </div>
+ <p class="cob-pago-help" id="pago-ayuda">El abono se aplicará al vencimiento seleccionado y actualizará el saldo de la factura y del cliente.</p>
+ <div class="cob-pago-summary"><div><small>Saldo después del pago</small><strong id="pago-nuevo-saldo">$ {{ factura.valsalfac|floatformat:2 }}</strong></div><div><small>Saldo restante del vencimiento</small><strong id="pago-nuevo-venc">$ {{ vencimientos.0.saldo|floatformat:2 }}</strong></div><div><small>Saldo total del cliente</small><strong>$ {{ factura.salcuenta|floatformat:2 }}</strong></div></div>
+ <div id="pago-feedback" class="cob-pago-feedback" aria-live="polite"></div>
+ <div class="cob-pago-actions"><button type="button" data-cob-pago-close>Cancelar</button><button type="submit" class="primary" id="pago-guardar">Registrar pago</button></div>
+</form>
+{% endif %}
