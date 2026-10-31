@@ -1,0 +1,47 @@
+{% if error %}<div class="cob-ret-error">{{ error }}</div>{% endif %}
+{% if factura %}
+<form id="cobRetencionForm" method="post" action="{% url 'admin_factura_retencion_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">
+ {% csrf_token %}
+ <input type="hidden" name="numfactur" value="{{ factura.numfactur }}">
+ <section class="cob-ret-section">
+  <div class="cob-ret-factura-head">
+   <div><span>CLIENTE</span><strong>{{ factura.nomclient|default:cliente.nomclient }}</strong><small>RUC / C.I.: {{ factura.ruccedcli }}</small></div>
+   <div><span>FACTURA</span><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong><small>Emisión: {{ factura.fecfactur|date:"d/m/Y" }}</small></div>
+  </div>
+  <div class="cob-ret-summary">
+   <label>Subtotal de la factura<input readonly value="{{ factura.subtotfac|floatformat:2 }}" id="retSubtotal"></label>
+   <label>IVA de la factura<input readonly value="{{ factura.valivafac|floatformat:2 }}"></label>
+   <label>Saldo actual<input readonly value="{{ factura.valsalfac|floatformat:2 }}" id="retSaldo"></label>
+   <label class="cob-ret-new-balance">Saldo después de retención<input readonly id="retNuevoSaldo" value="{{ factura.valsalfac|floatformat:2 }}"></label>
+  </div>
+ </section>
+ <section class="cob-ret-section">
+  <div class="cob-ret-dates">
+   <label>Fecha de retención<input type="date" name="fecretenc" id="retFecha" value="{{ hoy }}" max="{{ hoy }}" required></label>
+   <label>Fecha de recepción<input type="date" name="fecrecepc" id="retFechaRecep" value="{{ hoy }}" max="{{ hoy }}" required></label>
+   <label class="cob-ret-number">Número de retención<input name="numdocume" id="retNumero" placeholder="001-001-000000001" maxlength="17" pattern="[0-9]{3}-[0-9]{3}-[0-9]{9}" required></label>
+  </div>
+ </section>
+ <section class="cob-ret-section">
+  <h3>Retención del impuesto a la renta</h3>
+  <div class="cob-ret-table-wrap"><table class="cob-ret-table">
+   <thead><tr><th>Tipo</th><th>Base imponible</th><th>% retención</th><th>Valor retenido</th></tr></thead>
+   <tbody>
+    <tr><th>Bienes</th><td><input type="number" step="0.01" min="0" name="basimpfuebie" value="{{ factura.totbieiva|default:0|add:factura.totbiesiniva|floatformat:2 }}" data-base="fuebie" required></td><td><input type="number" step="0.01" min="0" max="100" name="porretfuebie" value="{{ factura.porretfuebie|default:0|floatformat:2 }}" data-rate="fuebie" required></td><td><output data-value="fuebie">0.00</output></td></tr>
+    <tr><th>Servicios</th><td><input type="number" step="0.01" min="0" name="basimpfueser" value="{{ factura.totseriva|default:0|add:factura.totsersiniva|floatformat:2 }}" data-base="fueser" required></td><td><input type="number" step="0.01" min="0" max="100" name="porretfueser" value="{{ factura.porretfueser|default:0|floatformat:2 }}" data-rate="fueser" required></td><td><output data-value="fueser">0.00</output></td></tr>
+   </tbody>
+  </table></div>
+  <h3>Retención del IVA</h3>
+  <div class="cob-ret-table-wrap"><table class="cob-ret-table">
+   <thead><tr><th>Tipo</th><th>Base imponible</th><th>% retención</th><th>Valor retenido</th></tr></thead>
+   <tbody>
+    <tr><th>Bienes</th><td><input type="number" step="0.01" min="0" name="basimpivabie" value="{{ factura.totbieiva|default:0|floatformat:2 }}" data-base="ivabie" required></td><td><input type="number" step="0.01" min="0" max="100" name="porretivabie" value="{{ factura.porretivabie|default:0|floatformat:2 }}" data-rate="ivabie" required></td><td><output data-value="ivabie">0.00</output></td></tr>
+    <tr><th>Servicios</th><td><input type="number" step="0.01" min="0" name="basimpivaser" value="{{ factura.totseriva|default:0|floatformat:2 }}" data-base="ivaser" required></td><td><input type="number" step="0.01" min="0" max="100" name="porretivaser" value="{{ factura.porretivaser|default:0|floatformat:2 }}" data-rate="ivaser" required></td><td><output data-value="ivaser">0.00</output></td></tr>
+   </tbody>
+  </table></div>
+  <div class="cob-ret-total"><span>Total retención</span><strong id="retTotal">0.00</strong></div>
+ </section>
+ <div class="cob-ret-feedback" id="retFeedback" role="status" aria-live="polite"></div>
+ <footer class="cob-ret-actions"><button type="button" class="cob-btn-secondary" data-cob-ret-close>Cancelar</button><button type="submit" class="cob-btn-primary" id="retGuardar">Registrar retención</button></footer>
+</form>
+{% endif %}
