@@ -635,7 +635,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
             cursor.execute("""
                 SELECT f.numfactur, f.ruccedcli, f.fecfactur, f.fecvencim,
                        f.totfactur, f.valsalfac, f.estpagfac, c.nomclient,
-                       COALESCE(c.salcuenta,0), COALESCE(c.salantici,0),
+                       COALESCE(c.salcuenta,0) AS salcuenta, COALESCE(c.salantici,0) AS salantici,
                        COALESCE(c.salnotcre,0), COALESCE(c.codcuecon,''),
                        COALESCE(c.codcueant,'')
                 FROM public.facturas f
@@ -775,7 +775,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
                             SELECT %s,%s,%s,%s,%s,%s,'10',codcuecon,'N/A',%s,nomclient
                             FROM public.clientes LEFT JOIN public.cajas ON codcaja='10' WHERE ruccedcli=%s
                         """,[numcom,nummov,fecha_pago,cliente.ruccedcli,importe,numfactur,referencia,cliente.ruccedcli])
-                    elif metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"}:
+                    elif metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"}:
                         cursor.execute("SELECT codcuenta,bancocta,saldocta,codcuecon FROM public.cuentasbancos WHERE codcuenta=%s FOR UPDATE",[codigo_banco])
                         banco=cursor.fetchone()
                         if not banco:
