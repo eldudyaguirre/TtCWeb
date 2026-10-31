@@ -86,6 +86,34 @@
  const trigger=document.getElementById('cobFacturasTrigger'), modal=document.getElementById('cobFacturasModal'), content=document.getElementById('cobFacturasContent');
  if(!trigger||!modal||!content)return;
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
+ content.addEventListener('click',function(e){
+  const trigger=e.target.closest('.cob-actions-trigger');
+  if(trigger && content.contains(trigger)){
+   const menu=trigger.parentElement.querySelector('.cob-actions-dropdown');
+   if(!menu)return;
+   const opening=menu.hidden;
+   content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
+   content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+   menu.hidden=!opening;
+   trigger.setAttribute('aria-expanded',String(opening));
+   e.stopPropagation();
+   return;
+  }
+  const action=e.target.closest('[data-factura-action]');
+  if(action && content.contains(action)){
+   const detail={action:action.dataset.facturaAction,factura:action.dataset.factura};
+   content.dispatchEvent(new CustomEvent('cobranza:factura-action',{bubbles:true,detail}));
+   content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
+   content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+  }
+ });
+ document.addEventListener('click',function(e){
+  if(!content.contains(e.target)){
+   content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
+   content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+  }
+ });
+
  async function load(url){
   content.innerHTML='<div class="cob-modal-loading">Cargando facturas pendientes…</div>';
   try{
