@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+{% block title %}Configuración · {{ cliente.nomclient }} | TotalCounts{% endblock %}
+
+{% block content %}
+<div class="admin-breadcrumb">
+    <a class="admin-new-client-button admin-back-button" href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}">
+        <span aria-hidden="true">←</span> {{ cliente.nomclient }}
+    </a>
+</div>
+
+<div class="admin-page-header parametros-cliente-header">
+    <div>
+        <span class="admin-kicker">Configuración del cliente</span>
+        <h1>Parámetros contables y tributarios</h1>
+        <p>{{ cliente.nomclient }} · RUC: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+    <span class="admin-status active">{{ db_status }}</span>
+</div>
+
+{% if messages %}
+<div class="pc-messages">
+    {% for message in messages %}
+    <div class="pc-message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" class="pc-form">
+    {% csrf_token %}
+
+    <section class="admin-card pc-section">
+        <div class="pc-section-heading">
+            <span class="pc-section-icon"><i class="fi fi-rr-receipt"></i></span>
+            <div><h2>Facturas</h2><p>Secuencial, serie y autorización del comprobante de venta.</p></div>
+        </div>
+        <div class="pc-grid">
+            <div class="pc-field"><label for="numfactur">Número actual</label><input id="numfactur" name="numfactur" type="number" min="0" value="{{ parametros.numfactur|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="numserfac">Serie</label><input id="numserfac" name="numserfac" maxlength="11" value="{{ parametros.numserfac|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="numautfac">Número de autorización</label><input id="numautfac" name="numautfac" maxlength="37" value="{{ parametros.numautfac|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="fecautfac">Fecha de autorización</label><input id="fecautfac" name="fecautfac" type="date" value="{{ parametros.fecautfac|date:'Y-m-d' }}"></div>
+        </div>
+    </section>
+
+    <section class="admin-card pc-section">
+        <div class="pc-section-heading">
+            <span class="pc-section-icon"><i class="fi fi-rr-file-invoice"></i></span>
+            <div><h2>Retenciones</h2><p>Secuencial, serie y autorización de retenciones.</p></div>
+        </div>
+        <div class="pc-grid">
+            <div class="pc-field"><label for="numretenc">Número actual</label><input id="numretenc" name="numretenc" type="number" min="0" value="{{ parametros.numretenc|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="numserret">Serie</label><input id="numserret" name="numserret" maxlength="255" value="{{ parametros.numserret|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="numautret">Número de autorización</label><input id="numautret" name="numautret" type="number" min="0" value="{{ parametros.numautret|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="fecautret">Fecha de autorización</label><input id="fecautret" name="fecautret" type="date" value="{{ parametros.fecautret|date:'Y-m-d' }}"></div>
+        </div>
+    </section>
+
+    <section class="admin-card pc-section">
+        <div class="pc-section-heading">
+            <span class="pc-section-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
+            <div><h2>Notas de crédito</h2><p>Secuencial, serie y autorización de notas de crédito.</p></div>
+        </div>
+        <div class="pc-grid">
+            <div class="pc-field"><label for="numnc">Número actual</label><input id="numnc" name="numnc" type="number" min="0" value="{{ parametros.numnc|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="numsernc">Serie</label><input id="numsernc" name="numsernc" maxlength="255" value="{{ parametros.numsernc|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="numautnc">Número de autorización</label><input id="numautnc" name="numautnc" type="number" min="0" value="{{ parametros.numautnc|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="fecautnc">Fecha de autorización</label><input id="fecautnc" name="fecautnc" type="date" value="{{ parametros.fecautnc|date:'Y-m-d' }}"></div>
+        </div>
+    </section>
+
+    <section class="admin-card pc-section">
+        <div class="pc-section-heading">
+            <span class="pc-section-icon"><i class="fi fi-rr-building"></i></span>
+            <div><h2>Emisión de comprobantes</h2><p>Datos del establecimiento y modalidad de emisión.</p></div>
+        </div>
+        <div class="pc-grid">
+            <div class="pc-field"><label for="codest">Código de establecimiento</label><input id="codest" name="codest" maxlength="3" inputmode="numeric" value="{{ parametros.codest|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="ptoemi">Punto de emisión</label><input id="ptoemi" name="ptoemi" maxlength="3" inputmode="numeric" value="{{ parametros.ptoemi|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="codval">Código de verificación</label><input id="codval" name="codval" value="{{ parametros.codval|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="facfiselec">Tipo de emisión</label><select id="facfiselec" name="facfiselec"><option value="FISICA" {% if parametros.facfiselec == 'FISICA' %}selected{% endif %}>Física</option><option value="ELECTRONICA" {% if parametros.facfiselec != 'FISICA' %}selected{% endif %}>Electrónica</option></select></div>
+            <div class="pc-field"><label for="facemi">Código de factura</label><input id="facemi" name="facemi" maxlength="9" value="{{ parametros.facemi|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="retemi">Código de retención</label><input id="retemi" name="retemi" maxlength="9" value="{{ parametros.retemi|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="ncemi">Código de nota de crédito</label><input id="ncemi" name="ncemi" maxlength="9" value="{{ parametros.ncemi|default_if_none:'' }}"></div>
+            <div class="pc-field"><label for="numdialisfac">Días para listar facturas</label><input id="numdialisfac" name="numdialisfac" type="number" min="0" value="{{ parametros.numdialisfac|default_if_none:'0' }}"></div>
+        </div>
+    </section>
+
+    <section class="admin-card pc-section">
+        <div class="pc-section-heading">
+            <span class="pc-section-icon"><i class="fi fi-rr-calculator"></i></span>
+            <div><h2>Configuración tributaria y contable</h2><p>Opciones que afectan el comportamiento contable del cliente.</p></div>
+        </div>
+        <div class="pc-grid">
+            <div class="pc-field"><label for="poriva">Porcentaje de IVA (%)</label><input id="poriva" name="poriva" type="number" min="0" max="100" step="0.01" value="{{ parametros.poriva|default_if_none:'0' }}" required></div>
+            <div class="pc-field"><label for="obliconta">¿Obligado a llevar contabilidad?</label><select id="obliconta" name="obliconta"><option value="SI" {% if parametros.obliconta == 'SI' %}selected{% endif %}>Sí</option><option value="NO" {% if parametros.obliconta != 'SI' %}selected{% endif %}>No</option></select></div>
+            <div class="pc-field"><label for="actperiod">Período contable actual</label><input id="actperiod" name="actperiod" type="month" value="{{ periodo_contable }}"><small>Selecciona el mes y año de inicio del período contable.</small></div>
+            <div class="pc-field"><label for="contrespec">¿Contribuyente especial?</label><select id="contrespec" name="contrespec"><option value="SI" {% if parametros.contrespec == 'SI' %}selected{% endif %}>Sí</option><option value="NO" {% if parametros.contrespec != 'SI' %}selected{% endif %}>No</option></select></div>
+            <div class="pc-field"><label for="codcontrespec">Código de contribuyente especial</label><input id="codcontrespec" name="codcontrespec" value="{{ parametros.codcontrespec|default_if_none:'0' }}"></div>
+            <div class="pc-field"><label for="asumeiess">¿Asume aporte al IESS?</label><select id="asumeiess" name="asumeiess"><option value="SI" {% if parametros.asumeiess == 'SI' %}selected{% endif %}>Sí</option><option value="NO" {% if parametros.asumeiess != 'SI' %}selected{% endif %}>No</option></select></div>
+            <div class="pc-field"><label for="trabacti">¿Tiene trabajadores activos?</label><select id="trabacti" name="trabacti"><option value="SI" {% if parametros.trabacti == 'SI' %}selected{% endif %}>Sí</option><option value="NO" {% if parametros.trabacti != 'SI' %}selected{% endif %}>No</option></select></div>
+            <div class="pc-field"><label for="calculoice">¿Calcular ICE?</label><select id="calculoice" name="calculoice"><option value="1" {% if parametros.calculoice %}selected{% endif %}>Sí</option><option value="0" {% if not parametros.calculoice %}selected{% endif %}>No</option></select></div>
+        </div>
+    </section>
+
+    <div class="pc-actions">
+        <a href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}" class="admin-new-client-button admin-back-button">Cancelar</a>
+        <button type="submit" class="pc-save-button"><i class="fi fi-rr-disk"></i> Guardar configuración</button>
+    </div>
+</form>
+
+<style>
+.parametros-cliente-header{margin-bottom:22px}
+.pc-messages{margin:0 0 18px}
+.pc-message{padding:12px 15px;border-radius:10px;background:#e9f6f3;color:#176f70;margin-bottom:8px;font-size:14px}
+.pc-message.error{background:#fff0f0;color:#a62c39}
+.pc-form{display:grid;gap:18px}
+.pc-section{margin:0;padding:24px}
+.pc-section-heading{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.pc-section-heading h2{font-size:19px;margin:0 0 5px;color:var(--admin-dark,#223640)}
+.pc-section-heading p{font-size:13px;margin:0;color:var(--admin-muted,#75838a)}
+.pc-section-icon{width:48px;height:48px;flex:0 0 48px;border-radius:14px;display:grid;place-items:center;background:#e5f5f6;color:#1597a3;font-size:22px}
+.pc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+.pc-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.pc-field label{font-size:13px;font-weight:700;color:#5d6b73}
+.pc-field input,.pc-field select{width:100%;min-width:0;box-sizing:border-box;height:44px;border:1px solid #d5dfe2;border-radius:9px;padding:0 12px;background:#fff;color:#253740;font:inherit}
+.pc-field input:focus,.pc-field select:focus{outline:2px solid rgba(21,151,163,.18);border-color:#1597a3}
+.pc-field small{font-size:11px;color:#77858b;line-height:1.4}
+.pc-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:24px}
+.pc-save-button{border:0;border-radius:10px;background:#1597a3;color:#fff;padding:13px 22px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 3px 0 #087f89;transition:background .18s,transform .18s}
+.pc-save-button:hover{background:#087f89;transform:translateY(-1px)}
+@media(max-width:700px){.pc-section{padding:18px}.pc-grid{grid-template-columns:minmax(0,1fr);gap:14px}.pc-section-heading{align-items:flex-start}.pc-actions>*{flex:1;text-align:center;justify-content:center}}
+</style>
+{% endblock %}
