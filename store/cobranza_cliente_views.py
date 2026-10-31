@@ -127,22 +127,27 @@ def admin_cobranza_cliente(request, ruc):
             resumen["vencidas"] = int(agregado[1] or 0)
             resumen["saldo"] = Decimal(str(agregado[2] or 0))
 
-            # Las retenciones se muestran como información complementaria de retencclient.
-            cursor.execute(
-                f"""
-                SELECT COALESCE(SUM(COALESCE(rc.totretenc, 0)), 0)
-                FROM public.retencclient rc
-                WHERE rc.ruccedcli = %s
-                  AND EXISTS (
-                      SELECT 1 FROM public.cuentascobrar cc
-                      WHERE cc.ruccedcli = rc.ruccedcli
-                        AND cc.numfactur = rc.numfactur
-                        AND cc.estpagcue = 'PENDIENTE'
-                  )
-                """,
-                [cliente.ruccedcli],
-            )
-            resumen["retenciones"] = Decimal(str(cursor.fetchone()[0] or 0))
+            # Las retenciones son complementarias; si una base antigua no tiene la tabla,
+            # eso no debe impedir mostrar la cartera de cuentascobrar.
+            try:
+                cursor.execute(
+                    """
+                    SELECT COALESCE(SUM(COALESCE(rc.totretenc, 0)), 0)
+                    FROM public.retencclient rc
+                    WHERE rc.ruccedcli = %s
+                      AND EXISTS (
+                          SELECT 1 FROM public.cuentascobrar cc
+                          WHERE cc.ruccedcli = rc.ruccedcli
+                            AND cc.numfactur = rc.numfactur
+                            AND cc.estpagcue = 'PENDIENTE'
+                      )
+                    """,
+                    [cliente.ruccedcli],
+                )
+                resumen["retenciones"] = Decimal(str(cursor.fetchone()[0] or 0))
+            except Exception:
+                conexion.rollback()
+                resumen["retenciones"] = Decimal("0.00")
 
             cursor.execute(
                 f"""
@@ -180,8 +185,14 @@ def admin_cobranza_cliente(request, ruc):
                 and factura["fecvencim"].date() < hoy
                 and Decimal(str(factura.get("saldo") or 0)) > 0
             )
-            factura["fecha_factura"] = factura["fecfactur"].date() if factura.get("fecfactur") else None
-            factura["fecha_vencimiento"] = factura["fecvencim"].date() if factura.get("fecvencim") else None
+            fecha_factura = factura.get("fecfactur")
+            fecha_vencimiento = factura.get("fecvencim")
+            factura["fecha_factura"] = (
+                fecha_factura.date() if hasattr(fecha_factura, "date") else fecha_factura
+            )
+            factura["fecha_vencimiento"] = (
+                fecha_vencimiento.date() if hasattr(fecha_vencimiento, "date") else fecha_vencimiento
+            )
 
         # Servicios registrados en prefactura: solo los que aún no se han facturado.
         # El proceso normal de facturación los traslada a facturas/detallefacturas.
