@@ -1144,7 +1144,15 @@ def admin_cliente(request, ruc):
         cliente.telcelcli = request.POST.get('telcelcli', '').strip()
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
-        cliente.rep_legal = request.POST.get('rep_legal', '').strip()
+        # Leer y guardar el representante legal de forma independiente para
+        # detectar si el navegador no está enviando el campo en el POST.
+        representante_legal = request.POST.get('rep_legal')
+        if representante_legal is None:
+            messages.error(request, 'No se recibió el campo Representante Legal del formulario. Recarga la página e inténtalo nuevamente.')
+            return redirect('admin_cliente', ruc=cliente.ruccedcli)
+        representante_legal = representante_legal.strip()
+        cliente.rep_legal = representante_legal
+
         # Actualizar explícitamente la tabla usada por el administrador.
         with connection.cursor() as cursor:
             cursor.execute(
@@ -1166,17 +1174,27 @@ def admin_cliente(request, ruc):
                     cliente.telcelcli,
                     cliente.corelectr,
                     cliente.ocuclient,
-                    cliente.rep_legal,
+                    representante_legal,
                     cliente.ruccedcli,
                 ],
             )
             filas_actualizadas = cursor.rowcount
 
+        # Verificar el valor persistido en la misma tabla que actualizamos.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT rep_legal FROM public.clientes WHERE ruccedcli = %s",
+                [cliente.ruccedcli],
+            )
+            resultado_rep_legal = cursor.fetchone()
+
         cliente.refresh_from_db()
-        if filas_actualizadas:
-            messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
-        else:
+        if not filas_actualizadas:
             messages.error(request, 'No se guardaron los datos: no se encontró el cliente en public.clientes.')
+        elif resultado_rep_legal is None or resultado_rep_legal[0] != representante_legal:
+            messages.error(request, 'Los demás datos se procesaron, pero Representante Legal no quedó guardado en public.clientes. Revisa los registros del servidor.')
+        else:
+            messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
     usuarios = (
