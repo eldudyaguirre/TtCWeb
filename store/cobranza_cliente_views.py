@@ -85,6 +85,57 @@ def admin_cobranza_cliente(request, ruc):
                 conexion.rollback()
                 retenciones_por_factura = {}
 
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT
+                        COUNT(*),
+                        COUNT(*) FILTER (
+                            WHERE f.fecvencim::date < %s::date
+                              AND COALESCE(f.valsalfac, 0) > 0
+                        ),
+                        COALESCE(SUM(COALESCE(f.valsalfac, 0)), 0),
+                        COALESCE(SUM(COALESCE(rc.total_retenciones, 0)), 0)
+                    FROM public.facturas f
+                    LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+                    LEFT JOIN (
+                        SELECT numfactur, SUM(totretenc) AS total_retenciones
+                        FROM public.retencclient
+                        GROUP BY numfactur
+                    ) rc ON rc.numfactur = f.numfactur
+                    WHERE {where_sql}
+                    """,
+                    [hoy.isoformat(), *parametros_sql],
+                )
+                agregado = cursor.fetchone()
+                resumen["cantidad"] = int(agregado[0] or 0)
+                resumen["vencidas"] = int(agregado[1] or 0)
+                resumen["saldo"] = Decimal(str(agregado[2] or 0))
+                resumen["retenciones"] = Decimal(str(agregado[3] or 0))
+            except Exception:
+                # Bases antiguas sin retencclient: el saldo y los contadores siguen disponibles.
+                conexion.rollback()
+                cursor.execute(
+                    f"""
+                    SELECT
+                        COUNT(*),
+                        COUNT(*) FILTER (
+                            WHERE f.fecvencim::date < %s::date
+                              AND COALESCE(f.valsalfac, 0) > 0
+                        ),
+                        COALESCE(SUM(COALESCE(f.valsalfac, 0)), 0)
+                    FROM public.facturas f
+                    LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+                    WHERE {where_sql}
+                    """,
+                    [hoy.isoformat(), *parametros_sql],
+                )
+                agregado = cursor.fetchone()
+                resumen["cantidad"] = int(agregado[0] or 0)
+                resumen["vencidas"] = int(agregado[1] or 0)
+                resumen["saldo"] = Decimal(str(agregado[2] or 0))
+                resumen["retenciones"] = Decimal("0.00")
+
             cursor.execute(
                 f"""
                 SELECT
@@ -121,16 +172,6 @@ def admin_cobranza_cliente(request, ruc):
             factura["fecha_factura"] = factura["fecfactur"].date() if factura.get("fecfactur") else None
             factura["fecha_vencimiento"] = factura["fecvencim"].date() if factura.get("fecvencim") else None
 
-        resumen["cantidad"] = len(facturas)
-        resumen["vencidas"] = sum(1 for factura in facturas if factura["vencida"])
-        resumen["saldo"] = sum(
-            (Decimal(str(factura.get("saldo") or 0)) for factura in facturas),
-            Decimal("0.00"),
-        )
-        resumen["retenciones"] = sum(
-            (factura["retenciones"] for factura in facturas),
-            Decimal("0.00"),
-        )
     except Exception as exc:
         db_error = str(exc)
         messages.error(
