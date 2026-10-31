@@ -163,13 +163,21 @@
     color:#18a5b0;
 }
 @media(max-width:900px){
-    .admin-client-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+    .admin-client-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:10px}
+    .admin-client-grid>.admin-card{padding:14px 13px 12px}
+    .admin-client-grid .admin-card-heading{gap:7px}
+    .admin-client-grid>.admin-card .admin-kicker{font-size:10px}
 }
 @media(max-width:600px){
-    .admin-client-grid{grid-template-columns:1fr !important;gap:12px}
-    .admin-client-grid>.admin-card{min-height:126px;padding:14px 17px 12px;border-radius:16px}
-    .admin-client-grid .admin-card-icon{flex-basis:32px;width:32px;height:34px;font-size:30px}
-    .admin-client-grid .admin-db-status{margin-top:7px;padding-top:0}
+    /* Mantener las tres tarjetas en una sola fila también en móvil */
+    .admin-client-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:7px}
+    .admin-client-grid>.admin-card{min-width:0;min-height:112px;padding:11px 9px 10px;border-radius:13px}
+    .admin-client-grid .admin-card-heading{gap:5px;min-height:25px;margin-bottom:7px;align-items:center}
+    .admin-client-grid .admin-card-icon{flex:0 0 22px;width:22px;height:25px;font-size:23px}
+    .admin-client-grid>.admin-card .admin-kicker{font-size:8px;letter-spacing:0;line-height:1.15;overflow-wrap:anywhere}
+    .admin-client-grid>.admin-card h2{font-size:clamp(12px,3.4vw,18px);letter-spacing:-.025em;line-height:1.15}
+    .admin-client-grid>.admin-card p{font-size:10px;line-height:1.2}
+    .admin-client-grid .admin-db-status{margin-top:7px;padding-top:0;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){
     .admin-client-grid>.admin-card{transition:none}
