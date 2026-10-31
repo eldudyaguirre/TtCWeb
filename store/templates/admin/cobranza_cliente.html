@@ -1,0 +1,196 @@
+{% extends "admin/base.html" %}
+{% block title %}Cobranza | {{ cliente.nomclient }}{% endblock %}
+{% block content %}
+<div class="admin-breadcrumb">
+    <a class="admin-new-client-button admin-back-button" href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}"><span aria-hidden="true">←</span> {{ cliente.nomclient }}</a>
+</div>
+
+<div class="admin-page-header cobranza-page-header">
+    <div>
+        <span class="admin-kicker">Administración del cliente · Cobranza</span>
+        <h1>COBRANZA</h1>
+        <p>{{ cliente.nomclient }} · RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p>
+    </div>
+    <span class="admin-report-count">{{ resumen.cantidad }} facturas pendientes</span>
+</div>
+
+{% if db_error %}
+<section class="admin-card cob-error">
+    <strong>No se pudo cargar la información de cobranza.</strong>
+    <p>Comprueba la conexión con la base de datos del cliente. El detalle técnico está disponible en los mensajes de administración.</p>
+</section>
+{% endif %}
+
+<section class="cob-stats">
+    <article class="cob-stat cob-stat-balance">
+        <span>Saldo pendiente consultado</span>
+        <strong>$ {{ resumen.saldo|floatformat:2 }}</strong>
+        <small>Suma del saldo registrado en las facturas filtradas.</small>
+    </article>
+    <article class="cob-stat">
+        <span>Facturas pendientes</span>
+        <strong>{{ resumen.cantidad }}</strong>
+        <small>Facturas con saldo mayor que cero.</small>
+    </article>
+    <article class="cob-stat cob-stat-overdue">
+        <span>Facturas vencidas</span>
+        <strong>{{ resumen.vencidas }}</strong>
+        <small>Con fecha de vencimiento anterior a hoy.</small>
+    </article>
+    <article class="cob-stat cob-stat-retention">
+        <span>Retenciones registradas</span>
+        <strong>$ {{ resumen.retenciones|floatformat:2 }}</strong>
+        <small>Valor asociado según la tabla retencclient.</small>
+    </article>
+</section>
+
+<section class="cob-shortcuts" aria-label="Herramientas de cobranza">
+    <a class="cob-shortcut" href="#facturas-pendientes">
+        <span class="cob-shortcut-icon"><i class="fi fi-rr-receipt"></i></span>
+        <span><strong>Facturas pendientes</strong><small>Consultar saldos, fechas y clientes</small></span>
+        <span class="cob-arrow">›</span>
+    </a>
+    <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-retenciones" aria-disabled="true">
+        <span class="cob-shortcut-icon"><i class="fi fi-rr-file-invoice"></i></span>
+        <span><strong>Retenciones</strong><small>Registro y consulta por factura</small></span>
+        <span class="cob-status">En preparación</span>
+    </a>
+    <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-servicios" aria-disabled="true">
+        <span class="cob-shortcut-icon"><i class="fi fi-rr-briefcase"></i></span>
+        <span><strong>Servicios realizados</strong><small>Consultar y gestionar servicios</small></span>
+        <span class="cob-status">En preparación</span>
+    </a>
+    <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-reportes" aria-disabled="true">
+        <span class="cob-shortcut-icon"><i class="fi fi-rr-file-pdf"></i></span>
+        <span><strong>Reportes de cobranza</strong><small>Preparar reportes para enviar</small></span>
+        <span class="cob-status">En preparación</span>
+    </a>
+</section>
+
+<section class="admin-card cob-table-card" id="facturas-pendientes">
+    <div class="cob-section-heading">
+        <div>
+            <span class="admin-kicker">Cuentas por cobrar</span>
+            <h2>Facturas pendientes de pago</h2>
+            <p>Se muestran facturas con saldo pendiente, según los datos de la base del cliente.</p>
+        </div>
+    </div>
+
+    <form method="get" class="cob-filters">
+        <div>
+            <label for="cob-fecha-desde">Fecha desde</label>
+            <input id="cob-fecha-desde" type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+        </div>
+        <div>
+            <label for="cob-fecha-hasta">Fecha hasta</label>
+            <input id="cob-fecha-hasta" type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+        </div>
+        <div class="cob-filter-search">
+            <label for="cob-q">Cliente o factura</label>
+            <input id="cob-q" type="search" name="q" value="{{ filtros.q }}" placeholder="Nombre, RUC, serie o número">
+        </div>
+        <div class="cob-filter-actions">
+            <button class="cob-btn cob-btn-primary" type="submit"><i class="fi fi-rr-search"></i> Buscar</button>
+            <a class="cob-btn cob-btn-light" href="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">Limpiar</a>
+        </div>
+    </form>
+
+    <div class="cob-table-wrap">
+        <table class="cob-table">
+            <thead>
+                <tr>
+                    <th>Factura</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Vencimiento</th>
+                    <th>Total</th>
+                    <th>Retenciones</th>
+                    <th>Saldo pendiente</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for factura in facturas %}
+                <tr>
+                    <td><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong><small>{{ factura.ruc_deudor }}</small></td>
+                    <td>{{ factura.nombre_deudor }}</td>
+                    <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{% if factura.vencida %}<span class="cob-date-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
+                    <td class="cob-money">$ {{ factura.total|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ factura.retenciones|floatformat:2 }}</td>
+                    <td class="cob-money cob-money-balance">$ {{ factura.saldo|floatformat:2 }}</td>
+                    <td><span class="cob-badge {% if factura.vencida %}cob-badge-overdue{% else %}cob-badge-pending{% endif %}">{% if factura.vencida %}Vencida{% else %}Pendiente{% endif %}</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8" class="cob-empty">No se encontraron facturas pendientes para los filtros seleccionados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if limite_resultados %}
+    <p class="cob-limit-note">Se muestran hasta 500 facturas. Reduce el período o especifica un cliente para acotar la consulta.</p>
+    {% endif %}
+</section>
+
+<div class="cob-next-note" id="proximamente-retenciones"><strong>Siguiente etapa:</strong> definiremos el registro de retenciones usando los campos y validaciones del formulario VB6.</div>
+<div class="cob-next-note" id="proximamente-servicios"><strong>Servicios realizados:</strong> adaptaremos la estructura existente en VB6 antes de habilitar altas o ediciones.</div>
+<div class="cob-next-note" id="proximamente-reportes"><strong>Reportes:</strong> añadiremos exportación a PDF/Excel y envío por correo cuando definamos el formato.</div>
+
+<style>
+.cobranza-page-header{margin-bottom:18px}
+.cob-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 18px}
+.cob-stat{min-width:0;background:#fff;border:1px solid #dce5e8;border-top:3px solid #1599a5;border-radius:15px;padding:18px 18px 16px;box-shadow:0 8px 24px rgba(27,55,65,.04)}
+.cob-stat>span{display:block;color:#667780;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.cob-stat>strong{display:block;color:#213640;font-size:27px;line-height:1.25;margin:10px 0 7px;overflow-wrap:anywhere}
+.cob-stat small{display:block;color:#74838a;font-size:12px;line-height:1.5}
+.cob-stat-balance{border-top-color:#149aa5;background:linear-gradient(135deg,#fff 55%,#edfafa)}
+.cob-stat-overdue{border-top-color:#c83b4b}
+.cob-stat-retention{border-top-color:#b68218}
+.cob-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.cob-shortcut{display:flex;align-items:center;gap:11px;min-width:0;padding:14px;background:#fff;border:1px solid #dce5e8;border-radius:13px;text-decoration:none;color:#253943;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.cob-shortcut:not(.cob-shortcut-disabled):hover{transform:translateY(-2px);border-color:#149aa5;box-shadow:0 8px 20px rgba(27,55,65,.08)}
+.cob-shortcut-icon{display:flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;border-radius:11px;background:#e5f5f6;color:#138f9a;font-size:19px}
+.cob-shortcut>span:nth-child(2){min-width:0;flex:1}
+.cob-shortcut strong,.cob-shortcut small{display:block}
+.cob-shortcut strong{font-size:13px;line-height:1.4}
+.cob-shortcut small{margin-top:4px;color:#75838a;font-size:11px;line-height:1.4}
+.cob-arrow{font-size:25px;color:#149aa5}
+.cob-shortcut-disabled{cursor:default;background:#fbfcfc}
+.cob-status{font-size:10px;font-weight:800;color:#8a6a20;background:#fbf3df;border-radius:20px;padding:5px 7px;white-space:nowrap}
+.cob-table-card{padding:22px}
+.cob-section-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
+.cob-section-heading h2{margin:5px 0 6px;color:var(--admin-dark,#213640);font-size:21px}
+.cob-section-heading p{margin:0;color:#75838a;font-size:13px;line-height:1.5}
+.cob-filters{display:grid;grid-template-columns:160px 160px minmax(200px,1fr) auto;align-items:end;gap:12px;margin-bottom:18px;padding:16px;background:#f6f9fa;border:1px solid #e4ebed;border-radius:12px}
+.cob-filters label{display:block;margin-bottom:6px;color:#64757d;font-size:12px;font-weight:800}
+.cob-filters input{box-sizing:border-box;width:100%;height:41px;border:1px solid #d5dfe2;border-radius:8px;padding:0 11px;background:#fff;color:#263842;font:inherit;font-size:13px;min-width:0}
+.cob-filter-actions{display:flex;gap:7px}
+.cob-btn{height:41px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 13px;border-radius:8px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer}
+.cob-btn-primary{background:#149aa5;border:1px solid #149aa5;color:#fff}
+.cob-btn-primary:hover{background:#087b86;border-color:#087b86}
+.cob-btn-light{background:#fff;border:1px solid #d5dfe2;color:#596b73}
+.cob-table-wrap{width:100%;overflow-x:auto;border:1px solid #e1e8ea;border-radius:10px}
+.cob-table{width:100%;min-width:950px;border-collapse:collapse;background:#fff}
+.cob-table th{background:#22343f;color:#fff;text-align:left;font-size:10px;letter-spacing:.04em;padding:13px 12px;white-space:nowrap}
+.cob-table td{border-bottom:1px solid #e9eef0;padding:13px 12px;color:#40515a;font-size:12px;vertical-align:middle}
+.cob-table tbody tr:last-child td{border-bottom:0}
+.cob-table tbody tr:hover{background:#f8fbfb}
+.cob-table td:first-child strong,.cob-table td:first-child small{display:block}
+.cob-table td:first-child strong{color:#213640;white-space:nowrap}
+.cob-table td:first-child small{margin-top:4px;color:#7c8b91;font-size:10px}
+.cob-money{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.cob-money-balance{font-weight:800;color:#a52d3c!important}
+.cob-date-overdue{color:#b72f3f;font-weight:800}
+.cob-badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap}
+.cob-badge-pending{background:#fff4dc;color:#94691b}
+.cob-badge-overdue{background:#fde8e9;color:#b42e3e}
+.cob-empty{text-align:center!important;padding:34px 16px!important;color:#78868c!important}
+.cob-limit-note{font-size:12px;color:#7a858b;margin:12px 0 0}
+.cob-next-note{margin:12px 0;padding:12px 15px;border:1px dashed #cbd9dd;border-radius:10px;color:#6b7b82;font-size:12px;line-height:1.5;background:#fbfdfd}
+.cob-error{border-left:4px solid #c83b4b;margin-bottom:16px}
+.cob-error p{margin-bottom:0;color:#75838a;font-size:13px}
+@media(max-width:1100px){.cob-stats,.cob-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.cob-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.cob-filter-search{grid-column:span 2}.cob-filter-actions{grid-column:span 2;justify-content:flex-start}}
+@media(max-width:600px){.cob-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.cob-stat{padding:13px 12px}.cob-stat>span{font-size:10px}.cob-stat>strong{font-size:21px}.cob-stat small{font-size:10px}.cob-shortcuts{grid-template-columns:1fr;gap:9px}.cob-table-card{padding:15px}.cob-section-heading h2{font-size:18px}.cob-filters{grid-template-columns:minmax(0,1fr);padding:12px;gap:10px}.cob-filter-search,.cob-filter-actions{grid-column:auto}.cob-filter-actions .cob-btn{flex:1}.cob-status{font-size:9px}.cobranza-page-header{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){.cob-shortcut{transition:none}}
+</style>
+{% endblock %}
