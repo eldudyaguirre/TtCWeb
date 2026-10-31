@@ -988,7 +988,7 @@ def admin_cliente_nuevo(request):
                         request.POST.get('automatizado') == 'on',
                         request.POST.get('activo') == 'on',
                         datos['tipo_contribuyente'],
-                        datos['rep_legal'] or ' ',
+                        datos['rep_legal'],
                     ],
                 )
             messages.success(request, 'Cliente registrado y base de datos preparada correctamente.')
