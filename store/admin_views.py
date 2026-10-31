@@ -20193,8 +20193,8 @@ def admin_cliente(request, ruc):
             )
             db_error = f'Error consultando datos: {exc}'
 
-    # Los servicios por facturar se consultan en la base central BdTotal,
-    # no en la base individual del cliente.
+    # Los servicios por facturar se consultan en la base central BdTotal.
+    # Localizar prefactura por esquema para no asumir que pertenece a public.
     servicios_por_facturar_total = Decimal('0.00')
     ruc_cliente = str(cliente.ruccedcli).strip()
     try:
@@ -20208,8 +20208,28 @@ def admin_cliente(request, ruc):
         with conexion_bdtotal.cursor() as cursor:
             cursor.execute(
                 """
+                SELECT table_schema, table_name
+                FROM information_schema.tables
+                WHERE lower(table_name) = lower(%s)
+                  AND table_type = 'BASE TABLE'
+                  AND table_schema NOT IN ('pg_catalog', 'information_schema')
+                ORDER BY (table_schema = 'public') DESC, table_schema
+                LIMIT 1
+                """,
+                ['prefactura'],
+            )
+            tabla_prefactura = cursor.fetchone()
+            if not tabla_prefactura:
+                raise RuntimeError(
+                    f'No existe una tabla prefactura en la base {conexion_bdtotal.settings_dict.get("NAME")}.'
+                )
+            esquema, nombre_tabla = tabla_prefactura
+            quote = conexion_bdtotal.ops.quote_name
+            tabla_sql = f'{quote(esquema)}.{quote(nombre_tabla)}'
+            cursor.execute(
+                f"""
                 SELECT COALESCE(SUM(COALESCE(preitefac, 0)), 0)
-                FROM public.prefactura
+                FROM {tabla_sql}
                 WHERE LPAD(TRIM(COALESCE(ruc::text, '')), 13, '0') =
                       LPAD(%s, 13, '0')
                 """,
