@@ -313,7 +313,7 @@ def mi_empresa(request):
             campos_editables = [
                 'dirclient', 'ocuclient', 'corelectr',
                 'teldomcli', 'teloficli', 'telcelcli',
-                'estcivcli', 'fecnacimi',
+                'rep_legal', 'fecnacimi',
                 'clavesri', 'cediess', 'claveiess',
                 'mrlcon', 'mrlsal', 'clavesuper',
                 'iessdomestica', 'datiess',
