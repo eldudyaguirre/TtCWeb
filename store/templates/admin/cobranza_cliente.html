@@ -55,10 +55,10 @@
         <span><strong>Retenciones</strong><small>Registro y consulta por factura</small></span>
         <span class="cob-status">En preparación</span>
     </a>
-    <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-servicios" aria-disabled="true">
+    <a class="cob-shortcut" href="#servicios-pendientes">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-briefcase"></i></span>
-        <span><strong>Servicios realizados</strong><small>Consultar y gestionar servicios</small></span>
-        <span class="cob-status">En preparación</span>
+        <span><strong>Servicios por facturar</strong><small>Servicios registrados que aún no se han facturado</small></span>
+        <span class="cob-arrow">›</span>
     </a>
     <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-reportes" aria-disabled="true">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-file-pdf"></i></span>
@@ -133,7 +133,43 @@
 </section>
 
 <div class="cob-next-note" id="proximamente-retenciones"><strong>Siguiente etapa:</strong> definiremos el registro de retenciones usando los campos y validaciones del formulario VB6.</div>
-<div class="cob-next-note" id="proximamente-servicios"><strong>Servicios realizados:</strong> adaptaremos la estructura existente en VB6 antes de habilitar altas o ediciones.</div>
+
+<section class="admin-card cob-table-card" id="servicios-pendientes">
+    <div class="cob-section-heading">
+        <div>
+            <span class="admin-kicker">Prefactura</span>
+            <h2>Servicios pendientes de facturar</h2>
+            <p>Estos registros permanecen aquí hasta que el proceso de facturación los traslade a facturas y detallefacturas.</p>
+        </div>
+        <span class="admin-report-count">{{ resumen_servicios.cantidad }} servicios</span>
+    </div>
+    <div class="cob-service-summary">
+        <span>Valor referencial de los servicios listados</span>
+        <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+    </div>
+    <div class="cob-table-wrap">
+        <table class="cob-table">
+            <thead><tr><th>Registro</th><th>Fecha</th><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio</th><th>Total referencial</th></tr></thead>
+            <tbody>
+            {% for servicio in servicios_pendientes %}
+                <tr>
+                    <td>{{ servicio.numdetfac }}</td>
+                    <td>{{ servicio.fecha|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ servicio.coditeinv|default:"—" }}</td>
+                    <td>{{ servicio.desiteinv|default:"—" }}</td>
+                    <td class="cob-money">{{ servicio.cantidad|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ servicio.precio|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ servicio.total|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="cob-empty">No hay servicios pendientes de facturar para este cliente.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if resumen_servicios.cantidad >= 500 %}<p class="cob-limit-note">Se muestran hasta 500 registros de servicios pendientes.</p>{% endif %}
+</section>
+
 <div class="cob-next-note" id="proximamente-reportes"><strong>Reportes:</strong> añadiremos exportación a PDF/Excel y envío por correo cuando definamos el formato.</div>
 
 <style>
@@ -158,6 +194,8 @@
 .cob-shortcut-disabled{cursor:default;background:#fbfcfc}
 .cob-status{font-size:10px;font-weight:800;color:#8a6a20;background:#fbf3df;border-radius:20px;padding:5px 7px;white-space:nowrap}
 .cob-table-card{padding:22px}
+.cob-service-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 15px;margin-bottom:15px;border-radius:9px;background:#edfafa;color:#42616a;font-size:12px}
+.cob-service-summary strong{font-size:19px;color:#138f9a;white-space:nowrap}
 .cob-section-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
 .cob-section-heading h2{margin:5px 0 6px;color:var(--admin-dark,#213640);font-size:21px}
 .cob-section-heading p{margin:0;color:#75838a;font-size:13px;line-height:1.5}
