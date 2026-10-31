@@ -269,10 +269,7 @@ def admin_cobranza_cliente(request, ruc):
             "Verifica la conexión y la estructura de la base del cliente.",
         )
 
-    return render(
-        request,
-        "admin/cobranza_cliente.html",
-        {
+    contexto = {
             "cliente": cliente,
             "facturas": facturas,
             "servicios_pendientes": servicios_pendientes,
@@ -285,8 +282,10 @@ def admin_cobranza_cliente(request, ruc):
                 "q": busqueda,
             },
             "limite_resultados": len(facturas) >= 500,
-        },
-    )
+        }
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "admin/facturas_pendientes_popup.html", contexto)
+    return render(request, "admin/cobranza_cliente.html", contexto)
 
 
 @admin_required
