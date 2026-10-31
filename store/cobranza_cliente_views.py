@@ -440,3 +440,153 @@ def admin_factura_detalle_cobranza(request, ruc, numfactur):
         "admin/factura_detalle_cobranza_popup.html",
         {"cliente": cliente, "factura": factura, "detalles": detalles, "saldo_pendiente": saldo, "error": error},
     )
+
+
+@admin_required
+def admin_factura_retencion_cobranza(request, ruc, numfactur):
+    """Formulario y registro de retención recibida, basado en el formulario VB6."""
+    from datetime import datetime, timedelta
+    from django.db import transaction
+    from django.http import JsonResponse
+    from django.views.decorators.http import require_http_methods
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    conexion = _conexion_cliente(cliente.ruccedcli)
+    error = ""
+    exito = False
+    factura = None
+    datos = {}
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT f.numfactur, f.numserfac, f.ruccedcli, f.fecfactur, f.subtotfac,
+                       f.valdescue, f.valivafac, f.valsalfac, f.totbieiva, f.totbiesiniva,
+                       f.totseriva, f.totsersiniva, f.porivafac, f.estpagfac,
+                       c.nomclient, c.porretfuebie, c.porretfueser, c.porretivabie, c.porretivaser
+                FROM public.facturas f
+                LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+                WHERE f.numfactur = %s
+                  AND LPAD(TRIM(COALESCE(f.ruccedcli::text,'')),13,'0') = LPAD(%s,13,'0')
+                LIMIT 1
+            """, [numfactur, cliente.ruccedcli])
+            row = cursor.fetchone()
+            if row:
+                cols = [d[0] for d in cursor.description]
+                factura = dict(zip(cols, row))
+                cursor.execute("""
+                    SELECT COALESCE(SUM(COALESCE(valpagpar,0)),0)
+                    FROM public.cuentascobrar
+                    WHERE numfactur=%s AND LPAD(TRIM(COALESCE(ruccedcli::text,'')),13,'0')=LPAD(%s,13,'0')
+                      AND UPPER(TRIM(COALESCE(estpagcue,''))) <> 'PAGADA'
+                """, [numfactur, cliente.ruccedcli])
+                saldo_cuentas = Decimal(str(cursor.fetchone()[0] or 0))
+                factura["saldo_cuentas"] = saldo_cuentas if saldo_cuentas > 0 else Decimal(str(factura.get("valsalfac") or 0))
+                cursor.execute("SELECT 1 FROM public.retencclient WHERE numdocume=%s AND ruccedcli=%s AND numfactur=%s LIMIT 1", ["", cliente.ruccedcli, numfactur])
+            else:
+                error = "No se encontró la factura para este cliente."
+    except Exception:
+        error = "No se pudo consultar la factura y los porcentajes de retención del cliente."
+
+    if not factura and not error:
+        error = "No se encontró la factura para este cliente."
+
+    if request.method == "POST" and factura and not error:
+        try:
+            def money(key):
+                raw = request.POST.get(key, "0").strip().replace(",", ".")
+                value = Decimal(raw or "0")
+                if not value.is_finite():
+                    raise ValueError()
+                return value.quantize(Decimal("0.01"))
+            numero = request.POST.get("numdocume", "").strip()
+            fecha_ret = date.fromisoformat(request.POST.get("fecretenc", ""))
+            fecha_rec = date.fromisoformat(request.POST.get("fecrecepc", ""))
+            if len(numero) != 17 or numero[3] != "-" or numero[7] != "-":
+                raise ValueError("El número de retención debe tener el formato 001-001-000000001.")
+            if fecha_ret > timezone.localdate() or fecha_ret < factura["fecfactur"].date():
+                raise ValueError("La fecha de retención debe estar entre la fecha de la factura y hoy.")
+            if fecha_rec < fecha_ret or (fecha_rec - fecha_ret).days > 5:
+                raise ValueError("La fecha de recepción debe ser igual o posterior a la emisión y no exceder cinco días.")
+            bases = {k: money(k) for k in ("basimpfuebie","basimpfueser","basimpivabie","basimpivaser")}
+            porcentajes = {k: money(k) for k in ("porretfuebie","porretfueser","porretivabie","porretivaser")}
+            if any(v < 0 or v > 100 for v in porcentajes.values()) or any(v < 0 for v in bases.values()):
+                raise ValueError("Las bases deben ser positivas y los porcentajes deben estar entre 0 y 100.")
+            valores = {
+                "valretfuebie": (bases["basimpfuebie"] * porcentajes["porretfuebie"] / 100).quantize(Decimal("0.01")),
+                "valretfueser": (bases["basimpfueser"] * porcentajes["porretfueser"] / 100).quantize(Decimal("0.01")),
+                "valretivabie": (bases["basimpivabie"] * porcentajes["porretivabie"] / 100).quantize(Decimal("0.01")),
+                "valretivaser": (bases["basimpivaser"] * porcentajes["porretivaser"] / 100).quantize(Decimal("0.01")),
+            }
+            total = sum(valores.values(), Decimal("0.00")).quantize(Decimal("0.01"))
+            saldo_actual = Decimal(str(factura.get("valsalfac") or 0))
+            if total <= 0:
+                raise ValueError("El total de la retención debe ser mayor que cero.")
+            if total > saldo_actual:
+                raise ValueError("La retención no puede superar el saldo pendiente de la factura.")
+            if abs((bases["basimpfuebie"] + bases["basimpfueser"]) - (Decimal(str(factura["subtotfac"] or 0)) - Decimal(str(factura["valdescue"] or 0)))) > Decimal("0.02"):
+                raise ValueError("Las bases de retención de renta no coinciden con el subtotal de la factura.")
+            if abs((bases["basimpivabie"] + bases["basimpivaser"]) - Decimal(str(factura["valivafac"] or 0))) > Decimal("0.02"):
+                raise ValueError("Las bases de retención de IVA no coinciden con el IVA de la factura.")
+
+            with transaction.atomic(using=conexion.alias):
+                with conexion.cursor() as cursor:
+                    cursor.execute("SELECT valsalfac FROM public.facturas WHERE numfactur=%s AND ruccedcli=%s FOR UPDATE", [numfactur, cliente.ruccedcli])
+                    locked = cursor.fetchone()
+                    if not locked:
+                        raise ValueError("La factura ya no está disponible.")
+                    saldo_actual = Decimal(str(locked[0] or 0))
+                    if total > saldo_actual:
+                        raise ValueError("El total de la retención supera el saldo actual de la factura.")
+                    cursor.execute("SELECT 1 FROM public.retencclient WHERE numdocume=%s AND ruccedcli=%s AND numfactur=%s", [numero, cliente.ruccedcli, numfactur])
+                    if cursor.fetchone():
+                        raise ValueError("Este número de retención ya está registrado para esta factura.")
+                    cursor.execute("""
+                        INSERT INTO public.retencclient
+                        (numdocume,ruccedcli,fecretenc,fecrecepc,numfactur,
+                         basimpfuebie,porretfuebie,valretfuebie,basimpfueser,porretfueser,valretfueser,
+                         basimpivabie,porretivabie,valretivabie,basimpivaser,porretivaser,valretivaser,totretenc)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """, [numero,cliente.ruccedcli,fecha_ret,fecha_rec,numfactur,
+                        bases["basimpfuebie"],porcentajes["porretfuebie"],valores["valretfuebie"],
+                        bases["basimpfueser"],porcentajes["porretfueser"],valores["valretfueser"],
+                        bases["basimpivabie"],porcentajes["porretivabie"],valores["valretivabie"],
+                        bases["basimpivaser"],porcentajes["porretivaser"],valores["valretivaser"],total])
+                    nuevo_saldo = max(Decimal("0.00"), saldo_actual - total)
+                    cursor.execute("UPDATE public.facturas SET valsalfac=%s, estpagfac=%s, retemitid=TRUE WHERE numfactur=%s AND ruccedcli=%s",
+                                   [nuevo_saldo, "PAGADA" if nuevo_saldo < Decimal("0.01") else factura.get("estpagfac") or "PENDIENTE", numfactur, cliente.ruccedcli])
+                    restante = total
+                    cursor.execute("""
+                        SELECT numcuecob,valpagpar,estpagcue FROM public.cuentascobrar
+                        WHERE numfactur=%s AND ruccedcli=%s AND UPPER(COALESCE(estpagcue,'')) <> 'PAGADA'
+                        ORDER BY numcuecob DESC FOR UPDATE
+                    """, [numfactur,cliente.ruccedcli])
+                    cuentas = cursor.fetchall()
+                    for numcue, valpagpar, estado in cuentas:
+                        if restante <= 0: break
+                        deuda = Decimal(str(valpagpar or 0))
+                        aplicado = min(deuda, restante)
+                        saldo_cuenta = max(Decimal("0.00"), deuda-aplicado)
+                        cursor.execute("UPDATE public.cuentascobrar SET valpagpar=%s, estpagcue=%s WHERE numcuecob=%s",
+                                       [saldo_cuenta, "PAGADA" if saldo_cuenta < Decimal("0.01") else estado, numcue])
+                        restante -= aplicado
+                    cursor.execute("UPDATE public.clientes SET salcuenta=GREATEST(COALESCE(salcuenta,0)-%s,0) WHERE ruccedcli=%s", [total,cliente.ruccedcli])
+                    cursor.execute("SELECT COALESCE(MAX(nummovcta),0)+1 FROM public.cuentacliente")
+                    num_mov = cursor.fetchone()[0]
+                    cursor.execute("SELECT COALESCE(salcuenta,0) FROM public.clientes WHERE ruccedcli=%s", [cliente.ruccedcli])
+                    saldo_cliente = cursor.fetchone()[0]
+                    cursor.execute("""
+                        INSERT INTO public.cuentacliente
+                        (nummovcta,ruccedcli,fecmovcta,tipmovcta,valmovcta,refmovcta,fecvencim,numfactur,debe,haber,saldo,salcuenta,tipdocume)
+                        VALUES (%s,%s,%s,'CREDITO',%s,%s,%s,%s,0,%s,%s,%s,'RET')
+                    """, [num_mov,cliente.ruccedcli,fecha_ret,total,"RETENCIÓN #"+numero,fecha_ret,numfactur,nuevo_saldo,total,nuevo_saldo,saldo_cliente])
+            exito = True
+        except ValueError as exc:
+            error = str(exc)
+        except Exception:
+            error = "No se pudo guardar la retención. No se confirmaron los cambios; verifica la configuración de la base de datos."
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        if request.method == "POST":
+            return JsonResponse({"ok": exito, "error": error, "message": "Retención registrada correctamente." if exito else error})
+        return render(request, "admin/retencion_cobranza_popup.html", {"cliente": cliente, "factura": factura, "error": error, "hoy": timezone.localdate().isoformat()})
+    return render(request, "admin/retencion_cobranza_popup.html", {"cliente": cliente, "factura": factura, "error": error, "hoy": timezone.localdate().isoformat()})
