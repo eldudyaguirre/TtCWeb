@@ -3,145 +3,171 @@
 
 {% block content %}
 <style>
-/* Tarjetas Glass / Premium para el resumen del cliente */
+/* Tarjetas compactas glass/premium, siguiendo la referencia visual del cliente */
 .admin-client-grid{
     display:grid !important;
     grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:20px;
+    gap:14px;
     align-items:stretch;
     width:100%;
 }
 .admin-client-grid>.admin-card{
-    min-width:0;
-    margin:0;
     position:relative;
     isolation:isolate;
     overflow:hidden;
-    padding:25px 24px 24px;
-    border:1px solid rgba(255,255,255,.86);
-    border-radius:22px;
-    background:linear-gradient(135deg,rgba(255,255,255,.96) 0%,rgba(247,252,253,.82) 55%,rgba(233,248,250,.72) 100%);
-    box-shadow:0 12px 32px rgba(27,61,75,.075),inset 0 1px 0 rgba(255,255,255,.95);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    min-height:164px;
+    margin:0;
+    padding:18px 18px 16px;
+    border:1px solid rgba(255,255,255,.96);
+    border-radius:17px;
+    background:linear-gradient(135deg,rgba(255,255,255,.97) 0%,rgba(231,250,253,.91) 62%,rgba(213,245,248,.86) 100%);
+    box-shadow:0 8px 22px rgba(34,111,130,.10),inset 0 1px 0 rgba(255,255,255,.98);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    transition:transform .2s ease,box-shadow .2s ease;
 }
 .admin-client-grid>.admin-card::before{
     content:"";
     position:absolute;
-    inset:0 0 auto;
-    height:4px;
     z-index:-1;
-    background:linear-gradient(90deg,#1599a5,#72d2d5);
+    width:130px;
+    height:130px;
+    right:-43px;
+    bottom:-83px;
+    border-radius:50%;
+    background:rgba(92,213,221,.13);
+    border:1px solid rgba(77,194,205,.13);
+    pointer-events:none;
 }
 .admin-client-grid>.admin-card::after{
     content:"";
     position:absolute;
-    width:150px;
-    height:150px;
-    right:-58px;
-    bottom:-76px;
-    border-radius:50%;
-    border:1px solid rgba(21,153,165,.15);
-    background:radial-gradient(circle,rgba(98,211,215,.14),rgba(98,211,215,0) 70%);
-    pointer-events:none;
     z-index:-1;
+    width:90px;
+    height:90px;
+    right:8px;
+    bottom:-62px;
+    border-radius:50%;
+    border:1px solid rgba(77,194,205,.16);
+    background:rgba(111,224,229,.09);
+    pointer-events:none;
 }
 .admin-client-grid>.admin-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 18px 38px rgba(27,61,75,.12),inset 0 1px 0 rgba(255,255,255,.98);
-    border-color:rgba(21,153,165,.28);
+    transform:translateY(-2px);
+    box-shadow:0 12px 26px rgba(34,111,130,.14),inset 0 1px 0 #fff;
+}
+.admin-client-grid .admin-card-heading{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-height:30px;
+    margin-bottom:9px;
+}
+.admin-client-grid .admin-card-icon{
+    flex:0 0 27px;
+    width:27px;
+    height:30px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    color:#16a5ae;
+    font-size:25px;
+    line-height:1;
 }
 .admin-client-grid>.admin-card .admin-kicker{
     display:block;
-    margin-bottom:10px;
-    color:#168b98;
-    letter-spacing:.13em;
-    font-size:10px;
+    margin:0;
+    color:#25465a;
+    font-size:11px;
     font-weight:800;
+    letter-spacing:.015em;
+    line-height:1.2;
     text-transform:uppercase;
 }
 .admin-client-grid>.admin-card h2{
-    margin:0 0 8px;
-    color:#183746;
-    font-size:clamp(22px,2vw,29px);
-    font-weight:750;
+    margin:0 0 5px;
+    color:#20465e;
+    font-size:clamp(20px,1.8vw,24px);
+    font-weight:800;
     letter-spacing:-.035em;
-    line-height:1.2;
+    line-height:1.18;
     overflow-wrap:anywhere;
 }
 .admin-client-grid>.admin-card p{
     margin:0;
-    color:#627887;
-    font-size:13px;
-    line-height:1.55;
-}
-.admin-client-grid .admin-card-icon{
-    width:46px;
-    height:46px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:18px;
-    border-radius:15px;
-    color:#138d99;
-    background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(211,244,245,.78));
-    border:1px solid rgba(255,255,255,.96);
-    box-shadow:0 6px 16px rgba(21,153,165,.12),inset 0 1px 0 #fff;
-    font-size:20px;
+    color:#607b8c;
+    font-size:12px;
+    line-height:1.35;
 }
 .admin-client-grid .admin-db-status{
-    margin-top:17px;
+    margin-top:auto;
+    padding-top:11px;
+    color:#087c35;
+    font-size:14px;
+    font-weight:800;
 }
-.admin-client-grid .admin-db-status.online{
-    color:#168354;
-}
+.admin-client-grid .admin-db-status.online{color:#087c35}
 .admin-client-grid .admin-db-status span{
-    box-shadow:0 0 0 4px rgba(48,169,112,.10);
+    box-shadow:0 0 0 3px rgba(32,174,77,.10);
 }
 .admin-client-grid .admin-module-button{
     display:inline-flex;
     align-items:center;
-    gap:8px;
-    margin-top:18px;
-    padding:8px 12px;
-    border:1px solid rgba(207,37,54,.12);
-    border-radius:11px;
-    background:rgba(255,239,241,.72);
+    gap:6px;
+    align-self:flex-start;
+    margin-top:auto;
+    padding-top:12px;
+    border:0;
+    background:transparent;
     text-decoration:none !important;
+    color:#c82032;
+    font-weight:800;
+}
+.admin-client-grid .admin-module-button small{
+    color:#6f7d88;
+    font-size:11px;
+    font-weight:500;
 }
 .admin-client-grid>.admin-cliente-cuenta-card{
-    background:linear-gradient(135deg,rgba(255,255,255,.97) 0%,rgba(255,247,248,.9) 60%,rgba(255,232,235,.82) 100%);
-    border-color:rgba(255,255,255,.9);
+    background:linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(255,241,244,.94) 60%,rgba(255,222,228,.91) 100%);
+    box-shadow:0 8px 22px rgba(192,57,75,.09),inset 0 1px 0 rgba(255,255,255,.98);
 }
 .admin-client-grid>.admin-cliente-cuenta-card::before{
-    background:linear-gradient(90deg,#e62d43,#ff9aa5);
+    background:rgba(255,114,139,.13);
+    border-color:rgba(238,94,118,.14);
 }
 .admin-client-grid>.admin-cliente-cuenta-card::after{
-    border-color:rgba(230,45,67,.16);
-    background:radial-gradient(circle,rgba(255,130,145,.16),rgba(255,130,145,0) 70%);
+    background:rgba(255,139,157,.09);
+    border-color:rgba(238,94,118,.16);
 }
 .admin-client-grid>.admin-cliente-cuenta-card .admin-card-icon{
-    color:#d52b40;
-    background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,224,228,.82));
-    box-shadow:0 6px 16px rgba(213,43,64,.10),inset 0 1px 0 #fff;
+    color:#bd2533;
 }
+.admin-client-grid>.admin-cliente-cuenta-card .admin-kicker,
 .admin-client-grid>.admin-cliente-cuenta-card h2{
-    color:#c9273b;
+    color:#92202a;
 }
-.admin-client-grid>.admin-cliente-cuenta-card .admin-kicker{
-    color:#c9273b;
-}
-.admin-client-grid>.admin-cliente-servicios-card::before{
-    background:linear-gradient(90deg,#168b98,#82dcda);
+.admin-client-grid>.admin-cliente-servicios-card .admin-card-icon{
+    color:#18a5b0;
 }
 @media(max-width:900px){
     .admin-client-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
 }
 @media(max-width:600px){
-    .admin-client-grid{grid-template-columns:1fr !important;gap:14px}
-    .admin-client-grid>.admin-card{padding:21px 20px;border-radius:19px}
-    .admin-client-grid .admin-card-icon{width:42px;height:42px;margin-bottom:14px}
+    .admin-client-grid{grid-template-columns:1fr !important;gap:12px}
+    .admin-client-grid>.admin-card{min-height:154px;padding:17px 17px 15px;border-radius:16px}
+}
+@media(prefers-reduced-motion:reduce){
+    .admin-client-grid>.admin-card{transition:none}
+    .admin-client-grid>.admin-card:hover{transform:none}
 }
 </style>
 
@@ -160,8 +186,10 @@
 
 <section class="admin-client-grid">
     <article class="admin-card admin-cliente-bd-card">
-        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-database"></i></span>
-        <span class="admin-kicker">Base de datos</span>
+        <div class="admin-card-heading">
+            <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-database"></i></span>
+            <span class="admin-kicker">Base de datos</span>
+        </div>
         <h2>{{ db_name }}</h2>
         <p>Base de datos asignada al RUC del cliente.</p>
         <div class="admin-db-status {% if db_status == 'Conectada' %}online{% endif %}">
@@ -175,16 +203,20 @@
     </article>
 
     <article class="admin-card admin-cliente-cuenta-card">
-        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-wallet"></i></span>
-        <span class="admin-kicker">Cuenta</span>
+        <div class="admin-card-heading">
+            <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-wallet"></i></span>
+            <span class="admin-kicker">Cuenta</span>
+        </div>
         <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
         <p>Saldo registrado en BDatos.</p>
         <a href="#" class="admin-module-button">Cobranza <small>Próximamente</small></a>
     </article>
 
     <article class="admin-card admin-cliente-servicios-card">
-        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-receipt"></i></span>
-        <span class="admin-kicker">Servicios por facturar</span>
+        <div class="admin-card-heading">
+            <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-receipt"></i></span>
+            <span class="admin-kicker">Servicios por facturar</span>
+        </div>
         <h2>$ {{ servicios_por_facturar_total|floatformat:2 }}</h2>
         <p>Sumatoria de servicios pendientes de facturación.</p>
     </article>
