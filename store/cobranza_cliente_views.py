@@ -92,7 +92,7 @@ def admin_cobranza_cliente(request, ruc):
 
             # La cartera pendiente se calcula desde cuentascobrar, que es la fuente contable
             # de los saldos por cobrar. No se calcula desde facturas.valsalfac.
-            filtros_cxc = ["LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')", "UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'"]
+            filtros_cxc = ["LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')", "UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'", "COALESCE(cc.valpagpar, 0) > 0"]
             parametros_cxc = [cliente.ruccedcli]
             if fecha_desde:
                 filtros_cxc.append("cc.fecinicio::date >= %s::date")
@@ -125,7 +125,33 @@ def admin_cobranza_cliente(request, ruc):
             agregado = cursor.fetchone()
             resumen["cantidad"] = int(agregado[0] or 0)
             resumen["vencidas"] = int(agregado[1] or 0)
+
             resumen["saldo"] = Decimal(str(agregado[2] or 0))
+
+            # Diagnóstico temporal para confirmar base y registros que realmente lee Cobranza.
+            cursor.execute(
+                """
+                SELECT current_database(),
+                       COUNT(*),
+                       COALESCE(SUM(COALESCE(valpagpar, 0)), 0),
+                       COALESCE(STRING_AGG(
+                           CONCAT(COALESCE(numfactur::text, ''), ':',
+                                  COALESCE(estpagcue, ''), ':',
+                                  COALESCE(valpagpar::text, '')),
+                           ' | ' ORDER BY numfactur::text
+                       ), '')
+                FROM public.cuentascobrar
+                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                """,
+                [cliente.ruccedcli],
+            )
+            diag_db, diag_cantidad, diag_suma, diag_filas = cursor.fetchone()
+            resumen["diagnostico"] = {
+                "base": diag_db,
+                "cantidad": int(diag_cantidad or 0),
+                "suma": Decimal(str(diag_suma or 0)),
+                "filas": diag_filas or "",
+            }
 
             # Las retenciones son complementarias; si una base antigua no tiene la tabla,
             # eso no debe impedir mostrar la cartera de cuentascobrar.
