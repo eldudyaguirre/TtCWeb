@@ -2394,7 +2394,7 @@ def _trabajadores_datos(request):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -2457,7 +2457,7 @@ def trabajador_detalle(request, cedula):
             horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -2501,7 +2501,7 @@ def trabajador_pdf(request, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -2701,7 +2701,7 @@ def trabajadores_pdf(request):
 
     elements = [
         Paragraph('LISTADO DE TRABAJADORES', titulo),
-        Paragraph('TRABAJADORES ACTIVOS', cabecera),
+        Paragraph('TRABAJADORES', cabecera),
         Paragraph(
             f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}',
             cabecera,
@@ -2742,7 +2742,7 @@ def trabajadores_pdf(request):
 
     elements.append(table)
     elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f'Total de trabajadores activos: {len(filas)}', tabla))
+    elements.append(Paragraph(f'Total de trabajadores listados: {len(filas)}', tabla))
     doc.build(elements)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
@@ -2799,7 +2799,7 @@ def trabajadores_excel(request):
             cell.number_format = '#,##0.00'
 
     ws.append([])
-    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES', len(filas)])
 
     buffer = BytesIO()
     wb.save(buffer)
@@ -4951,7 +4951,7 @@ def _trabajadores_datos(request):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -5014,7 +5014,7 @@ def trabajador_detalle(request, cedula):
             horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -5058,7 +5058,7 @@ def trabajador_pdf(request, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -5258,7 +5258,7 @@ def trabajadores_pdf(request):
 
     elements = [
         Paragraph('LISTADO DE TRABAJADORES', titulo),
-        Paragraph('TRABAJADORES ACTIVOS', cabecera),
+        Paragraph('TRABAJADORES', cabecera),
         Paragraph(
             f'{filtros["cliente"].nomclient} | RUC. {filtros["cliente"].ruccedcli}',
             cabecera,
@@ -5299,7 +5299,7 @@ def trabajadores_pdf(request):
 
     elements.append(table)
     elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f'Total de trabajadores activos: {len(filas)}', tabla))
+    elements.append(Paragraph(f'Total de trabajadores listados: {len(filas)}', tabla))
     doc.build(elements)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
@@ -5356,7 +5356,7 @@ def trabajadores_excel(request):
             cell.number_format = '#,##0.00'
 
     ws.append([])
-    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES', len(filas)])
 
     buffer = BytesIO()
     wb.save(buffer)
