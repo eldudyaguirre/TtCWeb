@@ -1,0 +1,35 @@
+<section class="admin-card cob-table-card" id="facturas-pendientes">
+    <form id="cobFacturasFilters" method="get" action="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}" class="cob-filters">
+        <div><label for="cob-fecha-desde">Fecha desde</label><input id="cob-fecha-desde" type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}"></div>
+        <div><label for="cob-fecha-hasta">Fecha hasta</label><input id="cob-fecha-hasta" type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}"></div>
+        <div class="cob-filter-search"><label for="cob-q">Cliente o factura</label><input id="cob-q" type="search" name="q" value="{{ filtros.q }}" placeholder="Nombre, RUC, serie o número"></div>
+        <div class="cob-filter-actions"><button class="cob-btn cob-btn-primary" type="submit"><i class="fi fi-rr-search"></i> Buscar</button><a class="cob-btn cob-btn-light" href="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}" id="cobFacturasClear">Limpiar</a></div>
+    </form>
+    <div class="cob-table-wrap">
+        <table class="cob-table">
+            <thead><tr><th>Factura</th><th>Cliente</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Retenciones</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+            <tbody>
+            {% for factura in facturas %}
+                <tr>
+                    <td><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong><small>{{ factura.ruc_deudor }}</small></td>
+                    <td>{{ factura.nombre_deudor }}</td>
+                    <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{% if factura.vencida %}<span class="cob-date-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
+                    <td class="cob-money">$ {{ factura.total|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ factura.retenciones|floatformat:2 }}</td>
+                    <td class="cob-money cob-money-balance">$ {{ factura.saldo|floatformat:2 }}</td>
+                    <td><span class="cob-badge {% if factura.vencida %}cob-badge-overdue{% else %}cob-badge-pending{% endif %}">{% if factura.vencida %}Vencida{% else %}Pendiente{% endif %}</span></td>
+                </tr>
+            {% empty %}<tr><td colspan="8" class="cob-empty">No se encontraron facturas pendientes para los filtros seleccionados.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if limite_resultados %}<p class="cob-limit-note">Se muestran hasta 500 facturas. Reduce el período o especifica un cliente para acotar la consulta.</p>{% endif %}
+</section>
+<script>
+(function(){
+ const form=document.getElementById('cobFacturasFilters'),clear=document.getElementById('cobFacturasClear');
+ if(form)form.addEventListener('submit',e=>{});
+ if(clear)clear.addEventListener('click',e=>{e.preventDefault();if(form){form.reset();form.querySelectorAll('input').forEach(i=>i.value='');form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));}});
+})();
+</script>
