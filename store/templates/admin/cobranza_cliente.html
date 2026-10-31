@@ -94,6 +94,8 @@
    content.innerHTML=await response.text();
    const form=content.querySelector('#cobFacturasFilters');
    if(form)form.addEventListener('submit',async e=>{e.preventDefault();const params=new URLSearchParams(new FormData(form));await load(form.action+'?'+params.toString());});
+   const clear=content.querySelector('#cobFacturasClear');
+   if(clear)clear.addEventListener('click',async e=>{e.preventDefault();await load(clear.href);});
   }catch(e){content.innerHTML='<p class="cob-modal-error">No se pudieron cargar las facturas pendientes. Inténtalo nuevamente.</p>';}
  }
  trigger.addEventListener('click',async()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');await load(trigger.dataset.url);});
