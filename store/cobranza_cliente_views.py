@@ -90,81 +90,86 @@ def admin_cobranza_cliente(request, ruc):
                 conexion.rollback()
                 retenciones_por_factura = {}
 
-            try:
-                cursor.execute(
-                    f"""
-                    SELECT
-                        COUNT(*),
-                        COUNT(*) FILTER (
-                            WHERE f.fecvencim::date < %s::date
-                              AND COALESCE(f.valsalfac, 0) > 0
-                        ),
-                        COALESCE(SUM(COALESCE(f.valsalfac, 0)), 0),
-                        COALESCE(SUM(COALESCE(rc.total_retenciones, 0)), 0)
-                    FROM public.facturas f
-                    LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
-                    LEFT JOIN (
-                        SELECT numfactur, ruccedcli, SUM(totretenc) AS total_retenciones
-                        FROM public.retencclient
-                        GROUP BY numfactur, ruccedcli
-                    ) rc ON rc.numfactur = f.numfactur AND rc.ruccedcli = f.ruccedcli
-                    WHERE {where_sql}
-                    """,
-                    [hoy.isoformat(), *parametros_sql],
+            # La cartera pendiente se calcula desde cuentascobrar, que es la fuente contable
+            # de los saldos por cobrar. No se calcula desde facturas.valsalfac.
+            filtros_cxc = ["cc.ruccedcli = %s", "cc.estpagcue = 'PENDIENTE'"]
+            parametros_cxc = [cliente.ruccedcli]
+            if fecha_desde:
+                filtros_cxc.append("cc.fecinicio::date >= %s::date")
+                parametros_cxc.append(fecha_desde)
+            if fecha_hasta:
+                filtros_cxc.append("cc.fecinicio::date <= %s::date")
+                parametros_cxc.append(fecha_hasta)
+            if busqueda:
+                filtros_cxc.append(
+                    "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(cc.numfactur::text, '') ILIKE %s)"
                 )
-                agregado = cursor.fetchone()
-                resumen["cantidad"] = int(agregado[0] or 0)
-                resumen["vencidas"] = int(agregado[1] or 0)
-                resumen["saldo"] = Decimal(str(agregado[2] or 0))
-                resumen["retenciones"] = Decimal(str(agregado[3] or 0))
-            except Exception:
-                # Bases antiguas sin retencclient: el saldo y los contadores siguen disponibles.
-                conexion.rollback()
-                cursor.execute(
-                    f"""
-                    SELECT
-                        COUNT(*),
-                        COUNT(*) FILTER (
-                            WHERE f.fecvencim::date < %s::date
-                              AND COALESCE(f.valsalfac, 0) > 0
-                        ),
-                        COALESCE(SUM(COALESCE(f.valsalfac, 0)), 0)
-                    FROM public.facturas f
-                    LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
-                    WHERE {where_sql}
-                    """,
-                    [hoy.isoformat(), *parametros_sql],
-                )
-                agregado = cursor.fetchone()
-                resumen["cantidad"] = int(agregado[0] or 0)
-                resumen["vencidas"] = int(agregado[1] or 0)
-                resumen["saldo"] = Decimal(str(agregado[2] or 0))
-                resumen["retenciones"] = Decimal("0.00")
+                termino = f"%{busqueda}%"
+                parametros_cxc.extend([termino, termino])
+            where_cxc = " AND ".join(filtros_cxc)
 
             cursor.execute(
                 f"""
                 SELECT
-                    f.numfactur,
+                    COUNT(*),
+                    COUNT(*) FILTER (
+                        WHERE cc.fecvencim::date < %s::date
+                    ),
+                    COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0)
+                FROM public.cuentascobrar cc
+                LEFT JOIN public.clientes c ON c.ruccedcli = cc.ruccedcli
+                WHERE {where_cxc}
+                """,
+                [hoy.isoformat(), *parametros_cxc],
+            )
+            agregado = cursor.fetchone()
+            resumen["cantidad"] = int(agregado[0] or 0)
+            resumen["vencidas"] = int(agregado[1] or 0)
+            resumen["saldo"] = Decimal(str(agregado[2] or 0))
+
+            # Las retenciones se muestran como información complementaria de retencclient.
+            cursor.execute(
+                f"""
+                SELECT COALESCE(SUM(COALESCE(rc.totretenc, 0)), 0)
+                FROM public.retencclient rc
+                WHERE rc.ruccedcli = %s
+                  AND EXISTS (
+                      SELECT 1 FROM public.cuentascobrar cc
+                      WHERE cc.ruccedcli = rc.ruccedcli
+                        AND cc.numfactur = rc.numfactur
+                        AND cc.estpagcue = 'PENDIENTE'
+                  )
+                """,
+                [cliente.ruccedcli],
+            )
+            resumen["retenciones"] = Decimal(str(cursor.fetchone()[0] or 0))
+
+            cursor.execute(
+                f"""
+                SELECT
+                    cc.numfactur,
                     f.numserfac,
-                    f.fecfactur,
-                    f.fecvencim,
+                    COALESCE(cc.fecinicio, f.fecfactur) AS fecfactur,
+                    cc.fecvencim,
                     COALESCE(f.totfactur, 0) AS total,
                     COALESCE(f.valpagini, 0) AS pagado_inicial,
-                    COALESCE(f.valsalfac, 0) AS saldo,
-                    COALESCE(f.estpagfac, 'PENDIENTE') AS estado_pago,
-                    COALESCE(c.ruccedcli, '') AS ruc_deudor,
+                    COALESCE(cc.valpagpar, 0) AS saldo,
+                    COALESCE(cc.estpagcue, 'PENDIENTE') AS estado_pago,
+                    COALESCE(cc.ruccedcli, '') AS ruc_deudor,
                     COALESCE(c.nomclient, 'Cliente sin nombre') AS nombre_deudor
-                FROM public.facturas f
-                LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
-                WHERE {where_sql}
-                ORDER BY f.fecvencim ASC NULLS LAST, f.fecfactur ASC NULLS LAST,
-                         f.numfactur ASC
+                FROM public.cuentascobrar cc
+                LEFT JOIN public.facturas f ON f.numfactur = cc.numfactur
+                LEFT JOIN public.clientes c ON c.ruccedcli = cc.ruccedcli
+                WHERE {where_cxc}
+                ORDER BY cc.fecvencim ASC NULLS LAST, cc.fecinicio ASC NULLS LAST,
+                         cc.numfactur ASC
                 LIMIT 500
                 """,
-                parametros_sql,
+                parametros_cxc,
             )
             columnas = [col[0] for col in cursor.description]
             facturas = [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
+
 
         for factura in facturas:
             numero = str(factura.get("numfactur") or "").strip()
