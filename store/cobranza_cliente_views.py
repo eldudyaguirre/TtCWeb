@@ -494,6 +494,10 @@ def admin_factura_retencion_cobranza(request, ruc, numfactur):
     except Exception:
         error = "No se pudo consultar la factura y los porcentajes de retención del cliente."
 
+    if factura and factura.get("tiene_retencion"):
+        error = "Esta factura ya tiene una retención registrada. No se permite ingresar otra."
+        factura = None
+
     if not factura and not error:
         error = "No se encontró la factura para este cliente."
 
