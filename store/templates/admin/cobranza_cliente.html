@@ -56,11 +56,11 @@
         <span><strong>Retenciones</strong><small>Registro y consulta por factura</small></span>
         <span class="cob-status">En preparación</span>
     </a>
-    <a class="cob-shortcut" href="#servicios-pendientes">
+    <button type="button" class="cob-shortcut" id="cobServiciosTrigger" data-url="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-briefcase"></i></span>
         <span><strong>Servicios por facturar</strong><small>Servicios registrados que aún no se han facturado</small></span>
         <span class="cob-arrow">›</span>
-    </a>
+    </button>
     <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-reportes" aria-disabled="true">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-file-pdf"></i></span>
         <span><strong>Reportes de cobranza</strong><small>Preparar reportes para enviar</small></span>
@@ -100,6 +100,42 @@
  }
  trigger.addEventListener('click',async()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');await load(trigger.dataset.url);});
  modal.querySelectorAll('[data-cob-facturas-close]').forEach(el=>el.addEventListener('click',close));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
+})();
+</script>
+
+
+
+<div class="cob-modal" id="cobServiciosModal" aria-hidden="true">
+ <div class="cob-modal-backdrop" data-cob-servicios-close></div>
+ <section class="cob-modal-dialog cob-servicios-dialog" role="dialog" aria-modal="true" aria-labelledby="cobServiciosTitle">
+  <header class="cob-modal-header">
+   <div><span class="admin-kicker">Prefactura</span><h2 id="cobServiciosTitle">SERVICIOS PENDIENTES DE FACTURAR</h2><p>{{ cliente.nomclient }} · RUC / C.I.: {{ cliente.ruccedcli }}</p></div>
+   <button type="button" class="cob-modal-close" data-cob-servicios-close aria-label="Cerrar">×</button>
+  </header>
+  <div id="cobServiciosContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando servicios pendientes…</div></div>
+ </section>
+</div>
+<script>
+(function(){
+ const trigger=document.getElementById('cobServiciosTrigger'),modal=document.getElementById('cobServiciosModal'),content=document.getElementById('cobServiciosContent');
+ if(!trigger||!modal||!content)return;
+ const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
+ trigger.addEventListener('click',async()=>{
+  modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');
+  content.innerHTML='<div class="cob-modal-loading">Cargando servicios pendientes…</div>';
+  try{
+   const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   if(!response.ok)throw new Error();
+   const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+   const section=doc.querySelector('#servicios-pendientes');
+   if(!section)throw new Error();
+   content.innerHTML=section.outerHTML;
+   const heading=content.querySelector('.cob-section-heading');if(heading)heading.remove();
+   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
+  }catch(e){content.innerHTML='<p class="cob-modal-error">No se pudieron cargar los servicios pendientes. Inténtalo nuevamente.</p>';}
+ });
+ modal.querySelectorAll('[data-cob-servicios-close]').forEach(el=>el.addEventListener('click',close));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
 })();
 </script>
@@ -160,41 +196,7 @@
 })();
 </script>
 
-<section class="admin-card cob-table-card" id="servicios-pendientes">
-    <div class="cob-section-heading">
-        <div>
-            <span class="admin-kicker">Prefactura</span>
-            <h2>Servicios pendientes de facturar</h2>
-            <p>Estos registros permanecen aquí hasta que el proceso de facturación los traslade a facturas y detallefacturas.</p>
-        </div>
-        <span class="admin-report-count">{{ resumen_servicios.cantidad }} servicios</span>
-    </div>
-    <div class="cob-service-summary">
-        <span>Valor referencial de los servicios listados</span>
-        <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
-    </div>
-    <div class="cob-table-wrap">
-        <table class="cob-table">
-            <thead><tr><th>Registro</th><th>Fecha</th><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio</th><th>Total referencial</th></tr></thead>
-            <tbody>
-            {% for servicio in servicios_pendientes %}
-                <tr>
-                    <td>{{ servicio.numdetfac }}</td>
-                    <td>{{ servicio.fecha|date:"d/m/Y"|default:"—" }}</td>
-                    <td>{{ servicio.coditeinv|default:"—" }}</td>
-                    <td>{{ servicio.desiteinv|default:"—" }}</td>
-                    <td class="cob-money">{{ servicio.cantidad|floatformat:2 }}</td>
-                    <td class="cob-money">$ {{ servicio.precio|floatformat:2 }}</td>
-                    <td class="cob-money">$ {{ servicio.total|floatformat:2 }}</td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="7" class="cob-empty">No hay servicios pendientes de facturar para este cliente.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% if resumen_servicios.cantidad >= 500 %}<p class="cob-limit-note">Se muestran hasta 500 registros de servicios pendientes.</p>{% endif %}
-</section>
+
 
 <div class="cob-next-note" id="proximamente-reportes"><strong>Reportes:</strong> añadiremos exportación a PDF/Excel y envío por correo cuando definamos el formato.</div>
 
@@ -203,6 +205,12 @@
 .cob-modal{display:none;position:fixed;inset:0;z-index:1200;align-items:center;justify-content:center;padding:20px}
 .cob-modal.is-open{display:flex}
 .cob-modal-backdrop{position:absolute;inset:0;background:rgba(16,32,41,.62);backdrop-filter:blur(4px)}
+.cob-servicios-dialog{width:min(1200px,97vw)}
+#cobServiciosContent .cob-table-card{padding:0;border:0;box-shadow:none}
+#cobServiciosContent .cob-service-summary{margin-bottom:14px}
+#cobServiciosContent .cob-table{min-width:850px}
+#cobServiciosContent .cob-table-wrap{max-height:55vh;overflow:auto}
+#cobServiciosContent .cob-table thead{position:sticky;top:0;z-index:1}
 .cob-facturas-dialog{width:min(1400px,97vw)}
 #cobFacturasContent .cob-table-card{padding:0;border:0;box-shadow:none}
 #cobFacturasContent .cob-section-heading{display:none}
