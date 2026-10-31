@@ -20,6 +20,13 @@
     <p>Comprueba la conexión con la base de datos del cliente. El detalle técnico está disponible en los mensajes de administración.</p>
 </section>
 {% endif %}
+{% if resumen.diagnostico %}
+<section class="admin-card" style="margin-bottom:16px;padding:14px 18px;border-left:4px solid #d39b27">
+    <strong>Diagnóstico de cobranza</strong>
+    <p style="margin:8px 0 4px">Base consultada: <strong>{{ resumen.diagnostico.base }}</strong> · Registros del RUC: <strong>{{ resumen.diagnostico.cantidad }}</strong> · Suma sin filtrar por estado: <strong>$ {{ resumen.diagnostico.suma|floatformat:2 }}</strong></p>
+    <small>Factura : estado : valor — {{ resumen.diagnostico.filas|default:"No hay filas para este RUC en la base consultada." }}</small>
+</section>
+{% endif %}
 
 <section class="cob-stats">
     <article class="cob-stat cob-stat-balance">
