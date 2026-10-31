@@ -84,7 +84,18 @@
 <script>
 (function(){
  const trigger=document.getElementById('cobFacturasTrigger'), modal=document.getElementById('cobFacturasModal'), content=document.getElementById('cobFacturasContent');
- if(!trigger||!modal||!content)return;
+ const detalleModal=document.getElementById('cobFacturaDetalleModal'), detalleContent=document.getElementById('cobFacturaDetalleContent');
+ if(!trigger||!modal||!content||!detalleModal||!detalleContent)return;
+ const openDetalle=async url=>{
+  detalleModal.classList.add('is-open');detalleModal.setAttribute('aria-hidden','false');
+  detalleContent.innerHTML='<div class="cob-modal-loading">Cargando detalle de factura…</div>';
+  try{
+   const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   if(!response.ok)throw new Error();
+   detalleContent.innerHTML=await response.text();
+  }catch(e){detalleContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el detalle de la factura. Inténtalo nuevamente.</p>';}
+ };
+ const closeDetalle=()=>{detalleModal.classList.remove('is-open');detalleModal.setAttribute('aria-hidden','true');};
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
  content.addEventListener('click',function(e){
   const trigger=e.target.closest('.cob-actions-trigger');
@@ -103,6 +114,7 @@
   if(action && content.contains(action)){
    const detail={action:action.dataset.facturaAction,factura:action.dataset.factura};
    content.dispatchEvent(new CustomEvent('cobranza:factura-action',{bubbles:true,detail}));
+   if(detail.action==='detalle' && action.dataset.url){openDetalle(action.dataset.url);}
    content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
   }
@@ -128,10 +140,25 @@
  }
  trigger.addEventListener('click',async()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');await load(trigger.dataset.url);});
  modal.querySelectorAll('[data-cob-facturas-close]').forEach(el=>el.addEventListener('click',close));
+ detalleModal.querySelectorAll('[data-cob-detalle-close]').forEach(el=>el.addEventListener('click',closeDetalle));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detalleModal.classList.contains('is-open'))closeDetalle();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
 })();
 </script>
 
+
+
+
+<div class="cob-modal cob-factura-detalle-modal" id="cobFacturaDetalleModal" aria-hidden="true">
+ <div class="cob-modal-backdrop" data-cob-detalle-close></div>
+ <section class="cob-modal-dialog cob-factura-detalle-dialog" role="dialog" aria-modal="true" aria-labelledby="cobFacturaDetalleTitle">
+  <header class="cob-modal-header">
+   <div><span class="admin-kicker">Cuentas por cobrar</span><h2 id="cobFacturaDetalleTitle">DETALLE DE FACTURA</h2><p>Información y líneas registradas en la factura</p></div>
+   <button type="button" class="cob-modal-close" data-cob-detalle-close aria-label="Cerrar detalle">×</button>
+  </header>
+  <div id="cobFacturaDetalleContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando detalle de factura…</div></div>
+ </section>
+</div>
 
 
 <div class="cob-modal" id="cobServiciosModal" aria-hidden="true">
@@ -239,6 +266,29 @@
 #cobServiciosContent .cob-table{min-width:850px}
 #cobServiciosContent .cob-table-wrap{max-height:55vh;overflow:auto}
 #cobServiciosContent .cob-table thead{position:sticky;top:0;z-index:1}
+.cob-factura-detalle-modal{z-index:1300}
+.cob-factura-detalle-modal .cob-modal-backdrop{z-index:1300}
+.cob-factura-detalle-dialog{z-index:1301;width:min(1200px,97vw);max-height:92vh}
+#cobFacturaDetalleContent{overflow:auto;max-height:calc(92vh - 100px)}
+.cob-invoice-detail-top{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:4px 0 18px;border-bottom:1px solid #e2eaee}
+.cob-invoice-detail-top>div,.cob-invoice-detail-grid>div{display:flex;flex-direction:column;gap:5px}
+.cob-detail-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:#0b96a5}
+.cob-invoice-detail-top strong{font-size:17px;color:#203844}
+.cob-invoice-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:18px 0}
+.cob-invoice-detail-grid span,.cob-invoice-totals span,.cob-invoice-notes span{font-size:12px;color:#647987}
+.cob-invoice-detail-grid strong{font-size:13px;color:#263f4c;overflow-wrap:anywhere}
+.cob-detail-table-wrap{overflow:auto;border:1px solid #dce6ea;border-radius:10px}
+.cob-detail-table{min-width:800px}
+.cob-invoice-detail-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,390px);gap:24px;padding-top:20px}
+.cob-invoice-notes p{white-space:pre-wrap;color:#263f4c;font-size:13px}
+.cob-invoice-totals{display:grid;gap:0}
+.cob-invoice-totals>div{display:flex;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid #edf1f3;font-size:13px}
+.cob-invoice-totals strong{white-space:nowrap;color:#263f4c}
+.cob-invoice-totals .cob-invoice-grand-total{font-size:15px;border-top:1px solid #d5e0e5;margin-top:5px;padding-top:13px}
+.cob-invoice-grand-total strong{color:#078f9d}
+.cob-invoice-totals .cob-invoice-balance{font-size:15px;font-weight:800;background:#edf9f9;padding:12px;border-radius:8px;margin-top:8px}
+.cob-detail-error{padding:20px;color:#a51f2b;background:#fff0f1;border-radius:8px}
+@media(max-width:760px){.cob-invoice-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cob-invoice-detail-bottom{grid-template-columns:1fr}}
 .cob-facturas-dialog{width:min(1400px,97vw)}
 #cobFacturasContent .cob-table-card{padding:0;border:0;box-shadow:none}
 #cobFacturasContent .cob-section-heading{display:none}
