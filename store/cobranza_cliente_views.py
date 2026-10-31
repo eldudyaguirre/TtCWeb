@@ -33,21 +33,24 @@ def admin_cobranza_cliente(request, ruc):
     """Panel inicial de cobranza de una base de datos de cliente."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     hoy = timezone.localdate()
-    primer_dia_mes = hoy.replace(day=1)
-    fecha_desde = _fecha_filtro(request.GET.get("fecha_desde", ""), primer_dia_mes)
-    fecha_hasta = _fecha_filtro(request.GET.get("fecha_hasta", ""), hoy)
+    # La cobranza debe incluir toda la cartera pendiente, aunque la factura sea de meses anteriores.
+    # Las fechas son filtros opcionales, no un rango predeterminado limitado al mes actual.
+    fecha_desde = _fecha_filtro(request.GET.get("fecha_desde", ""), None)
+    fecha_hasta = _fecha_filtro(request.GET.get("fecha_hasta", ""), None)
     busqueda = request.GET.get("q", "").strip()[:120]
 
     if fecha_desde > fecha_hasta:
         fecha_desde, fecha_hasta = fecha_hasta, fecha_desde
         messages.info(request, "Se invirtieron las fechas para consultar el período correcto.")
 
-    filtros_sql = [
-        "COALESCE(f.valsalfac, 0) > 0",
-        "f.fecfactur::date >= %s::date",
-        "f.fecfactur::date <= %s::date",
-    ]
-    parametros_sql = [fecha_desde, fecha_hasta]
+    filtros_sql = ["COALESCE(f.valsalfac, 0) > 0"]
+    parametros_sql = []
+    if fecha_desde:
+        filtros_sql.append("f.fecfactur::date >= %s::date")
+        parametros_sql.append(fecha_desde)
+    if fecha_hasta:
+        filtros_sql.append("f.fecfactur::date <= %s::date")
+        parametros_sql.append(fecha_hasta)
     if busqueda:
         filtros_sql.append(
             "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(c.ruccedcli, '') ILIKE %s "
@@ -225,8 +228,8 @@ def admin_cobranza_cliente(request, ruc):
             "resumen": resumen,
             "db_error": db_error,
             "filtros": {
-                "fecha_desde": fecha_desde.isoformat(),
-                "fecha_hasta": fecha_hasta.isoformat(),
+                "fecha_desde": fecha_desde.isoformat() if fecha_desde else "",
+                "fecha_hasta": fecha_hasta.isoformat() if fecha_hasta else "",
                 "q": busqueda,
             },
             "limite_resultados": len(facturas) >= 500,
