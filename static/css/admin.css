@@ -2981,3 +2981,49 @@ button.admin-new-client-button:focus{
     .admin-content .admin-cliente-modules .admin-module-card > strong{font-size:13px !important}
     .admin-content .admin-cliente-modules .admin-module-card > span{font-size:10px !important}
 }
+
+
+/* Detalle del cliente: tres tarjetas en una sola fila en pantallas móviles.
+   Esta regla va al final para prevalecer sobre las reglas responsive anteriores. */
+@media (max-width: 700px){
+    .admin-content .admin-client-grid{
+        display:grid !important;
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        grid-auto-flow:row !important;
+        gap:7px !important;
+        width:100% !important;
+    }
+    .admin-content .admin-client-grid > .admin-card{
+        display:flex !important;
+        grid-column:auto !important;
+        width:auto !important;
+        min-width:0 !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:11px 7px 10px !important;
+    }
+    .admin-content .admin-client-grid .admin-card-heading{
+        gap:4px !important;
+    }
+    .admin-content .admin-client-grid .admin-card-icon{
+        flex:0 0 20px !important;
+        width:20px !important;
+        height:25px !important;
+        font-size:22px !important;
+    }
+    .admin-content .admin-client-grid .admin-kicker{
+        font-size:7.5px !important;
+        letter-spacing:0 !important;
+        line-height:1.15 !important;
+        overflow-wrap:anywhere !important;
+    }
+    .admin-content .admin-client-grid .admin-card h2{
+        font-size:clamp(11px,3.2vw,17px) !important;
+        line-height:1.15 !important;
+        overflow-wrap:anywhere !important;
+    }
+    .admin-content .admin-client-grid .admin-db-status{
+        margin-top:7px !important;
+        font-size:10px !important;
+    }
+}
