@@ -527,6 +527,7 @@
             </div>
         </div>
 
+        {% if cliente.tipo_contribuyente == 'PERSONA JURIDICA' %}
         <div class="admin-modal-field admin-modal-field-full admin-ruc-field">
             <label>Contrato Constitutivo</label>
             <div class="admin-ruc-upload">
@@ -573,6 +574,8 @@
                 <span class="admin-ruc-empty">No hay Nómina de Socios cargada.</span>
                 {% endif %}
             </div>
+        {% endif %}
+
         </div>
 
     </div>
