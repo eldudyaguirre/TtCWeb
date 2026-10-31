@@ -20239,7 +20239,7 @@ def admin_cliente(request, ruc):
 
         messages.success(
             request,
-            'Datos básicos del cliente actualizados correctamente, incluido Representante Legal.'
+            'Datos actualizados correctamente.'
             if es_persona_juridica
             else 'Datos básicos del cliente actualizados correctamente.',
         )
