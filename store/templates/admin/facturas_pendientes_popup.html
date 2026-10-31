@@ -33,7 +33,7 @@
                         <div class="cob-actions-menu">
                             <button type="button" class="cob-actions-trigger" aria-label="Acciones de factura {{ factura.numfactur }}" aria-expanded="false" title="Acciones">⋯</button>
                             <div class="cob-actions-dropdown" hidden>
-                                <button type="button" data-factura-action="detalle" data-factura="{{ factura.numfactur }}">Detalle</button>
+                                <button type="button" data-factura-action="detalle" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_detalle_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Detalle</button>
                                 <button type="button" data-factura-action="pago" data-factura="{{ factura.numfactur }}">Registrar pago</button>
                                 <button type="button" data-factura-action="retencion" data-factura="{{ factura.numfactur }}">Registrar retención</button>
                             </div>
