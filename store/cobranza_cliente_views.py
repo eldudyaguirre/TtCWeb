@@ -58,6 +58,8 @@ def admin_cobranza_cliente(request, ruc):
     where_sql = " AND ".join(filtros_sql)
 
     facturas = []
+    servicios_pendientes = []
+    resumen_servicios = {"cantidad": 0, "total": Decimal("0.00")}
     resumen = {
         "cantidad": 0,
         "vencidas": 0,
@@ -74,12 +76,12 @@ def admin_cobranza_cliente(request, ruc):
             # Si una base antigua aún no tiene esa tabla, se muestra la cobranza sin ese dato.
             try:
                 cursor.execute(
-                    "SELECT numfactur, COALESCE(SUM(totretenc), 0) "
-                    "FROM public.retencclient GROUP BY numfactur"
+                    "SELECT numfactur, ruccedcli, COALESCE(SUM(totretenc), 0) "
+                    "FROM public.retencclient GROUP BY numfactur, ruccedcli"
                 )
                 retenciones_por_factura = {
-                    str(numero or "").strip(): Decimal(str(total or 0))
-                    for numero, total in cursor.fetchall()
+                    (str(numero or "").strip(), str(ruc_cliente or "").strip()): Decimal(str(total or 0))
+                    for numero, ruc_cliente, total in cursor.fetchall()
                 }
             except Exception:
                 conexion.rollback()
@@ -99,10 +101,10 @@ def admin_cobranza_cliente(request, ruc):
                     FROM public.facturas f
                     LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
                     LEFT JOIN (
-                        SELECT numfactur, SUM(totretenc) AS total_retenciones
+                        SELECT numfactur, ruccedcli, SUM(totretenc) AS total_retenciones
                         FROM public.retencclient
-                        GROUP BY numfactur
-                    ) rc ON rc.numfactur = f.numfactur
+                        GROUP BY numfactur, ruccedcli
+                    ) rc ON rc.numfactur = f.numfactur AND rc.ruccedcli = f.ruccedcli
                     WHERE {where_sql}
                     """,
                     [hoy.isoformat(), *parametros_sql],
@@ -163,7 +165,8 @@ def admin_cobranza_cliente(request, ruc):
 
         for factura in facturas:
             numero = str(factura.get("numfactur") or "").strip()
-            factura["retenciones"] = retenciones_por_factura.get(numero, Decimal("0.00"))
+            ruc_deudor = str(factura.get("ruc_deudor") or "").strip()
+            factura["retenciones"] = retenciones_por_factura.get((numero, ruc_deudor), Decimal("0.00"))
             factura["vencida"] = bool(
                 factura.get("fecvencim")
                 and factura["fecvencim"].date() < hoy
@@ -171,6 +174,37 @@ def admin_cobranza_cliente(request, ruc):
             )
             factura["fecha_factura"] = factura["fecfactur"].date() if factura.get("fecfactur") else None
             factura["fecha_vencimiento"] = factura["fecvencim"].date() if factura.get("fecvencim") else None
+
+        # Servicios registrados en prefactura: solo los que aún no se han facturado.
+        # El proceso normal de facturación los traslada a facturas/detallefacturas.
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT numdetfac, coditeinv, desiteinv,
+                           COALESCE(canfactur, 0) AS cantidad,
+                           COALESCE(preitefac, 0) AS precio,
+                           COALESCE(canfactur, 0) * COALESCE(preitefac, 0) AS total,
+                           fecha
+                    FROM public.prefactura
+                    WHERE ruc = %s
+                    ORDER BY fecha DESC NULLS LAST, numdetfac DESC
+                    LIMIT 500
+                    """,
+                    [cliente.ruccedcli],
+                )
+                columnas_serv = [col[0] for col in cursor.description]
+                servicios_pendientes = [dict(zip(columnas_serv, fila)) for fila in cursor.fetchall()]
+                resumen_servicios["cantidad"] = len(servicios_pendientes)
+                resumen_servicios["total"] = sum(
+                    (Decimal(str(item.get("total") or 0)) for item in servicios_pendientes),
+                    Decimal("0.00"),
+                )
+        except Exception:
+            # Una base que aún no tenga prefactura no debe impedir consultar las facturas.
+            conexion.rollback()
+            servicios_pendientes = []
+            resumen_servicios = {"cantidad": 0, "total": Decimal("0.00")}
 
     except Exception as exc:
         db_error = str(exc)
@@ -186,6 +220,8 @@ def admin_cobranza_cliente(request, ruc):
         {
             "cliente": cliente,
             "facturas": facturas,
+            "servicios_pendientes": servicios_pendientes,
+            "resumen_servicios": resumen_servicios,
             "resumen": resumen,
             "db_error": db_error,
             "filtros": {
