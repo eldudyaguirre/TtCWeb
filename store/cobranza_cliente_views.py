@@ -206,6 +206,9 @@ def admin_cobranza_cliente(request, ruc):
             numero = str(factura.get("numfactur") or "").strip()
             ruc_deudor = str(factura.get("ruc_deudor") or "").strip()
             factura["retenciones"] = retenciones_por_factura.get((numero, ruc_deudor), Decimal("0.00"))
+            factura["tiene_retencion"] = factura["retenciones"] > 0 or bool(
+                retenciones_por_factura.get((numero, ruc_deudor), None)
+            )
             factura["vencida"] = bool(
                 factura.get("fecvencim")
                 and factura["fecvencim"].date() < hoy
@@ -481,7 +484,11 @@ def admin_factura_retencion_cobranza(request, ruc, numfactur):
                 """, [numfactur, cliente.ruccedcli])
                 saldo_cuentas = Decimal(str(cursor.fetchone()[0] or 0))
                 factura["saldo_cuentas"] = saldo_cuentas if saldo_cuentas > 0 else Decimal(str(factura.get("valsalfac") or 0))
-                cursor.execute("SELECT 1 FROM public.retencclient WHERE numdocume=%s AND ruccedcli=%s AND numfactur=%s LIMIT 1", ["", cliente.ruccedcli, numfactur])
+                cursor.execute(
+                    "SELECT COUNT(*) FROM public.retencclient WHERE numfactur=%s AND LPAD(TRIM(COALESCE(ruccedcli::text,'')),13,'0')=LPAD(%s,13,'0')",
+                    [numfactur, cliente.ruccedcli],
+                )
+                factura["tiene_retencion"] = cursor.fetchone()[0] > 0
             else:
                 error = "No se encontró la factura para este cliente."
     except Exception:
@@ -542,6 +549,12 @@ def admin_factura_retencion_cobranza(request, ruc, numfactur):
                     if not locked:
                         raise ValueError("La factura ya no está disponible.")
                     saldo_actual = Decimal(str(locked[0] or 0))
+                    cursor.execute(
+                        "SELECT 1 FROM public.retencclient WHERE numfactur=%s AND LPAD(TRIM(COALESCE(ruccedcli::text,'')),13,'0')=LPAD(%s,13,'0') LIMIT 1",
+                        [numfactur, cliente.ruccedcli],
+                    )
+                    if cursor.fetchone():
+                        raise ValueError("Esta factura ya tiene una retención registrada. No se permite ingresar otra.")
                     if total > saldo_actual:
                         raise ValueError("El total de la retención supera el saldo actual de la factura.")
                     cursor.execute("SELECT 1 FROM public.retencclient WHERE numdocume=%s AND ruccedcli=%s AND numfactur=%s", [numero, cliente.ruccedcli, numfactur])
