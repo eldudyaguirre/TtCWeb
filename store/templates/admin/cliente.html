@@ -18,9 +18,9 @@
     display:flex;
     flex-direction:column;
     min-width:0;
-    min-height:164px;
+    min-height:132px;
     margin:0;
-    padding:18px 18px 16px;
+    padding:15px 18px 13px;
     border:1px solid rgba(255,255,255,.96);
     border-radius:17px;
     background:linear-gradient(135deg,rgba(255,255,255,.97) 0%,rgba(231,250,253,.91) 62%,rgba(213,245,248,.86) 100%);
@@ -63,8 +63,8 @@
     display:flex;
     align-items:center;
     gap:11px;
-    min-height:30px;
-    margin-bottom:9px;
+    min-height:27px;
+    margin-bottom:7px;
 }
 .admin-client-grid .admin-card-icon{
     flex:0 0 27px;
@@ -108,8 +108,8 @@
     line-height:1.35;
 }
 .admin-client-grid .admin-db-status{
-    margin-top:auto;
-    padding-top:11px;
+    margin-top:8px;
+    padding-top:0;
     color:#087c35;
     font-size:14px;
     font-weight:800;
@@ -163,7 +163,8 @@
 }
 @media(max-width:600px){
     .admin-client-grid{grid-template-columns:1fr !important;gap:12px}
-    .admin-client-grid>.admin-card{min-height:154px;padding:17px 17px 15px;border-radius:16px}
+    .admin-client-grid>.admin-card{min-height:126px;padding:14px 17px 12px;border-radius:16px}
+    .admin-client-grid .admin-db-status{margin-top:7px;padding-top:0}
 }
 @media(prefers-reduced-motion:reduce){
     .admin-client-grid>.admin-card{transition:none}
