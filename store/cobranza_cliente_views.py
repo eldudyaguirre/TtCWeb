@@ -699,7 +699,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
             num_documento=request.POST.get("numero_documento","").strip()
             num_anticipo=request.POST.get("numero_anticipo","").strip()
             vendedor=request.POST.get("cobrador","").strip()[:50]
-            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"} and not codigo_banco:
+            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"} and not codigo_banco:
                 raise ValueError("Selecciona la cuenta bancaria o caja correspondiente.")
             if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"} and not num_documento:
                 raise ValueError("Ingresa el número de transferencia o cheque.")
@@ -752,7 +752,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
                                 (SELECT salcuenta FROM public.clientes WHERE ruccedcli=%s),'FAC')
                     """,[nummovcta,cliente.ruccedcli,fecha_pago,importe,referencia,fecha_pago,numfactur,importe,nuevo_factura,cliente.ruccedcli])
 
-                    if metodo=="EFECTIVO":
+                    if metodo in {"EFECTIVO","CAJA"}:
                         cursor.execute("SELECT siguiente_parametro('nummovcaj')")
                         nummov=cursor.fetchone()[0]
                         cursor.execute("SELECT siguiente_parametro('numcomingcaj')")
