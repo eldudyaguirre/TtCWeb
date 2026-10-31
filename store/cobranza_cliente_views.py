@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from decimal import Decimal
 
@@ -9,6 +10,8 @@ from django.utils import timezone
 
 from .admin_views import admin_required
 from .models import Cliente
+
+logger = logging.getLogger(__name__)
 
 
 def _conexion_cliente(ruc=None):
@@ -670,6 +673,11 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
             else:
                 error="No se encontró la factura para este cliente."
     except Exception:
+        logger.exception(
+            "Error cargando formulario de pago: ruc=%s factura=%s",
+            cliente.ruccedcli,
+            numfactur,
+        )
         error="No se pudo consultar la factura, sus vencimientos y las formas de pago disponibles."
 
     if factura and not vencimientos:
