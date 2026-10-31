@@ -20193,28 +20193,36 @@ def admin_cliente(request, ruc):
             )
             db_error = f'Error consultando datos: {exc}'
 
-    # Sumar únicamente preitefac de prefactura para el RUC seleccionado.
+    # Los servicios por facturar se consultan en la base central BdTotal,
+    # no en la base individual del cliente.
     servicios_por_facturar_total = Decimal('0.00')
     ruc_cliente = str(cliente.ruccedcli).strip()
-    if db_status == 'Conectada':
-        try:
-            with client_connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT COALESCE(SUM(COALESCE(preitefac, 0)), 0)
-                    FROM public.prefactura
-                    WHERE TRIM(COALESCE(ruc::text, '')) = %s
-                    """,
-                    [ruc_cliente],
-                )
-                servicios_por_facturar_total = Decimal(str(cursor.fetchone()[0] or 0))
-        except Exception as exc:
-            client_connection.rollback()
-            import logging
-            logging.getLogger(__name__).exception(
-                'Error consultando servicios por facturar | RUC=%s', ruc_cliente
+    try:
+        alias_bdtotal = 'bdtotal_servicios'
+        if alias_bdtotal not in connections.databases:
+            config_bdtotal = settings.DATABASES['default'].copy()
+            config_bdtotal['NAME'] = 'BdTotal'
+            connections.databases[alias_bdtotal] = config_bdtotal
+        conexion_bdtotal = connections[alias_bdtotal]
+        conexion_bdtotal.ensure_connection()
+        with conexion_bdtotal.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT COALESCE(SUM(COALESCE(preitefac, 0)), 0)
+                FROM public.prefactura
+                WHERE LPAD(TRIM(COALESCE(ruc::text, '')), 13, '0') =
+                      LPAD(%s, 13, '0')
+                """,
+                [ruc_cliente],
             )
-            db_error = f'No se pudo consultar servicios por facturar: {exc}'
+            servicios_por_facturar_total = Decimal(str(cursor.fetchone()[0] or 0))
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception(
+            'Error consultando servicios por facturar en BdTotal | RUC=%s',
+            ruc_cliente,
+        )
+        db_error = f'No se pudo consultar servicios por facturar en BdTotal: {exc}'
 
     # Estado de los documentos legales del cliente.
     # Esta es la definición efectiva de admin_cliente (el archivo conserva
