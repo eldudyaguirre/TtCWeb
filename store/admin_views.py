@@ -1175,6 +1175,7 @@ def admin_cliente(request, ruc):
                     cliente.dirclient,
                     cliente.teldomcli,
                     cliente.teloficli,
+                    cliente.telcelcli,
                     cliente.corelectr,
                     cliente.ocuclient,
                     cliente.ruccedcli,
