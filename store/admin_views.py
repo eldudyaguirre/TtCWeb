@@ -1196,6 +1196,23 @@ def admin_cliente(request, ruc):
         except Exception as exc:
             db_error = f'Error consultando datos: {exc}'
 
+    servicios_por_facturar_total = Decimal('0.00')
+    if db_status == 'Conectada':
+        try:
+            with client_connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT COALESCE(SUM(COALESCE(canfactur, 0) * COALESCE(preitefac, 0)), 0)
+                    FROM public.prefactura
+                    WHERE LPAD(TRIM(COALESCE(ruc::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                    """,
+                    [ruc_cliente],
+                )
+                servicios_por_facturar_total = Decimal(str(cursor.fetchone()[0] or 0))
+        except Exception as exc:
+            client_connection.rollback()
+            db_error = f'No se pudo consultar servicios por facturar: {exc}'
+
     # Los documentos del popup deben calcularse en la definición efectiva de
     # admin_cliente (esta es la última definición del archivo y por tanto la
     # que Python utiliza).
@@ -1242,6 +1259,7 @@ def admin_cliente(request, ruc):
             'db_name': db_name,
             'db_status': db_status,
             'db_error': db_error,
+            'servicios_por_facturar_total': servicios_por_facturar_total,
             'conciliacion': conciliacion,
             'certificado_ruc_exists': certificado_ruc_exists,
             'documentos_legales': documentos_legales,
