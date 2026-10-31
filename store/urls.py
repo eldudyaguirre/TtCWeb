@@ -62,6 +62,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/usuarios/', usuarios_cliente_admin_views.admin_usuarios_cliente, name='admin_usuarios_cliente'),
     path('totalcounts/clientes/<str:ruc>/cobranza/', cobranza_cliente_views.admin_cobranza_cliente, name='admin_cobranza_cliente'),
     path('totalcounts/clientes/<str:ruc>/cobranza/factura/<str:numfactur>/detalle/', cobranza_cliente_views.admin_factura_detalle_cobranza, name='admin_factura_detalle_cobranza'),
+    path('totalcounts/clientes/<str:ruc>/cobranza/factura/<str:numfactur>/retencion/', cobranza_cliente_views.admin_factura_retencion_cobranza, name='admin_factura_retencion_cobranza'),
     path('totalcounts/clientes/<str:ruc>/estado-cuenta/', cobranza_cliente_views.admin_estado_cuenta_cliente, name='admin_estado_cuenta_cliente'),
     path('totalcounts/clientes/<str:ruc>/certificado-ruc/', admin_views.admin_cliente_certificado_ruc, name='admin_cliente_certificado_ruc'),
     path('totalcounts/clientes/<str:ruc>/obtener-ruc-sri/', conta_certificado_views.admin_cliente_obtener_ruc_sri, name='admin_cliente_obtener_ruc_sri'),
