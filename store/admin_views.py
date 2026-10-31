@@ -1144,7 +1144,7 @@ def admin_cliente(request, ruc):
         cliente.telcelcli = request.POST.get('telcelcli', '').strip()
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
-        rep_legal = request.POST.get('rep_legal', '').strip()
+        cliente.rep_legal = request.POST.get('rep_legal', '').strip()
         # Actualizar explícitamente la tabla usada por el administrador.
         with connection.cursor() as cursor:
             cursor.execute(
@@ -1166,7 +1166,7 @@ def admin_cliente(request, ruc):
                     cliente.telcelcli,
                     cliente.corelectr,
                     cliente.ocuclient,
-                    rep_legal,
+                    cliente.rep_legal,
                     cliente.ruccedcli,
                 ],
             )
