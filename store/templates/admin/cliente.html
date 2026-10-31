@@ -380,8 +380,26 @@
     .admin-modal-grid{grid-template-columns:1fr;gap:12px}
     .admin-modal-field-full{grid-column:auto}
     .admin-modal-header h2{font-size:21px}
-    .admin-modal-actions{flex-direction:column}
-    .admin-modal-save,.admin-modal-sri{width:100%;justify-content:center}
+    .admin-modal-actions{
+        flex-direction:row;
+        align-items:stretch;
+        gap:8px;
+    }
+    .admin-modal-save,.admin-modal-sri{
+        flex:1 1 0;
+        min-width:0;
+        width:50%;
+        min-height:44px;
+        height:auto;
+        padding:8px 6px;
+        justify-content:center;
+        gap:5px;
+        font-size:clamp(10px,2.8vw,13px);
+        line-height:1.25;
+        white-space:normal;
+        text-align:center;
+    }
+    .admin-modal-save i,.admin-modal-sri i{flex:0 0 auto}
     .admin-modal-note{text-align:center}
 }
 </style>
