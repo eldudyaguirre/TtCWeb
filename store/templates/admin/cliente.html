@@ -198,6 +198,39 @@
     .admin-client-grid>.admin-card{transition:none}
     .admin-client-grid>.admin-card:hover{transform:none}
 }
+
+/* Override final y específico para que las tres tarjetas permanezcan en una fila */
+#client-summary-cards{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-auto-flow:row !important;
+    width:100% !important;
+}
+#client-summary-cards > article.admin-card{
+    grid-column:auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+}
+@media (max-width:700px){
+    #client-summary-cards{
+        display:grid !important;
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        gap:7px !important;
+    }
+    #client-summary-cards > article.admin-card{
+        display:flex !important;
+        grid-column:auto !important;
+        width:auto !important;
+        min-width:0 !important;
+        max-width:none !important;
+        padding:10px 6px !important;
+    }
+    #client-summary-cards .admin-card-heading{display:flex !important;flex-direction:row !important;gap:3px !important;align-items:center !important}
+    #client-summary-cards .admin-card-icon{flex:0 0 18px !important;width:18px !important;height:22px !important;font-size:20px !important}
+    #client-summary-cards .admin-kicker{font-size:7px !important;line-height:1.1 !important;letter-spacing:0 !important}
+    #client-summary-cards h2{font-size:clamp(10px,3vw,16px) !important;line-height:1.1 !important;overflow-wrap:anywhere !important}
+}
 </style>
 
 <div class="admin-breadcrumb"><a class="admin-new-client-button admin-back-button" href="{% url 'admin_clientes' %}"><span aria-hidden="true">←</span> Clientes</a></div>
@@ -213,7 +246,7 @@
 
 
 
-<section class="admin-client-grid">
+<section id="client-summary-cards" class="admin-client-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;">
     <article class="admin-card admin-cliente-bd-card">
         <div class="admin-card-heading">
             <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-database"></i></span>
