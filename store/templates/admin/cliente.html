@@ -446,7 +446,7 @@
             <button type="button" class="admin-modal-close" data-admin-modal-close aria-label="Cerrar">×</button>
         </div>
 
-        <form method="post" enctype="multipart/form-data">
+        <form id="adminClienteDatosForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="accion" value="guardar_datos_cliente">
 
@@ -490,7 +490,7 @@
                 {% if cliente.tipo_contribuyente == 'PERSONA JURIDICA' %}
                 <div class="admin-modal-field admin-modal-field-full">
                     <label for="cliente-rep-legal">Representante Legal</label>
-                    <input id="cliente-rep-legal" name="rep_legal" type="text" value="{{ cliente.rep_legal|default:'' }}">
+                    <input id="cliente-rep-legal" name="rep_legal" type="text" form="adminClienteDatosForm" value="{{ cliente.rep_legal|default:'' }}">
                 </div>
                 {% endif %}
             </div>
