@@ -490,6 +490,13 @@ def admin_factura_retencion_cobranza(request, ruc, numfactur):
     if not factura and not error:
         error = "No se encontró la factura para este cliente."
 
+    if factura:
+        factura["base_fue_bie"] = Decimal(str(factura.get("totbieiva") or 0)) + Decimal(str(factura.get("totbiesiniva") or 0))
+        factura["base_fue_ser"] = Decimal(str(factura.get("totseriva") or 0)) + Decimal(str(factura.get("totsersiniva") or 0))
+        tasa_iva = Decimal(str(factura.get("porivafac") or 0)) / Decimal("100")
+        factura["base_iva_bie"] = Decimal(str(factura.get("totbieiva") or 0)) * tasa_iva
+        factura["base_iva_ser"] = Decimal(str(factura.get("totseriva") or 0)) * tasa_iva
+
     if request.method == "POST" and factura and not error:
         try:
             def money(key):
