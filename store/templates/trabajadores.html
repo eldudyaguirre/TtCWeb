@@ -146,7 +146,7 @@
                 <div class="trabajadores-report-title">
                     <div class="portal-kicker">Laboral</div>
                     <h1>LISTADO DE TRABAJADORES</h1>
-                    <p>TRABAJADORES ACTIVOS</p>
+                    <p>TRABAJADORES</p>
                     <p>{{ cliente.nomclient }} | RUC. {{ cliente.ruccedcli }}</p>
                 </div>
                 <div class="portal-report-count">{{ total_registros }} trabajadores</div>
@@ -190,7 +190,7 @@
                         {% empty %}
                         <tr>
                             <td colspan="7" class="portal-report-empty">
-                                No existen trabajadores activos registrados.
+                                No existen trabajadores que coincidan con la configuración.
                             </td>
                         </tr>
                         {% endfor %}
@@ -199,7 +199,7 @@
             </div>
 
             <div class="trabajadores-total">
-                Total de trabajadores activos: {{ total_registros }}
+                Total de trabajadores listados: {{ total_registros }}
             </div>
 
             <div id="trabajadorModal" class="trabajador-modal" aria-hidden="true">
