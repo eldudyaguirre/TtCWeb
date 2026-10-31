@@ -363,3 +363,80 @@ def admin_estado_cuenta_cliente(request, ruc):
             "estado_error": estado_error,
         },
     )
+
+
+@admin_required
+def admin_factura_detalle_cobranza(request, ruc, numfactur):
+    """Consulta la cabecera y las líneas reales de una factura para el popup de cobranza."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    factura = None
+    detalles = []
+    error = ""
+    try:
+        conexion = _conexion_cliente(cliente.ruccedcli)
+        conexion.ensure_connection()
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT f.numfactur, f.numserfac, f.ruccedcli, f.fecfactur,
+                       f.fecvencim, f.subtotfac, f.pordescue, f.valdescue,
+                       f.porivafac, f.valivafac, f.totfactur, f.totbieiva,
+                       f.totbiesiniva, f.totseriva, f.totsersiniva,
+                       f.totconiva, f.totsiniva, f.valpagini, f.valsalfac,
+                       f.forpagfac, f.estpagfac, f.observ, c.nomclient
+                FROM public.facturas f
+                LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+                WHERE f.numfactur = %s
+                  AND LPAD(TRIM(COALESCE(f.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                LIMIT 1
+                """,
+                [numfactur, cliente.ruccedcli],
+            )
+            columnas = [col[0] for col in cursor.description]
+            fila = cursor.fetchone()
+            if fila:
+                factura = dict(zip(columnas, fila))
+                cursor.execute(
+                    """
+                    SELECT numdetfac, coditeinv, desiteinv,
+                           COALESCE(canfactur, 0) AS cantidad,
+                           COALESCE(preitefac, 0) AS precio,
+                           COALESCE(dscitefac, 0) AS descuento,
+                           COALESCE(totitefac, 0) AS total,
+                           COALESCE(candevolu, 0) AS cantidad_devuelta
+                    FROM public.detallefacturas
+                    WHERE numfactur = %s
+                    ORDER BY numdetfac
+                    """,
+                    [numfactur],
+                )
+                cols_detalle = [col[0] for col in cursor.description]
+                detalles = [dict(zip(cols_detalle, row)) for row in cursor.fetchall()]
+            else:
+                error = "No se encontró la factura solicitada para este cliente."
+    except Exception:
+        error = "No se pudo consultar el detalle de la factura. Verifica la conexión y las tablas de facturas y detallefacturas."
+
+    saldo = Decimal(str((factura or {}).get("valsalfac") or 0))
+    if factura:
+        try:
+            with _conexion_cliente(cliente.ruccedcli).cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT COALESCE(SUM(COALESCE(valpagpar, 0)), 0)
+                    FROM public.cuentascobrar
+                    WHERE numfactur = %s
+                      AND LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                      AND UPPER(TRIM(COALESCE(estpagcue, ''))) = 'PENDIENTE'
+                    """,
+                    [numfactur, cliente.ruccedcli],
+                )
+                saldo = Decimal(str(cursor.fetchone()[0] or 0))
+        except Exception:
+            pass
+
+    return render(
+        request,
+        "admin/factura_detalle_cobranza_popup.html",
+        {"cliente": cliente, "factura": factura, "detalles": detalles, "saldo_pendiente": saldo, "error": error},
+    )
