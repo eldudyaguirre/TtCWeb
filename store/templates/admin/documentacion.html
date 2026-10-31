@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="admin-breadcrumb">
-    <a href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}">← {{ cliente.nomclient }}</a>
+    <a class="admin-new-client-button admin-back-button" href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}"><span aria-hidden="true">←</span> {{ cliente.nomclient }}</a>
 </div>
 
 <div class="admin-page-header">
