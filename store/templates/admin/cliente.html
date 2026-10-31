@@ -3,19 +3,145 @@
 
 {% block content %}
 <style>
-/* Las tarjetas de resumen deben compartir una sola fila en pantallas de escritorio. */
+/* Tarjetas Glass / Premium para el resumen del cliente */
 .admin-client-grid{
     display:grid !important;
     grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:18px;
+    gap:20px;
     align-items:stretch;
     width:100%;
 }
-.admin-client-grid>.admin-card{min-width:0;margin:0}
-.admin-cliente-servicios-card{border-top:3px solid #1599a5}
-.admin-client-grid>.admin-card h2{overflow-wrap:anywhere}
-@media(max-width:700px){
-    .admin-client-grid{grid-template-columns:1fr !important;gap:12px}
+.admin-client-grid>.admin-card{
+    min-width:0;
+    margin:0;
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    padding:25px 24px 24px;
+    border:1px solid rgba(255,255,255,.86);
+    border-radius:22px;
+    background:linear-gradient(135deg,rgba(255,255,255,.96) 0%,rgba(247,252,253,.82) 55%,rgba(233,248,250,.72) 100%);
+    box-shadow:0 12px 32px rgba(27,61,75,.075),inset 0 1px 0 rgba(255,255,255,.95);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.admin-client-grid>.admin-card::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto;
+    height:4px;
+    z-index:-1;
+    background:linear-gradient(90deg,#1599a5,#72d2d5);
+}
+.admin-client-grid>.admin-card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    right:-58px;
+    bottom:-76px;
+    border-radius:50%;
+    border:1px solid rgba(21,153,165,.15);
+    background:radial-gradient(circle,rgba(98,211,215,.14),rgba(98,211,215,0) 70%);
+    pointer-events:none;
+    z-index:-1;
+}
+.admin-client-grid>.admin-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 38px rgba(27,61,75,.12),inset 0 1px 0 rgba(255,255,255,.98);
+    border-color:rgba(21,153,165,.28);
+}
+.admin-client-grid>.admin-card .admin-kicker{
+    display:block;
+    margin-bottom:10px;
+    color:#168b98;
+    letter-spacing:.13em;
+    font-size:10px;
+    font-weight:800;
+    text-transform:uppercase;
+}
+.admin-client-grid>.admin-card h2{
+    margin:0 0 8px;
+    color:#183746;
+    font-size:clamp(22px,2vw,29px);
+    font-weight:750;
+    letter-spacing:-.035em;
+    line-height:1.2;
+    overflow-wrap:anywhere;
+}
+.admin-client-grid>.admin-card p{
+    margin:0;
+    color:#627887;
+    font-size:13px;
+    line-height:1.55;
+}
+.admin-client-grid .admin-card-icon{
+    width:46px;
+    height:46px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:18px;
+    border-radius:15px;
+    color:#138d99;
+    background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(211,244,245,.78));
+    border:1px solid rgba(255,255,255,.96);
+    box-shadow:0 6px 16px rgba(21,153,165,.12),inset 0 1px 0 #fff;
+    font-size:20px;
+}
+.admin-client-grid .admin-db-status{
+    margin-top:17px;
+}
+.admin-client-grid .admin-db-status.online{
+    color:#168354;
+}
+.admin-client-grid .admin-db-status span{
+    box-shadow:0 0 0 4px rgba(48,169,112,.10);
+}
+.admin-client-grid .admin-module-button{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:18px;
+    padding:8px 12px;
+    border:1px solid rgba(207,37,54,.12);
+    border-radius:11px;
+    background:rgba(255,239,241,.72);
+    text-decoration:none !important;
+}
+.admin-client-grid>.admin-cliente-cuenta-card{
+    background:linear-gradient(135deg,rgba(255,255,255,.97) 0%,rgba(255,247,248,.9) 60%,rgba(255,232,235,.82) 100%);
+    border-color:rgba(255,255,255,.9);
+}
+.admin-client-grid>.admin-cliente-cuenta-card::before{
+    background:linear-gradient(90deg,#e62d43,#ff9aa5);
+}
+.admin-client-grid>.admin-cliente-cuenta-card::after{
+    border-color:rgba(230,45,67,.16);
+    background:radial-gradient(circle,rgba(255,130,145,.16),rgba(255,130,145,0) 70%);
+}
+.admin-client-grid>.admin-cliente-cuenta-card .admin-card-icon{
+    color:#d52b40;
+    background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,224,228,.82));
+    box-shadow:0 6px 16px rgba(213,43,64,.10),inset 0 1px 0 #fff;
+}
+.admin-client-grid>.admin-cliente-cuenta-card h2{
+    color:#c9273b;
+}
+.admin-client-grid>.admin-cliente-cuenta-card .admin-kicker{
+    color:#c9273b;
+}
+.admin-client-grid>.admin-cliente-servicios-card::before{
+    background:linear-gradient(90deg,#168b98,#82dcda);
+}
+@media(max-width:900px){
+    .admin-client-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+@media(max-width:600px){
+    .admin-client-grid{grid-template-columns:1fr !important;gap:14px}
+    .admin-client-grid>.admin-card{padding:21px 20px;border-radius:19px}
+    .admin-client-grid .admin-card-icon{width:42px;height:42px;margin-bottom:14px}
 }
 </style>
 
@@ -34,6 +160,7 @@
 
 <section class="admin-client-grid">
     <article class="admin-card admin-cliente-bd-card">
+        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-database"></i></span>
         <span class="admin-kicker">Base de datos</span>
         <h2>{{ db_name }}</h2>
         <p>Base de datos asignada al RUC del cliente.</p>
@@ -48,6 +175,7 @@
     </article>
 
     <article class="admin-card admin-cliente-cuenta-card">
+        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-wallet"></i></span>
         <span class="admin-kicker">Cuenta</span>
         <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
         <p>Saldo registrado en BDatos.</p>
@@ -55,6 +183,7 @@
     </article>
 
     <article class="admin-card admin-cliente-servicios-card">
+        <span class="admin-card-icon" aria-hidden="true"><i class="fi fi-rr-receipt"></i></span>
         <span class="admin-kicker">Servicios por facturar</span>
         <h2>$ {{ servicios_por_facturar_total|floatformat:2 }}</h2>
         <p>Sumatoria de servicios pendientes de facturación.</p>
