@@ -287,3 +287,80 @@ def admin_cobranza_cliente(request, ruc):
             "limite_resultados": len(facturas) >= 500,
         },
     )
+
+
+@admin_required
+def admin_estado_cuenta_cliente(request, ruc):
+    """Popup de movimientos de cuenta del cliente, replicando el formulario VB6."""
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    hoy = timezone.localdate()
+    desde_defecto = hoy.replace(day=1)
+
+    desde = _fecha_filtro(request.GET.get("desde", ""), desde_defecto)
+    hasta = _fecha_filtro(request.GET.get("hasta", ""), hoy)
+    if desde > hoy:
+        desde = hoy
+    if hasta > hoy:
+        hasta = hoy
+    if desde > hasta:
+        desde, hasta = hasta, desde
+
+    movimientos = []
+    saldo_vencido = Decimal("0.00")
+    estado_error = ""
+    try:
+        conexion = _conexion_cliente(cliente.ruccedcli)
+        conexion.ensure_connection()
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT fecmovcta,
+                       tipmovcta,
+                       COALESCE(valmovcta, 0) AS valmovcta,
+                       refmovcta,
+                       COALESCE(debe, 0) AS debe,
+                       COALESCE(haber, 0) AS haber,
+                       COALESCE(salcuenta, 0) AS saldocuenta
+                FROM public.cuentacliente
+                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                  AND fecmovcta::date >= %s::date
+                  AND fecmovcta::date <= %s::date
+                ORDER BY nummovcta, fecmovcta
+                """,
+                [cliente.ruccedcli, desde.isoformat(), hasta.isoformat()],
+            )
+            columnas = [col[0] for col in cursor.description]
+            movimientos = [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
+
+            cursor.execute(
+                """
+                SELECT COALESCE(SUM(COALESCE(valpagpar, 0)), 0)
+                FROM public.cuentascobrar
+                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                  AND fecvencim::date <= %s::date
+                  AND COALESCE(valpagpar, 0) > 0
+                  AND UPPER(TRIM(COALESCE(estpagcue, ''))) = 'PENDIENTE'
+                """,
+                [cliente.ruccedcli, hoy.isoformat()],
+            )
+            saldo_vencido = Decimal(str(cursor.fetchone()[0] or 0))
+    except Exception:
+        estado_error = (
+            "No se pudo consultar el estado de cuenta. Verifica que la base BdTotal "
+            "contenga las tablas CuentaCliente y CuentasCobrar con sus campos correspondientes."
+        )
+
+    return render(
+        request,
+        "admin/estado_cuenta_cliente_popup.html",
+        {
+            "cliente": cliente,
+            "movimientos": movimientos,
+            "saldo_pagar": Decimal(str(getattr(cliente, "salcuenta", 0) or 0)),
+            "saldo_vencido": saldo_vencido,
+            "desde": desde.isoformat(),
+            "hasta": hasta.isoformat(),
+            "hoy": hoy.isoformat(),
+            "estado_error": estado_error,
+        },
+    )
