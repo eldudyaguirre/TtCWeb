@@ -614,3 +614,212 @@ def admin_factura_retencion_cobranza(request, ruc, numfactur):
             return JsonResponse({"ok": exito, "error": error, "message": "Retención registrada correctamente." if exito else error})
         return render(request, "admin/retencion_cobranza_popup.html", {"cliente": cliente, "factura": factura, "error": error, "hoy": timezone.localdate().isoformat()})
     return render(request, "admin/retencion_cobranza_popup.html", {"cliente": cliente, "factura": factura, "error": error, "hoy": timezone.localdate().isoformat()})
+
+
+@admin_required
+def admin_factura_pago_cobranza(request, ruc, numfactur):
+    """Formulario y registro de abonos de facturas, siguiendo las formas de pago del VB6."""
+    from django.db import transaction
+    from django.http import JsonResponse
+    from django.views.decorators.http import require_http_methods
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    conexion = _conexion_cliente(cliente.ruccedcli)
+    error = ""
+    factura = None
+    vencimientos = []
+    bancos = []
+    anticipos = []
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT f.numfactur, f.ruccedcli, f.fecfactur, f.fecvencim,
+                       f.totfactur, f.valsalfac, f.estpagfac, c.nomclient,
+                       COALESCE(c.salcuenta,0), COALESCE(c.salantici,0),
+                       COALESCE(c.salnotcre,0), COALESCE(c.codcuecon,''),
+                       COALESCE(c.codcueant,'')
+                FROM public.facturas f
+                LEFT JOIN public.clientes c ON c.ruccedcli=f.ruccedcli
+                WHERE f.numfactur=%s
+                  AND LPAD(TRIM(COALESCE(f.ruccedcli::text,'')),13,'0')=LPAD(%s,13,'0')
+                LIMIT 1
+            """, [numfactur, cliente.ruccedcli])
+            row=cursor.fetchone()
+            if row:
+                cols=[d[0] for d in cursor.description]
+                factura=dict(zip(cols,row))
+                cursor.execute("""
+                    SELECT numcuecob, fecvencim, COALESCE(valpagpar,0), COALESCE(refcuecob,'')
+                    FROM public.cuentascobrar
+                    WHERE numfactur=%s AND ruccedcli=%s
+                      AND UPPER(TRIM(COALESCE(estpagcue,'')))='PENDIENTE'
+                      AND COALESCE(valpagpar,0)>0
+                    ORDER BY fecvencim, numcuecob
+                """,[numfactur,cliente.ruccedcli])
+                vencimientos=[{"numcuecob":r[0],"fecvencim":r[1],"saldo":Decimal(str(r[2] or 0)),"referencia":r[3]} for r in cursor.fetchall()]
+                cursor.execute("SELECT codcuenta,bancocta,COALESCE(saldocta,0),COALESCE(codcuecon,'') FROM public.cuentasbancos ORDER BY bancocta,codcuenta")
+                bancos=[{"codigo":r[0],"banco":r[1],"saldo":Decimal(str(r[2] or 0)),"cuenta_contable":r[3]} for r in cursor.fetchall()]
+                cursor.execute("""
+                    SELECT numantcli, fecantcli, COALESCE(valantcli,0), COALESCE(saldo,0), COALESCE(refantcli,'')
+                    FROM public.anticiclient
+                    WHERE ruccedcli=%s AND UPPER(TRIM(COALESCE(estantcli,'')))='PENDIENTE'
+                      AND COALESCE(saldo,valantcli,0)>0
+                    ORDER BY fecantcli,numantcli
+                """,[cliente.ruccedcli])
+                anticipos=[{"numero":r[0],"fecha":r[1],"valor":Decimal(str(r[2] or 0)),"saldo":Decimal(str(r[3] or r[2] or 0)),"referencia":r[4]} for r in cursor.fetchall()]
+            else:
+                error="No se encontró la factura para este cliente."
+    except Exception:
+        error="No se pudo consultar la factura, sus vencimientos y las formas de pago disponibles."
+
+    if factura and not vencimientos:
+        error="La factura no tiene vencimientos pendientes para aplicar pagos."
+        factura=None
+
+    if request.method=="POST" and factura:
+        try:
+            metodo=request.POST.get("forma_pago","").strip().upper()
+            permitidos={"EFECTIVO","CAJA","CHEQUE A LA VISTA","TRANSFERENCIA BANCARIA","ANTICIPO","NOTA DE CREDITO","DESCUENTO"}
+            if metodo not in permitidos:
+                raise ValueError("Selecciona una forma de pago válida.")
+            fecha_pago=date.fromisoformat(request.POST.get("fecha_pago",""))
+            if fecha_pago>timezone.localdate():
+                raise ValueError("La fecha del pago no puede ser posterior a hoy.")
+            try:
+                importe=Decimal(request.POST.get("valor_abono","0").strip().replace(",",".")).quantize(Decimal("0.01"))
+            except Exception:
+                raise ValueError("Ingresa un valor de pago válido.")
+            if not importe.is_finite() or importe<=0:
+                raise ValueError("El valor a pagar debe ser mayor que cero.")
+            numcuecob=request.POST.get("numcuecob","").strip()
+            referencia=request.POST.get("referencia","").strip()[:100]
+            if not referencia:
+                raise ValueError("Ingresa la referencia del movimiento.")
+            codigo_banco=request.POST.get("cuenta_banco","").strip()
+            num_documento=request.POST.get("numero_documento","").strip()
+            num_anticipo=request.POST.get("numero_anticipo","").strip()
+            vendedor=request.POST.get("cobrador","").strip()[:50]
+            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"} and not codigo_banco:
+                raise ValueError("Selecciona la cuenta bancaria o caja correspondiente.")
+            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"} and not num_documento:
+                raise ValueError("Ingresa el número de transferencia o cheque.")
+            if metodo=="ANTICIPO" and not num_anticipo:
+                raise ValueError("Selecciona el anticipo que deseas aplicar.")
+            if metodo=="ANTICIPO":
+                with conexion.cursor() as cursor:
+                    cursor.execute("SELECT COALESCE(saldo,valantcli,0) FROM public.anticiclient WHERE numantcli=%s AND ruccedcli=%s AND estantcli='PENDIENTE'",[num_anticipo,cliente.ruccedcli])
+                    anticipo_row=cursor.fetchone()
+                if not anticipo_row:
+                    raise ValueError("El anticipo seleccionado ya no está disponible.")
+                saldo_anticipo=Decimal(str(anticipo_row[0] or 0))
+                if importe != saldo_anticipo:
+                    raise ValueError("El importe debe coincidir con el saldo total del anticipo seleccionado, como en el formulario VB6.")
+            with transaction.atomic(using=conexion.alias):
+                with conexion.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT numcuecob, valpagpar FROM public.cuentascobrar
+                        WHERE numcuecob=%s AND numfactur=%s AND ruccedcli=%s
+                          AND UPPER(TRIM(COALESCE(estpagcue,'')))='PENDIENTE'
+                        FOR UPDATE
+                    """,[numcuecob,numfactur,cliente.ruccedcli])
+                    venc=cursor.fetchone()
+                    if not venc:
+                        raise ValueError("El vencimiento seleccionado ya no está pendiente.")
+                    saldo_venc=Decimal(str(venc[1] or 0))
+                    if importe>saldo_venc:
+                        raise ValueError("El abono no puede superar el saldo del vencimiento seleccionado.")
+                    cursor.execute("SELECT valsalfac FROM public.facturas WHERE numfactur=%s AND ruccedcli=%s FOR UPDATE",[numfactur,cliente.ruccedcli])
+                    facrow=cursor.fetchone()
+                    if not facrow:
+                        raise ValueError("La factura ya no está disponible.")
+                    saldo_factura=Decimal(str(facrow[0] or 0))
+                    if importe>saldo_factura:
+                        raise ValueError("El abono supera el saldo actual de la factura.")
+                    nuevo_venc=max(Decimal("0.00"),saldo_venc-importe)
+                    nuevo_factura=max(Decimal("0.00"),saldo_factura-importe)
+                    cursor.execute("UPDATE public.cuentascobrar SET valpagpar=%s,estpagcue=%s WHERE numcuecob=%s",
+                                   [nuevo_venc,"PAGADA" if nuevo_venc<Decimal("0.01") else "PENDIENTE",numcuecob])
+                    cursor.execute("UPDATE public.facturas SET valsalfac=%s,estpagfac=%s WHERE numfactur=%s AND ruccedcli=%s",
+                                   [nuevo_factura,"PAGADA" if nuevo_factura<Decimal("0.01") else "PENDIENTE",numfactur,cliente.ruccedcli])
+                    cursor.execute("UPDATE public.clientes SET salcuenta=GREATEST(COALESCE(salcuenta,0)-%s,0),fecultpag=%s WHERE ruccedcli=%s",
+                                   [importe,fecha_pago,cliente.ruccedcli])
+                    cursor.execute("SELECT siguiente_parametro('numctacli')")
+                    nummovcta=cursor.fetchone()[0]
+                    cursor.execute("""
+                        INSERT INTO public.cuentacliente
+                        (nummovcta,ruccedcli,fecmovcta,tipmovcta,valmovcta,refmovcta,fecvencim,numfactur,debe,haber,saldo,salcuenta,tipdocume)
+                        VALUES (%s,%s,%s,'PAGO',%s,%s,%s,%s,0,%s,%s,
+                                (SELECT salcuenta FROM public.clientes WHERE ruccedcli=%s),'FAC')
+                    """,[nummovcta,cliente.ruccedcli,fecha_pago,importe,referencia,fecha_pago,numfactur,importe,nuevo_factura,cliente.ruccedcli])
+
+                    if metodo=="EFECTIVO":
+                        cursor.execute("SELECT siguiente_parametro('nummovcaj')")
+                        nummov=cursor.fetchone()[0]
+                        cursor.execute("SELECT siguiente_parametro('numcomingcaj')")
+                        numcom=cursor.fetchone()[0]
+                        cursor.execute("SELECT salcaja FROM public.cajas WHERE codcaja='10' FOR UPDATE")
+                        caja=cursor.fetchone()
+                        if not caja:
+                            raise ValueError("No existe la caja general con código 10.")
+                        nuevo_caja=Decimal(str(caja[0] or 0))+importe
+                        cursor.execute("UPDATE public.cajas SET salcaja=%s WHERE codcaja='10'",[nuevo_caja])
+                        cursor.execute("UPDATE public.parametros SET salcajgen=COALESCE(salcajgen,0)+%s",[importe])
+                        cursor.execute("""
+                            INSERT INTO public.flujocaja
+                            (nummovcaj,fecmovcaj,tipmovcaj,numdocume,valmovcaj,refmovcaj,userid,codcajgen,debe,haber,saldo)
+                            VALUES (%s,%s,'I',%s,%s,%s,'WEB','10',%s,0,%s)
+                        """,[nummov,fecha_pago,numfactur,importe,referencia,importe,nuevo_caja])
+                        cursor.execute("""
+                            INSERT INTO public.comingcaja
+                            (numcoming,nummovcaj,fecha,beneficia,valor,concepto,bancocaja,cuenta,cheque,referencia,recibido)
+                            SELECT %s,%s,%s,%s,%s,%s,'10',codcuecon,'N/A',%s,nomclient
+                            FROM public.clientes LEFT JOIN public.cajas ON codcaja='10' WHERE ruccedcli=%s
+                        """,[numcom,nummov,fecha_pago,cliente.ruccedcli,importe,numfactur,referencia,cliente.ruccedcli])
+                    elif metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"}:
+                        cursor.execute("SELECT codcuenta,bancocta,saldocta,codcuecon FROM public.cuentasbancos WHERE codcuenta=%s FOR UPDATE",[codigo_banco])
+                        banco=cursor.fetchone()
+                        if not banco:
+                            raise ValueError("La cuenta bancaria seleccionada no existe.")
+                        cursor.execute("UPDATE public.cuentasbancos SET saldocta=COALESCE(saldocta,0)+%s WHERE codcuenta=%s",[importe,codigo_banco])
+                        cursor.execute("SELECT siguiente_parametro('nummovban')")
+                        seq=cursor.fetchone()[0]
+                        cursor.execute("SELECT siguiente_parametro('numcomingban')")
+                        numcom=cursor.fetchone()[0]
+                        cursor.execute("""
+                            INSERT INTO public.movbancos
+                            (codcuenta,seqmovimi,numcompro,fecmovimi,tipmovimi,numdocume,valmovimi,detmovimi,commovimi,validados,nombenefi,userid,impdocume,impcompro,codcuecon)
+                            VALUES (%s,%s,%s,%s,'N/C',%s,%s,%s,%s,'FALSO','', 'WEB',FALSE,FALSE,%s)
+                        """,[codigo_banco,seq,numcom,fecha_pago,num_documento,importe,referencia,"PAGO DE FACTURA "+numfactur,banco[3]])
+                        cursor.execute("""
+                            INSERT INTO public.comingbancos
+                            (numcoming,fecha,beneficia,valor,concepto,bancocaja,cuenta,cheque,referencia,recibido)
+                            SELECT %s,%s,%s,%s,%s,%s,%s,%s,%s,nomclient FROM public.clientes WHERE ruccedcli=%s
+                        """,[numcom,fecha_pago,cliente.ruccedcli,importe,numfactur,banco[1],codigo_banco,num_documento,referencia,cliente.ruccedcli])
+                    elif metodo=="ANTICIPO":
+                        cursor.execute("SELECT saldo,valantcli FROM public.anticiclient WHERE numantcli=%s AND ruccedcli=%s FOR UPDATE",[num_anticipo,cliente.ruccedcli])
+                        ar=cursor.fetchone()
+                        if not ar:
+                            raise ValueError("El anticipo ya no está disponible.")
+                        restante=max(Decimal("0.00"),Decimal(str(ar[0] or ar[1] or 0))-importe)
+                        cursor.execute("UPDATE public.anticiclient SET saldo=%s,salantici=%s,estantcli=%s WHERE numantcli=%s AND ruccedcli=%s",
+                                       [restante,restante,"PAGADO" if restante<Decimal("0.01") else "PENDIENTE",num_anticipo,cliente.ruccedcli])
+                        cursor.execute("UPDATE public.clientes SET salantici=GREATEST(COALESCE(salantici,0)-%s,0) WHERE ruccedcli=%s",[importe,cliente.ruccedcli])
+                    elif metodo=="NOTA DE CREDITO":
+                        cursor.execute("UPDATE public.clientes SET salnotcre=GREATEST(COALESCE(salnotcre,0)-%s,0) WHERE ruccedcli=%s AND COALESCE(salnotcre,0)>=%s",[importe,cliente.ruccedcli,importe])
+                        if cursor.rowcount==0:
+                            raise ValueError("El cliente no tiene saldo suficiente de notas de crédito.")
+                    elif metodo=="DESCUENTO":
+                        # El VB6 descuenta el saldo de la factura y no registra un movimiento de caja/banco.
+                        pass
+            return JsonResponse({"ok":True,"mensaje":"Pago registrado correctamente."})
+        except ValueError as exc:
+            return JsonResponse({"ok":False,"error":str(exc)},status=400)
+        except Exception:
+            return JsonResponse({"ok":False,"error":"No se pudo registrar el pago. No se aplicaron cambios."},status=500)
+
+    if request.method=="POST" and not factura:
+        return JsonResponse({"ok":False,"error":error or "No se pudo cargar la factura."},status=400)
+    return render(request,"admin/pago_cobranza_popup.html",{
+        "cliente":cliente,"factura":factura,"vencimientos":vencimientos,"bancos":bancos,
+        "anticipos":anticipos,"error":error,"hoy":timezone.localdate()
+    })
