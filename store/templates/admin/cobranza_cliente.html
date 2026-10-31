@@ -22,24 +22,15 @@
 {% endif %}
 <section class="cob-stats">
     <article class="cob-stat cob-stat-balance">
-        <span>Saldo pendiente consultado</span>
-        <strong>$ {{ resumen.saldo|floatformat:2 }}</strong>
-        <small>Suma del saldo registrado en las facturas filtradas.</small>
-    </article>
-    <article class="cob-stat">
         <span>Facturas pendientes</span>
-        <strong>{{ resumen.cantidad }}</strong>
-        <small>Facturas con saldo mayor que cero.</small>
+        <strong>$ {{ resumen.saldo|floatformat:2 }}</strong>
+        <small>{{ resumen.cantidad }} facturas pendientes</small>
     </article>
-    <article class="cob-stat cob-stat-overdue">
-        <span>Facturas vencidas</span>
-        <strong>{{ resumen.vencidas }}</strong>
-        <small>Con fecha de vencimiento anterior a hoy.</small>
-    </article>
-    <article class="cob-stat cob-stat-retention">
-        <span>Retenciones registradas</span>
-        <strong>$ {{ resumen.retenciones|floatformat:2 }}</strong>
-        <small>Valor asociado según la tabla retencclient.</small>
+    <article class="cob-stat cob-stat-services">
+        <span>Servicios por facturar</span>
+        <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+        <small>{{ resumen_servicios.cantidad }} registros</small>
+        <p class="cob-stat-note">Este valor es antes de IVA.</p>
     </article>
 </section>
 
@@ -173,11 +164,13 @@
 
 <style>
 .cobranza-page-header{margin-bottom:18px}
-.cob-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 18px}
+.cob-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 18px}
 .cob-stat{min-width:0;background:#fff;border:1px solid #dce5e8;border-top:3px solid #1599a5;border-radius:15px;padding:18px 18px 16px;box-shadow:0 8px 24px rgba(27,55,65,.04)}
 .cob-stat>span{display:block;color:#667780;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .cob-stat>strong{display:block;color:#213640;font-size:27px;line-height:1.25;margin:10px 0 7px;overflow-wrap:anywhere}
 .cob-stat small{display:block;color:#74838a;font-size:12px;line-height:1.5}
+.cob-stat-note{margin:10px 0 0;padding-top:9px;border-top:1px solid #e5edef;color:#8a6a20;font-size:11px;line-height:1.4;font-weight:700}
+.cob-stat-services{border-top-color:#b68218;background:linear-gradient(135deg,#fff 55%,#fff9eb)}
 .cob-stat-balance{border-top-color:#149aa5;background:linear-gradient(135deg,#fff 55%,#edfafa)}
 .cob-stat-overdue{border-top-color:#c83b4b}
 .cob-stat-retention{border-top-color:#b68218}
