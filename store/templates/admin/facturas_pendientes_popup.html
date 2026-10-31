@@ -1,3 +1,15 @@
+
+<style>
+.cob-actions-cell{width:76px;text-align:center;overflow:visible!important}
+.cob-actions-menu{position:relative;display:inline-block}
+.cob-actions-trigger{width:34px;height:30px;border:1px solid #d9e3e8;border-radius:8px;background:#fff;color:#24404d;font-size:22px;line-height:20px;cursor:pointer}
+.cob-actions-trigger:hover,.cob-actions-trigger[aria-expanded="true"]{background:#eaf8fa;border-color:#159ba8;color:#078a98}
+.cob-actions-dropdown{position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:190px;padding:5px;background:#fff;border:1px solid #dbe5e9;border-radius:10px;box-shadow:0 10px 28px rgba(22,47,60,.18);text-align:left}
+.cob-actions-dropdown[hidden]{display:none}
+.cob-actions-dropdown button{display:block;width:100%;padding:10px 12px;border:0;border-radius:6px;background:transparent;color:#263f4c;text-align:left;font:inherit;white-space:nowrap;cursor:pointer}
+.cob-actions-dropdown button:hover{background:#edf8f9;color:#078a98}
+</style>
+
 <section class="admin-card cob-table-card" id="facturas-pendientes">
     <form id="cobFacturasFilters" method="get" action="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}" class="cob-filters">
         <div><label for="cob-fecha-desde">Fecha desde</label><input id="cob-fecha-desde" type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}"></div>
@@ -7,7 +19,7 @@
     </form>
     <div class="cob-table-wrap">
         <table class="cob-table">
-            <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Saldo pendiente</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>
             {% for factura in facturas %}
                 <tr>
@@ -17,13 +29,53 @@
                     <td class="cob-money">$ {{ factura.total|floatformat:2 }}</td>
                     <td class="cob-money cob-money-balance">$ {{ factura.saldo|floatformat:2 }}</td>
                     <td><span class="cob-badge {% if factura.vencida %}cob-badge-overdue{% else %}cob-badge-pending{% endif %}">{% if factura.vencida %}Vencida{% else %}Pendiente{% endif %}</span></td>
+                    <td class="cob-actions-cell">
+                        <div class="cob-actions-menu">
+                            <button type="button" class="cob-actions-trigger" aria-label="Acciones de factura {{ factura.numfactur }}" aria-expanded="false" title="Acciones">⋯</button>
+                            <div class="cob-actions-dropdown" hidden>
+                                <button type="button" data-factura-action="detalle" data-factura="{{ factura.numfactur }}">Detalle</button>
+                                <button type="button" data-factura-action="pago" data-factura="{{ factura.numfactur }}">Registrar pago</button>
+                                <button type="button" data-factura-action="retencion" data-factura="{{ factura.numfactur }}">Registrar retención</button>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
-            {% empty %}<tr><td colspan="8" class="cob-empty">No se encontraron facturas pendientes para los filtros seleccionados.</td></tr>{% endfor %}
+            {% empty %}<tr><td colspan="7" class="cob-empty">No se encontraron facturas pendientes para los filtros seleccionados.</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>
     {% if limite_resultados %}<p class="cob-limit-note">Se muestran hasta 500 facturas. Reduce el período o especifica un cliente para acotar la consulta.</p>{% endif %}
 </section>
+
+<script>
+(function(){
+ const root=document.getElementById('facturas-pendientes');
+ if(!root)return;
+ root.addEventListener('click',function(e){
+  const trigger=e.target.closest('.cob-actions-trigger');
+  if(trigger){
+   const menu=trigger.parentElement.querySelector('.cob-actions-dropdown');
+   const opening=menu.hidden;
+   root.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
+   root.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+   menu.hidden=!opening;
+   trigger.setAttribute('aria-expanded',String(opening));
+   e.stopPropagation();
+   return;
+  }
+  const action=e.target.closest('[data-factura-action]');
+  if(action){
+   const event=new CustomEvent('cobranza:factura-action',{bubbles:true,detail:{action:action.dataset.facturaAction,factura:action.dataset.factura}});
+   root.dispatchEvent(event);
+   root.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
+   root.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+  }
+ });
+ document.addEventListener('click',e=>{if(!root.contains(e.target)){root.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);root.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){root.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);root.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));}});
+})();
+</script>
+
 <script>
 (function(){
  const form=document.getElementById('cobFacturasFilters'),clear=document.getElementById('cobFacturasClear');
