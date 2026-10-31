@@ -1,0 +1,39 @@
+{% if estado_error %}
+<div class="cob-modal-error">{{ estado_error }}</div>
+{% else %}
+<form id="cobEstadoCuentaFilters" class="cob-ec-filters" method="get" action="{% url 'admin_estado_cuenta_cliente' ruc=cliente.ruccedcli %}">
+    <div class="cob-ec-field"><label for="cob-ec-desde">Desde</label><input id="cob-ec-desde" type="date" name="desde" value="{{ desde }}" max="{{ hoy }}"></div>
+    <div class="cob-ec-field"><label for="cob-ec-hasta">Hasta</label><input id="cob-ec-hasta" type="date" name="hasta" value="{{ hasta }}" max="{{ hoy }}"></div>
+    <button type="submit" class="cob-btn cob-btn-primary"><i class="fi fi-rr-search"></i> Consultar</button>
+    <button type="button" id="cobEstadoCuentaPrint" class="cob-btn cob-btn-light no-print"><i class="fi fi-rr-print"></i> Imprimir</button>
+</form>
+<div class="cob-print-area">
+    <h2 style="margin:0 0 4px;color:#20465e">REGISTRO DE TRANSACCIONES DE CLIENTE</h2>
+    <p style="margin:0 0 14px;color:#607b8c">{{ cliente.nomclient }} · RUC / C.I.: {{ cliente.ruccedcli }}</p>
+    <div class="cob-ec-summary">
+        <div class="cob-ec-summary-item"><span>SALDO A PAGAR</span><strong>$ {{ saldo_pagar|floatformat:2 }}</strong></div>
+        <div class="cob-ec-summary-item overdue"><span>SALDO VENCIDO</span><strong>$ {{ saldo_vencido|floatformat:2 }}</strong></div>
+        <div class="cob-ec-summary-item"><span>MOVIMIENTOS DEL PERÍODO</span><strong>{{ movimientos|length }}</strong></div>
+    </div>
+    <div class="cob-ec-table-wrap">
+        <table class="cob-ec-table">
+            <thead><tr><th>Fecha</th><th>Referencia/Tipo</th><th>Valor</th><th>Comentarios</th><th>Debe</th><th>Haber</th><th>Saldo</th></tr></thead>
+            <tbody>
+            {% for mov in movimientos %}
+                <tr>
+                    <td>{{ mov.fecmovcta|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{% if mov.tipmovcta|slice:":4"|upper == "PAGO" %}{{ mov.tipmovcta }}{% else %}VENTA: {{ mov.tipmovcta }}{% endif %}</td>
+                    <td class="num">$ {{ mov.valmovcta|floatformat:2 }}</td>
+                    <td>{{ mov.refmovcta|default:"—" }}</td>
+                    <td class="num">{% if mov.debe %}$ {{ mov.debe|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td class="num">{% if mov.haber %}$ {{ mov.haber|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td class="num">$ {{ mov.saldocuenta|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="cob-ec-empty">No existen movimientos para este cliente en el período seleccionado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
