@@ -46,11 +46,11 @@
         <span><strong>Estado de Cuenta</strong><small>Consultar movimientos y saldos del cliente</small></span>
         <span class="cob-arrow">›</span>
     </button>
-    <a class="cob-shortcut" href="#facturas-pendientes">
+    <button type="button" class="cob-shortcut" id="cobFacturasTrigger" data-url="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-receipt"></i></span>
         <span><strong>Facturas pendientes</strong><small>Consultar saldos, fechas y clientes</small></span>
         <span class="cob-arrow">›</span>
-    </a>
+    </button>
     <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-retenciones" aria-disabled="true">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <span><strong>Retenciones</strong><small>Registro y consulta por factura</small></span>
@@ -68,70 +68,39 @@
     </a>
 </section>
 
-<section class="admin-card cob-table-card" id="facturas-pendientes">
-    <div class="cob-section-heading">
-        <div>
-            <span class="admin-kicker">Cuentas por cobrar</span>
-            <h2>Facturas pendientes de pago</h2>
-            <p>Se muestran facturas con saldo pendiente, según los datos de la base del cliente.</p>
-        </div>
-    </div>
 
-    <form method="get" class="cob-filters">
-        <div>
-            <label for="cob-fecha-desde">Fecha desde</label>
-            <input id="cob-fecha-desde" type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}">
-        </div>
-        <div>
-            <label for="cob-fecha-hasta">Fecha hasta</label>
-            <input id="cob-fecha-hasta" type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
-        </div>
-        <div class="cob-filter-search">
-            <label for="cob-q">Cliente o factura</label>
-            <input id="cob-q" type="search" name="q" value="{{ filtros.q }}" placeholder="Nombre, RUC, serie o número">
-        </div>
-        <div class="cob-filter-actions">
-            <button class="cob-btn cob-btn-primary" type="submit"><i class="fi fi-rr-search"></i> Buscar</button>
-            <a class="cob-btn cob-btn-light" href="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">Limpiar</a>
-        </div>
-    </form>
 
-    <div class="cob-table-wrap">
-        <table class="cob-table">
-            <thead>
-                <tr>
-                    <th>Factura</th>
-                    <th>Cliente</th>
-                    <th>Fecha</th>
-                    <th>Vencimiento</th>
-                    <th>Total</th>
-                    <th>Retenciones</th>
-                    <th>Saldo pendiente</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for factura in facturas %}
-                <tr>
-                    <td><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong><small>{{ factura.ruc_deudor }}</small></td>
-                    <td>{{ factura.nombre_deudor }}</td>
-                    <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
-                    <td>{% if factura.vencida %}<span class="cob-date-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
-                    <td class="cob-money">$ {{ factura.total|floatformat:2 }}</td>
-                    <td class="cob-money">$ {{ factura.retenciones|floatformat:2 }}</td>
-                    <td class="cob-money cob-money-balance">$ {{ factura.saldo|floatformat:2 }}</td>
-                    <td><span class="cob-badge {% if factura.vencida %}cob-badge-overdue{% else %}cob-badge-pending{% endif %}">{% if factura.vencida %}Vencida{% else %}Pendiente{% endif %}</span></td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="8" class="cob-empty">No se encontraron facturas pendientes para los filtros seleccionados.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% if limite_resultados %}
-    <p class="cob-limit-note">Se muestran hasta 500 facturas. Reduce el período o especifica un cliente para acotar la consulta.</p>
-    {% endif %}
-</section>
+
+<div class="cob-modal" id="cobFacturasModal" aria-hidden="true">
+    <div class="cob-modal-backdrop" data-cob-facturas-close></div>
+    <section class="cob-modal-dialog cob-facturas-dialog" role="dialog" aria-modal="true" aria-labelledby="cobFacturasTitle">
+        <header class="cob-modal-header">
+            <div><span class="admin-kicker">Cuentas por cobrar</span><h2 id="cobFacturasTitle">FACTURAS PENDIENTES DE PAGO</h2><p>{{ cliente.nomclient }} · RUC / C.I.: {{ cliente.ruccedcli }}</p></div>
+            <button type="button" class="cob-modal-close" data-cob-facturas-close aria-label="Cerrar">×</button>
+        </header>
+        <div id="cobFacturasContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando facturas pendientes…</div></div>
+    </section>
+</div>
+<script>
+(function(){
+ const trigger=document.getElementById('cobFacturasTrigger'), modal=document.getElementById('cobFacturasModal'), content=document.getElementById('cobFacturasContent');
+ if(!trigger||!modal||!content)return;
+ const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
+ async function load(url){
+  content.innerHTML='<div class="cob-modal-loading">Cargando facturas pendientes…</div>';
+  try{
+   const response=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   if(!response.ok)throw new Error();
+   content.innerHTML=await response.text();
+   const form=content.querySelector('#cobFacturasFilters');
+   if(form)form.addEventListener('submit',async e=>{e.preventDefault();const params=new URLSearchParams(new FormData(form));await load(form.action+'?'+params.toString());});
+  }catch(e){content.innerHTML='<p class="cob-modal-error">No se pudieron cargar las facturas pendientes. Inténtalo nuevamente.</p>';}
+ }
+ trigger.addEventListener('click',async()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');await load(trigger.dataset.url);});
+ modal.querySelectorAll('[data-cob-facturas-close]').forEach(el=>el.addEventListener('click',close));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
+})();
+</script>
 
 
 <div class="cob-modal" id="cobEstadoCuentaModal" aria-hidden="true">
@@ -234,6 +203,13 @@
 .cob-modal{display:none;position:fixed;inset:0;z-index:1200;align-items:center;justify-content:center;padding:20px}
 .cob-modal.is-open{display:flex}
 .cob-modal-backdrop{position:absolute;inset:0;background:rgba(16,32,41,.62);backdrop-filter:blur(4px)}
+.cob-facturas-dialog{width:min(1400px,97vw)}
+#cobFacturasContent .cob-table-card{padding:0;border:0;box-shadow:none}
+#cobFacturasContent .cob-section-heading{display:none}
+#cobFacturasContent .cob-filters{margin-bottom:14px}
+#cobFacturasContent .cob-table{min-width:950px}
+#cobFacturasContent .cob-table-wrap{max-height:55vh;overflow:auto}
+#cobFacturasContent .cob-table thead{position:sticky;top:0;z-index:1}
 .cob-modal-dialog{position:relative;display:flex;flex-direction:column;width:min(1240px,96vw);max-height:92vh;overflow:hidden;background:#fff;border:1px solid #dce5e8;border-radius:18px;box-shadow:0 25px 80px rgba(0,0,0,.25)}
 .cob-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:20px 24px;border-bottom:1px solid #e5edef;background:linear-gradient(120deg,#f7fcfc,#fff)}
 .cob-modal-header h2{margin:4px 0 5px;color:#20465e;font-size:22px}
