@@ -2331,10 +2331,7 @@ def admin_cliente(request, ruc):
             with client_connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT COALESCE(
-                        SUM(COALESCE(canfactur, 0) * COALESCE(preitefac, 0)),
-                        0
-                    )
+                    SELECT COALESCE(SUM(COALESCE(preitefac, 0)), 0)
                     FROM public.prefactura
                     WHERE TRIM(COALESCE(ruc::text, '')) = %s
                     """,
