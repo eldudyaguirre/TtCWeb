@@ -487,6 +487,12 @@
                     <label for="cliente-actividad">Actividad económica</label>
                     <input id="cliente-actividad" name="ocuclient" type="text" value="{{ cliente.ocuclient|default:'' }}">
                 </div>
+                {% if cliente.tipo_contribuyente == 'PERSONA JURIDICA' %}
+                <div class="admin-modal-field admin-modal-field-full">
+                    <label for="cliente-rep-legal">Representante Legal</label>
+                    <input id="cliente-rep-legal" name="rep_legal" type="text" value="{{ cliente.rep_legal|default:'' }}" readonly>
+                </div>
+                {% endif %}
             </div>
 
             <div class="admin-modal-actions">
