@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% block title %}{{ config.titulo }} | {{ cliente.nomclient }}{% endblock %}
 {% block content %}
-<div class="admin-breadcrumb"><a href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}">← Documentación</a></div>
+<div class="admin-breadcrumb"><a class="admin-new-client-button admin-back-button" href="{% url 'admin_documentacion' ruc=cliente.ruccedcli %}"><span aria-hidden="true">←</span> Documentación</a></div>
 <div class="admin-page-header">
   <div><span class="admin-kicker">Documentación del cliente · {{ config.titulo }}</span><h1>{{ config.nombre }}</h1><p>{{ cliente.nomclient }} | RUC / C.I.: <strong>{{ cliente.ruccedcli }}</strong></p><p>{{ config.descripcion }}</p></div>
   <span class="admin-report-count">{{ total_registros }} archivos</span>
