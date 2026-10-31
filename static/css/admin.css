@@ -2941,3 +2941,43 @@ button.admin-new-client-button:focus{
     .admin-content .admin-client-grid .admin-kicker{font-size:8px !important}
     .admin-content .admin-client-grid .admin-cliente-bd-card h2{font-size:12px !important}
 }
+
+
+/* Inicio del cliente: mostrar las tarjetas de módulos en dos columnas en móvil. */
+@media (max-width:700px){
+    .admin-content .admin-cliente-modules{
+        display:grid !important;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:10px !important;
+    }
+    .admin-content .admin-cliente-modules .admin-module-card{
+        min-width:0 !important;
+        min-height:150px !important;
+        padding:14px 12px !important;
+        gap:7px !important;
+        overflow-wrap:anywhere;
+    }
+    .admin-content .admin-cliente-modules .admin-module-card > i{
+        width:42px;
+        height:42px;
+        flex:0 0 42px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:21px !important;
+    }
+    .admin-content .admin-cliente-modules .admin-module-card > strong{
+        font-size:14px !important;
+        line-height:1.25;
+    }
+    .admin-content .admin-cliente-modules .admin-module-card > span{
+        font-size:11px !important;
+        line-height:1.35;
+    }
+}
+@media (max-width:360px){
+    .admin-content .admin-cliente-modules{gap:8px !important}
+    .admin-content .admin-cliente-modules .admin-module-card{padding:12px 9px !important;min-height:145px !important}
+    .admin-content .admin-cliente-modules .admin-module-card > strong{font-size:13px !important}
+    .admin-content .admin-cliente-modules .admin-module-card > span{font-size:10px !important}
+}
