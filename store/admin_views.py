@@ -1225,63 +1225,6 @@ def admin_cliente(request, ruc):
                 'Datos del cliente y Representante Legal guardados y verificados en PostgreSQL.',
             )
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
-        representante_legal = representante_legal.strip()
-        cliente.rep_legal = representante_legal
-
-        # Guardar primero los demás datos generales del cliente.
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE public.clientes
-                SET dirclient = %s,
-                    teldomcli = %s,
-                    teloficli = %s,
-                    telcelcli = %s,
-                    corelectr = %s,
-                    ocuclient = %s
-                WHERE ruccedcli = %s
-                """,
-                [
-                    cliente.dirclient,
-                    cliente.teldomcli,
-                    cliente.teloficli,
-                    cliente.telcelcli,
-                    cliente.corelectr,
-                    cliente.ocuclient,
-                    cliente.ruccedcli,
-                ],
-            )
-            filas_actualizadas = cursor.rowcount
-
-        # Guardar rep_legal en una operación SQL independiente y obtener
-        # el valor que PostgreSQL devuelve después de actualizar la fila.
-        representante_guardado = None
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE public.clientes
-                SET rep_legal = %s
-                WHERE ruccedcli = %s
-                RETURNING rep_legal
-                """,
-                [representante_legal, cliente.ruccedcli],
-            )
-            fila_rep_legal = cursor.fetchone()
-            if fila_rep_legal is not None:
-                representante_guardado = fila_rep_legal[0]
-
-        cliente.refresh_from_db()
-        if not filas_actualizadas:
-            messages.error(request, 'No se guardaron los datos: no se encontró el cliente en public.clientes.')
-        elif representante_guardado != representante_legal:
-            messages.error(
-                request,
-                'Los datos generales se actualizaron, pero PostgreSQL no confirmó el guardado de Representante Legal. '
-                f'Valor enviado: {representante_legal!r}; valor devuelto: {representante_guardado!r}.',
-            )
-        else:
-            messages.success(request, 'Datos del cliente y Representante Legal actualizados correctamente.')
-        return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
     usuarios = (
         UsuarioCliente.objects
