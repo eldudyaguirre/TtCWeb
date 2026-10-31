@@ -11,12 +11,12 @@ from .admin_views import admin_required
 from .models import Cliente
 
 
-def _conexion_cliente(ruc):
-    db_name = str(ruc or "").strip()
-    alias = f"cliente_{db_name}"
+def _conexion_cliente(ruc=None):
+    """Conecta a la base central BdTotal; la cobranza no vive en la BD del cliente."""
+    alias = "bdtotal_cobranza"
     if alias not in connections.databases:
         config = settings.DATABASES["default"].copy()
-        config["NAME"] = db_name
+        config["NAME"] = "BdTotal"
         connections.databases[alias] = config
     return connections[alias]
 
@@ -30,7 +30,7 @@ def _fecha_filtro(valor, defecto):
 
 @admin_required
 def admin_cobranza_cliente(request, ruc):
-    """Panel inicial de cobranza de una base de datos de cliente."""
+    """Panel de cobranza consultando la base central BdTotal."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     hoy = timezone.localdate()
     # La cobranza debe incluir toda la cartera pendiente, aunque la factura sea de meses anteriores.
