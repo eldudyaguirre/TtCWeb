@@ -39,7 +39,7 @@ def admin_cobranza_cliente(request, ruc):
     fecha_hasta = _fecha_filtro(request.GET.get("fecha_hasta", ""), None)
     busqueda = request.GET.get("q", "").strip()[:120]
 
-    if fecha_desde > fecha_hasta:
+    if fecha_desde and fecha_hasta and fecha_desde > fecha_hasta:
         fecha_desde, fecha_hasta = fecha_hasta, fecha_desde
         messages.info(request, "Se invirtieron las fechas para consultar el período correcto.")
 
