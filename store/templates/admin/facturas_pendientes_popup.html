@@ -36,7 +36,7 @@
                             <button type="button" class="cob-actions-trigger" aria-label="Acciones de factura {{ factura.numfactur }}" aria-expanded="false" title="Acciones">⋯</button>
                             <div class="cob-actions-dropdown" hidden>
                                 <button type="button" data-factura-action="detalle" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_detalle_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Detalle</button>
-                                <button type="button" data-factura-action="pago" data-factura="{{ factura.numfactur }}">Registrar pago</button>
+                                <button type="button" data-factura-action="pago" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_pago_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Registrar pago</button>
                                 {% if factura.tiene_retencion %}<button type="button" disabled title="Esta factura ya tiene una retención registrada">Retención registrada</button>{% else %}<button type="button" data-factura-action="retencion" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_retencion_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Registrar retención</button>{% endif %}
                             </div>
                         </div>
