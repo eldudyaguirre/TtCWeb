@@ -3962,7 +3962,7 @@ def admin_documentacion(request, ruc):
 
 @admin_required
 def admin_trabajadores(request, ruc):
-    """Listado de trabajadores activos del cliente para el portal administrativo."""
+    """Listado de trabajadores del cliente para el portal administrativo."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     try:
         from .views import _cliente_db
@@ -3977,7 +3977,7 @@ def admin_trabajadores(request, ruc):
                 fecentrada,
                 sueldo
             FROM trabajadores
-            WHERE activo = TRUE
+            WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
               AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
             ORDER BY nombres, cedula
         """
@@ -4010,7 +4010,7 @@ def admin_trabajador_detalle(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -4052,7 +4052,7 @@ def admin_trabajador_pdf(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -4144,7 +4144,7 @@ def admin_trabajadores_excel(request, ruc):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -4173,7 +4173,7 @@ def admin_trabajadores_excel(request, ruc):
         if cell.value is not None:
             cell.number_format = '#,##0.00'
     ws.append([])
-    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES', len(filas)])
 
     buffer = BytesIO()
     wb.save(buffer)
@@ -9927,7 +9927,7 @@ def admin_documentacion(request, ruc):
 
 @admin_required
 def admin_trabajadores(request, ruc):
-    """Listado de trabajadores activos del cliente para el portal administrativo."""
+    """Listado de trabajadores del cliente para el portal administrativo."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     try:
         from .views import _cliente_db
@@ -9942,7 +9942,7 @@ def admin_trabajadores(request, ruc):
                 fecentrada,
                 sueldo
             FROM trabajadores
-            WHERE activo = TRUE
+            WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
               AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
             ORDER BY nombres, cedula
         """
@@ -9975,7 +9975,7 @@ def admin_trabajador_detalle(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -10017,7 +10017,7 @@ def admin_trabajador_pdf(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -10109,7 +10109,7 @@ def admin_trabajadores_excel(request, ruc):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -10138,7 +10138,7 @@ def admin_trabajadores_excel(request, ruc):
         if cell.value is not None:
             cell.number_format = '#,##0.00'
     ws.append([])
-    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES', len(filas)])
 
     buffer = BytesIO()
     wb.save(buffer)
@@ -15860,7 +15860,7 @@ def admin_documentacion(request, ruc):
 
 @admin_required
 def admin_trabajadores(request, ruc):
-    """Listado de trabajadores activos del cliente para el portal administrativo."""
+    """Listado de trabajadores del cliente para el portal administrativo."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     try:
         from .views import _cliente_db
@@ -15875,7 +15875,7 @@ def admin_trabajadores(request, ruc):
                 fecentrada,
                 sueldo
             FROM trabajadores
-            WHERE activo = TRUE
+            WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
               AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
             ORDER BY nombres, cedula
         """
@@ -15908,7 +15908,7 @@ def admin_trabajador_detalle(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -15950,7 +15950,7 @@ def admin_trabajador_pdf(request, ruc, cedula):
             jn, horaslab
         FROM trabajadores
         WHERE TRIM(cedula::text) = %s
-          AND activo = TRUE
+          AND (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         LIMIT 1
     """
@@ -16042,7 +16042,7 @@ def admin_trabajadores_excel(request, ruc):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -16071,7 +16071,7 @@ def admin_trabajadores_excel(request, ruc):
         if cell.value is not None:
             cell.number_format = '#,##0.00'
     ws.append([])
-    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES ACTIVOS', len(filas)])
+    ws.append(['', '', '', '', '', 'TOTAL TRABAJADORES', len(filas)])
 
     buffer = BytesIO()
     wb.save(buffer)
