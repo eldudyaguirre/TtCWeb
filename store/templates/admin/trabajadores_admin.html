@@ -189,7 +189,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="admin-breadcrumb"><a href="{% url 'admin_laboral' ruc=cliente.ruccedcli %}">← Laboral</a></div>
+<div class="admin-breadcrumb"><a class="admin-new-client-button admin-back-button" href="{% url 'admin_laboral' ruc=cliente.ruccedcli %}"><span aria-hidden="true">←</span> Laboral</a></div>
 <main class="admin-trabajadores-report">
     <div class="container-fluid">
         <section class="portal-report-card">
