@@ -20203,11 +20203,46 @@ def admin_cliente(request, ruc):
         cliente.telcelcli = request.POST.get('telcelcli', '').strip()
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
-        cliente.save(update_fields=[
+
+        # Esta es la última definición de admin_cliente en el módulo y, por
+        # tanto, la que queda activa al cargar Django.
+        es_persona_juridica = cliente.tipo_contribuyente == 'PERSONA JURIDICA'
+        campos_actualizar = [
             'dirclient', 'teldomcli', 'teloficli',
             'telcelcli', 'corelectr', 'ocuclient',
-        ])
-        messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+        ]
+
+        if es_persona_juridica:
+            if 'rep_legal' not in request.POST:
+                messages.error(
+                    request,
+                    'El formulario no envió el campo Representante Legal. '
+                    'No se guardaron los cambios.',
+                )
+                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+            cliente.rep_legal = request.POST.get('rep_legal', '').strip()
+            campos_actualizar.append('rep_legal')
+
+        cliente.save(update_fields=campos_actualizar)
+
+        if es_persona_juridica:
+            cliente.refresh_from_db(fields=['rep_legal'])
+            if cliente.rep_legal != request.POST.get('rep_legal', '').strip():
+                messages.error(
+                    request,
+                    'Los datos generales se guardaron, pero Representante Legal no coincide '
+                    'con el valor leído nuevamente desde la base de datos. '
+                    f'Valor enviado: {request.POST.get("rep_legal", "").strip()!r}; '
+                    f'valor leído: {cliente.rep_legal!r}.',
+                )
+                return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+        messages.success(
+            request,
+            'Datos básicos del cliente actualizados correctamente, incluido Representante Legal.'
+            if es_persona_juridica
+            else 'Datos básicos del cliente actualizados correctamente.',
+        )
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
     usuarios = (
