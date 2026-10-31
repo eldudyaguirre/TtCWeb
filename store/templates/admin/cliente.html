@@ -67,9 +67,9 @@
     margin-bottom:7px;
 }
 .admin-client-grid .admin-card-icon{
-    flex:0 0 27px;
-    width:27px;
-    height:30px;
+    flex:0 0 36px;
+    width:36px;
+    height:38px;
     display:inline-flex;
     align-items:center;
     justify-content:center;
@@ -79,7 +79,11 @@
     background:transparent;
     box-shadow:none;
     color:#16a5ae;
-    font-size:25px;
+    font-size:33px;
+    line-height:1;
+}
+.admin-client-grid .admin-card-icon i{
+    font-size:inherit;
     line-height:1;
 }
 .admin-client-grid>.admin-card .admin-kicker{
@@ -164,6 +168,7 @@
 @media(max-width:600px){
     .admin-client-grid{grid-template-columns:1fr !important;gap:12px}
     .admin-client-grid>.admin-card{min-height:126px;padding:14px 17px 12px;border-radius:16px}
+    .admin-client-grid .admin-card-icon{flex-basis:32px;width:32px;height:34px;font-size:30px}
     .admin-client-grid .admin-db-status{margin-top:7px;padding-top:0}
 }
 @media(prefers-reduced-motion:reduce){
