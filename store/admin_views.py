@@ -1145,18 +1145,38 @@ def admin_cliente(request, ruc):
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
         rep_legal = request.POST.get('rep_legal', '').strip()
-        # Guardar explícitamente en la columna rep_legal de public.clientes.
-        Cliente.objects.filter(pk=cliente.pk).update(
-            dirclient=cliente.dirclient,
-            teldomcli=cliente.teldomcli,
-            teloficli=cliente.teloficli,
-            telcelcli=cliente.telcelcli,
-            corelectr=cliente.corelectr,
-            ocuclient=cliente.ocuclient,
-            rep_legal=rep_legal,
-        )
+        # Actualizar explícitamente la tabla usada por el administrador.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE public.clientes
+                SET dirclient = %s,
+                    teldomcli = %s,
+                    teloficli = %s,
+                    telcelcli = %s,
+                    corelectr = %s,
+                    ocuclient = %s,
+                    rep_legal = %s
+                WHERE ruccedcli = %s
+                """,
+                [
+                    cliente.dirclient,
+                    cliente.teldomcli,
+                    cliente.teloficli,
+                    cliente.telcelcli,
+                    cliente.corelectr,
+                    cliente.ocuclient,
+                    rep_legal,
+                    cliente.ruccedcli,
+                ],
+            )
+            filas_actualizadas = cursor.rowcount
+
         cliente.refresh_from_db()
-        messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+        if filas_actualizadas:
+            messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
+        else:
+            messages.error(request, 'No se guardaron los datos: no se encontró el cliente en public.clientes.')
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
     usuarios = (
