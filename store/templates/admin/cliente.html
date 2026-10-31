@@ -191,7 +191,6 @@
             <span class="admin-kicker">Base de datos</span>
         </div>
         <h2>{{ db_name }}</h2>
-        <p>Base de datos asignada al RUC del cliente.</p>
         <div class="admin-db-status {% if db_status == 'Conectada' %}online{% endif %}">
             <span></span>{{ db_status }}
         </div>
@@ -208,8 +207,6 @@
             <span class="admin-kicker">Cuenta</span>
         </div>
         <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
-        <p>Saldo registrado en BDatos.</p>
-        <a href="#" class="admin-module-button">Cobranza <small>Próximamente</small></a>
     </article>
 
     <article class="admin-card admin-cliente-servicios-card">
@@ -218,7 +215,6 @@
             <span class="admin-kicker">Servicios por facturar</span>
         </div>
         <h2>$ {{ servicios_por_facturar_total|floatformat:2 }}</h2>
-        <p>Sumatoria de servicios pendientes de facturación.</p>
     </article>
 </section>
 
