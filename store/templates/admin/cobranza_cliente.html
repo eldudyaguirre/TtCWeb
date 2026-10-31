@@ -73,6 +73,13 @@
   <div id="cobRetencionContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando formulario…</div></div>
  </section>
 </div>
+<div class="cob-modal cob-retencion-modal" id="cobPagoModal" aria-hidden="true">
+ <div class="cob-modal-backdrop" data-cob-pago-close></div>
+ <section class="cob-modal-dialog cob-retencion-dialog" role="dialog" aria-modal="true" aria-labelledby="cobPagoTitle">
+  <header class="cob-modal-header"><div><span class="admin-kicker">Cuentas por cobrar</span><h2 id="cobPagoTitle">REGISTRAR PAGO</h2><p>Registro de abonos parciales o pagos totales</p></div><button type="button" class="cob-modal-close" data-cob-pago-close aria-label="Cerrar">×</button></header>
+  <div id="cobPagoContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando formulario de pago…</div></div>
+ </section>
+</div>
 <div class="cob-modal cob-factura-detalle-modal" id="cobFacturaDetalleModal" aria-hidden="true">
  <div class="cob-modal-backdrop" data-cob-detalle-close></div>
  <section class="cob-modal-dialog cob-factura-detalle-dialog" role="dialog" aria-modal="true" aria-labelledby="cobFacturaDetalleTitle">
@@ -99,7 +106,8 @@
  const trigger=document.getElementById('cobFacturasTrigger'), modal=document.getElementById('cobFacturasModal'), content=document.getElementById('cobFacturasContent');
  const detalleModal=document.getElementById('cobFacturaDetalleModal'), detalleContent=document.getElementById('cobFacturaDetalleContent');
  const retModal=document.getElementById('cobRetencionModal'), retContent=document.getElementById('cobRetencionContent');
- if(!trigger||!modal||!content||!detalleModal||!detalleContent||!retModal||!retContent)return;
+ const pagoModal=document.getElementById('cobPagoModal'), pagoContent=document.getElementById('cobPagoContent');
+ if(!trigger||!modal||!content||!detalleModal||!detalleContent||!retModal||!retContent||!pagoModal||!pagoContent)return;
  const openDetalle=async url=>{
   detalleModal.classList.add('is-open');detalleModal.setAttribute('aria-hidden','false');
   detalleContent.innerHTML='<div class="cob-modal-loading">Cargando detalle de factura…</div>';
@@ -111,11 +119,60 @@
  };
  const closeDetalle=()=>{detalleModal.classList.remove('is-open');detalleModal.setAttribute('aria-hidden','true');};
  const closeRet=()=>{retModal.classList.remove('is-open');retModal.setAttribute('aria-hidden','true');};
+ const closePago=()=>{pagoModal.classList.remove('is-open');pagoModal.setAttribute('aria-hidden','true');};
  const openRet=async url=>{
   retModal.classList.add('is-open');retModal.setAttribute('aria-hidden','false');
   retContent.innerHTML='<div class="cob-modal-loading">Cargando formulario de retención…</div>';
   try{const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});if(!r.ok)throw new Error();retContent.innerHTML=await r.text();initRetForm();}
   catch(e){retContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el formulario de retención.</p>';}
+ };
+ const openPago=async url=>{
+  pagoModal.classList.add('is-open');pagoModal.setAttribute('aria-hidden','false');
+  pagoContent.innerHTML='<div class="cob-modal-loading">Cargando formulario de pago…</div>';
+  try{const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});if(!r.ok)throw new Error();pagoContent.innerHTML=await r.text();initPagoForm();}
+  catch(e){pagoContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el formulario de pago.</p>';}
+ };
+ const initPagoForm=()=>{
+  const form=pagoContent.querySelector('#cobPagoForm');if(!form)return;
+  const method=form.querySelector('#pago-forma'), amount=form.querySelector('#pago-importe'), due=form.querySelector('#pago-vencimiento');
+  const toggle=()=>{
+   const m=method.value, bank=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA','CAJA'].includes(m), doc=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA'].includes(m), adv=m==='ANTICIPO';
+   form.querySelector('#pago-cuenta-wrap').hidden=!bank;
+   form.querySelector('#pago-documento-wrap').hidden=!doc;
+   form.querySelector('#pago-anticipo-wrap').hidden=!adv;
+   if(m==='NOTA DE CREDITO')form.querySelector('#pago-ayuda').textContent='Se aplicará el saldo disponible de notas de crédito del cliente.';
+   else if(m==='DESCUENTO')form.querySelector('#pago-ayuda').textContent='El descuento reducirá el saldo pendiente de la factura sin generar ingreso de caja o banco.';
+   else if(adv)form.querySelector('#pago-ayuda').textContent='El VB6 aplica el anticipo completo seleccionado, no permite abonos parciales de un anticipo.';
+   else form.querySelector('#pago-ayuda').textContent='El abono se aplicará al vencimiento seleccionado y actualizará el saldo de la factura y del cliente.';
+   recalc();
+  };
+  const recalc=()=>{
+   const selected=due.options[due.selectedIndex], dueBalance=Number(selected?.dataset.saldo)||0, payment=Math.max(0,Number(amount.value)||0);
+   form.querySelector('#pago-saldo-venc').value=dueBalance.toFixed(2);
+   amount.max=dueBalance.toFixed(2);
+   const advance=form.querySelector('#pago-anticipo'), advOpt=advance.options[advance.selectedIndex];
+   if(method.value==='ANTICIPO'&&advOpt?.dataset.saldo){amount.value=Number(advOpt.dataset.saldo).toFixed(2);}
+   const val=Math.max(0,Number(amount.value)||0);
+   const invoice=Number(form.querySelector('#pago-nuevo-saldo').dataset.original||form.querySelector('#pago-nuevo-saldo').textContent.replace(/[^\d.]/g,''))||0;
+   form.querySelector('#pago-nuevo-saldo').textContent='$ '+Math.max(0,invoice-val).toFixed(2);
+   form.querySelector('#pago-nuevo-venc').textContent='$ '+Math.max(0,dueBalance-val).toFixed(2);
+  };
+  const initial=form.querySelector('#pago-nuevo-saldo');initial.dataset.original=initial.textContent.replace(/[^\d.]/g,'');
+  method.addEventListener('change',toggle);amount.addEventListener('input',recalc);due.addEventListener('change',recalc);
+  form.querySelector('#pago-anticipo').addEventListener('change',recalc);
+  form.querySelectorAll('[data-cob-pago-close]').forEach(b=>b.addEventListener('click',closePago));
+  toggle();
+  form.addEventListener('submit',async e=>{
+   e.preventDefault();
+   const feedback=form.querySelector('#pago-feedback'),button=form.querySelector('#pago-guardar');
+   feedback.textContent='';button.disabled=true;button.textContent='Guardando…';
+   try{
+    const r=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'No se pudo registrar el pago.');
+    feedback.className='cob-pago-feedback is-success';feedback.textContent='Pago registrado correctamente.';
+    button.textContent='Registrado';setTimeout(()=>{closePago();load(window.location.href);},850);
+   }catch(err){feedback.className='cob-pago-feedback is-error';feedback.textContent=err.message||'Error al registrar el pago.';button.disabled=false;button.textContent='Registrar pago';}
+  });
  };
  const initRetForm=()=>{
   const form=retContent.querySelector('#cobRetencionForm');if(!form)return;
@@ -165,7 +222,7 @@
   if(action && content.contains(action)){
    const detail={action:action.dataset.facturaAction,factura:action.dataset.factura};
    content.dispatchEvent(new CustomEvent('cobranza:factura-action',{bubbles:true,detail}));
-   if(detail.action==='detalle' && action.dataset.url){openDetalle(action.dataset.url);} else if(detail.action==='retencion' && action.dataset.url){openRet(action.dataset.url);}
+   if(detail.action==='detalle' && action.dataset.url){openDetalle(action.dataset.url);} else if(detail.action==='retencion' && action.dataset.url){openRet(action.dataset.url);} else if(detail.action==='pago' && action.dataset.url){openPago(action.dataset.url);}
    content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
   }
@@ -193,6 +250,8 @@
  modal.querySelectorAll('[data-cob-facturas-close]').forEach(el=>el.addEventListener('click',close));
  detalleModal.querySelectorAll('[data-cob-detalle-close]').forEach(el=>el.addEventListener('click',closeDetalle));
  retModal.querySelectorAll('[data-cob-ret-close]').forEach(el=>el.addEventListener('click',closeRet));
+ pagoModal.querySelectorAll('[data-cob-pago-close]').forEach(el=>el.addEventListener('click',closePago));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pagoModal.classList.contains('is-open'))closePago();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detalleModal.classList.contains('is-open'))closeDetalle();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
 })();
