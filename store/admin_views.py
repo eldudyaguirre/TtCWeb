@@ -20193,6 +20193,29 @@ def admin_cliente(request, ruc):
             )
             db_error = f'Error consultando datos: {exc}'
 
+    # Sumar únicamente preitefac de prefactura para el RUC seleccionado.
+    servicios_por_facturar_total = Decimal('0.00')
+    ruc_cliente = str(cliente.ruccedcli).strip()
+    if db_status == 'Conectada':
+        try:
+            with client_connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT COALESCE(SUM(COALESCE(preitefac, 0)), 0)
+                    FROM public.prefactura
+                    WHERE TRIM(COALESCE(ruc::text, '')) = %s
+                    """,
+                    [ruc_cliente],
+                )
+                servicios_por_facturar_total = Decimal(str(cursor.fetchone()[0] or 0))
+        except Exception as exc:
+            client_connection.rollback()
+            import logging
+            logging.getLogger(__name__).exception(
+                'Error consultando servicios por facturar | RUC=%s', ruc_cliente
+            )
+            db_error = f'No se pudo consultar servicios por facturar: {exc}'
+
     # Estado de los documentos legales del cliente.
     # Esta es la definición efectiva de admin_cliente (el archivo conserva
     # definiciones históricas), por lo que el contexto debe construirse aquí.
@@ -20233,6 +20256,7 @@ def admin_cliente(request, ruc):
             'db_name': db_name,
             'db_status': db_status,
             'db_error': db_error,
+            'servicios_por_facturar_total': servicios_por_facturar_total,
             'conciliacion': conciliacion,
             'certificado_ruc_exists': certificado_ruc_exists,
             'documentos_legales': documentos_legales,
