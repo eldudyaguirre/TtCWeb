@@ -240,11 +240,21 @@ def admin_cobranza_cliente(request, ruc):
                 )
                 columnas_serv = [col[0] for col in cursor.description]
                 servicios_pendientes = [dict(zip(columnas_serv, fila)) for fila in cursor.fetchall()]
-                resumen_servicios["cantidad"] = len(servicios_pendientes)
-                resumen_servicios["total"] = sum(
-                    (Decimal(str(item.get("total") or 0)) for item in servicios_pendientes),
-                    Decimal("0.00"),
+
+                # El resumen debe considerar todos los registros de prefactura, no solo
+                # los 500 que se muestran en la tabla.
+                cursor.execute(
+                    """
+                    SELECT COUNT(*),
+                           COALESCE(SUM(COALESCE(canfactur, 0) * COALESCE(preitefac, 0)), 0)
+                    FROM public.prefactura
+                    WHERE ruc = %s
+                    """,
+                    [cliente.ruccedcli],
                 )
+                cantidad_servicios, total_servicios = cursor.fetchone()
+                resumen_servicios["cantidad"] = int(cantidad_servicios or 0)
+                resumen_servicios["total"] = Decimal(str(total_servicios or 0))
         except Exception:
             # Una base que aún no tenga prefactura no debe impedir consultar las facturas.
             conexion.rollback()
