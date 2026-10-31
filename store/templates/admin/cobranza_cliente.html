@@ -66,6 +66,13 @@
 
 
 
+<div class="cob-modal cob-retencion-modal" id="cobRetencionModal" aria-hidden="true">
+ <div class="cob-modal-backdrop" data-cob-ret-close></div>
+ <section class="cob-modal-dialog cob-retencion-dialog" role="dialog" aria-modal="true" aria-labelledby="cobRetencionTitle">
+  <header class="cob-modal-header"><div><span class="admin-kicker">Cuentas por cobrar</span><h2 id="cobRetencionTitle">REGISTRAR RETENCIÓN</h2><p>Registro de retención recibida del cliente</p></div><button type="button" class="cob-modal-close" data-cob-ret-close aria-label="Cerrar">×</button></header>
+  <div id="cobRetencionContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando formulario…</div></div>
+ </section>
+</div>
 <div class="cob-modal cob-factura-detalle-modal" id="cobFacturaDetalleModal" aria-hidden="true">
  <div class="cob-modal-backdrop" data-cob-detalle-close></div>
  <section class="cob-modal-dialog cob-factura-detalle-dialog" role="dialog" aria-modal="true" aria-labelledby="cobFacturaDetalleTitle">
@@ -91,7 +98,8 @@
 (function(){
  const trigger=document.getElementById('cobFacturasTrigger'), modal=document.getElementById('cobFacturasModal'), content=document.getElementById('cobFacturasContent');
  const detalleModal=document.getElementById('cobFacturaDetalleModal'), detalleContent=document.getElementById('cobFacturaDetalleContent');
- if(!trigger||!modal||!content||!detalleModal||!detalleContent)return;
+ const retModal=document.getElementById('cobRetencionModal'), retContent=document.getElementById('cobRetencionContent');
+ if(!trigger||!modal||!content||!detalleModal||!detalleContent||!retModal||!retContent)return;
  const openDetalle=async url=>{
   detalleModal.classList.add('is-open');detalleModal.setAttribute('aria-hidden','false');
   detalleContent.innerHTML='<div class="cob-modal-loading">Cargando detalle de factura…</div>';
@@ -102,6 +110,43 @@
   }catch(e){detalleContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el detalle de la factura. Inténtalo nuevamente.</p>';}
  };
  const closeDetalle=()=>{detalleModal.classList.remove('is-open');detalleModal.setAttribute('aria-hidden','true');};
+ const closeRet=()=>{retModal.classList.remove('is-open');retModal.setAttribute('aria-hidden','true');};
+ const openRet=async url=>{
+  retModal.classList.add('is-open');retModal.setAttribute('aria-hidden','false');
+  retContent.innerHTML='<div class="cob-modal-loading">Cargando formulario de retención…</div>';
+  try{const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});if(!r.ok)throw new Error();retContent.innerHTML=await r.text();initRetForm();}
+  catch(e){retContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el formulario de retención.</p>';}
+ };
+ const initRetForm=()=>{
+  const form=retContent.querySelector('#cobRetencionForm');if(!form)return;
+  const calc=()=>{
+   let total=0;
+   form.querySelectorAll('[data-base]').forEach(base=>{
+    const key=base.dataset.base, rate=form.querySelector('[data-rate="'+key+'"]'), out=form.querySelector('[data-value="'+key+'"]');
+    const val=Math.round((Math.max(0,Number(base.value)||0)*(Math.max(0,Number(rate?.value)||0))/100+Number.EPSILON)*100)/100;
+    if(out)out.textContent=val.toFixed(2);total+=val;
+   });
+   total=Math.round((total+Number.EPSILON)*100)/100;
+   form.querySelector('#retTotal').textContent=total.toFixed(2);
+   const saldo=Number(form.querySelector('#retSaldo')?.value)||0;
+   form.querySelector('#retNuevoSaldo').value=Math.max(0,saldo-total).toFixed(2);
+  };
+  form.addEventListener('input',calc);calc();
+  form.querySelectorAll('[data-cob-ret-close]').forEach(b=>b.addEventListener('click',closeRet));
+  form.addEventListener('submit',async e=>{
+   e.preventDefault();
+   const feedback=form.querySelector('#retFeedback'),button=form.querySelector('#retGuardar');
+   feedback.textContent='';button.disabled=true;button.textContent='Guardando…';
+   try{
+    const r=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data=await r.json();
+    if(!r.ok||!data.ok)throw new Error(data.error||'No se pudo registrar la retención.');
+    feedback.className='cob-ret-feedback is-success';feedback.textContent='Retención registrada correctamente.';
+    button.textContent='Registrada';
+    setTimeout(()=>{closeRet();load(window.location.href);},900);
+   }catch(err){feedback.className='cob-ret-feedback is-error';feedback.textContent=err.message||'Error al registrar la retención.';button.disabled=false;button.textContent='Registrar retención';}
+  });
+ };
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
  content.addEventListener('click',function(e){
   const trigger=e.target.closest('.cob-actions-trigger');
@@ -120,7 +165,7 @@
   if(action && content.contains(action)){
    const detail={action:action.dataset.facturaAction,factura:action.dataset.factura};
    content.dispatchEvent(new CustomEvent('cobranza:factura-action',{bubbles:true,detail}));
-   if(detail.action==='detalle' && action.dataset.url){openDetalle(action.dataset.url);}
+   if(detail.action==='detalle' && action.dataset.url){openDetalle(action.dataset.url);} else if(detail.action==='retencion' && action.dataset.url){openRet(action.dataset.url);}
    content.querySelectorAll('.cob-actions-dropdown').forEach(m=>m.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
   }
@@ -147,6 +192,7 @@
  trigger.addEventListener('click',async()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');await load(trigger.dataset.url);});
  modal.querySelectorAll('[data-cob-facturas-close]').forEach(el=>el.addEventListener('click',close));
  detalleModal.querySelectorAll('[data-cob-detalle-close]').forEach(el=>el.addEventListener('click',closeDetalle));
+ retModal.querySelectorAll('[data-cob-ret-close]').forEach(el=>el.addEventListener('click',closeRet));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detalleModal.classList.contains('is-open'))closeDetalle();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
 })();
@@ -263,6 +309,11 @@
 #cobServiciosContent .cob-table{min-width:850px}
 #cobServiciosContent .cob-table-wrap{max-height:55vh;overflow:auto}
 #cobServiciosContent .cob-table thead{position:sticky;top:0;z-index:1}
+.cob-retencion-modal{z-index:1400}.cob-retencion-modal .cob-modal-backdrop{z-index:1400}.cob-retencion-dialog{z-index:1401;width:min(1050px,97vw);max-height:93vh}#cobRetencionContent{overflow:auto;max-height:calc(93vh - 100px)}
+.cob-ret-section{padding:16px 0;border-bottom:1px solid #e6edf0}.cob-ret-factura-head{display:flex;justify-content:space-between;gap:20px;background:#f4f9fa;border:1px solid #dce8ec;border-radius:10px;padding:16px}.cob-ret-factura-head>div{display:grid;gap:5px}.cob-ret-factura-head span{font-size:10px;font-weight:800;letter-spacing:.08em;color:#0797a5}.cob-ret-factura-head strong{color:#213d4b}.cob-ret-factura-head small{color:#647987}
+.cob-ret-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.cob-ret-summary label,.cob-ret-dates label{display:grid;gap:6px;font-size:12px;font-weight:700;color:#526875}.cob-ret-summary input,.cob-ret-dates input,.cob-ret-table input{width:100%;min-width:0;box-sizing:border-box;border:1px solid #d5e1e6;border-radius:7px;padding:9px;font:inherit;color:#263f4c;background:#fff}.cob-ret-summary input[readonly]{background:#f6f9fa}.cob-ret-summary .cob-ret-new-balance input{font-weight:800;color:#078f9d;background:#eaf8f8}
+.cob-ret-dates{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:14px}.cob-ret-section h3{font-size:13px;color:#203b48;margin:6px 0 12px}.cob-ret-table-wrap{overflow:auto;border:1px solid #dce6ea;border-radius:9px;margin-bottom:18px}.cob-ret-table{width:100%;border-collapse:collapse;min-width:620px}.cob-ret-table th{background:#233944;color:#fff;text-align:left;padding:10px;font-size:11px}.cob-ret-table td{padding:8px;border-bottom:1px solid #edf1f3}.cob-ret-table tbody th{background:#f0f8f8;color:#23414c}.cob-ret-table output{display:block;text-align:right;font-weight:700;padding:8px;color:#087f8a}.cob-ret-total{display:flex;justify-content:flex-end;align-items:center;gap:24px;background:#eaf8f8;border-radius:9px;padding:14px 18px}.cob-ret-total span{font-weight:800;color:#23414c}.cob-ret-total strong{font-size:22px;color:#078f9d}.cob-ret-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:18px}.cob-ret-actions button{border-radius:8px;padding:11px 16px;border:1px solid #d5e1e6;cursor:pointer;font-weight:700}.cob-ret-actions .cob-btn-primary{background:#109ba7;color:white;border-color:#109ba7}.cob-ret-actions button:disabled{opacity:.6;cursor:wait}.cob-ret-feedback{margin-top:12px;font-size:13px}.cob-ret-feedback.is-error,.cob-ret-error{background:#fff0f1;color:#a51f2b;border-radius:8px;padding:12px}.cob-ret-feedback.is-success{color:#087c4a;background:#e9f8ef;padding:12px;border-radius:8px}
+@media(max-width:720px){.cob-ret-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.cob-ret-dates{grid-template-columns:1fr}.cob-ret-factura-head{flex-direction:column}}
 .cob-factura-detalle-modal{z-index:1300}
 .cob-factura-detalle-modal .cob-modal-backdrop{z-index:1300}
 .cob-factura-detalle-dialog{z-index:1301;width:min(1200px,97vw);max-height:92vh}
