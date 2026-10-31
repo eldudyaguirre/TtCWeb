@@ -1,5 +1,26 @@
 {% extends "admin/base.html" %}
-{% block title %}{{ cliente.nomclient }} | Administración TotalCounts{% endblock %}
+{% block title %}{{ cliente.nomclient }} | Administración TotalCounts<style>
+/* Las tres tarjetas principales permanecen en una sola fila, también en móvil. */
+.admin-client-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:18px;
+    align-items:stretch;
+}
+.admin-client-grid>.admin-card{min-width:0}
+.admin-cliente-servicios-card{border-top:3px solid #1599a5}
+.admin-cliente-servicios-card h2{overflow-wrap:anywhere}
+@media(max-width:700px){
+    .admin-client-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .admin-client-grid>.admin-card{padding:12px 9px;border-radius:12px}
+    .admin-client-grid .admin-kicker{font-size:9px;line-height:1.25;letter-spacing:.04em}
+    .admin-client-grid>.admin-card h2{font-size:clamp(13px,3.5vw,20px);line-height:1.25;margin:8px 0}
+    .admin-client-grid>.admin-card p{font-size:10px;line-height:1.35}
+    .admin-client-grid .admin-module-button{font-size:10px;white-space:normal}
+}
+</style>
+
+{% endblock %}
 
 {% block content %}
 <div class="admin-breadcrumb"><a class="admin-new-client-button admin-back-button" href="{% url 'admin_clientes' %}"><span aria-hidden="true">←</span> Clientes</a></div>
@@ -35,6 +56,12 @@
         <h2>$ {{ cliente.salcuenta|floatformat:2 }}</h2>
         <p>Saldo registrado en BDatos.</p>
         <a href="#" class="admin-module-button">Cobranza <small>Próximamente</small></a>
+    </article>
+
+    <article class="admin-card admin-cliente-servicios-card">
+        <span class="admin-kicker">Servicios por facturar</span>
+        <h2>$ {{ servicios_por_facturar_total|floatformat:2 }}</h2>
+        <p>Sumatoria de servicios pendientes de facturación.</p>
     </article>
 </section>
 
