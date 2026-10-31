@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="admin-breadcrumb">
-    <a href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}">← {{ cliente.nomclient }}</a>
+    <a class="admin-new-client-button admin-back-button" href="{% url 'admin_cliente' ruc=cliente.ruccedcli %}"><span aria-hidden="true">←</span> {{ cliente.nomclient }}</a>
 </div>
 
 <div class="admin-page-header">
@@ -391,25 +391,40 @@
 }
 @media(max-width:600px){
     .admin-laboral-grid{
-        grid-template-columns:1fr;
-        gap:12px;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:10px;
         margin-top:16px;
     }
     .admin-laboral-card{
-        min-height:112px;
-        padding:17px;
+        min-height:145px;
+        padding:12px 10px;
+        gap:8px;
         border-radius:13px;
     }
     .admin-laboral-icon{
-        width:46px;
-        height:46px;
-        flex-basis:46px;
-        font-size:19px;
+        width:38px;
+        height:38px;
+        flex-basis:38px;
+        border-radius:10px;
+        font-size:17px;
+    }
+    .admin-laboral-copy{
+        gap:5px;
+        padding-right:12px;
     }
     .admin-laboral-copy strong{
-        font-size:14px;
+        font-size:12px;
+        line-height:1.3;
+        overflow-wrap:anywhere;
     }
     .admin-laboral-copy span{
+        font-size:10px;
+        line-height:1.35;
+        overflow-wrap:anywhere;
+    }
+    .admin-laboral-arrow,
+    .admin-laboral-card .admin-documentacion-arrow{
+        right:8px;
         font-size:11px;
     }
 }
