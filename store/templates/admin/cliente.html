@@ -490,7 +490,7 @@
                 {% if cliente.tipo_contribuyente == 'PERSONA JURIDICA' %}
                 <div class="admin-modal-field admin-modal-field-full">
                     <label for="cliente-rep-legal">Representante Legal</label>
-                    <input id="cliente-rep-legal" name="rep_legal" type="text" value="{{ cliente.rep_legal|default:'' }}" readonly>
+                    <input id="cliente-rep-legal" name="rep_legal" type="text" value="{{ cliente.rep_legal|default:'' }}">
                 </div>
                 {% endif %}
             </div>
