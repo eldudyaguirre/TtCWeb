@@ -15,7 +15,7 @@ from .views import _cliente_db
 
 @admin_required
 def admin_trabajadores_pdf(request, ruc):
-    """Genera el PDF del listado de trabajadores activos del cliente seleccionado."""
+    """Genera el PDF del listado de trabajadores del cliente seleccionado."""
     cliente = get_object_or_404(Cliente, pk=ruc)
 
     sql = """
@@ -28,7 +28,7 @@ def admin_trabajadores_pdf(request, ruc):
             fecentrada,
             sueldo
         FROM trabajadores
-        WHERE activo = TRUE
+        WHERE (COALESCE((SELECT UPPER(TRIM(trabacti::text)) FROM parametros LIMIT 1), 'NO') = 'SI' OR activo = TRUE)
           AND COALESCE(TRIM(comisionsec::text), '') <> 'SERVICIO DOMESTICO'
         ORDER BY nombres, cedula
     """
@@ -89,7 +89,7 @@ def admin_trabajadores_pdf(request, ruc):
 
     elements = [
         Paragraph('LISTADO DE TRABAJADORES', titulo),
-        Paragraph('TRABAJADORES ACTIVOS', cabecera),
+        Paragraph('TRABAJADORES', cabecera),
         Paragraph(
             f'{cliente.nomclient} | RUC. {cliente.ruccedcli}',
             cabecera,
@@ -134,7 +134,7 @@ def admin_trabajadores_pdf(request, ruc):
     elements.append(Spacer(1, 8))
     elements.append(
         Paragraph(
-            f'Total de trabajadores activos: {len(filas)}',
+            f'Total de trabajadores listados: {len(filas)}',
             tabla,
         )
     )
