@@ -7,7 +7,7 @@
     </form>
     <div class="cob-table-wrap">
         <table class="cob-table">
-            <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Retenciones</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
             <tbody>
             {% for factura in facturas %}
                 <tr>
@@ -15,7 +15,6 @@
                     <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
                     <td>{% if factura.vencida %}<span class="cob-date-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
                     <td class="cob-money">$ {{ factura.total|floatformat:2 }}</td>
-                    <td class="cob-money">$ {{ factura.retenciones|floatformat:2 }}</td>
                     <td class="cob-money cob-money-balance">$ {{ factura.saldo|floatformat:2 }}</td>
                     <td><span class="cob-badge {% if factura.vencida %}cob-badge-overdue{% else %}cob-badge-pending{% endif %}">{% if factura.vencida %}Vencida{% else %}Pendiente{% endif %}</span></td>
                 </tr>
