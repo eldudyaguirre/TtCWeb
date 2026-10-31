@@ -302,7 +302,7 @@ CREATE TABLE public.clientes (
     telfaxcli character varying(20),
     fecnacimi timestamp without time zone,
     edaclient bigint,
-    estcivcli character varying(20),
+    rep_legal character varying(100),
     ocuclient character varying(50),
     antperson text,
     limcredit double precision,
