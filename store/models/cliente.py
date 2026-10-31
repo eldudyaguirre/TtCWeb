@@ -17,7 +17,7 @@ class Cliente(models.Model):
     teldomcli = models.CharField(max_length=100, blank=True, db_column='teldomcli')
     teloficli = models.CharField(max_length=100, blank=True, db_column='teloficli')
     telcelcli = models.CharField(max_length=100, blank=True, db_column='telcelcli')
-    estcivcli = models.CharField(max_length=100, blank=True, db_column='estcivcli')
+    rep_legal = models.CharField(max_length=100, blank=True, db_column='rep_legal')
     tipo_contribuyente = models.CharField(max_length=255, blank=True, db_column='tipo_contribuyente')
     clase_contribuyente = models.CharField(max_length=255, blank=True, db_column='clase_contribuyente')
     clavesri = models.CharField(max_length=255, blank=True, db_column='clavesri')
