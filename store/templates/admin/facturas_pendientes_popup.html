@@ -11,7 +11,7 @@
             <tbody>
             {% for factura in facturas %}
                 <tr>
-                    <td><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong><small>{{ factura.ruc_deudor }}</small></td>
+                    <td><strong>{{ factura.numfactur }}</strong><small>{{ factura.ruc_deudor }}</small></td>
                     <td>{{ factura.nombre_deudor }}</td>
                     <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
                     <td>{% if factura.vencida %}<span class="cob-date-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
