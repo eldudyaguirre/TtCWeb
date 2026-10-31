@@ -12,6 +12,7 @@ from . import parametros_cliente_admin_views
 from .admin_trabajadores_pdf import admin_trabajadores_pdf
 from . import conta_certificado_views
 from . import usuarios_cliente_admin_views
+from . import cobranza_cliente_views
 
 
 urlpatterns = [
@@ -59,6 +60,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/', admin_views.admin_cliente, name='admin_cliente'),
     path('totalcounts/clientes/<str:ruc>/configuracion/', parametros_cliente_admin_views.admin_parametros_cliente, name='admin_parametros_cliente'),
     path('totalcounts/clientes/<str:ruc>/usuarios/', usuarios_cliente_admin_views.admin_usuarios_cliente, name='admin_usuarios_cliente'),
+    path('totalcounts/clientes/<str:ruc>/cobranza/', cobranza_cliente_views.admin_cobranza_cliente, name='admin_cobranza_cliente'),
     path('totalcounts/clientes/<str:ruc>/certificado-ruc/', admin_views.admin_cliente_certificado_ruc, name='admin_cliente_certificado_ruc'),
     path('totalcounts/clientes/<str:ruc>/obtener-ruc-sri/', conta_certificado_views.admin_cliente_obtener_ruc_sri, name='admin_cliente_obtener_ruc_sri'),
     path('totalcounts/clientes/<str:ruc>/obtener-ruc-sri/estado/', conta_certificado_views.admin_cliente_estado_ruc_sri, name='admin_cliente_estado_ruc_sri'),
