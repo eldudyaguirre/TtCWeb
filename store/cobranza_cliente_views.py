@@ -92,7 +92,7 @@ def admin_cobranza_cliente(request, ruc):
 
             # La cartera pendiente se calcula desde cuentascobrar, que es la fuente contable
             # de los saldos por cobrar. No se calcula desde facturas.valsalfac.
-            filtros_cxc = ["TRIM(COALESCE(cc.ruccedcli, '')) = %s", "UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'"]
+            filtros_cxc = ["LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')", "UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'"]
             parametros_cxc = [cliente.ruccedcli]
             if fecha_desde:
                 filtros_cxc.append("cc.fecinicio::date >= %s::date")
@@ -105,7 +105,7 @@ def admin_cobranza_cliente(request, ruc):
                     "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(cc.numfactur::text, '') ILIKE %s)"
                 )
                 termino = f"%{busqueda}%"
-                parametros_cxc.extend([termino, termino, termino])
+                parametros_cxc.extend([termino, termino])
             where_cxc = " AND ".join(filtros_cxc)
 
             cursor.execute(
@@ -134,7 +134,7 @@ def admin_cobranza_cliente(request, ruc):
                     """
                     SELECT COALESCE(SUM(COALESCE(rc.totretenc, 0)), 0)
                     FROM public.retencclient rc
-                    WHERE rc.ruccedcli = %s
+                    WHERE LPAD(TRIM(COALESCE(rc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
                       AND EXISTS (
                           SELECT 1 FROM public.cuentascobrar cc
                           WHERE cc.ruccedcli = rc.ruccedcli
