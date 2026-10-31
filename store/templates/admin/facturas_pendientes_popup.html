@@ -35,7 +35,7 @@
                             <div class="cob-actions-dropdown" hidden>
                                 <button type="button" data-factura-action="detalle" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_detalle_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Detalle</button>
                                 <button type="button" data-factura-action="pago" data-factura="{{ factura.numfactur }}">Registrar pago</button>
-                                <button type="button" data-factura-action="retencion" data-factura="{{ factura.numfactur }}">Registrar retención</button>
+                                <button type="button" data-factura-action="retencion" data-factura="{{ factura.numfactur }}" data-url="{% url 'admin_factura_retencion_cobranza' ruc=cliente.ruccedcli numfactur=factura.numfactur %}">Registrar retención</button>
                             </div>
                         </div>
                     </td>
