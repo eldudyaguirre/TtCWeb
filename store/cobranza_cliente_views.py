@@ -699,7 +699,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
             num_documento=request.POST.get("numero_documento","").strip()
             num_anticipo=request.POST.get("numero_anticipo","").strip()
             vendedor=request.POST.get("cobrador","").strip()[:50]
-            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"} and not codigo_banco:
+            if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"} and not codigo_banco:
                 raise ValueError("Selecciona la cuenta bancaria o caja correspondiente.")
             if metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"} and not num_documento:
                 raise ValueError("Ingresa el número de transferencia o cheque.")
@@ -775,7 +775,7 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
                             SELECT %s,%s,%s,%s,%s,%s,'10',codcuecon,'N/A',%s,nomclient
                             FROM public.clientes LEFT JOIN public.cajas ON codcaja='10' WHERE ruccedcli=%s
                         """,[numcom,nummov,fecha_pago,cliente.ruccedcli,importe,numfactur,referencia,cliente.ruccedcli])
-                    elif metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA"}:
+                    elif metodo in {"TRANSFERENCIA BANCARIA","CHEQUE A LA VISTA","CAJA"}:
                         cursor.execute("SELECT codcuenta,bancocta,saldocta,codcuecon FROM public.cuentasbancos WHERE codcuenta=%s FOR UPDATE",[codigo_banco])
                         banco=cursor.fetchone()
                         if not banco:
