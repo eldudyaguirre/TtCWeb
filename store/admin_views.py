@@ -1144,12 +1144,86 @@ def admin_cliente(request, ruc):
         cliente.telcelcli = request.POST.get('telcelcli', '').strip()
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
-        # Leer y guardar el representante legal de forma independiente para
-        # detectar si el navegador no está enviando el campo en el POST.
-        representante_legal = request.POST.get('rep_legal')
-        if representante_legal is None:
-            messages.error(request, 'No se recibió el campo Representante Legal del formulario. Recarga la página e inténtalo nuevamente.')
+        # Leer el valor enviado y confirmar que el navegador incluyó el campo.
+        valores_rep_legal = request.POST.getlist('rep_legal')
+        if not valores_rep_legal:
+            campos_recibidos = ', '.join(sorted(request.POST.keys()))
+            messages.error(
+                request,
+                'Django no recibió el campo Representante Legal. '
+                f'Campos recibidos: {campos_recibidos or "(ninguno)"}.',
+            )
             return redirect('admin_cliente', ruc=cliente.ruccedcli)
+
+        representante_legal = valores_rep_legal[-1].strip()
+        cliente.rep_legal = representante_legal
+
+        # Actualizar los datos generales.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE public.clientes
+                SET dirclient = %s,
+                    teldomcli = %s,
+                    teloficli = %s,
+                    telcelcli = %s,
+                    corelectr = %s,
+                    ocuclient = %s
+                WHERE ruccedcli = %s
+                """,
+                [
+                    cliente.dirclient,
+                    cliente.teldomcli,
+                    cliente.teloficli,
+                    cliente.corelectr,
+                    cliente.ocuclient,
+                    cliente.ruccedcli,
+                ],
+            )
+            filas_actualizadas = cursor.rowcount
+
+        # Actualizar exclusivamente el representante legal.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE public.clientes
+                SET rep_legal = %s
+                WHERE ruccedcli = %s
+                RETURNING ruccedcli
+                """,
+                [representante_legal, cliente.ruccedcli],
+            )
+            fila_rep_legal = cursor.fetchone()
+
+        # Volver a consultar la fila después de cerrar el cursor/operación.
+        # Esta es la comprobación del valor que realmente quedó almacenado.
+        cliente.refresh_from_db()
+        representante_en_bd = cliente.rep_legal or ''
+
+        if not filas_actualizadas:
+            messages.error(
+                request,
+                'No se actualizaron los datos generales: no se encontró el cliente en public.clientes.',
+            )
+        elif fila_rep_legal is None:
+            messages.error(
+                request,
+                'No se encontró la fila del cliente al guardar Representante Legal. '
+                f'RUC utilizado: {cliente.ruccedcli!r}.',
+            )
+        elif representante_en_bd != representante_legal:
+            messages.error(
+                request,
+                'PostgreSQL no conservó el valor de Representante Legal después de guardar. '
+                f'Valor recibido por Django: {representante_legal!r}. '
+                f'Valor leído nuevamente desde public.clientes: {representante_en_bd!r}.',
+            )
+        else:
+            messages.success(
+                request,
+                'Datos del cliente y Representante Legal guardados y verificados en PostgreSQL.',
+            )
+        return redirect('admin_cliente', ruc=cliente.ruccedcli)
         representante_legal = representante_legal.strip()
         cliente.rep_legal = representante_legal
 
