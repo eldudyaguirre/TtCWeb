@@ -890,6 +890,8 @@ def admin_cliente_nuevo(request):
             'telcelcli': request.POST.get('telcelcli', '').strip(),
             'telfaxcli': request.POST.get('telfaxcli', '').strip(),
             'corelectr': request.POST.get('corelectr', '').strip(),
+            'tipo_contribuyente': request.POST.get('tipo_contribuyente', '').strip().upper(),
+            'rep_legal': request.POST.get('rep_legal', '').strip(),
             'ocuclient': request.POST.get('ocuclient', '').strip(),
             'antperson': request.POST.get('antperson', '').strip(),
             'semensual': request.POST.get('semensual', 'Mensual').strip(),
@@ -909,6 +911,12 @@ def admin_cliente_nuevo(request):
             errores.append('La razón social o nombre es obligatorio.')
         if not datos['dirclient']:
             errores.append('La dirección es obligatoria.')
+        if datos['tipo_contribuyente'] not in ('PERSONA NATURAL', 'PERSONA JURIDICA'):
+            errores.append('Selecciona si el contribuyente es PERSONA NATURAL o PERSONA JURIDICA.')
+        elif datos['tipo_contribuyente'] == 'PERSONA JURIDICA' and not datos['rep_legal']:
+            errores.append('Ingresa el Representante Legal para las personas jurídicas.')
+        elif datos['tipo_contribuyente'] == 'PERSONA NATURAL':
+            datos['rep_legal'] = ''
         if datos['semensual'] not in ('Mensual', 'Semestral', 'Anual'):
             errores.append('Selecciona una periodicidad válida.')
         if datos['diadeclaracion'] and datos['diadeclaracion'] not in {
@@ -955,12 +963,13 @@ def admin_cliente_nuevo(request):
                         porretfuebie, porretivabie, porretfueser, porretivaser,
                         salvencid1, salvencid2, salvencid3, salvencid4, tarifa,
                         corelectr, codcueant, codcuencr, diadeclaracion, semensual,
-                        automatizado, activo, acceso_ttcweb
+                        automatizado, activo, acceso_ttcweb,
+                        tipo_contribuyente, rep_legal
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         0, 0, 0, %s, %s, %s, %s, %s, %s,
                         0, 0, 0, 0, %s, %s, %s, %s, %s, %s,
-                        %s, %s, FALSE
+                        %s, %s, FALSE, %s, %s
                     )
                     """,
                     [
@@ -978,6 +987,8 @@ def admin_cliente_nuevo(request):
                         datos['semensual'],
                         request.POST.get('automatizado') == 'on',
                         request.POST.get('activo') == 'on',
+                        datos['tipo_contribuyente'],
+                        datos['rep_legal'] or ' ',
                     ],
                 )
             messages.success(request, 'Cliente registrado y base de datos preparada correctamente.')
