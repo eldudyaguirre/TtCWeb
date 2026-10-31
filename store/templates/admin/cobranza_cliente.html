@@ -136,7 +136,7 @@
   const form=pagoContent.querySelector('#cobPagoForm');if(!form)return;
   const method=form.querySelector('#pago-forma'), amount=form.querySelector('#pago-importe'), due=form.querySelector('#pago-vencimiento');
   const toggle=()=>{
-   const m=method.value, bank=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA','CAJA'].includes(m), doc=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA'].includes(m), adv=m==='ANTICIPO';
+   const m=method.value, bank=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA'].includes(m), doc=['CHEQUE A LA VISTA','TRANSFERENCIA BANCARIA'].includes(m), adv=m==='ANTICIPO';
    form.querySelector('#pago-cuenta-wrap').hidden=!bank;
    form.querySelector('#pago-documento-wrap').hidden=!doc;
    form.querySelector('#pago-anticipo-wrap').hidden=!adv;
