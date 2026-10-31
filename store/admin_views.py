@@ -1144,11 +1144,18 @@ def admin_cliente(request, ruc):
         cliente.telcelcli = request.POST.get('telcelcli', '').strip()
         cliente.corelectr = request.POST.get('corelectr', '').strip()
         cliente.ocuclient = request.POST.get('ocuclient', '').strip()
-        cliente.rep_legal = request.POST.get('rep_legal', '').strip()
-        cliente.save(update_fields=[
-            'dirclient', 'teldomcli', 'teloficli',
-            'telcelcli', 'corelectr', 'ocuclient', 'rep_legal',
-        ])
+        rep_legal = request.POST.get('rep_legal', '').strip()
+        # Guardar explícitamente en la columna rep_legal de public.clientes.
+        Cliente.objects.filter(pk=cliente.pk).update(
+            dirclient=cliente.dirclient,
+            teldomcli=cliente.teldomcli,
+            teloficli=cliente.teloficli,
+            telcelcli=cliente.telcelcli,
+            corelectr=cliente.corelectr,
+            ocuclient=cliente.ocuclient,
+            rep_legal=rep_legal,
+        )
+        cliente.refresh_from_db()
         messages.success(request, 'Datos básicos del cliente actualizados correctamente.')
         return redirect('admin_cliente', ruc=cliente.ruccedcli)
 
