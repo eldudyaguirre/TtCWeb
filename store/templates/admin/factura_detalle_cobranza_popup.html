@@ -1,0 +1,52 @@
+{% if error %}
+<div class="cob-detail-error">{{ error }}</div>
+{% elif factura %}
+<div class="cob-invoice-detail">
+    <div class="cob-invoice-detail-top">
+        <div><span class="cob-detail-label">FACTURA</span><strong>{{ factura.numserfac|default:"" }}-{{ factura.numfactur }}</strong></div>
+        <div><span class="cob-detail-label">Estado</span><strong>{{ factura.estpagfac|default:"—" }}</strong></div>
+    </div>
+    <div class="cob-invoice-detail-grid">
+        <div><span>Cliente</span><strong>{{ factura.nomclient|default:cliente.nomclient }}</strong></div>
+        <div><span>RUC / C.I.</span><strong>{{ factura.ruccedcli|default:cliente.ruccedcli }}</strong></div>
+        <div><span>Fecha de emisión</span><strong>{{ factura.fecfactur|date:"d/m/Y"|default:"—" }}</strong></div>
+        <div><span>Fecha de vencimiento</span><strong>{{ factura.fecvencim|date:"d/m/Y"|default:"—" }}</strong></div>
+        <div><span>Forma de pago</span><strong>{{ factura.forpagfac|default:"—" }}</strong></div>
+        <div><span>Observaciones</span><strong>{{ factura.observ|default:"—" }}</strong></div>
+    </div>
+    <div class="cob-detail-table-wrap">
+        <table class="cob-table cob-detail-table">
+            <thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio unitario</th><th>Descuento</th><th>Total</th></tr></thead>
+            <tbody>
+            {% for item in detalles %}
+                <tr>
+                    <td>{{ item.coditeinv|default:"—" }}</td>
+                    <td>{{ item.desiteinv|default:"—" }}</td>
+                    <td class="cob-money">{{ item.cantidad|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ item.precio|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ item.descuento|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ item.total|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="cob-empty">Esta factura no tiene líneas de detalle registradas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="cob-invoice-detail-bottom">
+        <div class="cob-invoice-notes">{% if factura.observ %}<span>Observaciones</span><p>{{ factura.observ }}</p>{% endif %}</div>
+        <div class="cob-invoice-totals">
+            <div><span>Subtotal</span><strong>$ {{ factura.subtotfac|floatformat:2 }}</strong></div>
+            <div><span>Descuento</span><strong>$ {{ factura.valdescue|floatformat:2 }}</strong></div>
+            <div><span>Subtotal bienes con IVA</span><strong>$ {{ factura.totbieiva|floatformat:2 }}</strong></div>
+            <div><span>Subtotal bienes sin IVA</span><strong>$ {{ factura.totbiesiniva|floatformat:2 }}</strong></div>
+            <div><span>Subtotal servicios con IVA</span><strong>$ {{ factura.totseriva|floatformat:2 }}</strong></div>
+            <div><span>Subtotal servicios sin IVA</span><strong>$ {{ factura.totsersiniva|floatformat:2 }}</strong></div>
+            <div><span>IVA ({{ factura.porivafac|floatformat:2 }}%)</span><strong>$ {{ factura.valivafac|floatformat:2 }}</strong></div>
+            <div class="cob-invoice-grand-total"><span>Total factura</span><strong>$ {{ factura.totfactur|floatformat:2 }}</strong></div>
+            <div><span>Abono inicial</span><strong>$ {{ factura.valpagini|floatformat:2 }}</strong></div>
+            <div class="cob-invoice-balance"><span>Saldo pendiente</span><strong>$ {{ saldo_pendiente|floatformat:2 }}</strong></div>
+        </div>
+    </div>
+</div>
+{% endif %}
