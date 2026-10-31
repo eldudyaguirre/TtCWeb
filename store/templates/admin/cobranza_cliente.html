@@ -51,11 +51,6 @@
         <span><strong>Facturas pendientes</strong><small>Consultar saldos, fechas y clientes</small></span>
         <span class="cob-arrow">›</span>
     </button>
-    <a class="cob-shortcut cob-shortcut-disabled" href="#proximamente-retenciones" aria-disabled="true">
-        <span class="cob-shortcut-icon"><i class="fi fi-rr-file-invoice"></i></span>
-        <span><strong>Retenciones</strong><small>Registro y consulta por factura</small></span>
-        <span class="cob-status">En preparación</span>
-    </a>
     <button type="button" class="cob-shortcut" id="cobServiciosTrigger" data-url="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-briefcase"></i></span>
         <span><strong>Servicios por facturar</strong><small>Servicios registrados que aún no se han facturado</small></span>
