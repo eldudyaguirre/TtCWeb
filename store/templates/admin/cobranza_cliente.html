@@ -680,6 +680,18 @@
 .cob-report-feedback.is-success{color:#087c4a}
 .cob-report-feedback.is-error{color:#b42332}
 .cob-report-email button:disabled{opacity:.55;cursor:not-allowed}
+
+.cob-report-totals{width:min(430px,100%);margin:14px 0 0 auto;border:1px solid #dce7ea;border-radius:10px;overflow:hidden;background:#fff}
+.cob-report-totals>div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 13px;border-bottom:1px solid #edf1f2;font-size:12px}
+.cob-report-totals>div:last-child{border-bottom:0}
+.cob-report-totals span{color:#526b75}
+.cob-report-totals strong{color:#294653;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cob-report-total-services{background:#f2f7f8}
+.cob-report-total-services span,.cob-report-total-services strong{font-weight:800}
+.cob-report-totals .cob-report-total-payable{padding:12px 13px;background:#e4f2f3;border-top:1px solid #159ba8}
+.cob-report-total-payable span,.cob-report-total-payable strong{color:#123f4c;font-weight:900}
+.cob-report-total-payable strong{font-size:17px}
+
 @media(max-width:720px){
  .cob-report-summary{grid-template-columns:1fr}
  .cob-report-intro{align-items:flex-start;flex-direction:column}
