@@ -508,9 +508,9 @@ def _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes):
         [codigo_mes],
     )
     item = cursor.fetchone()
-    if item is None:
+    if item is None or item[1] is None or not str(item[1]).strip():
         raise ValueError(
-            f"No existe el servicio mensual con código {codigo_mes} en el catálogo de items."
+            f"No existe un servicio con descripción válida para el código {codigo_mes} en el catálogo de items."
         )
 
     cursor.execute(
@@ -718,6 +718,15 @@ def admin_prefacturacion_mensual_generar(request):
                     consecutivo_final = None
                     nuevo_consecutivo = int(consecutivo)
 
+        logger.info(
+            "Prefacturación mensual %02d/%s: generados=%s consecutivos=%s-%s usuario=%s",
+            mes,
+            anio,
+            cantidad_generada,
+            consecutivo_inicial,
+            consecutivo_final,
+            usuario,
+        )
         return JsonResponse({
             "ok": True,
             "cantidad_generada": cantidad_generada,
