@@ -98,7 +98,7 @@ def _reporte_datos_cobranza(cliente):
         with conexion.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT numdetfac, fecha, coditeinv, desiteinv,
+                SELECT numdetfac, fecha, "año" AS anio, coditeinv, desiteinv,
                        COALESCE(canfactur, 0) AS cantidad,
                        COALESCE(preitefac, 0) AS precio,
                        COALESCE(canfactur, 0) * COALESCE(preitefac, 0) AS total
@@ -153,16 +153,22 @@ def _reporte_datos_cobranza(cliente):
 
 
 def _reporte_cobranza_pdf(cliente, datos):
-    """Construye el PDF adjuntable/descargable con las dos secciones de cobranza."""
+    """Genera el PDF de valores pendientes siguiendo el formato de referencia."""
     from io import BytesIO
     from xml.sax.saxutils import escape
 
+    from django.contrib.staticfiles import finders
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER, TA_RIGHT
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    azul = colors.HexColor("#003746")
+    azul_texto = colors.HexColor("#163d4a")
+    gris_linea = colors.HexColor("#d7e0e3")
+    gris_fondo = colors.HexColor("#f1f5f6")
 
     def moneda(valor):
         numero = Decimal(str(valor or 0))
@@ -172,143 +178,223 @@ def _reporte_cobranza_pdf(cliente, datos):
     def fecha(valor):
         return valor.strftime("%d/%m/%Y") if hasattr(valor, "strftime") else "—"
 
+    def anio_servicio(servicio):
+        anio = str(servicio.get("anio") or "").strip()
+        if anio:
+            return anio
+        fecha_servicio = servicio.get("fecha")
+        return str(fecha_servicio.year) if hasattr(fecha_servicio, "year") else "—"
+
     buffer = BytesIO()
+    ancho_pagina, alto_pagina = landscape(A4)
     documento = SimpleDocTemplate(
         buffer,
         pagesize=landscape(A4),
         rightMargin=13 * mm,
         leftMargin=13 * mm,
-        topMargin=14 * mm,
-        bottomMargin=16 * mm,
-        title="Reporte de cobranza - " + str(cliente.nomclient or cliente.ruccedcli),
+        topMargin=9 * mm,
+        bottomMargin=13 * mm,
+        title="Valores pendientes de pago - " + str(cliente.nomclient or cliente.ruccedcli),
         author="TotalCounts",
     )
+
     estilos = getSampleStyleSheet()
     estilos.add(ParagraphStyle(
-        name="CobTitle", parent=estilos["Title"], fontName="Helvetica-Bold",
-        fontSize=17, leading=21, textColor=colors.HexColor("#20465e"),
-        alignment=TA_CENTER, spaceAfter=5,
+        name="PendientesTitle",
+        parent=estilos["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=15,
+        leading=18,
+        textColor=colors.HexColor("#111820"),
+        alignment=TA_CENTER,
+        spaceBefore=0,
+        spaceAfter=4,
     ))
     estilos.add(ParagraphStyle(
-        name="CobSub", parent=estilos["Normal"], fontSize=9, leading=13,
-        textColor=colors.HexColor("#607b8c"), alignment=TA_CENTER, spaceAfter=3,
+        name="PendientesSub",
+        parent=estilos["Normal"],
+        fontName="Helvetica",
+        fontSize=8.5,
+        leading=11,
+        textColor=colors.HexColor("#202b30"),
+        alignment=TA_CENTER,
+        spaceAfter=2,
     ))
     estilos.add(ParagraphStyle(
-        name="CobSection", parent=estilos["Heading2"], fontSize=11, leading=14,
-        textColor=colors.HexColor("#20465e"), spaceBefore=12, spaceAfter=6,
+        name="PendientesSection",
+        parent=estilos["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=10.5,
+        leading=13,
+        textColor=azul_texto,
+        spaceBefore=8,
+        spaceAfter=5,
     ))
     estilos.add(ParagraphStyle(
-        name="CobCell", parent=estilos["BodyText"], fontSize=7.5, leading=9,
+        name="PendientesCell",
+        parent=estilos["BodyText"],
+        fontName="Helvetica",
+        fontSize=7.2,
+        leading=8.5,
+        textColor=colors.HexColor("#202b30"),
     ))
     estilos.add(ParagraphStyle(
-        name="CobCellRight", parent=estilos["CobCell"], alignment=TA_RIGHT,
+        name="PendientesCellRight",
+        parent=estilos["PendientesCell"],
+        alignment=TA_RIGHT,
+    ))
+    estilos.add(ParagraphStyle(
+        name="PendientesHeader",
+        parent=estilos["BodyText"],
+        fontName="Helvetica-Bold",
+        fontSize=7,
+        leading=8,
+        textColor=colors.white,
+        alignment=TA_CENTER,
     ))
 
-    historia = [
-        Paragraph("REPORTE DE COBRANZA", estilos["CobTitle"]),
-        Paragraph(escape(str(cliente.nomclient or "Cliente")), estilos["CobSub"]),
+    historia = []
+    try:
+        logo_path = finders.find("images/logo-1.png")
+        if logo_path:
+            logo = Image(logo_path, width=27 * mm, height=27 * mm, kind="proportional")
+            logo.hAlign = "CENTER"
+            historia.extend([logo, Spacer(1, 3 * mm)])
+    except Exception:
+        logger.exception("No se pudo cargar el logo en el reporte de cobranza.")
+
+    historia.extend([
+        Paragraph("VALORES PENDIENTES DE PAGO", estilos["PendientesTitle"]),
+        Paragraph(escape(str(cliente.nomclient or "Cliente")), estilos["PendientesSub"]),
         Paragraph(
             "RUC / C.I.: " + escape(str(cliente.ruccedcli))
-            + "  |  Fecha de emisión: " + fecha(datos["fecha_reporte"]),
-            estilos["CobSub"],
+            + " | Fecha de emisión: " + fecha(datos["fecha_reporte"]),
+            estilos["PendientesSub"],
         ),
-        Spacer(1, 7),
-    ]
+        Spacer(1, 6 * mm),
+    ])
 
-    resumen = [
-        ["CONCEPTO", "REGISTROS", "VALOR"],
-        ["Facturas por cobrar", str(datos["resumen_facturas"]["cantidad"]), moneda(datos["resumen_facturas"]["total"])],
-        ["Servicios por facturar", str(datos["resumen_servicios"]["cantidad"]), moneda(datos["resumen_servicios"]["total"])],
+    resumen_data = [
+        [
+            Paragraph("Facturas por cobrar", estilos["PendientesCell"]),
+            Paragraph(str(datos["resumen_facturas"]["cantidad"]), estilos["PendientesCellRight"]),
+            Paragraph(moneda(datos["resumen_facturas"]["total"]), estilos["PendientesCellRight"]),
+        ],
+        [
+            Paragraph("Servicios por facturar", estilos["PendientesCell"]),
+            Paragraph(str(datos["resumen_servicios"]["cantidad"]), estilos["PendientesCellRight"]),
+            Paragraph(moneda(datos["resumen_servicios"]["total"]), estilos["PendientesCellRight"]),
+        ],
     ]
-    tabla_resumen = Table(resumen, colWidths=[105 * mm, 35 * mm, 45 * mm], repeatRows=1)
+    tabla_resumen = Table(
+        resumen_data,
+        colWidths=[47 * mm, 20 * mm, 35 * mm],
+        hAlign="LEFT",
+    )
     tabla_resumen.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#223944")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#f4f8f9")),
-        ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#dce5e8")),
-        ("ALIGN", (1, 1), (-1, -1), "RIGHT"),
-        ("TOPPADDING", (0, 0), (-1, -1), 7),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
     ]))
-    historia.extend([tabla_resumen])
+    historia.append(tabla_resumen)
 
-    historia.append(Paragraph("FACTURAS PENDIENTES DE COBRO", estilos["CobSection"]))
+    historia.append(Paragraph("FACTURAS PENDIENTES DE COBRO", estilos["PendientesSection"]))
     filas_facturas = [[
-        "Factura", "Fecha", "Vencimiento más próximo", "Cuotas", "Total factura", "Saldo pendiente"
+        Paragraph("Factura", estilos["PendientesHeader"]),
+        Paragraph("Fecha", estilos["PendientesHeader"]),
+        Paragraph("Vencimiento más próximo", estilos["PendientesHeader"]),
+        Paragraph("Cuotas", estilos["PendientesHeader"]),
+        Paragraph("Total factura", estilos["PendientesHeader"]),
+        Paragraph("Saldo pendiente", estilos["PendientesHeader"]),
     ]]
     for factura in datos["facturas"]:
         filas_facturas.append([
-            str(factura.get("numfactur") or ""),
-            fecha(factura.get("fecha_factura")),
-            fecha(factura.get("fecha_vencimiento")),
-            str(factura.get("cuotas_pendientes") or 0),
-            moneda(factura.get("total_factura")),
-            moneda(factura.get("saldo_pendiente")),
+            Paragraph(escape(str(factura.get("numfactur") or "")), estilos["PendientesCell"]),
+            Paragraph(fecha(factura.get("fecha_factura")), estilos["PendientesCell"]),
+            Paragraph(fecha(factura.get("fecha_vencimiento")), estilos["PendientesCell"]),
+            Paragraph(str(factura.get("cuotas_pendientes") or 0), estilos["PendientesCellRight"]),
+            Paragraph(moneda(factura.get("total_factura")), estilos["PendientesCellRight"]),
+            Paragraph(moneda(factura.get("saldo_pendiente")), estilos["PendientesCellRight"]),
         ])
     if not datos["facturas"]:
-        filas_facturas.append(["No existen facturas pendientes.", "", "", "", "", ""])
+        filas_facturas.append([
+            Paragraph("No existen facturas pendientes de cobro.", estilos["PendientesCell"]),
+            "", "", "", "", "",
+        ])
     tabla_facturas = Table(
         filas_facturas,
-        colWidths=[42 * mm, 27 * mm, 43 * mm, 20 * mm, 34 * mm, 38 * mm],
+        colWidths=[42 * mm, 28 * mm, 54 * mm, 20 * mm, 55 * mm, 70 * mm],
         repeatRows=1,
+        hAlign="LEFT",
     )
-    tabla_facturas.setStyle(_estilo_tabla_reporte(colors))
+    tabla_facturas.setStyle(_estilo_tabla_reporte(azul, gris_linea, gris_fondo))
+    historia.append(tabla_facturas)
 
-    historia.extend([tabla_facturas, Paragraph("SERVICIOS PENDIENTES DE FACTURAR", estilos["CobSection"])])
+    historia.append(Paragraph("SERVICIOS PENDIENTES DE FACTURAR", estilos["PendientesSection"]))
     filas_servicios = [[
-        "Código", "Descripción", "Fecha", "Cantidad", "Precio unitario", "Total"
+        Paragraph("Código", estilos["PendientesHeader"]),
+        Paragraph("Descripción", estilos["PendientesHeader"]),
+        Paragraph("Fecha", estilos["PendientesHeader"]),
+        Paragraph("Año", estilos["PendientesHeader"]),
+        Paragraph("Cantidad", estilos["PendientesHeader"]),
+        Paragraph("Precio unitario", estilos["PendientesHeader"]),
+        Paragraph("Total", estilos["PendientesHeader"]),
     ]]
     for servicio in datos["servicios"]:
         filas_servicios.append([
-            str(servicio.get("coditeinv") or ""),
-            Paragraph(escape(str(servicio.get("desiteinv") or "")), estilos["CobCell"]),
-            fecha(servicio.get("fecha")),
-            str(servicio.get("cantidad") or 0),
-            moneda(servicio.get("precio")),
-            moneda(servicio.get("total")),
+            Paragraph(escape(str(servicio.get("coditeinv") or "")), estilos["PendientesCell"]),
+            Paragraph(escape(str(servicio.get("desiteinv") or "")), estilos["PendientesCell"]),
+            Paragraph(fecha(servicio.get("fecha")), estilos["PendientesCell"]),
+            Paragraph(escape(anio_servicio(servicio)), estilos["PendientesCellRight"]),
+            Paragraph(str(servicio.get("cantidad") or 0), estilos["PendientesCellRight"]),
+            Paragraph(moneda(servicio.get("precio")), estilos["PendientesCellRight"]),
+            Paragraph(moneda(servicio.get("total")), estilos["PendientesCellRight"]),
         ])
     if not datos["servicios"]:
-        filas_servicios.append(["No existen servicios pendientes.", "", "", "", "", ""])
+        filas_servicios.append([
+            Paragraph("No existen servicios pendientes de facturar.", estilos["PendientesCell"]),
+            "", "", "", "", "", "",
+        ])
     tabla_servicios = Table(
         filas_servicios,
-        colWidths=[25 * mm, 105 * mm, 27 * mm, 22 * mm, 35 * mm, 35 * mm],
+        colWidths=[25 * mm, 112 * mm, 25 * mm, 19 * mm, 24 * mm, 34 * mm, 30 * mm],
         repeatRows=1,
+        hAlign="LEFT",
     )
-    tabla_servicios.setStyle(_estilo_tabla_reporte(colors))
+    tabla_servicios.setStyle(_estilo_tabla_reporte(azul, gris_linea, gris_fondo))
     historia.append(tabla_servicios)
 
     def pie(canvas, doc):
         canvas.saveState()
-        canvas.setFont("Helvetica", 7)
-        canvas.setFillColor(colors.HexColor("#71838c"))
-        canvas.drawString(13 * mm, 8 * mm, "TotalCounts · Reporte informativo de cobranza")
-        canvas.drawRightString(landscape(A4)[0] - 13 * mm, 8 * mm, f"Página {doc.page}")
+        canvas.setFont("Helvetica", 6.5)
+        canvas.setFillColor(colors.HexColor("#87969c"))
+        canvas.drawString(13 * mm, 7 * mm, "TotalCounts · Reporte de cobranza")
+        canvas.drawRightString(ancho_pagina - 13 * mm, 7 * mm, f"Página {doc.page}")
         canvas.restoreState()
 
     documento.build(historia, onFirstPage=pie, onLaterPages=pie)
     return buffer.getvalue()
 
 
-def _estilo_tabla_reporte(colors):
+def _estilo_tabla_reporte(azul, gris_linea, gris_fondo):
     from reportlab.platypus import TableStyle
 
     return TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#223944")),
+        ("BACKGROUND", (0, 0), (-1, 0), azul),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 7.2),
-        ("LEADING", (0, 0), (-1, -1), 9),
-        ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#dce5e8")),
+        ("GRID", (0, 0), (-1, -1), 0.35, gris_linea),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f4f8f9")]),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, gris_fondo]),
         ("ALIGN", (3, 1), (-1, -1), "RIGHT"),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("LEFTPADDING", (0, 0), (-1, -1), 5),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
     ])
 
 
