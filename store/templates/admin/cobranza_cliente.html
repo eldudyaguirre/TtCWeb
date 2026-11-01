@@ -299,7 +299,7 @@
  if(!trigger||!modal||!content)return;
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
  const loadServicios=async()=>{
-  const previousEditor=modal.querySelector('#cobPrefacturaEditor');
+  const previousEditor=document.getElementById('cobPrefacturaEditor');
   if(previousEditor)previousEditor.remove();
   content.innerHTML='<div class="cob-modal-loading">Cargando servicios pendientes…</div>';
   const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
