@@ -751,11 +751,14 @@ def admin_prefacturacion_mensual_previsualizar(request):
         })
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
-    except Exception:
+    except Exception as exc:
         logger.exception("No se pudo preparar la generación de prefacturación mensual.")
         return JsonResponse({
             "ok": False,
-            "error": "No se pudo consultar clientes, catálogo o consecutivo de prefacturación.",
+            "error": (
+                "No se pudo consultar clientes, catálogo o consecutivo de prefacturación. "
+                f"Detalle: {type(exc).__name__}: {str(exc)[:350]}"
+            ),
         }, status=500)
 
 
@@ -872,9 +875,12 @@ def admin_prefacturacion_mensual_generar(request):
         })
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
-    except Exception:
+    except Exception as exc:
         logger.exception("Error al generar prefacturación mensual.")
         return JsonResponse({
             "ok": False,
-            "error": "No se pudo generar la prefacturación mensual. Revisa el registro del servidor.",
+            "error": (
+                "No se pudo generar la prefacturación mensual. "
+                f"Detalle: {type(exc).__name__}: {str(exc)[:350]}"
+            ),
         }, status=500)
