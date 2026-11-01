@@ -624,7 +624,7 @@ def admin_prefacturacion_mensual_generar(request):
             request.session.get("admin_username")
             or request.session.get("admin_name")
             or "ADMIN"
-        )[:150]
+        )[:20]
 
         with transaction.atomic(using=DB_ALIAS):
             with conexion.cursor() as cursor:
