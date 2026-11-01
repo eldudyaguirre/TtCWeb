@@ -312,6 +312,7 @@
   content.innerHTML=section.outerHTML+popupStyles;
   const editorNode=content.querySelector('#cobPrefacturaEditor');
   if(editorNode)modal.appendChild(editorNode);
+  if(editorNode)editorNode.style.position='fixed';
   const totalValue=section.querySelector('[data-prefactura-total]')?.dataset.prefacturaTotal;
   const countValue=section.querySelector('[data-prefactura-count]')?.dataset.prefacturaCount;
   const totalNode=document.getElementById('cobResumenServiciosTotal');
@@ -360,8 +361,27 @@
    finally{save.disabled=false;save.textContent='Guardar servicio';}
   });
   const overlay=editor();
+  if(!overlay){
+   console.error('No se encontró la ventana del editor de prefactura después de cargar el popup.');
+   return;
+  }
   overlay.querySelectorAll('[data-prefactura-cancel]').forEach(button=>button.addEventListener('click',hideEditor));
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideEditor();});
+
+  // Conectar los botones directamente después de insertar el HTML dinámico.
+  content.querySelectorAll('[data-prefactura-action]').forEach(button=>{
+   if(button.dataset.prefacturaBound==='1')return;
+   button.dataset.prefacturaBound='1';
+   button.addEventListener('click',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const action=button.dataset.prefacturaAction;
+    content.querySelectorAll('.cob-actions-dropdown').forEach(menu=>menu.hidden=true);
+    content.querySelectorAll('.cob-actions-trigger').forEach(trigger=>trigger.setAttribute('aria-expanded','false'));
+    if(action==='agregar'||action==='editar')openEditor(action,button);
+    else if(action==='eliminar')await submitDelete(button);
+   });
+  });
  };
  const openEditor=(action,button)=>{
   const box=editor(),form=formEditor();if(!box||!form)return;
@@ -432,13 +452,7 @@
    menu.hidden=!opening;menuButton.setAttribute('aria-expanded',String(opening));
    e.stopPropagation();return;
   }
-  const actionButton=e.target.closest('[data-prefactura-action]');
-  if(!actionButton||!content.contains(actionButton))return;
-  const action=actionButton.dataset.prefacturaAction;
-  content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
-  content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
-  if(action==='agregar'||action==='editar')openEditor(action,actionButton);
-  else if(action==='eliminar')await submitDelete(actionButton);
+  return;
  });
  document.addEventListener('click',e=>{
   if(!content.contains(e.target)){
