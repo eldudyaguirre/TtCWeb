@@ -278,6 +278,8 @@ def admin_cobranza_general(request):
         "tipo": tipo,
         "error": error,
         "envios_masivos": CobranzaEnvioMasivo.objects.all()[:8],
+        "mes_actual": timezone.localdate().month,
+        "anio_actual": timezone.localdate().year,
     })
 
 
