@@ -509,7 +509,7 @@ def _auditar_columnas_prefactura(cursor):
         raise RuntimeError("No se encontró la tabla public.prefactura o no hay permisos para leer su estructura.")
 
     expresiones = {
-        "numdetfac": "Consecutivo numdetfac",
+        "numdetfac": "Número de línea de prefactura; se asigna desde parametros.numdetprefac",
         "ruc": "Identificación exacta de clientes.ruccedcli",
         "coditeinv": "Código del mes (001 a 012)",
         "desiteinv": "Descripción de public.items",
@@ -726,11 +726,11 @@ def admin_prefacturacion_mensual_previsualizar(request):
         conexion = _db()
         conexion.ensure_connection()
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT numdetfac FROM public.parametros")
+            cursor.execute("SELECT numdetprefac FROM public.parametros")
             parametros = cursor.fetchall()
             if len(parametros) != 1 or parametros[0][0] is None:
                 raise RuntimeError(
-                    "Se esperaba un único consecutivo numdetfac configurado en public.parametros."
+                    "Se esperaba un único consecutivo numdetprefac configurado en public.parametros."
                 )
             resumen = _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes)
             resumen["consecutivo_actual"] = int(parametros[0][0])
@@ -774,14 +774,14 @@ def admin_prefacturacion_mensual_generar(request):
         with transaction.atomic(using=DB_ALIAS):
             with conexion.cursor() as cursor:
                 # Bloquea el único registro de parámetros para serializar
-                # ejecuciones simultáneas y proteger numdetfac.
+                # ejecuciones simultáneas y proteger numdetprefac.
                 cursor.execute(
-                    "SELECT numdetfac FROM public.parametros FOR UPDATE"
+                    "SELECT numdetprefac FROM public.parametros FOR UPDATE"
                 )
                 parametros = cursor.fetchall()
                 if len(parametros) != 1:
                     raise RuntimeError(
-                        "Se esperaba un único registro en public.parametros para bloquear numdetfac."
+                        "Se esperaba un único registro en public.parametros para bloquear numdetprefac."
                     )
                 consecutivo = parametros[0][0]
                 if consecutivo is None:
@@ -810,7 +810,7 @@ def admin_prefacturacion_mensual_generar(request):
                 if cantidad_generada:
                     nuevo_consecutivo = int(consecutivo) + cantidad_generada
                     cursor.execute(
-                        "UPDATE public.parametros SET numdetfac = %s",
+                        "UPDATE public.parametros SET numdetprefac = %s",
                         [nuevo_consecutivo],
                     )
                     if cursor.rowcount != 1:
