@@ -36,7 +36,7 @@
             </a>
             <div class="admin-nav-separator"></div>
             <a href="{% url 'admin_facturacion' %}" class="{% if request.resolver_match.url_name == 'admin_facturacion' or request.resolver_match.url_name == 'admin_factura_nueva' %}active{% endif %}"><i class="fi fi-rr-receipt"></i><span>Facturación</span></a>
-            <a href="#" class="admin-nav-separated-after"><i class="fi fi-rr-wallet"></i><span>Cobranza</span><small>Próximamente</small></a>
+            <a href="{% url 'admin_cobranza_general' %}" class="admin-nav-separated-after {% if request.resolver_match.url_name == 'admin_cobranza_general' %}active{% endif %}"><i class="fi fi-rr-wallet"></i><span>Cobranza</span></a>
             <div class="admin-nav-separator"></div>
             <a href="#"><i class="fi fi-rr-users"></i><span>Usuarios</span><small>Próximamente</small></a>
             <a href="{% url 'admin_blog' %}" class="{% if request.resolver_match.url_name == 'admin_blog' %}active{% endif %}"><i class="fi fi-rr-edit"></i><span>Blog y noticias</span></a>
