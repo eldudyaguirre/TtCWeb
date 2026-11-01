@@ -177,7 +177,7 @@
    form.querySelector('#pago-nuevo-saldo').textContent='$ '+Math.max(0,invoice-val).toFixed(2);
    form.querySelector('#pago-nuevo-venc').textContent='$ '+Math.max(0,dueBalance-val).toFixed(2);
   };
-  const initial=form.querySelector('#pago-nuevo-saldo');initial.dataset.original=initial.textContent.replace(/[^\d.]/g,'');
+  const initial=form.querySelector('#pago-nuevo-saldo');
   method.addEventListener('change',toggle);amount.addEventListener('input',recalc);due.addEventListener('change',recalc);
   form.querySelector('#pago-anticipo').addEventListener('change',recalc);
   form.querySelectorAll('[data-cob-pago-close]').forEach(b=>b.addEventListener('click',closePago));
