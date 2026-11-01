@@ -163,7 +163,9 @@ def _reporte_cobranza_pdf(cliente, datos):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.graphics import renderPDF
+    from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from svglib.svglib import svg2rlg
 
     azul = colors.HexColor("#003746")
     azul_texto = colors.HexColor("#163d4a")
@@ -254,14 +256,38 @@ def _reporte_cobranza_pdf(cliente, datos):
     ))
 
     historia = []
+    logo_path = finders.find("images/logosvg.svg")
+    if not logo_path:
+        raise RuntimeError("No se encontró static/images/logosvg.svg para el reporte de cobranza.")
+
     try:
-        logo_path = finders.find("images/logo-1.png")
-        if logo_path:
-            logo = Image(logo_path, width=27 * mm, height=27 * mm, kind="proportional")
-            logo.hAlign = "CENTER"
-            historia.extend([logo, Spacer(1, 3 * mm)])
-    except Exception:
-        logger.exception("No se pudo cargar el logo en el reporte de cobranza.")
+        dibujo_logo = svg2rlg(logo_path)
+        if dibujo_logo is None or not dibujo_logo.width or not dibujo_logo.height:
+            raise RuntimeError("El archivo logosvg.svg no produjo un dibujo válido.")
+
+        class LogoSVGFlowable(Flowable):
+            def __init__(self, dibujo, max_width, max_height):
+                super().__init__()
+                self.dibujo = dibujo
+                self.scale_factor = min(
+                    max_width / dibujo.width,
+                    max_height / dibujo.height,
+                )
+                self.width = dibujo.width * self.scale_factor
+                self.height = dibujo.height * self.scale_factor
+                self.hAlign = "CENTER"
+
+            def draw(self):
+                self.canv.saveState()
+                self.canv.scale(self.scale_factor, self.scale_factor)
+                renderPDF.draw(self.dibujo, self.canv, 0, 0)
+                self.canv.restoreState()
+
+        logo = LogoSVGFlowable(dibujo_logo, 27 * mm, 27 * mm)
+        historia.extend([logo, Spacer(1, 3 * mm)])
+    except Exception as exc:
+        logger.exception("No se pudo procesar static/images/logosvg.svg para el reporte.")
+        raise RuntimeError("No se pudo procesar el logo logosvg.svg del reporte de cobranza.") from exc
 
     historia.extend([
         Paragraph("VALORES PENDIENTES DE PAGO", estilos["PendientesTitle"]),
