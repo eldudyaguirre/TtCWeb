@@ -311,8 +311,12 @@
   const popupStyles=Array.from(doc.querySelectorAll('style')).map(style=>style.outerHTML).join('');
   content.innerHTML=section.outerHTML+popupStyles;
   const editorNode=content.querySelector('#cobPrefacturaEditor');
-  if(editorNode)modal.appendChild(editorNode);
-  if(editorNode)editorNode.style.position='fixed';
+  if(editorNode){
+   document.body.appendChild(editorNode);
+   editorNode.style.position='fixed';
+   editorNode.style.inset='0';
+   editorNode.style.zIndex='20000';
+  }
   const totalValue=section.querySelector('[data-prefactura-total]')?.dataset.prefacturaTotal;
   const countValue=section.querySelector('[data-prefactura-count]')?.dataset.prefacturaCount;
   const totalNode=document.getElementById('cobResumenServiciosTotal');
@@ -324,8 +328,8 @@
   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
   initEditor();
  };
- const editor=()=>modal.querySelector('#cobPrefacturaEditor');
- const formEditor=()=>modal.querySelector('#cobPrefacturaForm');
+ const editor=()=>document.getElementById('cobPrefacturaEditor');
+ const formEditor=()=>document.getElementById('cobPrefacturaForm');
  const hideEditor=()=>{const box=editor();if(box)box.hidden=true;};
  const initEditor=()=>{
   const form=formEditor();if(!form)return;
@@ -368,20 +372,6 @@
   overlay.querySelectorAll('[data-prefactura-cancel]').forEach(button=>button.addEventListener('click',hideEditor));
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideEditor();});
 
-  // Conectar los botones directamente después de insertar el HTML dinámico.
-  content.querySelectorAll('[data-prefactura-action]').forEach(button=>{
-   if(button.dataset.prefacturaBound==='1')return;
-   button.dataset.prefacturaBound='1';
-   button.addEventListener('click',async e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    const action=button.dataset.prefacturaAction;
-    content.querySelectorAll('.cob-actions-dropdown').forEach(menu=>menu.hidden=true);
-    content.querySelectorAll('.cob-actions-trigger').forEach(trigger=>trigger.setAttribute('aria-expanded','false'));
-    if(action==='agregar'||action==='editar')openEditor(action,button);
-    else if(action==='eliminar')await submitDelete(button);
-   });
-  });
  };
  const openEditor=(action,button)=>{
   const box=editor(),form=formEditor();if(!box||!form)return;
@@ -442,19 +432,41 @@
    await loadServicios();
   }catch(err){window.alert(err.message||'No se pudo eliminar el servicio.');}
  };
- content.addEventListener('click',async e=>{
+ content.addEventListener('click',e=>{
   const menuButton=e.target.closest('.cob-actions-trigger');
-  if(menuButton&&content.contains(menuButton)){
-   const menu=menuButton.parentElement.querySelector('.cob-actions-dropdown');
-   const opening=menu.hidden;
+  if(!menuButton||!content.contains(menuButton))return;
+  const menu=menuButton.parentElement.querySelector('.cob-actions-dropdown');
+  if(!menu)return;
+  const opening=menu.hidden;
+  content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
+  content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
+  menu.hidden=!opening;
+  menuButton.setAttribute('aria-expanded',String(opening));
+  e.stopPropagation();
+ });
+
+ // Document-level delegation works for every dynamically loaded service row and the
+ // top-level Add button, even after the popup contents are replaced.
+ document.addEventListener('click',async e=>{
+  const actionButton=e.target.closest('[data-prefactura-action]');
+  if(actionButton&&modal.contains(actionButton)){
+   e.preventDefault();
+   e.stopPropagation();
+   const action=actionButton.dataset.prefacturaAction;
    content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
-   menu.hidden=!opening;menuButton.setAttribute('aria-expanded',String(opening));
-   e.stopPropagation();return;
+   if(action==='agregar'||action==='editar'){
+    const form=formEditor(),box=editor();
+    if(!form||!box){
+     content.insertAdjacentHTML('afterbegin','<p class="cob-modal-error">No se pudo inicializar el formulario de servicios. Cierra y vuelve a abrir el popup.</p>');
+     return;
+    }
+    openEditor(action,actionButton);
+   }else if(action==='eliminar'){
+    await submitDelete(actionButton);
+   }
+   return;
   }
-  return;
- });
- document.addEventListener('click',e=>{
   if(!content.contains(e.target)){
    content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
