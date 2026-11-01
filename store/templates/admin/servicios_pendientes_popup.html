@@ -7,8 +7,8 @@
         </div>
         <div class="cob-servicios-heading-actions">
             <div class="cob-servicios-total">
-                <small>{{ resumen_servicios.cantidad }} registros · Total antes de IVA</small>
-                <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+                <small data-prefactura-count="{{ resumen_servicios.cantidad }}">{{ resumen_servicios.cantidad }} registros · Total antes de IVA</small>
+                <strong data-prefactura-total="{{ resumen_servicios.total|floatformat:'2u' }}">$ {{ resumen_servicios.total|floatformat:2 }}</strong>
             </div>
             <button type="button" class="cob-pref-btn cob-pref-btn-primary" data-prefactura-action="agregar">+ Agregar servicio</button>
         </div>
