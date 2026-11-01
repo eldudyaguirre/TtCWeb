@@ -137,7 +137,9 @@
                         <th class="num">IVA</th>
                         <th class="num">Total servicios</th>
                         {% endif %}
-                        <th class="num">{% if tipo == "facturas" %}Total por cobrar{% elif tipo == "servicios" %}Total servicios{% else %}Total pendiente{% endif %}</th>
+                        {% if tipo == "todos" %}
+                        <th class="num">Total pendiente</th>
+                        {% endif %}
                         <th>Gestión</th>
                     </tr>
                 </thead>
@@ -156,11 +158,13 @@
                         <td class="num cg-money">$ {{ fila.iva_servicios|floatformat:2 }}</td>
                         <td class="num cg-money">$ {{ fila.total_servicios|floatformat:2 }}</td>
                         {% endif %}
-                        <td class="num cg-total-cell cg-money-strong">$ {% if tipo == "facturas" %}{{ fila.saldo_facturas|floatformat:2 }}{% elif tipo == "servicios" %}{{ fila.total_servicios|floatformat:2 }}{% else %}{{ fila.total_general|floatformat:2 }}{% endif %}</td>
+                        {% if tipo == "todos" %}
+                        <td class="num cg-total-cell cg-money-strong">$ {{ fila.total_general|floatformat:2 }}</td>
+                        {% endif %}
                         <td><a class="cg-manage" href="{% url 'admin_cobranza_cliente' ruc=fila.ruc %}"><i class="fi fi-rr-arrow-up-right-from-square"></i> Gestionar</a></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="10" class="cg-empty">No hay pendientes que coincidan con los filtros seleccionados.</td></tr>
+                    <tr><td colspan="{% if tipo == 'todos' %}10{% elif tipo == 'facturas' %}6{% else %}7{% endif %}" class="cg-empty">No hay pendientes que coincidan con los filtros seleccionados.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
