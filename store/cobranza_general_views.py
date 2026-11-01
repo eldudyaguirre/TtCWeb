@@ -732,8 +732,15 @@ def admin_prefacturacion_mensual_previsualizar(request):
                 raise RuntimeError(
                     "Se esperaba un único consecutivo numdetprefac configurado en public.parametros."
                 )
+            cursor.execute(
+                "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
+            )
+            maximo_prefactura = int(cursor.fetchone()[0] or 0)
+            consecutivo_actual = int(parametros[0][0])
             resumen = _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes)
-            resumen["consecutivo_actual"] = int(parametros[0][0])
+            resumen["consecutivo_actual"] = consecutivo_actual
+            resumen["consecutivo_maximo_prefactura"] = maximo_prefactura
+            resumen["consecutivo_coherente"] = consecutivo_actual >= maximo_prefactura
             auditoria = _auditar_columnas_prefactura(cursor)
         return JsonResponse({
             "ok": True,
@@ -785,7 +792,18 @@ def admin_prefacturacion_mensual_generar(request):
                     )
                 consecutivo = parametros[0][0]
                 if consecutivo is None:
-                    raise RuntimeError("El consecutivo numdetfac no está configurado.")
+                    raise RuntimeError("El consecutivo numdetprefac no está configurado.")
+                consecutivo = int(consecutivo)
+                cursor.execute(
+                    "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
+                )
+                maximo_prefactura = int(cursor.fetchone()[0] or 0)
+                if consecutivo < maximo_prefactura:
+                    raise RuntimeError(
+                        "El consecutivo parametros.numdetprefac está atrasado. "
+                        f"Valor actual: {consecutivo}; máximo numdetfac en prefactura: "
+                        f"{maximo_prefactura}. Corrige el parámetro antes de generar."
+                    )
 
                 resumen = _resumen_prefacturacion_mensual(
                     cursor, mes, anio, codigo_mes
