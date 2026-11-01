@@ -1,0 +1,112 @@
+{% if error %}
+<div class="cob-modal-error">{{ error }}</div>
+{% else %}
+<div id="cobReporteRoot">
+    <div class="cob-report-intro">
+        <div>
+            <span class="cob-report-kicker">RESUMEN DE CARTERA</span>
+            <h3>{{ cliente.nomclient }}</h3>
+            <p>RUC / C.I.: {{ cliente.ruccedcli }} · Reporte al {{ datos.fecha_reporte|date:"d/m/Y H:i" }}</p>
+        </div>
+        <span class="cob-report-note">Valores en USD</span>
+    </div>
+
+    <div class="cob-report-summary">
+        <article class="cob-report-metric cob-report-metric-invoices">
+            <span>Facturas por cobrar</span>
+            <strong>{{ datos.resumen_facturas.cantidad }}</strong>
+            <small>$ {{ datos.resumen_facturas.total|floatformat:2 }} pendientes</small>
+        </article>
+        <article class="cob-report-metric cob-report-metric-overdue">
+            <span>Facturas vencidas</span>
+            <strong>{{ datos.resumen_facturas.vencidas }}</strong>
+            <small>Con saldo y vencimiento anterior a hoy</small>
+        </article>
+        <article class="cob-report-metric cob-report-metric-services">
+            <span>Servicios por facturar</span>
+            <strong>{{ datos.resumen_servicios.cantidad }}</strong>
+            <small>$ {{ datos.resumen_servicios.total|floatformat:2 }} antes de IVA</small>
+        </article>
+    </div>
+
+    {% if not servicios_disponibles %}
+    <div class="cob-report-warning">No se pudo consultar la tabla de servicios pendientes. Por seguridad, la generación y el envío del reporte están deshabilitados para evitar entregar información incompleta.</div>
+    {% endif %}
+
+    <section class="cob-report-section">
+        <div class="cob-report-section-heading">
+            <div><h4>Facturas pendientes de cobro</h4><p>Saldo calculado desde los vencimientos pendientes de Cuentas por Cobrar.</p></div>
+            <strong>$ {{ datos.resumen_facturas.total|floatformat:2 }}</strong>
+        </div>
+        <div class="cob-report-table-wrap">
+            <table class="cob-ec-table cob-report-table">
+                <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento más próximo</th><th>Cuotas</th><th>Total factura</th><th class="num">Saldo pendiente</th></tr></thead>
+                <tbody>
+                {% for factura in datos.facturas %}
+                    <tr>
+                        <td><strong>{{ factura.numfactur }}</strong></td>
+                        <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
+                        <td>{% if factura.vencida %}<span class="cob-report-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
+                        <td>{{ factura.cuotas_pendientes }}</td>
+                        <td class="num">$ {{ factura.total_factura|floatformat:2 }}</td>
+                        <td class="num"><strong>$ {{ factura.saldo_pendiente|floatformat:2 }}</strong></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="cob-ec-empty">No existen facturas pendientes de cobro.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cob-report-section">
+        <div class="cob-report-section-heading">
+            <div><h4>Servicios pendientes de facturar</h4><p>Servicios registrados en prefactura que aún no se han facturado.</p></div>
+            <strong>$ {{ datos.resumen_servicios.total|floatformat:2 }}</strong>
+        </div>
+        <div class="cob-report-table-wrap">
+            <table class="cob-ec-table cob-report-table">
+                <thead><tr><th>Código</th><th>Descripción</th><th>Fecha</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Total</th></tr></thead>
+                <tbody>
+                {% for servicio in datos.servicios %}
+                    <tr>
+                        <td>{{ servicio.coditeinv|default:"—" }}</td>
+                        <td>{{ servicio.desiteinv|default:"—" }}</td>
+                        <td>{{ servicio.fecha|date:"d/m/Y"|default:"—" }}</td>
+                        <td class="num">{{ servicio.cantidad|floatformat:2 }}</td>
+                        <td class="num">$ {{ servicio.precio|floatformat:2 }}</td>
+                        <td class="num"><strong>$ {{ servicio.total|floatformat:2 }}</strong></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="cob-ec-empty">No existen servicios pendientes de facturar.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="cob-report-disclaimer">Las facturas pendientes y los servicios por facturar se presentan por separado. El valor de servicios no forma parte del saldo de facturas por cobrar y se muestra antes de IVA.</div>
+
+    <div class="cob-report-actions">
+        <a class="cob-btn cob-btn-light{% if not servicios_disponibles %} cob-report-disabled{% endif %}" {% if servicios_disponibles %}href="{% url 'admin_cobranza_reporte_pdf' ruc=cliente.ruccedcli %}"{% else %}aria-disabled="true"{% endif %}>
+            <i class="fi fi-rr-download"></i> Descargar PDF
+        </a>
+        <button type="button" class="cob-btn cob-btn-whatsapp" disabled title="Envío directo por WhatsApp estará disponible en una futura integración">
+            <i class="fi fi-brands-whatsapp"></i> Enviar por WhatsApp
+            <span>Próximamente</span>
+        </button>
+    </div>
+
+    <form id="cobReporteEmailForm" class="cob-report-email" method="post" action="{% url 'admin_cobranza_reporte_enviar' ruc=cliente.ruccedcli %}">
+        {% csrf_token %}
+        <div class="cob-report-email-copy">
+            <strong>Enviar reporte al correo del cliente</strong>
+            <span>{% if correo_valido %}{{ correo_cliente }}{% else %}No hay un correo electrónico válido registrado en la ficha del cliente.{% endif %}</span>
+        </div>
+        <button type="submit" class="cob-btn cob-btn-primary" {% if not correo_valido or not servicios_disponibles %}disabled{% endif %}>
+            <i class="fi fi-rr-envelope"></i> Enviar por correo
+        </button>
+        <p id="cobReporteEmailFeedback" class="cob-report-feedback" aria-live="polite"></p>
+    </form>
+</div>
+{% endif %}
