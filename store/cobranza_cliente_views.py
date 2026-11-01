@@ -283,7 +283,7 @@ def admin_cobranza_cliente(request, ruc):
                     SELECT coditem, desitem, COALESCE(cositem, 0) AS precio
                     FROM public.items
                     WHERE iteactivo IS TRUE
-                    ORDER BY desitem, coditem
+                    ORDER BY coditem, desitem
                 """)
                 items_catalogo = [
                     {"codigo": row[0], "descripcion": row[1], "precio": Decimal(str(row[2] or 0))}
