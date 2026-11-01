@@ -48,7 +48,7 @@ def admin_cobranza_general(request):
             parametros = [timezone.localdate().isoformat()]
             if busqueda:
                 condiciones.append(
-                    "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(c.ruccedcli::text, p.ruc_normalizado) ILIKE %s)"
+                    "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(c.ruccedcli::text, p.identificacion) ILIKE %s)"
                 )
                 termino = f"%{busqueda}%"
                 parametros.extend([termino, termino])
