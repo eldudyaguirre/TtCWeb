@@ -5,9 +5,12 @@
             <h3>Servicios pendientes de facturar</h3>
             <p>Registros de servicios que todavía no se han trasladado a una factura.</p>
         </div>
-        <div class="cob-servicios-total">
-            <small>{{ resumen_servicios.cantidad }} registros · Total antes de IVA</small>
-            <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+        <div class="cob-servicios-heading-actions">
+            <div class="cob-servicios-total">
+                <small>{{ resumen_servicios.cantidad }} registros · Total antes de IVA</small>
+                <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+            </div>
+            <button type="button" class="cob-pref-btn cob-pref-btn-primary" data-prefactura-action="agregar">+ Agregar servicio</button>
         </div>
     </div>
 
@@ -21,6 +24,7 @@
                     <th class="cob-money">Cantidad</th>
                     <th class="cob-money">Precio</th>
                     <th class="cob-money">Total</th>
+                    <th class="cob-pref-actions-col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,9 +36,29 @@
                     <td class="cob-money">{{ servicio.cantidad|floatformat:2 }}</td>
                     <td class="cob-money">$ {{ servicio.precio|floatformat:2 }}</td>
                     <td class="cob-money">$ {{ servicio.total|floatformat:2 }}</td>
+                    <td class="cob-pref-actions-col">
+                        <div class="cob-actions-menu">
+                            <button type="button" class="cob-actions-trigger" aria-label="Acciones del servicio {{ servicio.numdetfac }}" aria-expanded="false" title="Acciones">⋯</button>
+                            <div class="cob-actions-dropdown" hidden>
+                                <button type="button"
+                                    data-prefactura-action="editar"
+                                    data-id="{{ servicio.numdetfac }}"
+                                    data-code="{{ servicio.coditeinv }}"
+                                    data-quantity="{{ servicio.cantidad|floatformat:'2u' }}"
+                                    data-price="{{ servicio.precio|floatformat:'2u' }}"
+                                    data-date="{{ servicio.fecha|date:'Y-m-d' }}"
+                                    data-description="{{ servicio.desiteinv }}">Editar</button>
+                                <button type="button" data-prefactura-action="agregar">Agregar Servicio</button>
+                                <button type="button"
+                                    data-prefactura-action="eliminar"
+                                    data-id="{{ servicio.numdetfac }}"
+                                    data-description="{{ servicio.desiteinv }}">Eliminar</button>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="cob-empty">No existen servicios pendientes de facturar para este cliente.</td></tr>
+                <tr><td colspan="7" class="cob-empty">No existen servicios pendientes de facturar para este cliente.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -42,14 +66,99 @@
     {% if limite_servicios %}
     <p class="cob-limit-note">Se muestran los primeros 500 registros. El resumen incluye todos los servicios pendientes.</p>
     {% endif %}
+
+    <div class="cob-pref-editor-backdrop" id="cobPrefacturaEditor" hidden>
+        <section class="cob-pref-editor" role="dialog" aria-modal="true" aria-labelledby="cobPrefacturaEditorTitle">
+            <header>
+                <div>
+                    <span class="admin-kicker">Prefactura</span>
+                    <h3 id="cobPrefacturaEditorTitle">Agregar servicio</h3>
+                </div>
+                <button type="button" class="cob-pref-editor-close" data-prefactura-cancel aria-label="Cerrar">×</button>
+            </header>
+            <form id="cobPrefacturaForm" method="post" action="{{ servicios_accion_url }}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="agregar">
+                <input type="hidden" name="numdetfac" value="">
+                <div class="cob-pref-editor-grid">
+                    <div class="cob-pref-field">
+                        <label for="prefactura-codigo">Servicio</label>
+                        <select id="prefactura-codigo" name="coditeinv" required>
+                            <option value="">Seleccionar servicio…</option>
+                            {% for item in items_catalogo %}
+                            <option value="{{ item.codigo }}" data-description="{{ item.descripcion }}" data-price="{{ item.precio|floatformat:'2u' }}">{{ item.codigo }} · {{ item.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="cob-pref-field">
+                        <label for="prefactura-descripcion">Descripción</label>
+                        <input id="prefactura-descripcion" type="text" readonly>
+                    </div>
+                    <div class="cob-pref-field">
+                        <label for="prefactura-fecha">Fecha</label>
+                        <input id="prefactura-fecha" type="date" name="fecha" value="{{ hoy|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="cob-pref-field">
+                        <label for="prefactura-cantidad">Cantidad</label>
+                        <input id="prefactura-cantidad" type="number" name="canfactur" min="0.0001" step="0.0001" value="1" required>
+                    </div>
+                    <div class="cob-pref-field">
+                        <label for="prefactura-precio">Precio unitario</label>
+                        <input id="prefactura-precio" type="number" name="preitefac" min="0" step="0.01" required>
+                    </div>
+                    <div class="cob-pref-field cob-pref-field-total">
+                        <label>Total de la línea</label>
+                        <strong id="prefactura-total-preview">$ 0.00</strong>
+                    </div>
+                </div>
+                <p class="cob-pref-feedback" id="cobPrefacturaFeedback" aria-live="polite"></p>
+                {% if not items_catalogo %}
+                <p class="cob-pref-catalog-warning">No se pudo cargar el catálogo de servicios o no hay items activos.</p>
+                {% endif %}
+                <div class="cob-pref-editor-actions">
+                    <button type="button" class="cob-pref-btn cob-pref-btn-light" data-prefactura-cancel>Cancelar</button>
+                    <button type="submit" class="cob-pref-btn cob-pref-btn-primary" id="cobPrefacturaSave" {% if not items_catalogo %}disabled{% endif %}>Guardar servicio</button>
+                </div>
+            </form>
+        </section>
+    </div>
 </section>
 
 <style>
 #servicios-pendientes .cob-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
 #servicios-pendientes .cob-section-heading h3{margin:4px 0;font-size:16px;color:#203d4b}
 #servicios-pendientes .cob-section-heading p{margin:0;color:#71838c;font-size:12px}
+#servicios-pendientes .cob-servicios-heading-actions{display:flex;align-items:center;gap:16px}
 #servicios-pendientes .cob-servicios-total{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
 #servicios-pendientes .cob-servicios-total small{font-size:11px;color:#71838c}
 #servicios-pendientes .cob-servicios-total strong{font-size:20px;color:#203d4b}
-@media(max-width:650px){#servicios-pendientes .cob-section-heading{align-items:flex-start;flex-direction:column}#servicios-pendientes .cob-servicios-total{align-items:flex-start}}
+#servicios-pendientes .cob-pref-actions-col{width:90px;text-align:center}
+#servicios-pendientes .cob-pref-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:8px;padding:10px 14px;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+#servicios-pendientes .cob-pref-btn-primary{background:#129ba7;color:#fff;border-color:#129ba7}
+#servicios-pendientes .cob-pref-btn-primary:hover{background:#087f8a}
+#servicios-pendientes .cob-pref-btn-light{background:#fff;color:#334751;border-color:#d5e0e5}
+#servicios-pendientes .cob-pref-btn:disabled{opacity:.55;cursor:not-allowed}
+#servicios-pendientes .cob-pref-editor-backdrop[hidden]{display:none!important}
+#servicios-pendientes .cob-pref-editor-backdrop{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(13,31,40,.58)}
+#servicios-pendientes .cob-pref-editor{width:min(640px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:15px;box-shadow:0 18px 55px rgba(10,30,40,.28);padding:22px}
+#servicios-pendientes .cob-pref-editor>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:15px;margin-bottom:18px;border-bottom:1px solid #e7eef1}
+#servicios-pendientes .cob-pref-editor h3{margin:4px 0 0;color:#203d4b;font-size:20px}
+#servicios-pendientes .cob-pref-editor-close{width:34px;height:34px;border:0;border-radius:8px;background:#edf4f6;color:#244552;font-size:22px;cursor:pointer}
+#servicios-pendientes .cob-pref-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#servicios-pendientes .cob-pref-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+#servicios-pendientes .cob-pref-field label{font-size:12px;font-weight:700;color:#536b77}
+#servicios-pendientes .cob-pref-field input,#servicios-pendientes .cob-pref-field select{width:100%;min-height:42px;padding:9px 11px;border:1px solid #d4e0e5;border-radius:9px;background:#fff;color:#213b48;font:inherit}
+#servicios-pendientes .cob-pref-field input[readonly]{background:#f3f7f8;color:#526a75}
+#servicios-pendientes .cob-pref-field-total{justify-content:flex-end;padding:8px 12px;border:1px solid #dce7eb;border-radius:9px;background:#f7fafb}
+#servicios-pendientes .cob-pref-field-total strong{font-size:19px;color:#1d4050}
+#servicios-pendientes .cob-pref-feedback{min-height:18px;margin:12px 0 0;color:#b42332;font-size:12px}
+#servicios-pendientes .cob-pref-catalog-warning{margin:8px 0;color:#b45309;font-size:12px}
+#servicios-pendientes .cob-pref-editor-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:14px;border-top:1px solid #edf1f3}
+@media(max-width:700px){
+ #servicios-pendientes .cob-section-heading{align-items:flex-start;flex-direction:column}
+ #servicios-pendientes .cob-servicios-heading-actions{align-items:flex-start;flex-direction:column}
+ #servicios-pendientes .cob-servicios-total{align-items:flex-start}
+ #servicios-pendientes .cob-pref-editor{padding:16px}
+ #servicios-pendientes .cob-pref-editor-grid{grid-template-columns:1fr}
+}
 </style>
