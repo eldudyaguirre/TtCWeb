@@ -125,7 +125,7 @@
         </div>
         {% if servicios_sin_cliente and tipo != "facturas" %}
         <div class="cg-warning">
-            <strong>{{ servicios_sin_cliente }} servicios no tienen un RUC vinculado a un registro de public.clientes.</strong>
+            <strong>{{ servicios_sin_cliente }} identificaciones de prefactura no coinciden exactamente con un registro de public.clientes.</strong>
             Se incluyen en los totales y aparecen identificados como registros sin cliente asociado. Para gestionarlos, primero corrige o vincula el RUC correspondiente.
         </div>
         {% endif %}
