@@ -33,6 +33,8 @@
 .cg-btn-light:hover{background:#f1f7f8;color:#294653}
 .cg-note{padding:10px 17px;border-bottom:1px solid #e8eef0;background:#fff;color:#6b7e87;font-size:11px;line-height:1.5}
 .cg-error{margin:16px;padding:13px 15px;border:1px solid #f2c8c8;border-radius:9px;background:#fff6f6;color:#a52a32;font-size:12px}
+.cg-warning{margin:12px 17px;padding:12px 14px;border:1px solid #f1d79d;border-radius:9px;background:#fff8e9;color:#805c13;font-size:11px;line-height:1.5}
+.cg-manage-disabled{border-color:#e2e7e9;background:#f4f6f7;color:#7f8d93;cursor:not-allowed}
 .cg-table-wrap{overflow:auto}
 .cg-table{width:100%;min-width:1050px;border-collapse:separate;border-spacing:0}
 .cg-table th{padding:12px 11px;background:#203944;color:#fff;text-align:left;font-size:9px;font-weight:850;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
@@ -121,6 +123,12 @@
         <div class="cg-note">
             Los saldos de facturas se consultan desde <strong>cuentascobrar</strong>. Los servicios se consultan desde <strong>prefactura</strong> y se muestran con IVA calculado según los parámetros de BdTotal.
         </div>
+        {% if servicios_sin_cliente and tipo != "facturas" %}
+        <div class="cg-warning">
+            <strong>{{ servicios_sin_cliente }} servicios no tienen un RUC vinculado a un registro de public.clientes.</strong>
+            Se incluyen en los totales y aparecen identificados como registros sin cliente asociado. Para gestionarlos, primero corrige o vincula el RUC correspondiente.
+        </div>
+        {% endif %}
         <div class="cg-table-wrap">
             <table class="cg-table">
                 <thead>
@@ -161,7 +169,13 @@
                         {% if tipo == "todos" %}
                         <td class="num cg-total-cell cg-money-strong">$ {{ fila.total_general|floatformat:2 }}</td>
                         {% endif %}
-                        <td><a class="cg-manage" href="{% url 'admin_cobranza_cliente' ruc=fila.ruc %}"><i class="fi fi-rr-arrow-up-right-from-square"></i> Gestionar</a></td>
+                        <td>
+                            {% if fila.cliente_registrado %}
+                            <a class="cg-manage" href="{% url 'admin_cobranza_cliente' ruc=fila.ruc %}"><i class="fi fi-rr-arrow-up-right-from-square"></i> Gestionar</a>
+                            {% else %}
+                            <span class="cg-manage cg-manage-disabled" title="El RUC aún no está vinculado a un cliente">Sin cliente</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="{% if tipo == 'todos' %}10{% elif tipo == 'facturas' %}6{% else %}7{% endif %}" class="cg-empty">No hay pendientes que coincidan con los filtros seleccionados.</td></tr>
@@ -170,7 +184,7 @@
             </table>
         </div>
         <footer class="cg-footer">
-            <span>{{ filas|length }} clientes encontrados</span>
+            <span>{{ resumen.clientes }} clientes vinculados · {{ filas|length }} grupos de pendientes</span>
             <span>Los valores de servicios se presentan antes y después de IVA.</span>
         </footer>
     </section>
