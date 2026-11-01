@@ -31,6 +31,55 @@
 .cg-btn-primary:hover{background:#087f8a;color:#fff}
 .cg-btn-light{background:#fff;border-color:#d5e0e4;color:#526a75}
 .cg-btn-light:hover{background:#f1f7f8;color:#294653}
+
+.cg-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cg-btn-mail{background:#157b62;border-color:#157b62;color:#fff}
+.cg-btn-mail:hover{background:#0f654f;color:#fff}
+.cg-mail-modal[hidden]{display:none!important}
+.cg-mail-modal{position:fixed;inset:0;z-index:1800;display:flex;align-items:center;justify-content:center;padding:18px}
+.cg-mail-backdrop{position:absolute;inset:0;background:rgba(17,34,43,.62);backdrop-filter:blur(3px)}
+.cg-mail-dialog{position:relative;width:min(680px,96vw);max-height:92vh;overflow:auto;border:1px solid #dce7ea;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(9,33,43,.24)}
+.cg-mail-header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:20px 22px;border-bottom:1px solid #e7eef0}
+.cg-mail-header h2{margin:4px 0;color:#203d4b;font-size:20px}
+.cg-mail-header p{margin:0;color:#72848c;font-size:11px;line-height:1.5}
+.cg-mail-close{width:34px;height:34px;border:0;border-radius:8px;background:#eef5f6;color:#35515d;font-size:21px;cursor:pointer}
+.cg-mail-body{padding:20px 22px}
+.cg-mail-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.cg-mail-metric{padding:12px 13px;border:1px solid #e0e9ec;border-radius:10px;background:#f8fbfc}
+.cg-mail-metric span{display:block;color:#6b818b;font-size:10px;font-weight:800;text-transform:uppercase}
+.cg-mail-metric strong{display:block;margin-top:5px;color:#203f4b;font-size:22px;font-weight:850}
+.cg-mail-metric.is-main{background:#e8f7f3;border-color:#cce9df}
+.cg-mail-metric.is-main strong{color:#13795f}
+.cg-mail-warning{padding:12px 13px;border:1px solid #f1d79d;border-radius:9px;background:#fff9ed;color:#7d5e1d;font-size:11px;line-height:1.55}
+.cg-mail-info{margin:12px 0 0;color:#71838c;font-size:11px;line-height:1.6}
+.cg-mail-status{min-height:18px;margin-top:12px;font-size:12px;font-weight:700}
+.cg-mail-status.success{color:#13795f}
+.cg-mail-status.error{color:#b42332}
+.cg-mail-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:17px;flex-wrap:wrap}
+.cg-history{margin-top:18px}
+.cg-history h2{margin:0;padding:15px 17px;border-bottom:1px solid #e8eef0;color:#294653;font-size:14px}
+.cg-history-wrap{overflow:auto}
+.cg-history-table{width:100%;min-width:700px;border-collapse:collapse}
+.cg-history-table th{padding:10px 12px;background:#f5f9fa;color:#667c85;text-align:left;font-size:9px;text-transform:uppercase}
+.cg-history-table td{padding:11px 12px;border-top:1px solid #edf1f2;color:#425a65;font-size:11px;vertical-align:middle}
+.cg-history-state{display:inline-flex;padding:4px 8px;border-radius:20px;background:#eff4f5;color:#526b75;font-size:9px;font-weight:800}
+.cg-history-state.done{background:#e7f7ed;color:#167a47}
+.cg-history-state.error{background:#fff0f1;color:#a52b35}
+.cg-retry{padding:6px 9px;border:1px solid #d7e3e6;border-radius:7px;background:#fff;color:#167e89;font-size:10px;font-weight:800;cursor:pointer}
+.cg-retry:disabled{opacity:.55;cursor:wait}
+.cg-history-empty{padding:20px!important;text-align:center;color:#7e8e95!important}
+@media(max-width:650px){
+ .cg-head-actions{width:100%;justify-content:space-between}
+ .cg-head-actions .cg-btn{flex:1}
+ .cg-mail-dialog{width:100%;max-height:96vh;border-radius:12px}
+ .cg-mail-header,.cg-mail-body{padding:15px}
+ .cg-mail-preview{gap:7px}
+ .cg-mail-metric{padding:10px}
+ .cg-mail-metric strong{font-size:19px}
+ .cg-mail-actions{flex-direction:column-reverse}
+ .cg-mail-actions .cg-btn{width:100%}
+}
+
 .cg-note{padding:10px 17px;border-bottom:1px solid #e8eef0;background:#fff;color:#6b7e87;font-size:11px;line-height:1.5}
 .cg-error{margin:16px;padding:13px 15px;border:1px solid #f2c8c8;border-radius:9px;background:#fff6f6;color:#a52a32;font-size:12px}
 .cg-warning{margin:12px 17px;padding:12px 14px;border:1px solid #f1d79d;border-radius:9px;background:#fff8e9;color:#805c13;font-size:11px;line-height:1.5}
@@ -80,8 +129,39 @@
             <h1>Cobranza general</h1>
             <p>Control consolidado de facturas pendientes de cobro y servicios pendientes de facturar.</p>
         </div>
-        <div class="cg-iva-note">IVA aplicado a servicios: {{ porcentaje_iva|floatformat:2 }}%</div>
+        <div class="cg-head-actions">
+            <div class="cg-iva-note">IVA aplicado a servicios: {{ porcentaje_iva|floatformat:2 }}%</div>
+            <button type="button" class="cg-btn cg-btn-mail" id="cg-open-mail">
+                <i class="fi fi-rr-envelope"></i> Enviar cobranza por correo
+            </button>
+        </div>
     </header>
+
+    <form id="cg-mail-csrf" hidden>{% csrf_token %}</form>
+    <div class="cg-mail-modal" id="cg-mail-modal" hidden aria-hidden="true">
+        <div class="cg-mail-backdrop" data-cg-mail-close></div>
+        <section class="cg-mail-dialog" role="dialog" aria-modal="true" aria-labelledby="cg-mail-title">
+            <header class="cg-mail-header">
+                <div>
+                    <span class="cg-kicker">Envío masivo · Reportes individuales</span>
+                    <h2 id="cg-mail-title">Enviar cobranza por correo</h2>
+                    <p>Se enviará un correo separado a cada cliente con cartera pendiente y correo válido, adjuntando su propio reporte PDF.</p>
+                </div>
+                <button type="button" class="cg-mail-close" data-cg-mail-close aria-label="Cerrar">×</button>
+            </header>
+            <div class="cg-mail-body">
+                <div id="cg-mail-preview">
+                    <p class="cg-mail-info">Consultando cartera pendiente y correos registrados…</p>
+                </div>
+                <p class="cg-mail-info">El envío considera toda la cartera pendiente, independientemente del texto de búsqueda o del filtro de la tabla. Los clientes inactivos también se incluyen cuando tienen saldo pendiente.</p>
+                <div class="cg-mail-status" id="cg-mail-status" aria-live="polite"></div>
+                <div class="cg-mail-actions">
+                    <button type="button" class="cg-btn cg-btn-light" data-cg-mail-close>Cancelar</button>
+                    <button type="button" class="cg-btn cg-btn-mail" id="cg-mail-confirm" disabled>Confirmar y poner en cola</button>
+                </div>
+            </div>
+        </section>
+    </div>
 
     {% if error %}
     <div class="cg-error"><strong>No se pudo cargar la cobranza general.</strong><br>{{ error }}</div>
@@ -198,5 +278,165 @@
         </footer>
     </section>
     {% endif %}
+
+    <section class="cg-panel cg-history">
+        <h2>Historial de envíos masivos de cobranza</h2>
+        <div class="cg-history-wrap">
+            <table class="cg-history-table">
+                <thead><tr><th>Fecha</th><th>Estado</th><th>Destinatarios</th><th>Resultado</th><th>Omitidos</th><th>Acción</th></tr></thead>
+                <tbody>
+                {% for envio in envios_masivos %}
+                    <tr>
+                        <td>{{ envio.creado_en|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="cg-history-state {% if envio.estado == 'ENVIADO' %}done{% elif envio.estado == 'ERROR' %}error{% endif %}">
+                                {{ envio.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>{{ envio.destinatarios }}</td>
+                        <td>{{ envio.enviados }} enviados{% if envio.fallidos %} · {{ envio.fallidos }} fallidos{% endif %}</td>
+                        <td>{{ envio.omitidos_sin_cliente|add:envio.omitidos_sin_correo|add:envio.omitidos_correo_invalido }}</td>
+                        <td>
+                            {% if envio.estado == 'ERROR' and envio.fallidos %}
+                            <button type="button" class="cg-retry" data-cg-retry-url="{% url 'admin_cobranza_masivo_reintentar' envio_id=envio.id %}">Reintentar fallidos</button>
+                            {% else %}—{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="cg-history-empty">Todavía no se han realizado envíos masivos de cobranza.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
+
+<script>
+(function(){
+ const openButton=document.getElementById('cg-open-mail');
+ const modal=document.getElementById('cg-mail-modal');
+ const preview=document.getElementById('cg-mail-preview');
+ const confirmButton=document.getElementById('cg-mail-confirm');
+ const status=document.getElementById('cg-mail-status');
+ const csrfForm=document.getElementById('cg-mail-csrf');
+ if(!openButton||!modal||!preview||!confirmButton||!csrfForm)return;
+
+ const previewUrl="{% url 'admin_cobranza_masivo_previsualizar' %}";
+ const enqueueUrl="{% url 'admin_cobranza_masivo_encolar' %}";
+ let previewReady=false;
+
+ const close=()=>{
+  modal.hidden=true;
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+ };
+ const metric=(label,value,main)=>{
+  const box=document.createElement('div');
+  box.className='cg-mail-metric'+(main?' is-main':'');
+  const title=document.createElement('span');
+  title.textContent=label;
+  const number=document.createElement('strong');
+  number.textContent=String(value);
+  box.append(title,number);
+  return box;
+ };
+ const loadPreview=async()=>{
+  previewReady=false;
+  confirmButton.disabled=true;
+  confirmButton.textContent='Consultando…';
+  preview.replaceChildren();
+  const loading=document.createElement('p');
+  loading.className='cg-mail-info';
+  loading.textContent='Consultando cartera pendiente y correos registrados…';
+  preview.appendChild(loading);
+  status.textContent='';
+  status.className='cg-mail-status';
+  try{
+   const response=await fetch(previewUrl,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo preparar la vista previa.');
+   const grid=document.createElement('div');
+   grid.className='cg-mail-preview';
+   grid.append(
+    metric('Identificaciones con pendientes',data.identificaciones_pendientes,false),
+    metric('Correos que se enviarán',data.destinatarios,true),
+    metric('Sin cliente asociado',data.omitidos_sin_cliente,false),
+    metric('Sin correo registrado',data.omitidos_sin_correo,false),
+    metric('Correo no válido',data.omitidos_correo_invalido,false)
+   );
+   preview.replaceChildren(grid);
+   const note=document.createElement('p');
+   note.className='cg-mail-info';
+   note.textContent='Cada cliente recibirá únicamente su propio PDF adjunto. Las direcciones de otros clientes no serán visibles.';
+   preview.appendChild(note);
+   previewReady=data.destinatarios>0;
+   confirmButton.disabled=!previewReady;
+   confirmButton.textContent=previewReady?'Confirmar y poner en cola':'No hay destinatarios válidos';
+  }catch(error){
+   preview.replaceChildren();
+   const failure=document.createElement('p');
+   failure.className='cg-mail-warning';
+   failure.textContent=error.message||'No se pudo consultar la cartera.';
+   preview.appendChild(failure);
+   confirmButton.textContent='No disponible';
+  }
+ };
+ openButton.addEventListener('click',async()=>{
+  modal.hidden=false;
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  await loadPreview();
+ });
+ modal.querySelectorAll('[data-cg-mail-close]').forEach(button=>button.addEventListener('click',close));
+ confirmButton.addEventListener('click',async()=>{
+  if(!previewReady)return;
+  const ok=window.confirm('¿Confirmas enviar un correo individual con PDF a cada cliente de la cartera pendiente que tenga correo válido?');
+  if(!ok)return;
+  confirmButton.disabled=true;
+  confirmButton.textContent='Poniendo en cola…';
+  status.textContent='';
+  try{
+   const formData=new FormData(csrfForm);
+   const response=await fetch(enqueueUrl,{
+    method:'POST',
+    body:formData,
+    headers:{'X-Requested-With':'XMLHttpRequest'}
+   });
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo encolar el envío.');
+   status.classList.add('success');
+   status.textContent=data.mensaje||'Envío puesto en cola correctamente.';
+   confirmButton.textContent='Envío en cola';
+   window.setTimeout(()=>window.location.reload(),1400);
+  }catch(error){
+   status.classList.add('error');
+   status.textContent=error.message||'No se pudo poner el envío en cola.';
+   confirmButton.disabled=false;
+   confirmButton.textContent='Volver a intentar';
+  }
+ });
+ document.addEventListener('click',async event=>{
+  const retry=event.target.closest('[data-cg-retry-url]');
+  if(!retry)return;
+  if(!window.confirm('¿Deseas volver a enviar los reportes a los destinatarios que fallaron?'))return;
+  retry.disabled=true;
+  try{
+   const response=await fetch(retry.dataset.cgRetryUrl,{
+    method:'POST',
+    body:new FormData(csrfForm),
+    headers:{'X-Requested-With':'XMLHttpRequest'}
+   });
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo reintentar el envío.');
+   window.location.reload();
+  }catch(error){
+   retry.disabled=false;
+   window.alert(error.message||'No se pudo reintentar.');
+  }
+ });
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!modal.hidden)close();
+ });
+})();
+</script>
 {% endblock %}
