@@ -1125,8 +1125,20 @@ def admin_prefactura_servicio_accion(request, ruc):
                         raise ValueError("No se pudo actualizar la línea seleccionada.")
                     mensaje = "Servicio actualizado correctamente."
                 else:
-                    cursor.execute("SELECT siguiente_parametro('numdetfac')")
-                    numero_nuevo = cursor.fetchone()[0]
+                    # La tabla prefactura utiliza su propio consecutivo,
+                    # compartido con el generador mensual VB6/TtCWeb.
+                    cursor.execute(
+                        "SELECT numdetprefac FROM public.parametros FOR UPDATE"
+                    )
+                    parametros_prefactura = cursor.fetchall()
+                    if (
+                        len(parametros_prefactura) != 1
+                        or parametros_prefactura[0][0] is None
+                    ):
+                        raise RuntimeError(
+                            "No existe un único consecutivo numdetprefac configurado."
+                        )
+                    numero_nuevo = int(parametros_prefactura[0][0]) + 1
                     valores_con_id = {"numdetfac": numero_nuevo, **valores}
                     campos = list(valores_con_id)
                     cursor.execute(
@@ -1137,6 +1149,14 @@ def admin_prefactura_servicio_accion(request, ruc):
                         + ")",
                         [valores_con_id[campo] for campo in campos],
                     )
+                    cursor.execute(
+                        "UPDATE public.parametros SET numdetprefac = %s",
+                        [numero_nuevo],
+                    )
+                    if cursor.rowcount != 1:
+                        raise RuntimeError(
+                            "No se pudo actualizar el consecutivo numdetprefac."
+                        )
                     mensaje = "Servicio agregado correctamente."
 
         return JsonResponse({"ok": True, "mensaje": mensaje})
