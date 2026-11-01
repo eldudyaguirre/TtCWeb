@@ -451,6 +451,11 @@ def admin_prefactura_servicio_accion(request, ruc):
                     valores["dscitefac"] = 0
                 if "totitefac" in disponibles:
                     valores["totitefac"] = float(total_linea)
+                # Registrar el usuario administrativo que crea la línea.
+                if accion == "agregar" and "creadopor" in disponibles:
+                    valores["creadopor"] = str(
+                        request.session.get("admin_username") or "ADMIN"
+                    ).strip()[:20]
 
                 # No intentamos insertar columnas nuevas que la tabla declare obligatorias
                 # pero que esta operación no conozca. Así evitamos crear filas incompletas.
@@ -479,11 +484,6 @@ def admin_prefactura_servicio_accion(request, ruc):
                         raise ValueError("No se pudo actualizar la línea seleccionada.")
                     mensaje = "Servicio actualizado correctamente."
                 else:
-                    # Registrar el usuario administrativo que crea la línea.
-                    if "creadopor" in disponibles:
-                        valores["creadopor"] = str(
-                            request.session.get("admin_username") or "ADMIN"
-                        ).strip()[:20]
                     cursor.execute("SELECT siguiente_parametro('numdetfac')")
                     numero_nuevo = cursor.fetchone()[0]
                     valores_con_id = {"numdetfac": numero_nuevo, **valores}
