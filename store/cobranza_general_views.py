@@ -205,7 +205,9 @@ def admin_cobranza_general(request):
                         SUM(COALESCE(p.canfactur, 0) * COALESCE(p.preitefac, 0)),
                         0
                     ) AS subtotal,
-                    COUNT(*) FILTER (WHERE c.ruccedcli IS NULL) AS sin_cliente
+                    COUNT(DISTINCT COALESCE(p.ruc::text, '')) FILTER (
+                        WHERE c.ruccedcli IS NULL
+                    ) AS sin_cliente
                 FROM public.prefactura p
                 LEFT JOIN public.clientes c
                     ON COALESCE(c.ruccedcli::text, '') = COALESCE(p.ruc::text, '')
