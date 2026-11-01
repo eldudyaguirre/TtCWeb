@@ -3532,11 +3532,14 @@ def admin_anexo_archivos(request, ruc, modulo):
             nombres_destino = set()
 
             for subido in archivos_subidos:
-                nombre_original = Path(str(subido.name or '').replace('\\', '/')).name.strip()
+                nombre_original = Path(str(subido.name or '').replace('\\', '/')).name.strip()[:255]
                 extension = Path(nombre_original).suffix.lower()
                 nombre_base = Path(nombre_original).stem
-                nombre_seguro = re.sub(r'[^A-Za-z0-9._ -]+', '_', nombre_base).strip(' ._')
                 extension_segura = extension if extension else ''
+                longitud_stem = max(1, 255 - len(prefijo) - len(extension_segura))
+                nombre_seguro = re.sub(
+                    r'[^A-Za-z0-9._ -]+', '_', nombre_base
+                ).strip(' ._')[:longitud_stem]
 
                 if not nombre_original or nombre_original in {'.', '..'} or not nombre_seguro:
                     error = 'Uno de los nombres de archivo no es válido.'
@@ -3591,10 +3594,24 @@ def admin_anexo_archivos(request, ruc, modulo):
 
             if not error and es_rdep and not categoria_config['multiple']:
                 prefijo_categoria = categoria_config['prefijo']
-                existentes_categoria = [
-                    path for path in carpeta.glob(f'{prefijo_categoria}*')
-                    if path.is_file()
-                ]
+                if categoria == 'XML' and carpeta.is_dir():
+                    # Los XML históricos se guardaban sin prefijo de categoría.
+                    existentes_categoria = [
+                        path for path in carpeta.iterdir()
+                        if path.is_file()
+                        and (
+                            path.name.startswith(prefijo_categoria)
+                            or (
+                                not path.name.startswith('RDEP_')
+                                and path.suffix.lower() in {'.xml', '.zip'}
+                            )
+                        )
+                    ]
+                else:
+                    existentes_categoria = [
+                        path for path in carpeta.glob(f'{prefijo_categoria}*')
+                        if path.is_file()
+                    ]
                 if existentes_categoria:
                     error = (
                         f'Ya existe un documento de tipo {categoria_config["titulo"]} '
