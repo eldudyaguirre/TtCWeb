@@ -306,7 +306,6 @@ def _reporte_cobranza_pdf(cliente, datos):
         Paragraph("Factura", estilos["PendientesHeader"]),
         Paragraph("Fecha", estilos["PendientesHeader"]),
         Paragraph("Vencimiento más próximo", estilos["PendientesHeader"]),
-        Paragraph("Cuotas", estilos["PendientesHeader"]),
         Paragraph("Total factura", estilos["PendientesHeader"]),
         Paragraph("Saldo pendiente", estilos["PendientesHeader"]),
     ]]
@@ -315,18 +314,17 @@ def _reporte_cobranza_pdf(cliente, datos):
             Paragraph(escape(str(factura.get("numfactur") or "")), estilos["PendientesCell"]),
             Paragraph(fecha(factura.get("fecha_factura")), estilos["PendientesCell"]),
             Paragraph(fecha(factura.get("fecha_vencimiento")), estilos["PendientesCell"]),
-            Paragraph(str(factura.get("cuotas_pendientes") or 0), estilos["PendientesCellRight"]),
             Paragraph(moneda(factura.get("total_factura")), estilos["PendientesCellRight"]),
             Paragraph(moneda(factura.get("saldo_pendiente")), estilos["PendientesCellRight"]),
         ])
     if not datos["facturas"]:
         filas_facturas.append([
             Paragraph("No existen facturas pendientes de cobro.", estilos["PendientesCell"]),
-            "", "", "", "", "",
+            "", "", "", "",
         ])
     tabla_facturas = Table(
         filas_facturas,
-        colWidths=[42 * mm, 28 * mm, 54 * mm, 20 * mm, 55 * mm, 70 * mm],
+        colWidths=[55 * mm, 30 * mm, 65 * mm, 58 * mm, 61 * mm],
         repeatRows=1,
         hAlign="LEFT",
     )
