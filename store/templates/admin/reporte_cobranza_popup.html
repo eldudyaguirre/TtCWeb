@@ -88,7 +88,7 @@
     <div class="cob-report-disclaimer">Las facturas pendientes y los servicios por facturar se presentan por separado. El valor de servicios no forma parte del saldo de facturas por cobrar y se muestra antes de IVA.</div>
 
     <div class="cob-report-actions">
-        <a class="cob-btn cob-btn-light{% if not servicios_disponibles %} cob-report-disabled{% endif %}" {% if servicios_disponibles %}href="{% url 'admin_cobranza_reporte_pdf' ruc=cliente.ruccedcli %}"{% else %}aria-disabled="true"{% endif %}>
+        <a class="cob-btn cob-btn-pdf{% if not servicios_disponibles %} cob-report-disabled{% endif %}" {% if servicios_disponibles %}href="{% url 'admin_cobranza_reporte_pdf' ruc=cliente.ruccedcli %}"{% else %}aria-disabled="true"{% endif %}>
             <i class="fi fi-rr-download"></i> Descargar PDF
         </a>
         <button type="button" class="cob-btn cob-btn-whatsapp" disabled title="Envío directo por WhatsApp estará disponible en una futura integración">
