@@ -480,7 +480,7 @@
      showMetric('Ya tienen el servicio',data.ya_generados,false),
      showMetric('Servicios por generar',data.por_generar,true),
      showMetric('Total de tarifas',Number(data.total_tarifas).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}),false),
-     showMetric('Próximo numdetfac',data.por_generar?Number(data.consecutivo_actual)+1:'—',false)
+     showMetric('Próximo número de prefactura',data.por_generar?Number(data.consecutivo_actual)+1:'—',false)
     );
     preview.replaceChildren(grid);
     const description=document.createElement('p');
