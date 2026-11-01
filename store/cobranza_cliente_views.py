@@ -357,6 +357,23 @@ def admin_prefactura_servicio_accion(request, ruc):
                 if accion not in {"agregar", "editar"}:
                     raise ValueError("La acción solicitada no es válida.")
 
+                linea_actual = None
+                if accion == "editar":
+                    if not numero_linea:
+                        raise ValueError("No se identificó el servicio que deseas editar.")
+                    cursor.execute(
+                        """
+                        SELECT coditeinv, desiteinv
+                        FROM public.prefactura
+                        WHERE numdetfac::text = %s AND ruc = %s
+                        FOR UPDATE
+                        """,
+                        [numero_linea, cliente.ruccedcli],
+                    )
+                    linea_actual = cursor.fetchone()
+                    if not linea_actual:
+                        raise ValueError("El servicio ya no existe o no pertenece a este cliente.")
+
                 codigo = request.POST.get("coditeinv", "").strip()
                 if not codigo:
                     raise ValueError("Selecciona un servicio del catálogo.")
@@ -389,6 +406,10 @@ def admin_prefactura_servicio_accion(request, ruc):
                     [codigo],
                 )
                 item = cursor.fetchone()
+                if not item and linea_actual and codigo == str(linea_actual[0] or ""):
+                    # Permite mantener/ajustar un servicio ya registrado aunque
+                    # posteriormente se haya desactivado o retirado del catálogo.
+                    item = (codigo, linea_actual[1], precio)
                 if not item:
                     raise ValueError("El servicio seleccionado no existe o está inactivo.")
 
@@ -444,18 +465,6 @@ def admin_prefactura_servicio_accion(request, ruc):
                             )
 
                 if accion == "editar":
-                    if not numero_linea:
-                        raise ValueError("No se identificó el servicio que deseas editar.")
-                    cursor.execute(
-                        """
-                        SELECT 1 FROM public.prefactura
-                        WHERE numdetfac::text = %s AND ruc = %s
-                        FOR UPDATE
-                        """,
-                        [numero_linea, cliente.ruccedcli],
-                    )
-                    if not cursor.fetchone():
-                        raise ValueError("El servicio ya no existe o no pertenece a este cliente.")
                     campos = list(valores)
                     cursor.execute(
                         "UPDATE public.prefactura SET "
