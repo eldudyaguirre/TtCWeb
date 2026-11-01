@@ -175,7 +175,8 @@ def admin_cobranza_general(request):
             }
             filas.append(item)
 
-            resumen["clientes"] += 1
+            if item["cliente_registrado"]:
+                resumen["clientes"] += 1
             resumen["facturas"] += item["cantidad_facturas"]
             resumen["facturas_vencidas"] += item["cantidad_facturas_vencidas"]
             resumen["saldo_facturas"] += saldo_facturas
