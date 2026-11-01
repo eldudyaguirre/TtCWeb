@@ -58,7 +58,9 @@ def _reporte_datos_cobranza(cliente):
         resumen_facturas = {
             "cantidad": int(agregado[0] or 0),
             "vencidas": int(agregado[1] or 0),
-            "total": Decimal(str(agregado[2] or 0)),
+            "total": Decimal(str(agregado[2] or 0)).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            ),
         }
 
         cursor.execute(
@@ -153,7 +155,9 @@ def _reporte_datos_cobranza(cliente):
                 "porcentaje_iva": porcentaje_iva,
                 "iva": iva_servicios,
                 "total": total_servicios,
-                "total_a_pagar": resumen_facturas["total"] + total_servicios,
+                "total_a_pagar": (resumen_facturas["total"] + total_servicios).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                ),
             }
     except Exception:
         conexion.rollback()
