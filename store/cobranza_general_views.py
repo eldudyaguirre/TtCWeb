@@ -1,10 +1,11 @@
 import json
+import logging
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.db import connections, transaction
+from django.db import connections
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -13,6 +14,7 @@ from .admin_views import admin_required
 from .models.cobranza_envio_masivo import CobranzaEnvioMasivo
 
 
+logger = logging.getLogger(__name__)
 DB_ALIAS = "bdtotal_cobranza_general"
 
 
