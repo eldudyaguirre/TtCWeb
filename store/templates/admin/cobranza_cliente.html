@@ -298,22 +298,151 @@
  const trigger=document.getElementById('cobServiciosTrigger'),modal=document.getElementById('cobServiciosModal'),content=document.getElementById('cobServiciosContent');
  if(!trigger||!modal||!content)return;
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
+ const loadServicios=async()=>{
+  content.innerHTML='<div class="cob-modal-loading">Cargando servicios pendientes…</div>';
+  const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+  const html=await response.text();
+  if(!response.ok)throw new Error('No se pudieron cargar los servicios (HTTP '+response.status+').');
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const section=doc.querySelector('#servicios-pendientes');
+  if(!section)throw new Error('La respuesta no contiene la lista de servicios pendientes.');
+  content.innerHTML=section.outerHTML;
+  const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
+  initEditor();
+ };
+ const editor=()=>content.querySelector('#cobPrefacturaEditor');
+ const formEditor=()=>content.querySelector('#cobPrefacturaForm');
+ const hideEditor=()=>{const box=editor();if(box)box.hidden=true;};
+ const initEditor=()=>{
+  const form=formEditor();if(!form)return;
+  const code=form.querySelector('#prefactura-codigo');
+  const description=form.querySelector('#prefactura-descripcion');
+  const quantity=form.querySelector('#prefactura-cantidad');
+  const price=form.querySelector('#prefactura-precio');
+  const total=form.querySelector('#prefactura-total-preview');
+  const feedback=form.querySelector('#cobPrefacturaFeedback');
+  const save=form.querySelector('#cobPrefacturaSave');
+  const recalc=()=>{
+   const q=Math.max(0,Number(quantity.value)||0),p=Math.max(0,Number(price.value)||0);
+   total.textContent='$ '+(q*p).toFixed(2);
+  };
+  code.addEventListener('change',()=>{
+   const option=code.options[code.selectedIndex];
+   description.value=option?.dataset.description||'';
+   if(option?.dataset.price!==undefined)price.value=option.dataset.price;
+   recalc();
+  });
+  form.addEventListener('input',recalc);
+  form.addEventListener('submit',async e=>{
+   e.preventDefault();
+   feedback.textContent='';
+   save.disabled=true;save.textContent='Guardando…';
+   try{
+    const response=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data=await response.json();
+    if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo guardar el servicio.');
+    hideEditor();
+    await loadServicios();
+   }catch(err){feedback.textContent=err.message||'No se pudo guardar el servicio.';}
+   finally{save.disabled=false;save.textContent='Guardar servicio';}
+  });
+  content.querySelectorAll('[data-prefactura-cancel]').forEach(button=>button.addEventListener('click',hideEditor));
+  const overlay=editor();
+  overlay.addEventListener('click',e=>{if(e.target===overlay)hideEditor();});
+ };
+ const openEditor=(action,button)=>{
+  const box=editor(),form=formEditor();if(!box||!form)return;
+  form.reset();
+  form.querySelector('[name="accion"]').value=action;
+  form.querySelector('[name="numdetfac"]').value='';
+  const select=form.querySelector('#prefactura-codigo');
+  const title=form.querySelector('#cobPrefacturaEditorTitle');
+  const date=form.querySelector('#prefactura-fecha');
+  const description=form.querySelector('#prefactura-descripcion');
+  if(action==='editar'){
+   const id=button.dataset.id||'';
+   const code=button.dataset.code||'';
+   const label=button.dataset.description||'';
+   const q=button.dataset.quantity||'1';
+   const p=button.dataset.price||'0';
+   const serviceDate=button.dataset.date||'';
+   let option=Array.from(select.options).find(item=>item.value===code);
+   if(!option&&code){
+    option=document.createElement('option');
+    option.value=code;option.textContent=code+' · '+label;
+    option.dataset.description=label;option.dataset.price=p;
+    select.add(option);
+   }
+   select.value=code;
+   description.value=label;
+   form.querySelector('[name="numdetfac"]').value=id;
+   form.querySelector('#prefactura-cantidad').value=q;
+   form.querySelector('#prefactura-precio').value=p;
+   if(serviceDate)date.value=serviceDate;
+   title.textContent='Editar servicio';
+  }else{
+   select.value='';
+   description.value='';
+   form.querySelector('#prefactura-cantidad').value='1';
+   form.querySelector('#prefactura-precio').value='';
+   title.textContent='Agregar servicio';
+  }
+  form.querySelector('#cobPrefacturaFeedback').textContent='';
+  form.querySelector('#prefactura-total-preview').textContent='$ '+(
+   (Number(form.querySelector('#prefactura-cantidad').value)||0)*
+   (Number(form.querySelector('#prefactura-precio').value)||0)
+  ).toFixed(2);
+  box.hidden=false;
+  select.focus();
+ };
+ const submitDelete=async button=>{
+  const id=button.dataset.id||'';
+  const label=button.dataset.description||'el servicio seleccionado';
+  if(!id||!window.confirm('¿Deseas eliminar "'+label+'" de los servicios pendientes?'))return;
+  const form=formEditor();
+  const payload=new FormData(form);
+  payload.set('accion','eliminar');payload.set('numdetfac',id);
+  try{
+   const response=await fetch(form.action,{method:'POST',body:payload,headers:{'X-Requested-With':'XMLHttpRequest'}});
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo eliminar el servicio.');
+   await loadServicios();
+  }catch(err){window.alert(err.message||'No se pudo eliminar el servicio.');}
+ };
+ content.addEventListener('click',async e=>{
+  const menuButton=e.target.closest('.cob-actions-trigger');
+  if(menuButton&&content.contains(menuButton)){
+   const menu=menuButton.parentElement.querySelector('.cob-actions-dropdown');
+   const opening=menu.hidden;
+   content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
+   content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
+   menu.hidden=!opening;menuButton.setAttribute('aria-expanded',String(opening));
+   e.stopPropagation();return;
+  }
+  const actionButton=e.target.closest('[data-prefactura-action]');
+  if(!actionButton||!content.contains(actionButton))return;
+  const action=actionButton.dataset.prefacturaAction;
+  content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
+  content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
+  if(action==='agregar'||action==='editar')openEditor(action,actionButton);
+  else if(action==='eliminar')await submitDelete(actionButton);
+ });
+ document.addEventListener('click',e=>{
+  if(!content.contains(e.target)){
+   content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
+   content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
+  }
+ });
  trigger.addEventListener('click',async()=>{
   modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('cob-modal-open');
-  content.innerHTML='<div class="cob-modal-loading">Cargando servicios pendientes…</div>';
-  try{
-   const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
-   if(!response.ok)throw new Error();
-   const doc=new DOMParser().parseFromString(await response.text(),'text/html');
-   const section=doc.querySelector('#servicios-pendientes');
-   if(!section)throw new Error();
-   content.innerHTML=section.outerHTML;
-   const heading=content.querySelector('.cob-section-heading');if(heading)heading.remove();
-   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
-  }catch(e){content.innerHTML='<p class="cob-modal-error">No se pudieron cargar los servicios pendientes. Inténtalo nuevamente.</p>';}
+  try{await loadServicios();}
+  catch(err){content.innerHTML='<p class="cob-modal-error">'+(err.message||'No se pudieron cargar los servicios pendientes.')+'</p>';}
  });
  modal.querySelectorAll('[data-cob-servicios-close]').forEach(el=>el.addEventListener('click',close));
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('is-open'))close();});
+ document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&editor()&&!editor().hidden){hideEditor();return;}
+  if(e.key==='Escape'&&modal.classList.contains('is-open'))close();
+ });
 })();
 </script>
 
