@@ -453,11 +453,9 @@ def _reporte_cobranza_pdf(cliente, datos):
             Paragraph("<b>" + moneda(datos["resumen_servicios"]["total_a_pagar"]) + "</b>", estilos["PendientesCellRight"]),
         ],
     ]
-    # El bloque de totales ocupa el mismo ancho que las tablas del reporte
-    # (269 mm), de modo que sus bordes izquierdo y derecho queden alineados.
     tabla_totales = Table(
         filas_totales,
-        colWidths=[200 * mm, 69 * mm],
+        colWidths=[91 * mm, 39 * mm],
         hAlign="LEFT",
     )
     tabla_totales.setStyle(TableStyle([
@@ -476,7 +474,50 @@ def _reporte_cobranza_pdf(cliente, datos):
         ("TOPPADDING", (0, 0), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
-    historia.append(tabla_totales)
+
+    # Datos de depósito/transferencia solicitados para acompañar el resumen.
+    informacion_pago = [
+        Paragraph("<b>Cuentas para depósito o transferencia:</b>", estilos["PendientesCell"]),
+        Spacer(1, 1.5 * mm),
+        Paragraph("<b>ROSA CATALINA LARRIVA CORONEL</b>", estilos["PendientesCell"]),
+        Paragraph('<font color="#138a42"><b>C.I.</b> 0102045275</font>', estilos["PendientesCell"]),
+        Paragraph('Correo: <font color="#138a42"><u>totalcounts@hotmail.com</u></font>', estilos["PendientesCell"]),
+        Paragraph("Banco Pichincha, Cuenta de ahorros <b>#201799422</b>", estilos["PendientesCell"]),
+        Paragraph("Banco Bolivariano, Cuenta Corriente <b>#4055010955</b>", estilos["PendientesCell"]),
+        Spacer(1, 3 * mm),
+        Paragraph(
+            "Solicitamos se nos envíe una foto de la transferencia para poder dar de baja el pago antes mencionado.",
+            estilos["PendientesCell"],
+        ),
+    ]
+    panel_pago = Table(
+        [[informacion_pago]],
+        colWidths=[139 * mm],
+        hAlign="LEFT",
+    )
+    panel_pago.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fbfc")),
+        ("BOX", (0, 0), (-1, -1), 0.5, gris_linea),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]))
+
+    tabla_pago_y_totales = Table(
+        [[panel_pago, tabla_totales]],
+        colWidths=[139 * mm, 130 * mm],
+        hAlign="LEFT",
+    )
+    tabla_pago_y_totales.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    historia.append(tabla_pago_y_totales)
 
     def pie(canvas, doc):
         canvas.saveState()
