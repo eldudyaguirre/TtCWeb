@@ -3772,7 +3772,7 @@ def admin_anexo_archivos(request, ruc, modulo):
 
 
 @admin_required
-def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
+def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False):
     """Descarga un archivo del módulo tributario indicado, validando su ruta."""
     from pathlib import Path
     from .services.archivos.storage import data_root
@@ -3801,7 +3801,7 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
     abrir_en_navegador = (
         es_pdf
         and str(modulo).lower() == 'rdep'
-        and request.GET.get('inline') == '1'
+        and (inline or request.GET.get('inline') == '1')
     )
     return FileResponse(
         ruta.open('rb'),

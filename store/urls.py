@@ -88,6 +88,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones/<str:tipo>/enviar-correo/', admin_views.admin_enviar_declaraciones_correo, name='admin_enviar_declaraciones_correo'),
     path('totalcounts/clientes/<str:ruc>/documentacion/declaraciones/<str:tipo>/<int:anio>/<str:mes>/<str:nombre>/', admin_views.admin_declaracion_descargar, name='admin_declaracion_descargar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ats/', admin_views.admin_ats, name='admin_ats'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/anexos/<str:modulo>/abrir/<int:anio>/<str:nombre>/', admin_views.admin_anexo_descargar, {'inline': True}, name='admin_anexo_abrir'),
     path('totalcounts/clientes/<str:ruc>/documentacion/anexos/<str:modulo>/', admin_views.admin_anexo_archivos, name='admin_anexo_archivos'),
     path('totalcounts/clientes/<str:ruc>/documentacion/anexos/<str:modulo>/descargar/<int:anio>/<str:nombre>/', admin_views.admin_anexo_descargar, name='admin_anexo_descargar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/rebefics/', admin_views.admin_rebefics, name='admin_rebefics'),
