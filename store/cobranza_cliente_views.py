@@ -348,6 +348,11 @@ def admin_cobranza_reporte_pdf(request, ruc):
     cliente = get_object_or_404(Cliente, pk=ruc)
     try:
         datos = _reporte_datos_cobranza(cliente)
+        if not datos["servicios_disponibles"]:
+            return HttpResponse(
+                "No se pudo consultar la lista de servicios pendientes. No se generó un reporte incompleto.",
+                status=503,
+            )
         pdf = _reporte_cobranza_pdf(cliente, datos)
         nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
         response = HttpResponse(pdf, content_type="application/pdf")
@@ -380,6 +385,11 @@ def admin_cobranza_reporte_enviar(request, ruc):
 
     try:
         datos = _reporte_datos_cobranza(cliente)
+        if not datos["servicios_disponibles"]:
+            return JsonResponse({
+                "ok": False,
+                "error": "No se pudo consultar la lista de servicios pendientes. No se envió el reporte.",
+            }, status=503)
         pdf = _reporte_cobranza_pdf(cliente, datos)
         nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
         mensaje = EmailMessage(
