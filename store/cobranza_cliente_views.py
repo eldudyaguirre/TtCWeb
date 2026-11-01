@@ -418,9 +418,6 @@ def admin_cobranza_reporte_enviar(request, ruc):
 
 @admin_required
 def admin_cobranza_cliente(request, ruc):
-
-@admin_required
-def admin_cobranza_cliente(request, ruc):
     """Panel de cobranza consultando la base central BdTotal."""
     cliente = get_object_or_404(Cliente, pk=ruc)
     hoy = timezone.localdate()
