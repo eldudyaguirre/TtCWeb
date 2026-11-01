@@ -120,9 +120,6 @@
                 <a href="{% url 'admin_cobranza_general' %}" class="cg-btn cg-btn-light">Limpiar</a>
             </div>
         </form>
-        <div class="cg-note">
-            Los saldos de facturas se consultan desde <strong>cuentascobrar</strong>. Los servicios se consultan desde <strong>prefactura</strong> y se muestran con IVA calculado según los parámetros de BdTotal.
-        </div>
         {% if servicios_sin_cliente and tipo != "facturas" %}
         <div class="cg-warning">
             <strong>{{ servicios_sin_cliente }} identificaciones de prefactura no coinciden exactamente con un registro de public.clientes.</strong>
