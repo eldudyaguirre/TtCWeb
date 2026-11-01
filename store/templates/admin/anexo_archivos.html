@@ -56,7 +56,19 @@
             <td>{{ archivo.anio }}</td>
             <td>{{ archivo.tamano|filesizeformat }}</td>
             <td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td>
-            <td><a class="ats-download" href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a></td>
+            <td>
+              {% if archivo.nombre_fisico|lower|slice:"-4:" == ".pdf" %}
+              <details class="ats-file-menu">
+                <summary class="ats-menu-trigger" aria-label="Opciones del archivo PDF" title="Opciones"><i class="fi fi-rr-menu-dots-vertical"></i></summary>
+                <div class="ats-menu-options">
+                  <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}?inline=1" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Abrir</a>
+                  <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
+                </div>
+              </details>
+              {% else %}
+              <a class="ats-download" href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody></table></div>
@@ -101,6 +113,13 @@
 .ats-table td:first-child{white-space:normal;min-width:145px}
 .ats-table td small{display:block;color:var(--admin-muted);font-size:10px;margin-top:4px}
 .ats-download{display:inline-flex;align-items:center;gap:6px;color:#078b9a;text-decoration:none;font-weight:600}
+.ats-file-menu{position:relative;display:inline-block}
+.ats-menu-trigger{list-style:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--admin-border);border-radius:8px;color:#078b9a;cursor:pointer;font-size:17px}
+.ats-menu-trigger::-webkit-details-marker{display:none}
+.ats-menu-trigger:hover,.ats-file-menu[open] .ats-menu-trigger{background:#eef8f9;border-color:#b8dfe2}
+.ats-menu-options{position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:140px;padding:5px;background:#fff;border:1px solid var(--admin-border);border-radius:9px;box-shadow:0 8px 24px rgba(20,40,55,.14)}
+.ats-menu-options a{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:6px;color:var(--admin-dark);font-size:12px;font-weight:600;text-decoration:none}
+.ats-menu-options a:hover{background:#f1f7f8;color:#078b9a}
 .ats-document-group{margin-top:17px;border:1px solid var(--admin-border);border-radius:10px;overflow:hidden}
 .ats-document-group-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#f7fafb}
 .ats-document-group-heading h3{margin:0;color:var(--admin-dark);font-size:13px;font-weight:800}
