@@ -61,7 +61,7 @@
               <details class="ats-file-menu">
                 <summary class="ats-menu-trigger" aria-label="Opciones del archivo PDF" title="Opciones"><i class="fi fi-rr-menu-dots-vertical"></i></summary>
                 <div class="ats-menu-options">
-                  <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}?inline=1" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Abrir</a>
+                  <a href="{% url 'admin_anexo_abrir' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Abrir</a>
                   <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
                 </div>
               </details>
