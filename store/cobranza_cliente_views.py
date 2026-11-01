@@ -469,9 +469,26 @@ def admin_cobranza_reporte_pdf(request, ruc):
         response = HttpResponse(pdf, content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{nombre}"'
         return response
-    except Exception:
+    except ModuleNotFoundError as exc:
+        logger.exception(
+            "Falta una dependencia para generar el PDF de cobranza: ruc=%s modulo=%s",
+            cliente.ruccedcli,
+            exc.name,
+        )
+        modulo = str(exc.name or "desconocido")
+        return HttpResponse(
+            "No se pudo generar el PDF: falta instalar el módulo Python "
+            + modulo
+            + " en el mismo entorno que ejecuta el servicio TtCWeb.",
+            status=500,
+        )
+    except Exception as exc:
         logger.exception("No se pudo generar el PDF de cobranza: ruc=%s", cliente.ruccedcli)
-        return HttpResponse("No se pudo generar el PDF del reporte de cobranza.", status=500)
+        detalle = f"{type(exc).__name__}: {str(exc)}".strip()[:500]
+        return HttpResponse(
+            "No se pudo generar el PDF del reporte de cobranza. Detalle técnico: " + detalle,
+            status=500,
+        )
 
 
 @admin_required
