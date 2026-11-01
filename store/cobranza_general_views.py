@@ -1,11 +1,16 @@
+import json
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
-from django.db import connections
-from django.shortcuts import render
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import connections, transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from .admin_views import admin_required
+from .models.cobranza_envio_masivo import CobranzaEnvioMasivo
 
 
 DB_ALIAS = "bdtotal_cobranza_general"
@@ -270,4 +275,191 @@ def admin_cobranza_general(request):
         "busqueda": busqueda,
         "tipo": tipo,
         "error": error,
+        "envios_masivos": CobranzaEnvioMasivo.objects.all()[:8],
+    })
+
+
+def _destinatarios_cobranza_masiva():
+    """Prepara destinatarios por identificación exacta con cartera pendiente."""
+    conexion = _db()
+    conexion.ensure_connection()
+    with conexion.cursor() as cursor:
+        cursor.execute(
+            """
+            WITH cartera AS (
+                SELECT
+                    COALESCE(cc.ruccedcli::text, '') AS identificacion,
+                    COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0) AS saldo_facturas
+                FROM public.cuentascobrar cc
+                WHERE UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
+                  AND COALESCE(cc.valpagpar, 0) > 0
+                GROUP BY COALESCE(cc.ruccedcli::text, '')
+            ),
+            servicios AS (
+                SELECT
+                    COALESCE(p.ruc::text, '') AS identificacion,
+                    COALESCE(
+                        SUM(COALESCE(p.canfactur, 0) * COALESCE(p.preitefac, 0)),
+                        0
+                    ) AS subtotal_servicios
+                FROM public.prefactura p
+                GROUP BY COALESCE(p.ruc::text, '')
+            ),
+            pendientes AS (
+                SELECT
+                    COALESCE(f.identificacion, s.identificacion) AS identificacion,
+                    COALESCE(f.saldo_facturas, 0) AS saldo_facturas,
+                    COALESCE(s.subtotal_servicios, 0) AS subtotal_servicios
+                FROM cartera f
+                FULL OUTER JOIN servicios s
+                    ON s.identificacion = f.identificacion
+            )
+            SELECT
+                p.identificacion,
+                COALESCE(c.nomclient, '') AS cliente,
+                COALESCE(c.corelectr, '') AS correo,
+                (c.ruccedcli IS NOT NULL) AS cliente_registrado
+            FROM pendientes p
+            LEFT JOIN public.clientes c
+                ON COALESCE(c.ruccedcli::text, '') = p.identificacion
+            WHERE p.saldo_facturas > 0 OR p.subtotal_servicios > 0
+            ORDER BY c.nomclient ASC NULLS LAST, p.identificacion ASC
+            """
+        )
+        filas = cursor.fetchall()
+
+    destinatarios = []
+    omitidos_sin_cliente = 0
+    omitidos_sin_correo = 0
+    omitidos_correo_invalido = 0
+    identificaciones_pendientes = len(filas)
+
+    for identificacion, cliente, correo, cliente_registrado in filas:
+        if not cliente_registrado:
+            omitidos_sin_cliente += 1
+            continue
+
+        correo = (correo or "").strip()
+        if not correo:
+            omitidos_sin_correo += 1
+            continue
+        try:
+            validate_email(correo)
+        except ValidationError:
+            omitidos_correo_invalido += 1
+            continue
+
+        destinatarios.append({
+            "ruc": str(identificacion or ""),
+            "cliente": str(cliente or "Cliente"),
+            "email": correo,
+        })
+
+    resumen = {
+        "identificaciones_pendientes": identificaciones_pendientes,
+        "destinatarios": len(destinatarios),
+        "omitidos_sin_cliente": omitidos_sin_cliente,
+        "omitidos_sin_correo": omitidos_sin_correo,
+        "omitidos_correo_invalido": omitidos_correo_invalido,
+    }
+    return destinatarios, resumen
+
+
+@admin_required
+def admin_cobranza_masivo_previsualizar(request):
+    if request.method != "GET":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+    try:
+        destinatarios, resumen = _destinatarios_cobranza_masiva()
+        return JsonResponse({"ok": True, **resumen})
+    except Exception:
+        logger.exception("No se pudo preparar la vista previa del envío masivo de cobranza.")
+        return JsonResponse({
+            "ok": False,
+            "error": "No se pudo consultar la cartera y los correos de los clientes.",
+        }, status=500)
+
+
+@admin_required
+def admin_cobranza_masivo_encolar(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    try:
+        destinatarios, resumen = _destinatarios_cobranza_masiva()
+        if not destinatarios:
+            return JsonResponse({
+                "ok": False,
+                "error": "No hay clientes con cartera pendiente y correo electrónico válido.",
+                **resumen,
+            }, status=400)
+
+        envio = CobranzaEnvioMasivo.objects.create(
+            estado=CobranzaEnvioMasivo.Estado.PENDIENTE,
+            destinatarios=len(destinatarios),
+            omitidos_sin_cliente=resumen["omitidos_sin_cliente"],
+            omitidos_sin_correo=resumen["omitidos_sin_correo"],
+            omitidos_correo_invalido=resumen["omitidos_correo_invalido"],
+            pendientes_json=json.dumps(destinatarios, ensure_ascii=False),
+            creado_por=(
+                request.session.get("admin_name")
+                or request.session.get("admin_username", "")
+            ),
+        )
+        return JsonResponse({
+            "ok": True,
+            "envio_id": envio.pk,
+            "mensaje": (
+                f"Envío masivo #{envio.pk} puesto en cola para "
+                f"{len(destinatarios)} cliente(s)."
+            ),
+            **resumen,
+        })
+    except Exception:
+        logger.exception("No se pudo encolar el envío masivo de cobranza.")
+        return JsonResponse({
+            "ok": False,
+            "error": "No se pudo poner el envío masivo en cola.",
+        }, status=500)
+
+
+@admin_required
+def admin_cobranza_masivo_reintentar(request, envio_id):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    envio = get_object_or_404(CobranzaEnvioMasivo, pk=envio_id)
+    if envio.estado != CobranzaEnvioMasivo.Estado.ERROR:
+        return JsonResponse({
+            "ok": False,
+            "error": "Solo se pueden reintentar envíos que tengan errores.",
+        }, status=400)
+
+    try:
+        fallidos = json.loads(envio.fallidos_json or "[]")
+    except (TypeError, ValueError):
+        fallidos = []
+
+    pendientes = [
+        {"ruc": item.get("ruc", ""), "cliente": item.get("cliente", "Cliente"), "email": item.get("email", "")}
+        for item in fallidos
+        if item.get("ruc") and item.get("email")
+    ]
+    if not pendientes:
+        return JsonResponse({"ok": False, "error": "No hay destinatarios fallidos para reintentar."}, status=400)
+
+    envio.estado = CobranzaEnvioMasivo.Estado.PENDIENTE
+    envio.pendientes_json = json.dumps(pendientes, ensure_ascii=False)
+    envio.fallidos_json = "[]"
+    envio.fallidos = 0
+    envio.error_detalle = ""
+    envio.enviado_en = None
+    envio.destinatarios = envio.enviados + len(pendientes)
+    envio.save(update_fields=[
+        "estado", "pendientes_json", "fallidos_json", "fallidos",
+        "error_detalle", "enviado_en", "destinatarios",
+    ])
+    return JsonResponse({
+        "ok": True,
+        "mensaje": f"Se pusieron en cola {len(pendientes)} destinatario(s) para reintento.",
     })
