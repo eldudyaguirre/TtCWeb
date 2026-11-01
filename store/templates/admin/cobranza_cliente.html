@@ -51,7 +51,7 @@
         <span><strong>Facturas pendientes</strong><small>Consultar saldos, fechas y clientes</small></span>
         <span class="cob-arrow">›</span>
     </button>
-    <button type="button" class="cob-shortcut" id="cobServiciosTrigger" data-url="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}">
+    <button type="button" class="cob-shortcut" id="cobServiciosTrigger" data-url="{% url 'admin_cobranza_cliente' ruc=cliente.ruccedcli %}?vista=servicios">
         <span class="cob-shortcut-icon"><i class="fi fi-rr-briefcase"></i></span>
         <span><strong>Servicios por facturar</strong><small>Servicios registrados que aún no se han facturado</small></span>
         <span class="cob-arrow">›</span>
