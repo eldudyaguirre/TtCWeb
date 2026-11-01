@@ -225,7 +225,7 @@ class Command(BaseCommand):
 
             envio.enviados += 1
             self.stdout.write(self.style.SUCCESS(
-                f"Cobranza masiva {envio.id}: reporte enviado a {identificacion} ({correo})."
+                f"Cobranza masiva {envio.id}: reporte enviado a la identificación {identificacion}."
             ))
         except Exception as exc:
             detalle = {
@@ -236,7 +236,7 @@ class Command(BaseCommand):
             }
             fallidos.append(detalle)
             self.stdout.write(self.style.ERROR(
-                f"Cobranza masiva {envio.id}: fallo para {identificacion} ({correo}): {exc}"
+                f"Cobranza masiva {envio.id}: fallo para la identificación {identificacion}: {exc}"
             ))
 
         pendientes = pendientes[1:]
