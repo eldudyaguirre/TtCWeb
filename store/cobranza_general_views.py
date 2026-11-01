@@ -801,12 +801,10 @@ def admin_prefacturacion_mensual_generar(request):
                     "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
                 )
                 maximo_prefactura = int(cursor.fetchone()[0] or 0)
-                if consecutivo < maximo_prefactura:
-                    raise RuntimeError(
-                        "El consecutivo parametros.numdetprefac está atrasado. "
-                        f"Valor actual: {consecutivo}; máximo numdetfac en prefactura: "
-                        f"{maximo_prefactura}. Corrige el parámetro antes de generar."
-                    )
+                # Si el parámetro quedó atrás por inserciones históricas,
+                # se alinea con el mayor ID real antes de asignar nuevas líneas.
+                consecutivo_original = consecutivo
+                consecutivo = max(consecutivo, maximo_prefactura)
 
                 resumen = _resumen_prefacturacion_mensual(
                     cursor, mes, anio, codigo_mes
@@ -844,6 +842,15 @@ def admin_prefacturacion_mensual_generar(request):
                     consecutivo_inicial = None
                     consecutivo_final = None
                     nuevo_consecutivo = int(consecutivo)
+                    if consecutivo != consecutivo_original:
+                        cursor.execute(
+                            "UPDATE public.parametros SET numdetprefac = %s",
+                            [nuevo_consecutivo],
+                        )
+                        if cursor.rowcount != 1:
+                            raise RuntimeError(
+                                "No se pudo sincronizar el consecutivo numdetprefac."
+                            )
 
         logger.info(
             "Prefacturación mensual %02d/%s: generados=%s consecutivos=%s-%s usuario=%s",
@@ -865,12 +872,19 @@ def admin_prefacturacion_mensual_generar(request):
             "anio": anio,
             "ya_generados": resumen["ya_generados"],
             "consecutivo_actualizado": nuevo_consecutivo,
+            "consecutivo_sincronizado": consecutivo != consecutivo_original,
             "mensaje": (
-                f"Se generaron {cantidad_generada} servicio(s) de "
-                f"{resumen['descripcion']} para {mes:02d}/{anio}."
-                if cantidad_generada
-                else f"No había servicios pendientes de generar para {mes:02d}/{anio}. "
-                     "Los clientes ya tenían el servicio registrado."
+                (
+                    f"Se generaron {cantidad_generada} servicio(s) de "
+                    f"{resumen['descripcion']} para {mes:02d}/{anio}."
+                    if cantidad_generada
+                    else f"No había servicios pendientes de generar para {mes:02d}/{anio}. "
+                         "Los clientes ya tenían el servicio registrado."
+                )
+                + (
+                    f" El consecutivo se sincronizó con el máximo existente ({maximo_prefactura})."
+                    if consecutivo != consecutivo_original else ""
+                )
             ),
         })
     except ValueError as exc:
