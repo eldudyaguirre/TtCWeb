@@ -34,8 +34,8 @@
             <span class="cob-stat-icon" aria-hidden="true"><i class="fi fi-rr-receipt"></i></span>
             <span class="cob-stat-label">Servicios por facturar</span>
         </div>
-        <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
-        <small>{{ resumen_servicios.cantidad }} registros</small>
+        <strong id="cobResumenServiciosTotal">$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+        <small id="cobResumenServiciosCantidad">{{ resumen_servicios.cantidad }} registros</small>
         <p class="cob-stat-note">Este valor es antes de IVA.</p>
     </article>
 </section>
@@ -308,6 +308,14 @@
   if(!section)throw new Error('La respuesta no contiene la lista de servicios pendientes.');
   const popupStyles=Array.from(doc.querySelectorAll('style')).map(style=>style.outerHTML).join('');
   content.innerHTML=section.outerHTML+popupStyles;
+  const totalValue=section.querySelector('[data-prefactura-total]')?.dataset.prefacturaTotal;
+  const countValue=section.querySelector('[data-prefactura-count]')?.dataset.prefacturaCount;
+  const totalNode=document.getElementById('cobResumenServiciosTotal');
+  const countNode=document.getElementById('cobResumenServiciosCantidad');
+  if(totalValue!==undefined&&totalNode){
+   totalNode.textContent='$ '+Number(totalValue||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  if(countValue!==undefined&&countNode)countNode.textContent=Number(countValue||0).toLocaleString('es-EC')+' registros';
   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
   initEditor();
  };
