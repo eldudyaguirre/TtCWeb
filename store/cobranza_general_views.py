@@ -741,6 +741,9 @@ def admin_prefacturacion_mensual_previsualizar(request):
             resumen["consecutivo_actual"] = consecutivo_actual
             resumen["consecutivo_maximo_prefactura"] = maximo_prefactura
             resumen["consecutivo_coherente"] = consecutivo_actual >= maximo_prefactura
+            resumen["consecutivo_siguiente"] = max(
+                consecutivo_actual, maximo_prefactura
+            ) + 1
             auditoria = _auditar_columnas_prefactura(cursor)
         return JsonResponse({
             "ok": True,
