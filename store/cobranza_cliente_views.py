@@ -288,8 +288,11 @@ def admin_cobranza_cliente(request, ruc):
                 "q": busqueda,
             },
             "limite_resultados": len(facturas) >= 500,
+            "limite_servicios": len(servicios_pendientes) >= 500,
         }
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        if request.GET.get("vista") == "servicios":
+            return render(request, "admin/servicios_pendientes_popup.html", contexto)
         return render(request, "admin/facturas_pendientes_popup.html", contexto)
     return render(request, "admin/cobranza_cliente.html", contexto)
 
