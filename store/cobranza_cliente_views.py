@@ -287,7 +287,12 @@ def _reporte_cobranza_pdf(cliente, datos):
         historia.extend([logo, Spacer(1, 3 * mm)])
     except Exception as exc:
         logger.exception("No se pudo procesar static/images/logosvg.svg para el reporte.")
-        raise RuntimeError("No se pudo procesar el logo logosvg.svg del reporte de cobranza.") from exc
+        raise RuntimeError(
+            "No se pudo procesar logosvg.svg: "
+            + type(exc).__name__
+            + ": "
+            + str(exc)
+        ) from exc
 
     historia.extend([
         Paragraph("VALORES PENDIENTES DE PAGO", estilos["PendientesTitle"]),
