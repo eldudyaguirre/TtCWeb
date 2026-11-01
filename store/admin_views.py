@@ -3433,6 +3433,8 @@ def admin_anexo_archivos(request, ruc, modulo):
     ruc_cliente = str(cliente.ruccedcli).strip()
     raiz = data_root() / ruc_cliente / 'anexos' / config['carpeta']
     es_rdep = str(modulo).lower() == 'rdep'
+    anio_actual = timezone.localdate().year
+    anio_minimo_rdep = anio_actual - 7
     error = ''
     exito = ''
     limite_bytes = 20 * 1024 * 1024
@@ -3513,7 +3515,9 @@ def admin_anexo_archivos(request, ruc, modulo):
         categoria = request.POST.get('categoria_rdep', '').strip().upper() if es_rdep else ''
         archivos_subidos = request.FILES.getlist('archivo_anexo')
 
-        if not 2000 <= anio <= 2100:
+        if es_rdep and not anio_minimo_rdep <= anio <= anio_actual:
+            error = f'El periodo fiscal RDEP debe estar entre {anio_minimo_rdep} y {anio_actual}.'
+        elif not 2000 <= anio <= 2100:
             error = 'Selecciona un año válido.'
         elif es_rdep and categoria not in categorias_por_codigo:
             error = 'Selecciona el tipo de documento RDEP que vas a cargar.'
@@ -3726,9 +3730,8 @@ def admin_anexo_archivos(request, ruc, modulo):
     if anio_filtro:
         registros = [item for item in registros if item['anio'] == anio_filtro]
 
-    anio_actual = timezone.localdate().year
     anios_carga = (
-        set(range(2000, anio_actual + 1))
+        set(range(anio_minimo_rdep, anio_actual + 1))
         if es_rdep
         else {anio_actual, anio_actual - 1}
     )
