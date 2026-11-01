@@ -66,19 +66,20 @@
         </div>
         <div class="cob-report-table-wrap">
             <table class="cob-ec-table cob-report-table">
-                <thead><tr><th>Código</th><th>Descripción</th><th>Fecha</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Total</th></tr></thead>
+                <thead><tr><th>Código</th><th>Descripción</th><th>Fecha</th><th>Año</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Total</th></tr></thead>
                 <tbody>
                 {% for servicio in datos.servicios %}
                     <tr>
                         <td>{{ servicio.coditeinv|default:"—" }}</td>
                         <td>{{ servicio.desiteinv|default:"—" }}</td>
                         <td>{{ servicio.fecha|date:"d/m/Y"|default:"—" }}</td>
+                        <td>{{ servicio.anio|default:"—" }}</td>
                         <td class="num">{{ servicio.cantidad|floatformat:2 }}</td>
                         <td class="num">$ {{ servicio.precio|floatformat:2 }}</td>
                         <td class="num"><strong>$ {{ servicio.total|floatformat:2 }}</strong></td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6" class="cob-ec-empty">No existen servicios pendientes de facturar.</td></tr>
+                    <tr><td colspan="7" class="cob-ec-empty">No existen servicios pendientes de facturar.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
