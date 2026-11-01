@@ -56,6 +56,11 @@
         <span><strong>Servicios por facturar</strong><small>Servicios registrados que aún no se han facturado</small></span>
         <span class="cob-arrow">›</span>
     </button>
+    <button type="button" class="cob-shortcut" id="cobReportesTrigger" data-url="{% url 'admin_cobranza_reporte_popup' ruc=cliente.ruccedcli %}">
+        <span class="cob-shortcut-icon"><i class="fi fi-rr-file-pdf"></i></span>
+        <span><strong>Reportes de cobranza</strong><small>Resumen, PDF y envío por correo al cliente</small></span>
+        <span class="cob-arrow">›</span>
+    </button>
 </section>
 
 
@@ -93,7 +98,19 @@
             <div><span class="admin-kicker">Cuentas por cobrar</span><h2 id="cobFacturasTitle">FACTURAS PENDIENTES DE PAGO</h2><p>{{ cliente.nomclient }} · RUC / C.I.: {{ cliente.ruccedcli }}</p></div>
             <button type="button" class="cob-modal-close" data-cob-facturas-close aria-label="Cerrar">×</button>
         </header>
+
         <div id="cobFacturasContent" class="cob-modal-content"><div class="cob-modal-loading">Cargando facturas pendientes…</div></div>
+    </section>
+</div>
+
+<div class="cob-modal cob-report-modal" id="cobReportesModal" aria-hidden="true">
+    <div class="cob-modal-backdrop" data-cob-report-close></div>
+    <section class="cob-modal-dialog cob-report-dialog" role="dialog" aria-modal="true" aria-labelledby="cobReportesTitle">
+        <header class="cob-modal-header">
+            <div><span class="admin-kicker">Cobranza del cliente</span><h2 id="cobReportesTitle">REPORTES DE COBRANZA</h2><p>{{ cliente.nomclient }} · RUC / C.I.: {{ cliente.ruccedcli }}</p></div>
+            <button type="button" class="cob-modal-close" data-cob-report-close aria-label="Cerrar">×</button>
+        </header>
+        <div id="cobReportesContent" class="cob-modal-content"><div class="cob-modal-loading">Preparando resumen de cobranza…</div></div>
     </section>
 </div>
 <script>
@@ -547,8 +564,128 @@
 
 
 
+
+<script>
+(function(){
+ const trigger=document.getElementById('cobReportesTrigger');
+ const modal=document.getElementById('cobReportesModal');
+ const content=document.getElementById('cobReportesContent');
+ if(!trigger||!modal||!content)return;
+
+ const close=()=>{
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.classList.remove('cob-modal-open');
+ };
+ const load=async()=>{
+  content.innerHTML='<div class="cob-modal-loading">Consultando facturas y servicios pendientes…</div>';
+  try{
+   const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   const body=await response.text();
+   if(!response.ok)throw new Error('No se pudo cargar el reporte (HTTP '+response.status+').');
+   if(!body.includes('cobReporteRoot')&&!body.includes('cob-modal-error'))throw new Error('El servidor no devolvió el resumen esperado. Verifica tu sesión.');
+   content.innerHTML=body;
+  }catch(error){
+   const p=document.createElement('p');
+   p.className='cob-modal-error';
+   p.textContent=error.message||'No se pudo cargar el resumen de cobranza.';
+   content.replaceChildren(p);
+  }
+ };
+ trigger.addEventListener('click',async()=>{
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.classList.add('cob-modal-open');
+  await load();
+ });
+ modal.querySelectorAll('[data-cob-report-close]').forEach(button=>button.addEventListener('click',close));
+ content.addEventListener('submit',async event=>{
+  const form=event.target.closest('#cobReporteEmailForm');
+  if(!form)return;
+  event.preventDefault();
+  const button=form.querySelector('button[type="submit"]');
+  const feedback=form.querySelector('#cobReporteEmailFeedback');
+  const original=button.textContent.trim();
+  button.disabled=true;
+  button.textContent='Enviando…';
+  feedback.className='cob-report-feedback';
+  feedback.textContent='';
+  try{
+   const response=await fetch(form.action,{
+    method:'POST',
+    body:new FormData(form),
+    headers:{'X-Requested-With':'XMLHttpRequest'}
+   });
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo enviar el correo.');
+   feedback.classList.add('is-success');
+   feedback.textContent=data.mensaje||'Reporte enviado correctamente.';
+  }catch(error){
+   feedback.classList.add('is-error');
+   feedback.textContent=error.message||'No se pudo enviar el correo.';
+  }finally{
+   button.disabled=false;
+   button.textContent=original;
+  }
+ });
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&modal.classList.contains('is-open'))close();
+ });
+})();
+</script>
+
 <style>
 .cob-shortcuts button.cob-shortcut{font:inherit;text-align:left;cursor:pointer}
+.cob-report-modal{z-index:1250}
+.cob-report-dialog{width:min(1280px,97vw);max-height:93vh}
+#cobReportesContent{max-height:calc(93vh - 100px)}
+.cob-report-intro{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:15px}
+.cob-report-intro h3{margin:4px 0;color:#203d4b;font-size:18px}
+.cob-report-intro p{margin:0;color:#71838c;font-size:12px}
+.cob-report-kicker{color:#129ba7;font-size:10px;font-weight:800;letter-spacing:.1em}
+.cob-report-note{padding:6px 10px;border-radius:20px;background:#f1f7f8;color:#526b75;font-size:11px;font-weight:700;white-space:nowrap}
+.cob-report-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.cob-report-metric{display:flex;flex-direction:column;gap:5px;padding:14px 16px;border:1px solid #dfe9ec;border-radius:11px;background:#f8fbfb}
+.cob-report-metric span{color:#647984;font-size:11px;font-weight:800}
+.cob-report-metric strong{color:#20465e;font-size:25px;line-height:1.2}
+.cob-report-metric small{color:#607b8c;font-size:11px}
+.cob-report-metric-invoices strong{color:#982a35}
+.cob-report-metric-overdue strong{color:#b17816}
+.cob-report-metric-services strong{color:#128f9a}
+.cob-report-section{margin-top:19px}
+.cob-report-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
+.cob-report-section-heading h4{margin:0;color:#203d4b;font-size:14px}
+.cob-report-section-heading p{margin:4px 0 0;color:#71838c;font-size:11px}
+.cob-report-section-heading>strong{color:#20465e;font-size:18px;white-space:nowrap}
+.cob-report-table-wrap{overflow:auto;border:1px solid #e1e8ea;border-radius:10px}
+.cob-report-table{min-width:760px}
+.cob-report-table td strong{color:#20465e}
+.cob-report-overdue{color:#b72f3f;font-weight:800}
+.cob-report-disclaimer{margin-top:13px;padding:10px 12px;border-left:3px solid #16a0aa;background:#f3f9fa;color:#60747d;font-size:11px;line-height:1.5}
+.cob-report-warning{margin:12px 0;padding:12px;border:1px solid #f1d79d;border-radius:9px;background:#fff8e9;color:#805c13;font-size:12px;line-height:1.5}
+.cob-report-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;flex-wrap:wrap;margin-top:16px}
+.cob-report-actions .cob-btn,.cob-report-email .cob-btn{min-height:40px;height:auto}
+.cob-report-disabled{pointer-events:none;opacity:.5}
+.cob-btn-whatsapp{display:inline-flex;align-items:center;gap:7px;border:1px solid #d4e3dc;background:#f5f9f7;color:#71847a;cursor:not-allowed}
+.cob-btn-whatsapp span{padding:3px 6px;border-radius:20px;background:#e8efeb;font-size:9px;font-weight:800}
+.cob-report-email{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:14px;padding:14px 15px;border:1px solid #dce8eb;border-radius:11px;background:#f8fbfb}
+.cob-report-email-copy{display:flex;flex-direction:column;gap:4px;min-width:180px}
+.cob-report-email-copy strong{color:#294653;font-size:12px}
+.cob-report-email-copy span{color:#647984;font-size:12px;overflow-wrap:anywhere}
+.cob-report-feedback{flex-basis:100%;margin:0;font-size:12px}
+.cob-report-feedback.is-success{color:#087c4a}
+.cob-report-feedback.is-error{color:#b42332}
+.cob-report-email button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:720px){
+ .cob-report-summary{grid-template-columns:1fr}
+ .cob-report-intro{align-items:flex-start;flex-direction:column}
+ .cob-report-section-heading{align-items:flex-start}
+ .cob-report-email{align-items:stretch;flex-direction:column}
+ .cob-report-email .cob-btn{width:100%}
+ .cob-report-actions{justify-content:stretch}
+ .cob-report-actions .cob-btn{flex:1 1 100%}
+}
+
 .cob-modal{display:none;position:fixed;inset:0;z-index:1200;align-items:center;justify-content:center;padding:20px}
 .cob-modal.is-open{display:flex}
 .cob-modal-backdrop{position:absolute;inset:0;background:rgba(16,32,41,.62);backdrop-filter:blur(4px)}
