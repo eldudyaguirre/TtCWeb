@@ -48,7 +48,7 @@ def _reporte_datos_cobranza(cliente):
                 ),
                 COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0)
             FROM public.cuentascobrar cc
-            WHERE LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+            WHERE COALESCE(cc.ruccedcli::text, '') = %s
               AND UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
               AND COALESCE(cc.valpagpar, 0) > 0
             """,
@@ -82,7 +82,7 @@ def _reporte_datos_cobranza(cliente):
                        MAX(fecfactur) AS fecha_factura,
                        MAX(totfactur) AS total_factura
                 FROM public.facturas
-                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                WHERE COALESCE(ruccedcli::text, '') = %s
                 GROUP BY numfactur::text
             )
             SELECT
@@ -94,7 +94,7 @@ def _reporte_datos_cobranza(cliente):
                 COUNT(*) AS cuotas_pendientes
             FROM public.cuentascobrar cc
             LEFT JOIN facturas_cabecera fc ON fc.numfactur = cc.numfactur::text
-            WHERE LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+            WHERE COALESCE(cc.ruccedcli::text, '') = %s
               AND UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
               AND COALESCE(cc.valpagpar, 0) > 0
             GROUP BY cc.numfactur::text, fc.fecha_factura, fc.total_factura
