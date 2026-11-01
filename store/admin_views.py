@@ -3409,13 +3409,18 @@ ANEXOS_CLIENTE = {
 
 @admin_required
 def admin_anexo_archivos(request, ruc, modulo):
-    """Gestiona los archivos de AICE, ADI, RDEP o DPT para un cliente."""
+    """Gestiona anexos tributarios por cliente y periodo fiscal."""
     import hashlib
     import mimetypes
+    import re
     import xml.etree.ElementTree as ET
     import zipfile
     from datetime import datetime
+    from io import BytesIO
     from pathlib import Path
+
+    from django.db import transaction
+
     from .models.archivo import Archivo
     from .services.archivos.storage import data_root
 
@@ -3426,86 +3431,225 @@ def admin_anexo_archivos(request, ruc, modulo):
     cliente = get_object_or_404(Cliente, pk=ruc)
     ruc_cliente = str(cliente.ruccedcli).strip()
     raiz = data_root() / ruc_cliente / 'anexos' / config['carpeta']
+    es_rdep = str(modulo).lower() == 'rdep'
     error = ''
     exito = ''
-    extensiones = {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}
     limite_bytes = 20 * 1024 * 1024
+    extensiones_generales = {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}
+
+    categorias_rdep = [
+        {
+            'codigo': 'XML',
+            'titulo': 'XML del RDEP',
+            'descripcion': 'Archivo XML del anexo presentado al SRI.',
+            'prefijo': 'RDEP_XML__',
+            'extensiones': {'.xml', '.zip'},
+            'multiple': False,
+        },
+        {
+            'codigo': 'GRILLA',
+            'titulo': 'Grilla PDF',
+            'descripcion': 'Resumen o condensado de los trabajadores del periodo fiscal. Un archivo por año.',
+            'prefijo': 'RDEP_GRILLA__',
+            'extensiones': {'.pdf'},
+            'multiple': False,
+        },
+        {
+            'codigo': 'TALON',
+            'titulo': 'Talón de resumen',
+            'descripcion': 'PDF con el resumen consolidado de la información del periodo fiscal. Un archivo por año.',
+            'prefijo': 'RDEP_TALON__',
+            'extensiones': {'.pdf'},
+            'multiple': False,
+        },
+        {
+            'codigo': 'FORMULARIOS107',
+            'titulo': 'Formularios 107',
+            'descripcion': 'PDF individual emitido por el SRI para cada trabajador. Puedes cargar varios archivos.',
+            'prefijo': 'RDEP_107__',
+            'extensiones': {'.pdf'},
+            'multiple': True,
+        },
+    ]
+    categorias_por_codigo = {item['codigo']: item for item in categorias_rdep}
+
+    def clasificar_archivo(nombre, extension):
+        if not es_rdep:
+            return config['titulo'], nombre
+        for categoria in categorias_rdep:
+            prefijo = categoria['prefijo']
+            if nombre.startswith(prefijo):
+                return categoria['titulo'], nombre[len(prefijo):]
+        if extension.lower() in {'.xml', '.zip'}:
+            return 'XML del RDEP', nombre
+        if extension.lower() == '.pdf':
+            return 'PDF anterior sin clasificar', nombre
+        return 'Otros archivos', nombre
+
+    def validar_contenido(extension, contenido):
+        if extension == '.xml':
+            try:
+                ET.fromstring(contenido)
+                return True
+            except ET.ParseError:
+                return False
+        if extension == '.pdf':
+            return contenido.startswith(b'%PDF')
+        if extension in {'.zip', '.xlsx'}:
+            try:
+                with zipfile.ZipFile(BytesIO(contenido)) as paquete:
+                    return paquete.testzip() is None
+            except (zipfile.BadZipFile, OSError):
+                return False
+        return extension == '.xls'
 
     if request.method == 'POST':
         try:
             anio = int(request.POST.get('anio', ''))
         except (TypeError, ValueError):
             anio = 0
-        subido = request.FILES.get('archivo_anexo')
+
+        categoria = request.POST.get('categoria_rdep', '').strip().upper() if es_rdep else ''
+        archivos_subidos = request.FILES.getlist('archivo_anexo')
+
         if not 2000 <= anio <= 2100:
             error = 'Selecciona un año válido.'
-        elif not subido:
-            error = 'Selecciona un archivo para cargar.'
+        elif es_rdep and categoria not in categorias_por_codigo:
+            error = 'Selecciona el tipo de documento RDEP que vas a cargar.'
+        elif not archivos_subidos:
+            error = 'Selecciona al menos un archivo para cargar.'
+        elif es_rdep and not categorias_por_codigo[categoria]['multiple'] and len(archivos_subidos) != 1:
+            error = 'Para este tipo de documento solo se permite cargar un archivo por periodo fiscal.'
         else:
-            extension = Path(subido.name).suffix.lower()
-            nombre = Path(subido.name).name.strip()
-            if extension not in extensiones:
-                error = 'Formato no permitido. Usa XML, ZIP, PDF, XLSX o XLS.'
-            elif subido.size > limite_bytes:
-                error = 'El archivo no puede superar los 20 MB.'
-            elif not nombre or nombre in {'.', '..'}:
-                error = 'El nombre del archivo no es válido.'
-            else:
-                carpeta = raiz / str(anio)
-                destino = carpeta / nombre
-                relativo = (Path(ruc_cliente) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
-                existente = Archivo.objects.filter(ruta_relativa=relativo, activo=True).exists()
-                if existente or destino.exists():
-                    error = f'Ya existe un archivo llamado {nombre} para {anio}.'
-                else:
-                    contenido = subido.read()
-                    valido = True
-                    if extension == '.xml':
-                        try:
-                            ET.fromstring(contenido)
-                        except ET.ParseError:
-                            valido = False
-                    elif extension == '.pdf':
-                        valido = contenido.startswith(b'%PDF')
-                    elif extension in {'.zip', '.xlsx'}:
-                        try:
-                            with zipfile.ZipFile(__import__('io').BytesIO(contenido)) as paquete:
-                                valido = paquete.testzip() is None
-                        except zipfile.BadZipFile:
-                            valido = False
-                    if not valido:
-                        error = 'El archivo está dañado o no corresponde al formato indicado.'
+            categoria_config = categorias_por_codigo.get(categoria)
+            extensiones_permitidas = (
+                categoria_config['extensiones'] if es_rdep
+                else extensiones_generales
+            )
+            prefijo = categoria_config['prefijo'] if es_rdep else ''
+            carpeta = raiz / str(anio)
+            archivos_preparados = []
+            nombres_destino = set()
+
+            for subido in archivos_subidos:
+                nombre_original = Path(str(subido.name or '').replace('\\', '/')).name.strip()
+                extension = Path(nombre_original).suffix.lower()
+                nombre_base = Path(nombre_original).stem
+                nombre_seguro = re.sub(r'[^A-Za-z0-9._ -]+', '_', nombre_base).strip(' ._')
+                extension_segura = extension if extension else ''
+
+                if not nombre_original or nombre_original in {'.', '..'} or not nombre_seguro:
+                    error = 'Uno de los nombres de archivo no es válido.'
+                    break
+                if extension not in extensiones_permitidas:
+                    if es_rdep:
+                        formatos = 'XML o ZIP' if categoria == 'XML' else 'PDF'
+                        error = f'{categoria_config["titulo"]} solo admite archivos {formatos}.'
                     else:
-                        carpeta.mkdir(parents=True, exist_ok=True)
-                        destino.write_bytes(contenido)
-                        tipo = (
-                            Archivo.Tipo.XML if extension == '.xml'
-                            else Archivo.Tipo.PDF if extension == '.pdf'
-                            else Archivo.Tipo.DOCUMENTO
-                        )
-                        try:
+                        error = 'Formato no permitido. Usa XML, ZIP, PDF, XLSX o XLS.'
+                    break
+                if subido.size <= 0:
+                    error = f'El archivo {nombre_original} está vacío.'
+                    break
+                if subido.size > limite_bytes:
+                    error = f'El archivo {nombre_original} supera el máximo de 20 MB.'
+                    break
+
+                nombre_fisico = f'{prefijo}{nombre_seguro}{extension_segura}'
+                relativo = (
+                    Path(ruc_cliente) / 'anexos' / config['carpeta']
+                    / str(anio) / nombre_fisico
+                ).as_posix()
+                destino = carpeta / nombre_fisico
+
+                if nombre_fisico in nombres_destino:
+                    error = f'El archivo {nombre_original} está repetido en esta carga.'
+                    break
+                nombres_destino.add(nombre_fisico)
+
+                if destino.exists() or Archivo.objects.filter(
+                    ruta_relativa=relativo, activo=True
+                ).exists():
+                    error = f'Ya existe un archivo llamado {nombre_original} para {anio}.'
+                    break
+
+                contenido = subido.read()
+                if not validar_contenido(extension, contenido):
+                    error = f'El archivo {nombre_original} está dañado o no corresponde al formato indicado.'
+                    break
+
+                archivos_preparados.append({
+                    'nombre_original': nombre_original,
+                    'nombre_fisico': nombre_fisico,
+                    'relativo': relativo,
+                    'destino': destino,
+                    'extension': extension,
+                    'contenido': contenido,
+                    'tamano': len(contenido),
+                    'mime_type': mimetypes.guess_type(nombre_original)[0] or 'application/octet-stream',
+                })
+
+            if not error and es_rdep and not categoria_config['multiple']:
+                prefijo_categoria = categoria_config['prefijo']
+                existentes_categoria = [
+                    path for path in carpeta.glob(f'{prefijo_categoria}*')
+                    if path.is_file()
+                ]
+                if existentes_categoria:
+                    error = (
+                        f'Ya existe un documento de tipo {categoria_config["titulo"]} '
+                        f'para el periodo {anio}. No se permite duplicarlo.'
+                    )
+
+            if not error and archivos_preparados:
+                carpeta.mkdir(parents=True, exist_ok=True)
+                destinos_creados = []
+                try:
+                    with transaction.atomic():
+                        for item in archivos_preparados:
+                            with item['destino'].open('xb') as destino:
+                                destino.write(item['contenido'])
+                            destinos_creados.append(item['destino'])
+                            tipo = (
+                                Archivo.Tipo.XML if item['extension'] == '.xml'
+                                else Archivo.Tipo.PDF if item['extension'] == '.pdf'
+                                else Archivo.Tipo.DOCUMENTO
+                            )
                             Archivo.objects.create(
                                 cliente=cliente,
                                 tipo=tipo,
-                                nombre_original=nombre,
-                                nombre_fisico=nombre,
-                                ruta_relativa=relativo,
-                                extension=extension,
-                                mime_type=mimetypes.guess_type(nombre)[0] or 'application/octet-stream',
-                                tamano=len(contenido),
-                                sha256=hashlib.sha256(contenido).hexdigest(),
+                                nombre_original=item['nombre_original'],
+                                nombre_fisico=item['nombre_fisico'],
+                                ruta_relativa=item['relativo'],
+                                extension=item['extension'],
+                                mime_type=item['mime_type'],
+                                tamano=item['tamano'],
+                                sha256=hashlib.sha256(item['contenido']).hexdigest(),
                                 creado_por=None,
                                 activo=True,
                             )
-                        except Exception:
-                            destino.unlink(missing_ok=True)
-                            raise
-                        exito = f'El archivo {nombre} se cargó correctamente.'
+                except Exception:
+                    for destino in destinos_creados:
+                        destino.unlink(missing_ok=True)
+                    raise
+
+                if es_rdep:
+                    exito = (
+                        f'Se cargó correctamente {len(archivos_preparados)} archivo(s) '
+                        f'en {categoria_config["titulo"]} para el periodo {anio}.'
+                    )
+                else:
+                    exito = f'El archivo {archivos_preparados[0]["nombre_original"]} se cargó correctamente.'
+            elif not error:
+                error = 'No se encontró ningún archivo válido para cargar.'
 
     registros = []
+    vistos = set()
     anios_disponibles = set()
+
     for archivo in Archivo.objects.filter(
-        cliente=cliente, activo=True,
+        cliente=cliente,
+        activo=True,
         ruta_relativa__contains=f'/anexos/{config["carpeta"]}/',
     ).order_by('-creado_en'):
         ruta = data_root() / Path(archivo.ruta_relativa)
@@ -3515,13 +3659,22 @@ def admin_anexo_archivos(request, ruc, modulo):
             anio_archivo = int(ruta.parent.name)
         except ValueError:
             continue
-        anios_disponibles.add(anio_archivo)
+        categoria_archivo, nombre_visible = clasificar_archivo(
+            ruta.name, archivo.extension or ruta.suffix
+        )
         registros.append({
-            'nombre': ruta.name, 'anio': anio_archivo,
-            'tamano': archivo.tamano, 'fecha': archivo.creado_en,
+            'nombre': nombre_visible,
+            'nombre_fisico': ruta.name,
+            'categoria': categoria_archivo,
+            'anio': anio_archivo,
+            'tamano': archivo.tamano,
+            'fecha': archivo.creado_en,
         })
+        vistos.add((anio_archivo, ruta.name))
+        anios_disponibles.add(anio_archivo)
 
-    # Mostrar también archivos históricos que ya existan en la carpeta privada.
+    # Mantiene visibles los documentos históricos que ya están en almacenamiento,
+    # aunque no tengan todavía un registro asociado en la tabla archivos.
     if raiz.is_dir():
         for ruta in raiz.glob('*/*'):
             if not ruta.is_file():
@@ -3530,15 +3683,23 @@ def admin_anexo_archivos(request, ruc, modulo):
                 anio_archivo = int(ruta.parent.name)
             except ValueError:
                 continue
-            if not any(item['nombre'] == ruta.name and item['anio'] == anio_archivo for item in registros):
+            if (anio_archivo, ruta.name) not in vistos:
                 stat = ruta.stat()
+                categoria_archivo, nombre_visible = clasificar_archivo(
+                    ruta.name, ruta.suffix
+                )
                 registros.append({
-                    'nombre': ruta.name, 'anio': anio_archivo,
-                    'tamano': stat.st_size, 'fecha': datetime.fromtimestamp(stat.st_mtime),
+                    'nombre': nombre_visible,
+                    'nombre_fisico': ruta.name,
+                    'categoria': categoria_archivo,
+                    'anio': anio_archivo,
+                    'tamano': stat.st_size,
+                    'fecha': datetime.fromtimestamp(stat.st_mtime),
                 })
+                vistos.add((anio_archivo, ruta.name))
             anios_disponibles.add(anio_archivo)
 
-    registros.sort(key=lambda item: (item['anio'], item['nombre']), reverse=True)
+    registros.sort(key=lambda item: (item['anio'], item['categoria'], item['nombre']), reverse=True)
     try:
         anio_filtro = int(request.GET.get('anio', ''))
     except (TypeError, ValueError):
@@ -3548,11 +3709,37 @@ def admin_anexo_archivos(request, ruc, modulo):
 
     anio_actual = timezone.localdate().year
     anios_formulario = sorted(anios_disponibles | {anio_actual, anio_actual - 1}, reverse=True)
+
+    grupos_archivos = []
+    if es_rdep:
+        orden_grupos = [
+            'XML del RDEP',
+            'Grilla PDF',
+            'Talón de resumen',
+            'Formularios 107',
+            'PDF anterior sin clasificar',
+            'Otros archivos',
+        ]
+        for titulo in orden_grupos:
+            grupos_archivos.append({
+                'titulo': titulo,
+                'registros': [item for item in registros if item['categoria'] == titulo],
+            })
+
     return render(request, 'admin/anexo_archivos.html', {
-        'cliente': cliente, 'config': config, 'modulo': modulo,
-        'registros': registros, 'anios': sorted(anios_disponibles, reverse=True),
-        'anios_formulario': anios_formulario, 'anio_filtro': anio_filtro,
-        'anio_actual': anio_actual, 'error_anexo': error, 'exito_anexo': exito,
+        'cliente': cliente,
+        'config': config,
+        'modulo': modulo,
+        'es_rdep': es_rdep,
+        'registros': registros,
+        'grupos_archivos': grupos_archivos,
+        'categorias_rdep': categorias_rdep if es_rdep else [],
+        'anios': sorted(anios_disponibles, reverse=True),
+        'anios_formulario': anios_formulario,
+        'anio_filtro': anio_filtro,
+        'anio_actual': anio_actual,
+        'error_anexo': error,
+        'exito_anexo': exito,
         'total_registros': len(registros),
     })
 
