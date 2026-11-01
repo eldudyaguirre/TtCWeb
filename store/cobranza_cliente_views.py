@@ -65,6 +65,7 @@ def admin_cobranza_cliente(request, ruc):
 
     facturas = []
     servicios_pendientes = []
+    items_catalogo = []
     resumen_servicios = {"cantidad": 0, "total": Decimal("0.00")}
     resumen = {
         "cantidad": 0,
@@ -275,11 +276,33 @@ def admin_cobranza_cliente(request, ruc):
             "Verifica la conexión y la estructura de la base del cliente.",
         )
 
+    if request.GET.get("vista") == "servicios" and not db_error:
+        try:
+            with _conexion_cliente(cliente.ruccedcli).cursor() as cursor:
+                cursor.execute("""
+                    SELECT coditem, desitem, COALESCE(cositem, 0) AS precio
+                    FROM public.items
+                    WHERE iteactivo IS TRUE
+                    ORDER BY desitem, coditem
+                """)
+                items_catalogo = [
+                    {"codigo": row[0], "descripcion": row[1], "precio": Decimal(str(row[2] or 0))}
+                    for row in cursor.fetchall()
+                ]
+        except Exception:
+            logger.exception("No se pudo cargar el catálogo para prefactura: ruc=%s", cliente.ruccedcli)
+            try:
+                _conexion_cliente(cliente.ruccedcli).rollback()
+            except Exception:
+                pass
+
     contexto = {
             "cliente": cliente,
             "facturas": facturas,
             "servicios_pendientes": servicios_pendientes,
             "resumen_servicios": resumen_servicios,
+            "items_catalogo": items_catalogo,
+            "servicios_accion_url": f"/totalcounts/clientes/{cliente.ruccedcli}/cobranza/servicios/accion/",
             "resumen": resumen,
             "db_error": db_error,
             "filtros": {
@@ -295,6 +318,182 @@ def admin_cobranza_cliente(request, ruc):
             return render(request, "admin/servicios_pendientes_popup.html", contexto)
         return render(request, "admin/facturas_pendientes_popup.html", contexto)
     return render(request, "admin/cobranza_cliente.html", contexto)
+
+
+
+@admin_required
+def admin_prefactura_servicio_accion(request, ruc):
+    """Agrega, edita o elimina líneas de prefactura sin afectar facturas ni contabilidad."""
+    from django.db import transaction
+    from django.http import JsonResponse
+    from django.views.decorators.http import require_POST
+
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    conexion = _conexion_cliente(cliente.ruccedcli)
+
+    try:
+        accion = request.POST.get("accion", "").strip().lower()
+        numero_linea = request.POST.get("numdetfac", "").strip()
+
+        with transaction.atomic(using=conexion.alias):
+            with conexion.cursor() as cursor:
+                if accion == "eliminar":
+                    if not numero_linea:
+                        raise ValueError("No se identificó el servicio seleccionado.")
+                    cursor.execute(
+                        """
+                        DELETE FROM public.prefactura
+                        WHERE numdetfac::text = %s AND ruc = %s
+                        """,
+                        [numero_linea, cliente.ruccedcli],
+                    )
+                    if cursor.rowcount != 1:
+                        raise ValueError("El servicio ya no existe o no pertenece a este cliente.")
+                    return JsonResponse({"ok": True, "mensaje": "Servicio eliminado correctamente."})
+
+                if accion not in {"agregar", "editar"}:
+                    raise ValueError("La acción solicitada no es válida.")
+
+                codigo = request.POST.get("coditeinv", "").strip()
+                if not codigo:
+                    raise ValueError("Selecciona un servicio del catálogo.")
+
+                try:
+                    cantidad = Decimal(request.POST.get("canfactur", "").strip().replace(",", "."))
+                    precio = Decimal(request.POST.get("preitefac", "").strip().replace(",", "."))
+                except (InvalidOperation, ValueError, TypeError):
+                    raise ValueError("Ingresa una cantidad y un precio válidos.")
+
+                if not cantidad.is_finite() or cantidad <= 0:
+                    raise ValueError("La cantidad debe ser mayor que cero.")
+                if not precio.is_finite() or precio < 0:
+                    raise ValueError("El precio no puede ser negativo.")
+
+                try:
+                    fecha_servicio = date.fromisoformat(
+                        request.POST.get("fecha", "").strip() or timezone.localdate().isoformat()
+                    )
+                except (TypeError, ValueError):
+                    raise ValueError("La fecha del servicio no es válida.")
+
+                cursor.execute(
+                    """
+                    SELECT coditem, desitem, COALESCE(cositem, 0)
+                    FROM public.items
+                    WHERE coditem = %s AND iteactivo IS TRUE
+                    LIMIT 1
+                    """,
+                    [codigo],
+                )
+                item = cursor.fetchone()
+                if not item:
+                    raise ValueError("El servicio seleccionado no existe o está inactivo.")
+
+                descripcion = str(item[1] or "").strip()
+                if not descripcion:
+                    raise ValueError("El servicio seleccionado no tiene descripción.")
+
+                cursor.execute(
+                    """
+                    SELECT column_name, is_nullable, column_default, is_identity
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public' AND table_name = 'prefactura'
+                    ORDER BY ordinal_position
+                    """
+                )
+                columnas = cursor.fetchall()
+                disponibles = {row[0] for row in columnas}
+                requeridas = {"numdetfac", "ruc", "coditeinv", "desiteinv", "canfactur", "preitefac", "fecha"}
+                faltantes = requeridas - disponibles
+                if faltantes:
+                    raise RuntimeError(
+                        "La tabla prefactura no contiene los campos necesarios: "
+                        + ", ".join(sorted(faltantes))
+                    )
+
+                total_linea = (cantidad * precio).quantize(Decimal("0.01"))
+                valores = {
+                    "ruc": cliente.ruccedcli,
+                    "coditeinv": str(item[0]),
+                    "desiteinv": descripcion,
+                    "canfactur": float(cantidad),
+                    "preitefac": float(precio),
+                    "fecha": fecha_servicio,
+                }
+                if "dscitefac" in disponibles:
+                    valores["dscitefac"] = 0
+                if "totitefac" in disponibles:
+                    valores["totitefac"] = float(total_linea)
+
+                # No intentamos insertar columnas nuevas que la tabla declare obligatorias
+                # pero que esta operación no conozca. Así evitamos crear filas incompletas.
+                for nombre, nullable, default, identity in columnas:
+                    if (
+                        nullable == "NO"
+                        and default is None
+                        and identity != "YES"
+                        and nombre not in valores
+                        and not (accion == "agregar" and nombre == "numdetfac")
+                    ):
+                        raise RuntimeError(
+                            f"El campo obligatorio {nombre} de prefactura no tiene un valor definido."
+                        )
+
+                if accion == "editar":
+                    if not numero_linea:
+                        raise ValueError("No se identificó el servicio que deseas editar.")
+                    cursor.execute(
+                        """
+                        SELECT 1 FROM public.prefactura
+                        WHERE numdetfac::text = %s AND ruc = %s
+                        FOR UPDATE
+                        """,
+                        [numero_linea, cliente.ruccedcli],
+                    )
+                    if not cursor.fetchone():
+                        raise ValueError("El servicio ya no existe o no pertenece a este cliente.")
+                    campos = list(valores)
+                    cursor.execute(
+                        "UPDATE public.prefactura SET "
+                        + ", ".join(f"{campo} = %s" for campo in campos)
+                        + " WHERE numdetfac::text = %s AND ruc = %s",
+                        [valores[campo] for campo in campos] + [numero_linea, cliente.ruccedcli],
+                    )
+                    if cursor.rowcount != 1:
+                        raise ValueError("No se pudo actualizar la línea seleccionada.")
+                    mensaje = "Servicio actualizado correctamente."
+                else:
+                    cursor.execute("SELECT siguiente_parametro('numdetfac')")
+                    numero_nuevo = cursor.fetchone()[0]
+                    valores_con_id = {"numdetfac": numero_nuevo, **valores}
+                    campos = list(valores_con_id)
+                    cursor.execute(
+                        "INSERT INTO public.prefactura ("
+                        + ", ".join(campos)
+                        + ") VALUES ("
+                        + ", ".join(["%s"] * len(campos))
+                        + ")",
+                        [valores_con_id[campo] for campo in campos],
+                    )
+                    mensaje = "Servicio agregado correctamente."
+
+        return JsonResponse({"ok": True, "mensaje": mensaje})
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+    except Exception:
+        logger.exception(
+            "Error modificando prefactura: ruc=%s accion=%s numdetfac=%s",
+            cliente.ruccedcli,
+            request.POST.get("accion", ""),
+            request.POST.get("numdetfac", ""),
+        )
+        return JsonResponse(
+            {"ok": False, "error": "No se pudo guardar el servicio. Verifica la estructura de prefactura."},
+            status=500,
+        )
 
 
 @admin_required
