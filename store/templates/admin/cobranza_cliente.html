@@ -605,7 +605,7 @@
   event.preventDefault();
   const button=form.querySelector('button[type="submit"]');
   const feedback=form.querySelector('#cobReporteEmailFeedback');
-  const original=button.textContent.trim();
+  const original=button.innerHTML;
   button.disabled=true;
   button.textContent='Enviando…';
   feedback.className='cob-report-feedback';
@@ -625,7 +625,7 @@
    feedback.textContent=error.message||'No se pudo enviar el correo.';
   }finally{
    button.disabled=false;
-   button.textContent=original;
+   button.innerHTML=original;
   }
  });
  document.addEventListener('keydown',event=>{
