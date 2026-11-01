@@ -186,7 +186,7 @@ class Command(BaseCommand):
         destinatario = pendientes[0]
         identificacion = str(destinatario.get("ruc") or "")
         correo = str(destinatario.get("email") or "").strip()
-        nombre = str(destinatario.get("cliente") or "Cliente").replace("\\r", " ").replace("\\n", " ").strip()
+        nombre = str(destinatario.get("cliente") or "Cliente").replace("\r", " ").replace("\n", " ").strip()
 
         try:
             validate_email(correo)
@@ -199,16 +199,16 @@ class Command(BaseCommand):
                 raise RuntimeError("No se pudo consultar la lista de servicios pendientes.")
 
             pdf = _reporte_cobranza_pdf(cliente, datos)
-            asunto_nombre = nombre.replace("\\r", " ").replace("\\n", " ")[:150]
+            asunto_nombre = nombre.replace("\r", " ").replace("\n", " ")[:150]
             mensaje = EmailMessage(
                 subject=f"Valores pendientes de pago - {asunto_nombre}",
                 body=(
-                    f"Estimado/a {nombre}:\\n\\n"
+                    f"Estimado/a {nombre}:\n\n"
                     "Adjuntamos el reporte actualizado de sus facturas pendientes de cobro "
-                    "y servicios pendientes de facturar.\\n\\n"
+                    "y servicios pendientes de facturar.\n\n"
                     "El documento incluye el detalle de los valores pendientes y las "
-                    "instrucciones para realizar el pago.\\n\\n"
-                    "Saludos cordiales,\\nTotalCounts"
+                    "instrucciones para realizar el pago.\n\n"
+                    "Saludos cordiales,\nTotalCounts"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[correo],
@@ -258,7 +258,7 @@ class Command(BaseCommand):
             for item in fallidos[-10:]
             if item.get("error")
         ]
-        envio.error_detalle = "\\n".join(errores)[:4000]
+        envio.error_detalle = "\n".join(errores)[:4000]
         envio.save(update_fields=[
             "estado", "enviados", "fallidos", "pendientes_json",
             "fallidos_json", "enviado_en", "error_detalle",
