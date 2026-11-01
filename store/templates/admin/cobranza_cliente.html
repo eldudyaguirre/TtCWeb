@@ -299,6 +299,8 @@
  if(!trigger||!modal||!content)return;
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('cob-modal-open');};
  const loadServicios=async()=>{
+  const previousEditor=modal.querySelector('#cobPrefacturaEditor');
+  if(previousEditor)previousEditor.remove();
   content.innerHTML='<div class="cob-modal-loading">Cargando servicios pendientes…</div>';
   const response=await fetch(trigger.dataset.url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
   const html=await response.text();
@@ -308,6 +310,8 @@
   if(!section)throw new Error('La respuesta no contiene la lista de servicios pendientes.');
   const popupStyles=Array.from(doc.querySelectorAll('style')).map(style=>style.outerHTML).join('');
   content.innerHTML=section.outerHTML+popupStyles;
+  const editorNode=content.querySelector('#cobPrefacturaEditor');
+  if(editorNode)modal.appendChild(editorNode);
   const totalValue=section.querySelector('[data-prefactura-total]')?.dataset.prefacturaTotal;
   const countValue=section.querySelector('[data-prefactura-count]')?.dataset.prefacturaCount;
   const totalNode=document.getElementById('cobResumenServiciosTotal');
@@ -319,8 +323,8 @@
   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
   initEditor();
  };
- const editor=()=>content.querySelector('#cobPrefacturaEditor');
- const formEditor=()=>content.querySelector('#cobPrefacturaForm');
+ const editor=()=>modal.querySelector('#cobPrefacturaEditor');
+ const formEditor=()=>modal.querySelector('#cobPrefacturaForm');
  const hideEditor=()=>{const box=editor();if(box)box.hidden=true;};
  const initEditor=()=>{
   const form=formEditor();if(!form)return;
@@ -355,8 +359,8 @@
    }catch(err){feedback.textContent=err.message||'No se pudo guardar el servicio.';}
    finally{save.disabled=false;save.textContent='Guardar servicio';}
   });
-  content.querySelectorAll('[data-prefactura-cancel]').forEach(button=>button.addEventListener('click',hideEditor));
   const overlay=editor();
+  overlay.querySelectorAll('[data-prefactura-cancel]').forEach(button=>button.addEventListener('click',hideEditor));
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideEditor();});
  };
  const openEditor=(action,button)=>{
