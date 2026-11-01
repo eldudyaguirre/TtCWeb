@@ -58,23 +58,6 @@
 .cg-month-metric.main strong{color:#13795f}
 .cg-month-info{margin:12px 0 0;color:#71838c;font-size:11px;line-height:1.6}
 
-.cg-month-audit{margin-top:16px;border:1px solid #e0e9ec;border-radius:10px;overflow:hidden}
-.cg-month-audit h3{margin:0;padding:11px 13px;background:#f5f9fa;color:#294653;font-size:12px}
-.cg-month-audit-wrap{overflow:auto;max-height:260px}
-.cg-month-audit table{width:100%;min-width:620px;border-collapse:collapse}
-.cg-month-audit th{padding:8px 10px;background:#203944;color:#fff;text-align:left;font-size:9px;text-transform:uppercase}
-.cg-month-audit td{padding:8px 10px;border-top:1px solid #edf1f2;color:#425a65;font-size:10px;vertical-align:top}
-.cg-month-audit td:first-child{font-weight:800;color:#203d4b}
-.cg-month-audit-state{font-weight:800}
-.cg-month-audit-state.ok{color:#13795f}
-.cg-month-audit-state.warn{color:#9a6511}
-.cg-month-audit-state.fail{color:#b42332}
-
-.cg-month-warning{padding:12px 13px;border:1px solid #f1d79d;border-radius:9px;background:#fff9ed;color:#7d5e1d;font-size:11px;line-height:1.55}
-.cg-month-status{min-height:18px;margin-top:12px;font-size:12px;font-weight:700;line-height:1.5}
-.cg-month-status.success{color:#13795f}
-.cg-month-status.error{color:#b42332}
-.cg-month-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:17px;flex-wrap:wrap}
 @media(max-width:650px){
  .cg-head-actions{width:100%;justify-content:space-between}
  .cg-head-actions .cg-btn{flex:1}
@@ -489,56 +472,18 @@
     description.textContent='Servicio: '+data.codigo_mes+' · '+data.descripcion+'. Se insertará una línea por cliente, con cantidad 1 y tarifa registrada en su ficha. El valor se guarda antes de IVA.';
     preview.appendChild(description);
 
-    const audit=document.createElement('section');
-    audit.className='cg-month-audit';
-    const auditTitle=document.createElement('h3');
-    auditTitle.textContent='Auditoría de todas las columnas de public.prefactura';
-    audit.appendChild(auditTitle);
-    const auditWrap=document.createElement('div');
-    auditWrap.className='cg-month-audit-wrap';
-    const auditTable=document.createElement('table');
-    const auditHead=document.createElement('thead');
-    const auditHeadRow=document.createElement('tr');
-    ['Columna','Tipo de dato','Estado de llenado','Origen / detalle'].forEach(label=>{
-     const th=document.createElement('th');
-     th.textContent=label;
-     auditHeadRow.appendChild(th);
-    });
-    auditHead.appendChild(auditHeadRow);
-    auditTable.appendChild(auditHead);
-    const auditBody=document.createElement('tbody');
-    (data.columnas||[]).forEach(column=>{
-     const row=document.createElement('tr');
-     [column.nombre,column.tipo,column.estado,column.detalle].forEach((value,index)=>{
-      const td=document.createElement('td');
-      td.textContent=String(value??'');
-      if(index===2){
-       td.className='cg-month-audit-state';
-       if(String(column.estado).startsWith('FALTA'))td.classList.add('fail');
-       else if(String(column.estado).includes('NULL'))td.classList.add('warn');
-       else td.classList.add('ok');
-      }
-      row.appendChild(td);
-     });
-     auditBody.appendChild(row);
-    });
-    auditTable.appendChild(auditBody);
-    auditWrap.appendChild(auditTable);
-    audit.appendChild(auditWrap);
-    preview.appendChild(audit);
-
     const auditReady=Boolean(data.puede_generar);
     const counterReady=Number(data.consecutivo_siguiente)>0;
     if(!auditReady){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
-     warning.textContent='La generación está bloqueada. Estas columnas obligatorias no tienen valor: '+(data.incumplimientos||[]).join(', ')+'.';
+     warning.textContent='No se puede generar la prefacturación. Existe una validación interna pendiente; contacta al administrador.';
      preview.appendChild(warning);
     }
     if(!data.consecutivo_coherente){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
-     warning.textContent='El numdetprefac actual ('+data.consecutivo_actual+') está por debajo del último numdetfac existente ('+data.consecutivo_maximo_prefactura+'). Al confirmar, se sincronizará automáticamente antes de asignar los nuevos números.';
+     warning.textContent='El consecutivo de prefactura se actualizará automáticamente antes de asignar los nuevos números.';
      preview.appendChild(warning);
     }
     previewReady=data.por_generar>0&&auditReady&&counterReady;
