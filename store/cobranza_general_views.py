@@ -61,7 +61,7 @@ def admin_cobranza_general(request):
                 f"""
                 WITH cartera AS (
                     SELECT
-                        TRIM(COALESCE(cc.ruccedcli::text, '')) AS identificacion,
+                        COALESCE(cc.ruccedcli::text, '') AS identificacion,
                         COUNT(DISTINCT cc.numfactur) AS cantidad_facturas,
                         COUNT(DISTINCT cc.numfactur) FILTER (
                             WHERE cc.fecvencim::date < %s::date
@@ -70,18 +70,18 @@ def admin_cobranza_general(request):
                     FROM public.cuentascobrar cc
                     WHERE UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
                       AND COALESCE(cc.valpagpar, 0) > 0
-                    GROUP BY TRIM(COALESCE(cc.ruccedcli::text, ''))
+                    GROUP BY COALESCE(cc.ruccedcli::text, '')
                 ),
                 servicios AS (
                     SELECT
-                        TRIM(COALESCE(p.ruc::text, '')) AS identificacion,
+                        COALESCE(p.ruc::text, '') AS identificacion,
                         COUNT(*) AS cantidad_servicios,
                         COALESCE(
                             SUM(COALESCE(p.canfactur, 0) * COALESCE(p.preitefac, 0)),
                             0
                         ) AS subtotal_servicios
                     FROM public.prefactura p
-                    GROUP BY TRIM(COALESCE(p.ruc::text, ''))
+                    GROUP BY COALESCE(p.ruc::text, '')
                 ),
                 pendientes AS (
                     SELECT
@@ -113,7 +113,7 @@ def admin_cobranza_general(request):
                     p.subtotal_servicios
                 FROM pendientes p
                 LEFT JOIN public.clientes c
-                    ON TRIM(COALESCE(c.ruccedcli::text, '')) = p.identificacion
+                    ON COALESCE(c.ruccedcli::text, '') = p.identificacion
                 WHERE {" AND ".join(condiciones)}
                 ORDER BY
                     (
@@ -208,7 +208,7 @@ def admin_cobranza_general(request):
                     COUNT(*) FILTER (WHERE c.ruccedcli IS NULL) AS sin_cliente
                 FROM public.prefactura p
                 LEFT JOIN public.clientes c
-                    ON TRIM(COALESCE(c.ruccedcli::text, '')) = TRIM(COALESCE(p.ruc::text, ''))
+                    ON COALESCE(c.ruccedcli::text, '') = COALESCE(p.ruc::text, '')
                 {filtro_servicios}
                 """,
                 parametros_servicios,
