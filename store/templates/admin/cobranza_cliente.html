@@ -129,8 +129,28 @@
  const openPago=async url=>{
   pagoModal.classList.add('is-open');pagoModal.setAttribute('aria-hidden','false');
   pagoContent.innerHTML='<div class="cob-modal-loading">Cargando formulario de pago…</div>';
-  try{const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});if(!r.ok)throw new Error();pagoContent.innerHTML=await r.text();initPagoForm();}
-  catch(e){pagoContent.innerHTML='<p class="cob-modal-error">No se pudo cargar el formulario de pago.</p>';}
+  try{
+   const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+   const body=await r.text();
+   if(!r.ok){
+    const detail=body.replace(/<[^>]*>/g,' ').replace(/\\s+/g,' ').trim().slice(0,240);
+    throw new Error('Respuesta del servidor: HTTP '+r.status+(detail?' — '+detail:''));
+   }
+   pagoContent.innerHTML=body;
+   if(!pagoContent.querySelector('#cobPagoForm')){
+    if(!pagoContent.querySelector('.cob-modal-error')){
+     throw new Error('El servidor respondió, pero no devolvió el formulario esperado. Puede haber redirigido al inicio de sesión.');
+    }
+    return;
+   }
+   initPagoForm();
+  }catch(e){
+   console.error('Error al cargar/inicializar el formulario de pago:',e);
+   const message=document.createElement('p');
+   message.className='cob-modal-error';
+   message.textContent=e.message||'No se pudo cargar el formulario de pago.';
+   pagoContent.replaceChildren(message);
+  }
  };
  const initPagoForm=()=>{
   const form=pagoContent.querySelector('#cobPagoForm');if(!form)return;
