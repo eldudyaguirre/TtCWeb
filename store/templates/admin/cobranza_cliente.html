@@ -306,7 +306,8 @@
   const doc=new DOMParser().parseFromString(html,'text/html');
   const section=doc.querySelector('#servicios-pendientes');
   if(!section)throw new Error('La respuesta no contiene la lista de servicios pendientes.');
-  content.innerHTML=section.outerHTML;
+  const popupStyles=Array.from(doc.querySelectorAll('style')).map(style=>style.outerHTML).join('');
+  content.innerHTML=section.outerHTML+popupStyles;
   const table=content.querySelector('.cob-table-wrap');if(table)table.style.maxHeight='55vh';
   initEditor();
  };
