@@ -327,7 +327,6 @@ def admin_prefactura_servicio_accion(request, ruc):
     """Agrega, edita o elimina líneas de prefactura sin afectar facturas ni contabilidad."""
     from django.db import transaction
     from django.http import JsonResponse
-    from django.views.decorators.http import require_POST
 
     if request.method != "POST":
         return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
@@ -431,17 +430,18 @@ def admin_prefactura_servicio_accion(request, ruc):
 
                 # No intentamos insertar columnas nuevas que la tabla declare obligatorias
                 # pero que esta operación no conozca. Así evitamos crear filas incompletas.
-                for nombre, nullable, default, identity in columnas:
-                    if (
-                        nullable == "NO"
-                        and default is None
-                        and identity != "YES"
-                        and nombre not in valores
-                        and nombre != "numdetfac"
-                    ):
-                        raise RuntimeError(
-                            f"El campo obligatorio {nombre} de prefactura no tiene un valor definido."
-                        )
+                if accion == "agregar":
+                    for nombre, nullable, default, identity in columnas:
+                        if (
+                            nullable == "NO"
+                            and default is None
+                            and identity != "YES"
+                            and nombre not in valores
+                            and nombre != "numdetfac"
+                        ):
+                            raise RuntimeError(
+                                f"El campo obligatorio {nombre} de prefactura no tiene un valor definido."
+                            )
 
                 if accion == "editar":
                     if not numero_linea:
