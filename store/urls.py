@@ -13,6 +13,7 @@ from .admin_trabajadores_pdf import admin_trabajadores_pdf
 from . import conta_certificado_views
 from . import usuarios_cliente_admin_views
 from . import cobranza_cliente_views
+from . import cobranza_general_views
 
 
 urlpatterns = [
@@ -51,6 +52,7 @@ urlpatterns = [
     path('totalcounts/cambiar-contrasena/', admin_views.admin_cambiar_contrasena, name='admin_cambiar_contrasena'),
     path('totalcounts/workers/', admin_views.admin_workers, name='admin_workers'),
     path('totalcounts/parametros/', parametros_admin_views.admin_parametros, name='admin_parametros'),
+    path('totalcounts/cobranza/', cobranza_general_views.admin_cobranza_general, name='admin_cobranza_general'),
     path('totalcounts/facturacion/', facturacion_admin_views.admin_facturacion, name='admin_facturacion'),
     path('totalcounts/facturacion/nueva/', facturacion_admin_views.admin_factura_nueva, name='admin_factura_nueva'),
     path('totalcounts/servicios-venta/', servicios_venta_views.admin_servicios_venta, name='admin_servicios_venta'),
