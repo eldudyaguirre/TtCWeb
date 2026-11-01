@@ -1143,12 +1143,12 @@ def admin_prefactura_servicio_accion(request, ruc):
                         "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
                     )
                     maximo_prefactura = int(cursor.fetchone()[0] or 0)
-                    if consecutivo_prefactura < maximo_prefactura:
-                        raise RuntimeError(
-                            "El consecutivo parametros.numdetprefac está atrasado. "
-                            f"Valor actual: {consecutivo_prefactura}; máximo numdetfac "
-                            f"en prefactura: {maximo_prefactura}."
-                        )
+                    # Sincroniza con el mayor ID real por si hubo altas
+                    # antiguas que usaron otro consecutivo.
+                    consecutivo_prefactura = max(
+                        consecutivo_prefactura,
+                        maximo_prefactura,
+                    )
                     numero_nuevo = consecutivo_prefactura + 1
                     valores_con_id = {"numdetfac": numero_nuevo, **valores}
                     campos = list(valores_con_id)
