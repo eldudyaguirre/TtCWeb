@@ -626,8 +626,22 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
     from django.http import JsonResponse
     from django.views.decorators.http import require_http_methods
 
-    cliente = get_object_or_404(Cliente, pk=ruc)
-    conexion = _conexion_cliente(cliente.ruccedcli)
+    try:
+        cliente = get_object_or_404(Cliente, pk=ruc)
+        conexion = _conexion_cliente(cliente.ruccedcli)
+        conexion.ensure_connection()
+    except Exception:
+        logger.exception(
+            "Error inicializando formulario de pago: ruc=%s factura=%s",
+            ruc,
+            numfactur,
+        )
+        from django.http import HttpResponse
+        return HttpResponse(
+            "No se pudo iniciar el formulario de pago. Revisa el registro de errores del servidor.",
+            status=500,
+        )
+
     error = ""
     factura = None
     vencimientos = []
@@ -827,7 +841,19 @@ def admin_factura_pago_cobranza(request, ruc, numfactur):
 
     if request.method=="POST" and not factura:
         return JsonResponse({"ok":False,"error":error or "No se pudo cargar la factura."},status=400)
-    return render(request,"admin/pago_cobranza_popup.html",{
-        "cliente":cliente,"factura":factura,"vencimientos":vencimientos,"bancos":bancos,
-        "anticipos":anticipos,"error":error,"hoy":timezone.localdate()
-    })
+    try:
+        return render(request,"admin/pago_cobranza_popup.html",{
+            "cliente":cliente,"factura":factura,"vencimientos":vencimientos,"bancos":bancos,
+            "anticipos":anticipos,"error":error,"hoy":timezone.localdate()
+        })
+    except Exception:
+        logger.exception(
+            "Error renderizando formulario de pago: ruc=%s factura=%s",
+            cliente.ruccedcli,
+            numfactur,
+        )
+        from django.http import HttpResponse
+        return HttpResponse(
+            "No se pudo mostrar el formulario de pago. Revisa el registro de errores del servidor.",
+            status=500,
+        )
