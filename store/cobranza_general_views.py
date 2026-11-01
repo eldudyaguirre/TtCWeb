@@ -28,7 +28,6 @@ def admin_cobranza_general(request):
         tipo = "todos"
 
     servicios_sin_cliente = 0
-    servicios_sin_cliente = 0
     try:
         conexion = _db()
         conexion.ensure_connection()
@@ -62,7 +61,7 @@ def admin_cobranza_general(request):
                 f"""
                 WITH cartera AS (
                     SELECT
-                        LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') AS ruc_normalizado,
+                        TRIM(COALESCE(cc.ruccedcli::text, '')) AS identificacion,
                         COUNT(DISTINCT cc.numfactur) AS cantidad_facturas,
                         COUNT(DISTINCT cc.numfactur) FILTER (
                             WHERE cc.fecvencim::date < %s::date
@@ -71,22 +70,22 @@ def admin_cobranza_general(request):
                     FROM public.cuentascobrar cc
                     WHERE UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
                       AND COALESCE(cc.valpagpar, 0) > 0
-                    GROUP BY LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0')
+                    GROUP BY TRIM(COALESCE(cc.ruccedcli::text, ''))
                 ),
                 servicios AS (
                     SELECT
-                        LPAD(TRIM(COALESCE(p.ruc::text, '')), 13, '0') AS ruc_normalizado,
+                        TRIM(COALESCE(p.ruc::text, '')) AS identificacion,
                         COUNT(*) AS cantidad_servicios,
                         COALESCE(
                             SUM(COALESCE(p.canfactur, 0) * COALESCE(p.preitefac, 0)),
                             0
                         ) AS subtotal_servicios
                     FROM public.prefactura p
-                    GROUP BY LPAD(TRIM(COALESCE(p.ruc::text, '')), 13, '0')
+                    GROUP BY TRIM(COALESCE(p.ruc::text, ''))
                 ),
                 pendientes AS (
                     SELECT
-                        COALESCE(f.ruc_normalizado, s.ruc_normalizado) AS ruc_normalizado,
+                        COALESCE(f.identificacion, s.identificacion) AS identificacion,
                         COALESCE(f.cantidad_facturas, 0) AS cantidad_facturas,
                         COALESCE(f.cantidad_facturas_vencidas, 0) AS cantidad_facturas_vencidas,
                         COALESCE(f.saldo_pendiente, 0) AS saldo_pendiente,
@@ -94,15 +93,15 @@ def admin_cobranza_general(request):
                         COALESCE(s.subtotal_servicios, 0) AS subtotal_servicios
                     FROM cartera f
                     FULL OUTER JOIN servicios s
-                        ON s.ruc_normalizado = f.ruc_normalizado
+                        ON s.identificacion = f.identificacion
                 )
                 SELECT
-                    COALESCE(c.ruccedcli::text, p.ruc_normalizado) AS ruc,
+                    COALESCE(c.ruccedcli::text, p.identificacion) AS ruc,
                     COALESCE(
                         c.nomclient,
                         CASE
-                            WHEN p.ruc_normalizado = '0000000000000' THEN 'Servicios sin RUC'
-                            ELSE 'RUC sin cliente asociado'
+                            WHEN p.identificacion = '' THEN 'Servicios sin identificación'
+                            ELSE 'Identificación sin cliente asociado'
                         END
                     ) AS cliente,
                     COALESCE(c.activo, FALSE) AS activo,
@@ -114,7 +113,7 @@ def admin_cobranza_general(request):
                     p.subtotal_servicios
                 FROM pendientes p
                 LEFT JOIN public.clientes c
-                    ON LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0') = p.ruc_normalizado
+                    ON TRIM(COALESCE(c.ruccedcli::text, '')) = p.identificacion
                 WHERE {" AND ".join(condiciones)}
                 ORDER BY
                     (
@@ -156,11 +155,7 @@ def admin_cobranza_general(request):
             total_general = saldo_facturas + total_servicios
 
             item = {
-                "ruc": (
-                    "Sin RUC"
-                    if str(fila["ruc"] or "").strip() == "0000000000000"
-                    else str(fila["ruc"] or "").strip()
-                ),
+                "ruc": str(fila["ruc"] or "").strip() or "Sin identificación",
                 "cliente": fila["cliente"],
                 "activo": bool(fila["activo"]),
                 "cliente_registrado": bool(fila["cliente_registrado"]),
@@ -213,8 +208,7 @@ def admin_cobranza_general(request):
                     COUNT(*) FILTER (WHERE c.ruccedcli IS NULL) AS sin_cliente
                 FROM public.prefactura p
                 LEFT JOIN public.clientes c
-                    ON LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0')
-                     = LPAD(TRIM(COALESCE(p.ruc::text, '')), 13, '0')
+                    ON TRIM(COALESCE(c.ruccedcli::text, '')) = TRIM(COALESCE(p.ruc::text, ''))
                 {filtro_servicios}
                 """,
                 parametros_servicios,
