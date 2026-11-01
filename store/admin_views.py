@@ -3413,6 +3413,7 @@ def admin_anexo_archivos(request, ruc, modulo):
     import hashlib
     import mimetypes
     import re
+    from uuid import uuid4
     import xml.etree.ElementTree as ET
     import zipfile
     from datetime import datetime
@@ -3536,7 +3537,8 @@ def admin_anexo_archivos(request, ruc, modulo):
                 extension = Path(nombre_original).suffix.lower()
                 nombre_base = Path(nombre_original).stem
                 extension_segura = extension if extension else ''
-                longitud_stem = max(1, 255 - len(prefijo) - len(extension_segura))
+                sufijo_unico = f'_{uuid4().hex[:10]}' if es_rdep and categoria == 'FORMULARIOS107' else ''
+                longitud_stem = max(1, 255 - len(prefijo) - len(extension_segura) - len(sufijo_unico))
                 nombre_seguro = re.sub(
                     r'[^A-Za-z0-9._ -]+', '_', nombre_base
                 ).strip(' ._')[:longitud_stem]
@@ -3558,7 +3560,7 @@ def admin_anexo_archivos(request, ruc, modulo):
                     error = f'El archivo {nombre_original} supera el máximo de 20 MB.'
                     break
 
-                nombre_fisico = f'{prefijo}{nombre_seguro}{extension_segura}'
+                nombre_fisico = f'{prefijo}{nombre_seguro}{sufijo_unico}{extension_segura}'
                 relativo = (
                     Path(ruc_cliente) / 'anexos' / config['carpeta']
                     / str(anio) / nombre_fisico
@@ -3779,9 +3781,20 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
     ruta = data_root() / relativo
     if not ruta.is_file():
         raise Http404('El archivo ya no está disponible.')
-    response = FileResponse(ruta.open('rb'), content_type=mimetypes.guess_type(nombre)[0] or 'application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename="{nombre}"'
-    return response
+    from .models.archivo import Archivo
+
+    registro = Archivo.objects.filter(
+        cliente=cliente,
+        ruta_relativa=relativo,
+        activo=True,
+    ).first()
+    nombre_descarga = registro.nombre_original if registro else nombre
+    return FileResponse(
+        ruta.open('rb'),
+        as_attachment=True,
+        filename=nombre_descarga,
+        content_type=mimetypes.guess_type(nombre_descarga)[0] or 'application/octet-stream',
+    )
 
 
 
