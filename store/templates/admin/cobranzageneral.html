@@ -80,13 +80,11 @@
             <strong>{{ resumen.clientes }}</strong>
             <small>Clientes incluidos en el resultado</small>
         </article>
-        {% if tipo != "servicios" %}
         <article class="cg-stat cg-stat-invoice">
             <span>Facturas por cobrar</span>
             <strong>{{ resumen.facturas }}</strong>
             <small>{{ resumen.facturas_vencidas }} facturas vencidas · $ {{ resumen.saldo_facturas|floatformat:2 }}</small>
         </article>
-        {% endif %}
         {% if tipo != "facturas" %}
         <article class="cg-stat cg-stat-service">
             <span>Servicios por facturar</span>
