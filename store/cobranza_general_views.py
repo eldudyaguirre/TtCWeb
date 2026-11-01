@@ -181,6 +181,46 @@ def admin_cobranza_general(request):
             resumen["total_servicios"] += total_servicios
             resumen["total_general"] += total_general
 
+        # La tarjeta de facturas por cobrar debe mostrar la cartera real
+        # aunque la tabla esté filtrada para mostrar solamente servicios.
+        filtro_facturas_global = ""
+        parametros_facturas_global = []
+        if busqueda:
+            filtro_facturas_global = """
+                AND (
+                    COALESCE(c.nomclient, '') ILIKE %s
+                    OR COALESCE(cc.ruccedcli::text, '') ILIKE %s
+                )
+            """
+            termino_facturas = f"%{busqueda}%"
+            parametros_facturas_global.extend([termino_facturas, termino_facturas])
+
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                f"""
+                SELECT
+                    COUNT(DISTINCT cc.numfactur),
+                    COUNT(DISTINCT cc.numfactur) FILTER (
+                        WHERE cc.fecvencim::date < %s::date
+                    ),
+                    COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0)
+                FROM public.cuentascobrar cc
+                LEFT JOIN public.clientes c
+                    ON COALESCE(c.ruccedcli::text, '') = COALESCE(cc.ruccedcli::text, '')
+                WHERE UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
+                  AND COALESCE(cc.valpagpar, 0) > 0
+                  {filtro_facturas_global}
+                """,
+                [timezone.localdate().isoformat(), *parametros_facturas_global],
+            )
+            facturas_global, vencidas_global, saldo_facturas_global = cursor.fetchone()
+
+        resumen["facturas"] = int(facturas_global or 0)
+        resumen["facturas_vencidas"] = int(vencidas_global or 0)
+        resumen["saldo_facturas"] = Decimal(str(saldo_facturas_global or 0)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+
         # El total de servicios debe salir directamente de prefactura.
         # El resumen por cliente anterior puede omitir filas cuyo RUC todavía
         # no está registrado o no coincide con public.clientes.
@@ -238,9 +278,8 @@ def admin_cobranza_general(request):
             resumen["total_general"] = resumen["saldo_facturas"]
             servicios_sin_cliente = 0
         elif tipo == "servicios":
-            resumen["facturas"] = 0
-            resumen["facturas_vencidas"] = 0
-            resumen["saldo_facturas"] = Decimal("0.00")
+            # Se conserva la métrica de facturas para la tarjeta superior;
+            # la tabla continúa mostrando únicamente servicios por facturar.
             resumen["total_general"] = resumen["total_servicios"]
         else:
             resumen["total_general"] = resumen["saldo_facturas"] + resumen["total_servicios"]
