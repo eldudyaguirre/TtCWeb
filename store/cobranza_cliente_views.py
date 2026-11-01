@@ -1138,7 +1138,18 @@ def admin_prefactura_servicio_accion(request, ruc):
                         raise RuntimeError(
                             "No existe un único consecutivo numdetprefac configurado."
                         )
-                    numero_nuevo = int(parametros_prefactura[0][0]) + 1
+                    consecutivo_prefactura = int(parametros_prefactura[0][0])
+                    cursor.execute(
+                        "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
+                    )
+                    maximo_prefactura = int(cursor.fetchone()[0] or 0)
+                    if consecutivo_prefactura < maximo_prefactura:
+                        raise RuntimeError(
+                            "El consecutivo parametros.numdetprefac está atrasado. "
+                            f"Valor actual: {consecutivo_prefactura}; máximo numdetfac "
+                            f"en prefactura: {maximo_prefactura}."
+                        )
+                    numero_nuevo = consecutivo_prefactura + 1
                     valores_con_id = {"numdetfac": numero_nuevo, **valores}
                     campos = list(valores_con_id)
                     cursor.execute(
