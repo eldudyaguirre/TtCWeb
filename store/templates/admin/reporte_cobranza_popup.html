@@ -25,7 +25,7 @@
         <article class="cob-report-metric cob-report-metric-services">
             <span>Servicios por facturar</span>
             <strong>{{ datos.resumen_servicios.cantidad }}</strong>
-            <small>$ {{ datos.resumen_servicios.total|floatformat:2 }} antes de IVA</small>
+            <small>$ {{ datos.resumen_servicios.total|floatformat:2 }} total con IVA ({{ datos.resumen_servicios.porcentaje_iva|floatformat:2 }}%)</small>
         </article>
     </div>
 
@@ -60,8 +60,8 @@
 
     <section class="cob-report-section">
         <div class="cob-report-section-heading">
-            <div><h4>Servicios pendientes de facturar</h4><p>Servicios registrados en prefactura que aún no se han facturado.</p></div>
-            <strong>$ {{ datos.resumen_servicios.total|floatformat:2 }}</strong>
+            <div><h4>Servicios pendientes de facturar</h4><p>Los valores de las líneas no incluyen IVA. Se aplica el {{ datos.resumen_servicios.porcentaje_iva|floatformat:2 }}% configurado en parámetros.</p></div>
+            <strong>$ {{ datos.resumen_servicios.subtotal|floatformat:2 }}</strong>
         </div>
         <div class="cob-report-table-wrap">
             <table class="cob-ec-table cob-report-table">
@@ -85,7 +85,14 @@
         </div>
     </section>
 
-    <div class="cob-report-disclaimer">Las facturas pendientes y los servicios por facturar se presentan por separado. El valor de servicios no forma parte del saldo de facturas por cobrar y se muestra antes de IVA.</div>
+    <div class="cob-report-totals">
+        <div><span>Subtotal de servicios</span><strong>$ {{ datos.resumen_servicios.subtotal|floatformat:2 }}</strong></div>
+        <div><span>IVA ({{ datos.resumen_servicios.porcentaje_iva|floatformat:2 }}%)</span><strong>$ {{ datos.resumen_servicios.iva|floatformat:2 }}</strong></div>
+        <div class="cob-report-total-services"><span>Total servicios</span><strong>$ {{ datos.resumen_servicios.total|floatformat:2 }}</strong></div>
+        <div class="cob-report-total-payable"><span>TOTAL DE VALORES A PAGAR</span><strong>$ {{ datos.resumen_servicios.total_a_pagar|floatformat:2 }}</strong></div>
+    </div>
+
+    <div class="cob-report-disclaimer">El subtotal corresponde a los servicios pendientes antes de IVA. El total de valores a pagar suma el saldo de las facturas pendientes más el total de los servicios con IVA.</div>
 
     <div class="cob-report-actions">
         <a class="cob-btn cob-btn-pdf{% if not servicios_disponibles %} cob-report-disabled{% endif %}" {% if servicios_disponibles %}href="{% url 'admin_cobranza_reporte_pdf' ruc=cliente.ruccedcli %}"{% else %}aria-disabled="true"{% endif %}>
