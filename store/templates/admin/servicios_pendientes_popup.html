@@ -1,0 +1,55 @@
+<section class="admin-card cob-table-card" id="servicios-pendientes">
+    <div class="cob-section-heading">
+        <div>
+            <span class="admin-kicker">Prefactura</span>
+            <h3>Servicios pendientes de facturar</h3>
+            <p>Registros de servicios que todavía no se han trasladado a una factura.</p>
+        </div>
+        <div class="cob-servicios-total">
+            <small>{{ resumen_servicios.cantidad }} registros · Total antes de IVA</small>
+            <strong>$ {{ resumen_servicios.total|floatformat:2 }}</strong>
+        </div>
+    </div>
+
+    <div class="cob-table-wrap">
+        <table class="cob-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th class="cob-money">Cantidad</th>
+                    <th class="cob-money">Precio</th>
+                    <th class="cob-money">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servicio in servicios_pendientes %}
+                <tr>
+                    <td>{{ servicio.fecha|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ servicio.coditeinv|default:"—" }}</td>
+                    <td>{{ servicio.desiteinv|default:"—" }}</td>
+                    <td class="cob-money">{{ servicio.cantidad|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ servicio.precio|floatformat:2 }}</td>
+                    <td class="cob-money">$ {{ servicio.total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="cob-empty">No existen servicios pendientes de facturar para este cliente.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if limite_servicios %}
+    <p class="cob-limit-note">Se muestran los primeros 500 registros. El resumen incluye todos los servicios pendientes.</p>
+    {% endif %}
+</section>
+
+<style>
+#servicios-pendientes .cob-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+#servicios-pendientes .cob-section-heading h3{margin:4px 0;font-size:16px;color:#203d4b}
+#servicios-pendientes .cob-section-heading p{margin:0;color:#71838c;font-size:12px}
+#servicios-pendientes .cob-servicios-total{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
+#servicios-pendientes .cob-servicios-total small{font-size:11px;color:#71838c}
+#servicios-pendientes .cob-servicios-total strong{font-size:20px;color:#203d4b}
+@media(max-width:650px){#servicios-pendientes .cob-section-heading{align-items:flex-start;flex-direction:column}#servicios-pendientes .cob-servicios-total{align-items:flex-start}}
+</style>
