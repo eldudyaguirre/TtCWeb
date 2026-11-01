@@ -148,7 +148,7 @@ def _reporte_datos_cobranza(cliente):
         "resumen_facturas": resumen_facturas,
         "resumen_servicios": resumen_servicios,
         "servicios_disponibles": servicios_disponibles,
-        "fecha_reporte": timezone.now(),
+        "fecha_reporte": timezone.localtime(),
     }
 
 
