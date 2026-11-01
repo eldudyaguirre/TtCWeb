@@ -343,7 +343,7 @@ def _reporte_cobranza_pdf(cliente, datos):
             Paragraph(moneda(datos["resumen_facturas"]["total"]), estilos["PendientesCellRight"]),
         ],
         [
-            Paragraph("Servicios por facturar", estilos["PendientesCell"]),
+            Paragraph("Servicios por facturar (incluye IVA)", estilos["PendientesCell"]),
             Paragraph(str(datos["resumen_servicios"]["cantidad"]), estilos["PendientesCellRight"]),
             Paragraph(moneda(datos["resumen_servicios"]["total"]), estilos["PendientesCellRight"]),
         ],
@@ -426,6 +426,50 @@ def _reporte_cobranza_pdf(cliente, datos):
     )
     tabla_servicios.setStyle(_estilo_tabla_reporte(azul, gris_linea, gris_fondo))
     historia.append(tabla_servicios)
+
+    historia.append(Spacer(1, 4 * mm))
+    filas_totales = [
+        [
+            Paragraph("Subtotal de servicios", estilos["PendientesCell"]),
+            Paragraph(moneda(datos["resumen_servicios"]["subtotal"]), estilos["PendientesCellRight"]),
+        ],
+        [
+            Paragraph(
+                "IVA (" + str(datos["resumen_servicios"]["porcentaje_iva"]) + "%)",
+                estilos["PendientesCell"],
+            ),
+            Paragraph(moneda(datos["resumen_servicios"]["iva"]), estilos["PendientesCellRight"]),
+        ],
+        [
+            Paragraph("<b>Total servicios</b>", estilos["PendientesCell"]),
+            Paragraph("<b>" + moneda(datos["resumen_servicios"]["total"]) + "</b>", estilos["PendientesCellRight"]),
+        ],
+        [
+            Paragraph("<b>TOTAL DE VALORES A PAGAR</b>", estilos["PendientesCell"]),
+            Paragraph("<b>" + moneda(datos["resumen_servicios"]["total_a_pagar"]) + "</b>", estilos["PendientesCellRight"]),
+        ],
+    ]
+    tabla_totales = Table(
+        filas_totales,
+        colWidths=[68 * mm, 38 * mm],
+        hAlign="RIGHT",
+    )
+    tabla_totales.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+        ("BACKGROUND", (0, 2), (-1, 2), gris_fondo),
+        ("BACKGROUND", (0, 3), (-1, 3), colors.HexColor("#e4f2f3")),
+        ("TEXTCOLOR", (0, 3), (-1, 3), azul_texto),
+        ("BOX", (0, 0), (-1, -1), 0.5, gris_linea),
+        ("LINEABOVE", (0, 2), (-1, 2), 0.6, azul),
+        ("LINEABOVE", (0, 3), (-1, 3), 1, azul),
+        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    historia.append(tabla_totales)
 
     def pie(canvas, doc):
         canvas.saveState()
