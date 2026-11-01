@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
@@ -436,7 +436,7 @@ def admin_prefactura_servicio_accion(request, ruc):
                         and default is None
                         and identity != "YES"
                         and nombre not in valores
-                        and not (accion == "agregar" and nombre == "numdetfac")
+                        and nombre != "numdetfac"
                     ):
                         raise RuntimeError(
                             f"El campo obligatorio {nombre} de prefactura no tiene un valor definido."
