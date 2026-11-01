@@ -472,9 +472,9 @@
     description.textContent='Servicio: '+data.codigo_mes+' · '+data.descripcion+'. Se insertará una línea por cliente, con cantidad 1 y tarifa registrada en su ficha. El valor se guarda antes de IVA.';
     preview.appendChild(description);
 
-    const auditReady=Boolean(data.puede_generar);
+    const validacionInternaOk=Boolean(data.puede_generar);
     const counterReady=Number(data.consecutivo_siguiente)>0;
-    if(!auditReady){
+    if(!validacionInternaOk){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
      warning.textContent='No se puede generar la prefacturación. Existe una validación interna pendiente; contacta al administrador.';
@@ -486,18 +486,18 @@
      warning.textContent='El consecutivo de prefactura se actualizará automáticamente antes de asignar los nuevos números.';
      preview.appendChild(warning);
     }
-    previewReady=data.por_generar>0&&auditReady&&counterReady;
+    previewReady=data.por_generar>0&&validacionInternaOk&&counterReady;
     lastPeriod=selected.mes+'-'+selected.anio;
     confirmButton.disabled=!previewReady;
-    if(!auditReady){
-     status.textContent='Primero hay que definir los valores de todas las columnas obligatorias.';
+    if(!validacionInternaOk){
+     status.textContent='No se puede generar la prefacturación. Contacta al administrador.';
      status.className='cg-month-status error';
     }else{
      status.textContent=data.por_generar>0
-      ?'La vista previa y la auditoría están listas. Revisa cada columna antes de confirmar.'
+      ?'Las validaciones están listas. Revisa la cantidad y los valores antes de confirmar.'
       :'No hay registros nuevos para este mes. Los servicios existentes no se duplicarán.';
     }
-    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':(auditReady&&counterReady?'Nada por generar':'Generación bloqueada');
+    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':(validacionInternaOk&&counterReady?'Nada por generar':'Generación bloqueada');
    }catch(error){
     preview.replaceChildren();
     const failure=document.createElement('p');
