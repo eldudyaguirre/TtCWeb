@@ -382,6 +382,13 @@
   const title=box.querySelector('#cobPrefacturaEditorTitle');
   const date=form.querySelector('#prefactura-fecha');
   const description=form.querySelector('#prefactura-descripcion');
+  const quantity=form.querySelector('#prefactura-cantidad');
+  const price=form.querySelector('#prefactura-precio');
+  const feedback=form.querySelector('#cobPrefacturaFeedback');
+  const totalPreview=form.querySelector('#prefactura-total-preview');
+  if(!select||!title||!date||!description||!quantity||!price||!feedback||!totalPreview){
+   throw new Error('El formulario de servicios está incompleto. Recarga el popup e inténtalo nuevamente.');
+  }
   if(action==='editar'){
    const id=button.dataset.id||'';
    const code=button.dataset.code||'';
@@ -399,21 +406,20 @@
    select.value=code;
    description.value=label;
    form.querySelector('[name="numdetfac"]').value=id;
-   form.querySelector('#prefactura-cantidad').value=q;
-   form.querySelector('#prefactura-precio').value=p;
+   quantity.value=q;
+   price.value=p;
    if(serviceDate)date.value=serviceDate;
    title.textContent='Editar servicio';
   }else{
    select.value='';
    description.value='';
-   form.querySelector('#prefactura-cantidad').value='1';
-   form.querySelector('#prefactura-precio').value='';
+   quantity.value='1';
+   price.value='';
    title.textContent='Agregar servicio';
   }
-  form.querySelector('#cobPrefacturaFeedback').textContent='';
-  form.querySelector('#prefactura-total-preview').textContent='$ '+(
-   (Number(form.querySelector('#prefactura-cantidad').value)||0)*
-   (Number(form.querySelector('#prefactura-precio').value)||0)
+  feedback.textContent='';
+  totalPreview.textContent='$ '+(
+   (Number(quantity.value)||0)*(Number(price.value)||0)
   ).toFixed(2);
   box.hidden=false;
   box.style.display='flex';
