@@ -85,11 +85,22 @@
         </div>
     </section>
 
-    <div class="cob-report-totals">
-        <div><span>Subtotal de servicios</span><strong>$ {{ datos.resumen_servicios.subtotal|floatformat:2 }}</strong></div>
-        <div><span>IVA ({{ datos.resumen_servicios.porcentaje_iva|floatformat:2 }}%)</span><strong>$ {{ datos.resumen_servicios.iva|floatformat:2 }}</strong></div>
-        <div class="cob-report-total-services"><span>Total servicios</span><strong>$ {{ datos.resumen_servicios.total|floatformat:2 }}</strong></div>
-        <div class="cob-report-total-payable"><span>TOTAL DE VALORES A PAGAR</span><strong>$ {{ datos.resumen_servicios.total_a_pagar|floatformat:2 }}</strong></div>
+    <div class="cob-report-payment-layout">
+        <div class="cob-report-payment-info">
+            <strong class="cob-report-payment-title">Cuentas para depósito o transferencia:</strong>
+            <strong>ROSA CATALINA LARRIVA CORONEL</strong>
+            <div><span class="cob-report-payment-green">C.I. 0102045275</span></div>
+            <div>Correo: <a href="mailto:totalcounts@hotmail.com">totalcounts@hotmail.com</a></div>
+            <div>Banco Pichincha, Cuenta de ahorros <strong>#201799422</strong></div>
+            <div>Banco Bolivariano, Cuenta Corriente <strong>#4055010955</strong></div>
+            <p>Solicitamos se nos envíe una foto de la transferencia para poder dar de baja el pago antes mencionado.</p>
+        </div>
+        <div class="cob-report-totals">
+            <div><span>Subtotal de servicios</span><strong>$ {{ datos.resumen_servicios.subtotal|floatformat:2 }}</strong></div>
+            <div><span>IVA ({{ datos.resumen_servicios.porcentaje_iva|floatformat:2 }}%)</span><strong>$ {{ datos.resumen_servicios.iva|floatformat:2 }}</strong></div>
+            <div class="cob-report-total-services"><span>Total servicios</span><strong>$ {{ datos.resumen_servicios.total|floatformat:2 }}</strong></div>
+            <div class="cob-report-total-payable"><span>TOTAL DE VALORES A PAGAR</span><strong>$ {{ datos.resumen_servicios.total_a_pagar|floatformat:2 }}</strong></div>
+        </div>
     </div>
 
     <div class="cob-report-disclaimer">El subtotal corresponde a los servicios pendientes antes de IVA. El total de valores a pagar suma el saldo de las facturas pendientes más el total de los servicios con IVA.</div>
