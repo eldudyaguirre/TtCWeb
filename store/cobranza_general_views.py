@@ -43,19 +43,19 @@ def admin_cobranza_general(request):
                 raise RuntimeError("El porcentaje de IVA configurado en public.parametros.poriva no es válido.")
 
             condiciones = [
-                "(COALESCE(f.saldo_pendiente, 0) > 0 OR COALESCE(s.subtotal_servicios, 0) > 0)"
+                "(COALESCE(p.saldo_pendiente, 0) > 0 OR COALESCE(p.subtotal_servicios, 0) > 0)"
             ]
             parametros = [timezone.localdate().isoformat()]
             if busqueda:
                 condiciones.append(
-                    "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(c.ruccedcli::text, '') ILIKE %s)"
+                    "(COALESCE(c.nomclient, '') ILIKE %s OR COALESCE(c.ruccedcli::text, p.ruc_normalizado) ILIKE %s)"
                 )
                 termino = f"%{busqueda}%"
                 parametros.extend([termino, termino])
             if tipo == "facturas":
-                condiciones.append("COALESCE(f.saldo_pendiente, 0) > 0")
+                condiciones.append("COALESCE(p.saldo_pendiente, 0) > 0")
             elif tipo == "servicios":
-                condiciones.append("COALESCE(s.subtotal_servicios, 0) > 0")
+                condiciones.append("COALESCE(p.subtotal_servicios, 0) > 0")
 
             cursor.execute(
                 f"""
@@ -82,29 +82,46 @@ def admin_cobranza_general(request):
                         ) AS subtotal_servicios
                     FROM public.prefactura p
                     GROUP BY LPAD(TRIM(COALESCE(p.ruc::text, '')), 13, '0')
+                ),
+                pendientes AS (
+                    SELECT
+                        COALESCE(f.ruc_normalizado, s.ruc_normalizado) AS ruc_normalizado,
+                        COALESCE(f.cantidad_facturas, 0) AS cantidad_facturas,
+                        COALESCE(f.cantidad_facturas_vencidas, 0) AS cantidad_facturas_vencidas,
+                        COALESCE(f.saldo_pendiente, 0) AS saldo_pendiente,
+                        COALESCE(s.cantidad_servicios, 0) AS cantidad_servicios,
+                        COALESCE(s.subtotal_servicios, 0) AS subtotal_servicios
+                    FROM cartera f
+                    FULL OUTER JOIN servicios s
+                        ON s.ruc_normalizado = f.ruc_normalizado
                 )
                 SELECT
-                    c.ruccedcli::text AS ruc,
-                    COALESCE(c.nomclient, 'Cliente sin nombre') AS cliente,
+                    COALESCE(c.ruccedcli::text, p.ruc_normalizado) AS ruc,
+                    COALESCE(
+                        c.nomclient,
+                        CASE
+                            WHEN p.ruc_normalizado = '0000000000000' THEN 'Servicios sin RUC'
+                            ELSE 'RUC sin cliente asociado'
+                        END
+                    ) AS cliente,
                     COALESCE(c.activo, FALSE) AS activo,
-                    COALESCE(f.cantidad_facturas, 0) AS cantidad_facturas,
-                    COALESCE(f.cantidad_facturas_vencidas, 0) AS cantidad_facturas_vencidas,
-                    COALESCE(f.saldo_pendiente, 0) AS saldo_pendiente,
-                    COALESCE(s.cantidad_servicios, 0) AS cantidad_servicios,
-                    COALESCE(s.subtotal_servicios, 0) AS subtotal_servicios
-                FROM public.clientes c
-                LEFT JOIN cartera f
-                    ON f.ruc_normalizado = LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0')
-                LEFT JOIN servicios s
-                    ON s.ruc_normalizado = LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0')
+                    (c.ruccedcli IS NOT NULL) AS cliente_registrado,
+                    p.cantidad_facturas,
+                    p.cantidad_facturas_vencidas,
+                    p.saldo_pendiente,
+                    p.cantidad_servicios,
+                    p.subtotal_servicios
+                FROM pendientes p
+                LEFT JOIN public.clientes c
+                    ON LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0') = p.ruc_normalizado
                 WHERE {" AND ".join(condiciones)}
                 ORDER BY
                     (
-                        COALESCE(f.saldo_pendiente, 0)
-                        + COALESCE(s.subtotal_servicios, 0)
+                        COALESCE(p.saldo_pendiente, 0)
+                        + COALESCE(p.subtotal_servicios, 0)
                           * (1 + %s::numeric / 100)
                     ) DESC,
-                    c.nomclient ASC
+                    c.nomclient ASC NULLS LAST
                 """,
                 [*parametros, porcentaje_iva],
             )
@@ -138,9 +155,14 @@ def admin_cobranza_general(request):
             total_general = saldo_facturas + total_servicios
 
             item = {
-                "ruc": str(fila["ruc"] or "").strip(),
+                "ruc": (
+                    "Sin RUC"
+                    if str(fila["ruc"] or "").strip() == "0000000000000"
+                    else str(fila["ruc"] or "").strip()
+                ),
                 "cliente": fila["cliente"],
                 "activo": bool(fila["activo"]),
+                "cliente_registrado": bool(fila["cliente_registrado"]),
                 "cantidad_facturas": int(fila["cantidad_facturas"] or 0),
                 "cantidad_facturas_vencidas": int(fila["cantidad_facturas_vencidas"] or 0),
                 "saldo_facturas": saldo_facturas,
