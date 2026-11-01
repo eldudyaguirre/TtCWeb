@@ -57,6 +57,19 @@
 .cg-month-metric.main{background:#e8f7f3;border-color:#cce9df}
 .cg-month-metric.main strong{color:#13795f}
 .cg-month-info{margin:12px 0 0;color:#71838c;font-size:11px;line-height:1.6}
+
+.cg-month-audit{margin-top:16px;border:1px solid #e0e9ec;border-radius:10px;overflow:hidden}
+.cg-month-audit h3{margin:0;padding:11px 13px;background:#f5f9fa;color:#294653;font-size:12px}
+.cg-month-audit-wrap{overflow:auto;max-height:260px}
+.cg-month-audit table{width:100%;min-width:620px;border-collapse:collapse}
+.cg-month-audit th{padding:8px 10px;background:#203944;color:#fff;text-align:left;font-size:9px;text-transform:uppercase}
+.cg-month-audit td{padding:8px 10px;border-top:1px solid #edf1f2;color:#425a65;font-size:10px;vertical-align:top}
+.cg-month-audit td:first-child{font-weight:800;color:#203d4b}
+.cg-month-audit-state{font-weight:800}
+.cg-month-audit-state.ok{color:#13795f}
+.cg-month-audit-state.warn{color:#9a6511}
+.cg-month-audit-state.fail{color:#b42332}
+
 .cg-month-warning{padding:12px 13px;border:1px solid #f1d79d;border-radius:9px;background:#fff9ed;color:#7d5e1d;font-size:11px;line-height:1.55}
 .cg-month-status{min-height:18px;margin-top:12px;font-size:12px;font-weight:700;line-height:1.5}
 .cg-month-status.success{color:#13795f}
@@ -474,13 +487,64 @@
     description.className='cg-month-info';
     description.textContent='Servicio: '+data.codigo_mes+' · '+data.descripcion+'. Se insertará una línea por cliente, con cantidad 1 y tarifa registrada en su ficha. El valor se guarda antes de IVA.';
     preview.appendChild(description);
-    previewReady=data.por_generar>0;
+
+    const audit=document.createElement('section');
+    audit.className='cg-month-audit';
+    const auditTitle=document.createElement('h3');
+    auditTitle.textContent='Auditoría de todas las columnas de public.prefactura';
+    audit.appendChild(auditTitle);
+    const auditWrap=document.createElement('div');
+    auditWrap.className='cg-month-audit-wrap';
+    const auditTable=document.createElement('table');
+    const auditHead=document.createElement('thead');
+    const auditHeadRow=document.createElement('tr');
+    ['Columna','Tipo de dato','Estado de llenado','Origen / detalle'].forEach(label=>{
+     const th=document.createElement('th');
+     th.textContent=label;
+     auditHeadRow.appendChild(th);
+    });
+    auditHead.appendChild(auditHeadRow);
+    auditTable.appendChild(auditHead);
+    const auditBody=document.createElement('tbody');
+    (data.columnas||[]).forEach(column=>{
+     const row=document.createElement('tr');
+     [column.nombre,column.tipo,column.estado,column.detalle].forEach((value,index)=>{
+      const td=document.createElement('td');
+      td.textContent=String(value??'');
+      if(index===2){
+       td.className='cg-month-audit-state';
+       if(String(column.estado).startsWith('FALTA'))td.classList.add('fail');
+       else if(String(column.estado).includes('NULL'))td.classList.add('warn');
+       else td.classList.add('ok');
+      }
+      row.appendChild(td);
+     });
+     auditBody.appendChild(row);
+    });
+    auditTable.appendChild(auditBody);
+    auditWrap.appendChild(auditTable);
+    audit.appendChild(auditWrap);
+    preview.appendChild(audit);
+
+    const auditReady=Boolean(data.puede_generar);
+    if(!auditReady){
+     const warning=document.createElement('p');
+     warning.className='cg-month-warning';
+     warning.textContent='La generación está bloqueada. Estas columnas obligatorias no tienen valor: '+(data.incumplimientos||[]).join(', ')+'.';
+     preview.appendChild(warning);
+    }
+    previewReady=data.por_generar>0&&auditReady;
     lastPeriod=selected.mes+'-'+selected.anio;
     confirmButton.disabled=!previewReady;
-    status.textContent=data.por_generar>0
-     ?'La vista previa está lista. Confirma únicamente después de revisar la cantidad y el total.'
-     :'No hay registros nuevos para este mes. Los servicios existentes no se duplicarán.';
-    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':'Nada por generar';
+    if(!auditReady){
+     status.textContent='Primero hay que definir los valores de todas las columnas obligatorias.';
+     status.className='cg-month-status error';
+    }else{
+     status.textContent=data.por_generar>0
+      ?'La vista previa y la auditoría están listas. Revisa cada columna antes de confirmar.'
+      :'No hay registros nuevos para este mes. Los servicios existentes no se duplicarán.';
+    }
+    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':(auditReady?'Nada por generar':'Generación bloqueada');
    }catch(error){
     preview.replaceChildren();
     const failure=document.createElement('p');
