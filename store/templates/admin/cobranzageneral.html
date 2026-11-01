@@ -481,7 +481,7 @@
      showMetric('Servicios por generar',data.por_generar,true),
      showMetric('Total de tarifas',Number(data.total_tarifas).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}),false),
      showMetric('Último numdetfac registrado',data.consecutivo_maximo_prefactura,false),
-     showMetric('Próximo número de prefactura',data.por_generar?Number(data.consecutivo_actual)+1:'—',false)
+     showMetric('Próximo número de prefactura',data.por_generar?Number(data.consecutivo_siguiente):'—',false)
     );
     preview.replaceChildren(grid);
     const description=document.createElement('p');
@@ -528,17 +528,17 @@
     preview.appendChild(audit);
 
     const auditReady=Boolean(data.puede_generar);
-    const counterReady=Boolean(data.consecutivo_coherente);
+    const counterReady=Number(data.consecutivo_siguiente)>0;
     if(!auditReady){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
      warning.textContent='La generación está bloqueada. Estas columnas obligatorias no tienen valor: '+(data.incumplimientos||[]).join(', ')+'.';
      preview.appendChild(warning);
     }
-    if(!counterReady){
+    if(!data.consecutivo_coherente){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
-     warning.textContent='El consecutivo numdetprefac ('+data.consecutivo_actual+') está por debajo del último numdetfac de prefactura ('+data.consecutivo_maximo_prefactura+'). Corrige ese parámetro antes de generar.';
+     warning.textContent='El numdetprefac actual ('+data.consecutivo_actual+') está por debajo del último numdetfac existente ('+data.consecutivo_maximo_prefactura+'). Al confirmar, se sincronizará automáticamente antes de asignar los nuevos números.';
      preview.appendChild(warning);
     }
     previewReady=data.por_generar>0&&auditReady&&counterReady;
@@ -546,9 +546,6 @@
     confirmButton.disabled=!previewReady;
     if(!auditReady){
      status.textContent='Primero hay que definir los valores de todas las columnas obligatorias.';
-     status.className='cg-month-status error';
-    }else if(!counterReady){
-     status.textContent='El consecutivo de prefactura debe ponerse al día antes de generar.';
      status.className='cg-month-status error';
     }else{
      status.textContent=data.por_generar>0
