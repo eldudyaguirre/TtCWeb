@@ -480,6 +480,7 @@
      showMetric('Ya tienen el servicio',data.ya_generados,false),
      showMetric('Servicios por generar',data.por_generar,true),
      showMetric('Total de tarifas',Number(data.total_tarifas).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}),false),
+     showMetric('Último numdetfac registrado',data.consecutivo_maximo_prefactura,false),
      showMetric('Próximo número de prefactura',data.por_generar?Number(data.consecutivo_actual)+1:'—',false)
     );
     preview.replaceChildren(grid);
@@ -527,24 +528,34 @@
     preview.appendChild(audit);
 
     const auditReady=Boolean(data.puede_generar);
+    const counterReady=Boolean(data.consecutivo_coherente);
     if(!auditReady){
      const warning=document.createElement('p');
      warning.className='cg-month-warning';
      warning.textContent='La generación está bloqueada. Estas columnas obligatorias no tienen valor: '+(data.incumplimientos||[]).join(', ')+'.';
      preview.appendChild(warning);
     }
-    previewReady=data.por_generar>0&&auditReady;
+    if(!counterReady){
+     const warning=document.createElement('p');
+     warning.className='cg-month-warning';
+     warning.textContent='El consecutivo numdetprefac ('+data.consecutivo_actual+') está por debajo del último numdetfac de prefactura ('+data.consecutivo_maximo_prefactura+'). Corrige ese parámetro antes de generar.';
+     preview.appendChild(warning);
+    }
+    previewReady=data.por_generar>0&&auditReady&&counterReady;
     lastPeriod=selected.mes+'-'+selected.anio;
     confirmButton.disabled=!previewReady;
     if(!auditReady){
      status.textContent='Primero hay que definir los valores de todas las columnas obligatorias.';
+     status.className='cg-month-status error';
+    }else if(!counterReady){
+     status.textContent='El consecutivo de prefactura debe ponerse al día antes de generar.';
      status.className='cg-month-status error';
     }else{
      status.textContent=data.por_generar>0
       ?'La vista previa y la auditoría están listas. Revisa cada columna antes de confirmar.'
       :'No hay registros nuevos para este mes. Los servicios existentes no se duplicarán.';
     }
-    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':(auditReady?'Nada por generar':'Generación bloqueada');
+    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':(auditReady&&counterReady?'Nada por generar':'Generación bloqueada');
    }catch(error){
     preview.replaceChildren();
     const failure=document.createElement('p');
