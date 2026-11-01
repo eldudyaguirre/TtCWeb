@@ -681,6 +681,15 @@
 .cob-report-feedback.is-error{color:#b42332}
 .cob-report-email button:disabled{opacity:.55;cursor:not-allowed}
 
+.cob-report-payment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,430px);align-items:start;gap:16px;margin-top:14px}
+.cob-report-payment-info{padding:14px 16px;border:1px solid #dce7ea;border-radius:10px;background:#f8fbfc;color:#314b57;font-size:12px;line-height:1.65}
+.cob-report-payment-info>strong{display:block;margin-bottom:2px}
+.cob-report-payment-info .cob-report-payment-title{margin-bottom:8px;color:#203f4b;font-size:13px}
+.cob-report-payment-info p{margin:12px 0 0;color:#526b75;line-height:1.55}
+.cob-report-payment-info a,.cob-report-payment-green{color:#138a42;text-decoration:underline}
+.cob-report-payment-info a{overflow-wrap:anywhere}
+.cob-report-payment-info strong{font-weight:800}
+.cob-report-payment-layout .cob-report-totals{width:100%;margin:0}
 .cob-report-totals{width:min(430px,100%);margin:14px 0 0 auto;border:1px solid #dce7ea;border-radius:10px;overflow:hidden;background:#fff}
 .cob-report-totals>div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 13px;border-bottom:1px solid #edf1f2;font-size:12px}
 .cob-report-totals>div:last-child{border-bottom:0}
@@ -692,6 +701,10 @@
 .cob-report-total-payable span,.cob-report-total-payable strong{color:#123f4c;font-weight:900}
 .cob-report-total-payable strong{font-size:17px}
 
+@media(max-width:900px){
+ .cob-report-payment-layout{grid-template-columns:1fr}
+ .cob-report-payment-layout .cob-report-totals{width:100%}
+}
 @media(max-width:720px){
  .cob-report-summary{grid-template-columns:1fr}
  .cob-report-intro{align-items:flex-start;flex-direction:column}
