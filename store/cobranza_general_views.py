@@ -750,7 +750,7 @@ def admin_prefacturacion_mensual_previsualizar(request):
             "mes": mes,
             "anio": anio,
             **resumen,
-            **auditoria,
+            "puede_generar": auditoria["puede_generar"],
         })
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
