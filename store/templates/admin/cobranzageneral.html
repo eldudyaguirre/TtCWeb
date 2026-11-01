@@ -35,6 +35,46 @@
 .cg-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .cg-btn-mail{background:#157b62;border-color:#157b62;color:#fff}
 .cg-btn-mail:hover{background:#0f654f;color:#fff}
+
+.cg-btn-monthly{background:#244c61;border-color:#244c61;color:#fff}
+.cg-btn-monthly:hover{background:#183d50;color:#fff}
+.cg-month-modal[hidden]{display:none!important}
+.cg-month-modal{position:fixed;inset:0;z-index:1850;display:flex;align-items:center;justify-content:center;padding:18px}
+.cg-month-backdrop{position:absolute;inset:0;background:rgba(17,34,43,.62);backdrop-filter:blur(3px)}
+.cg-month-dialog{position:relative;width:min(650px,96vw);max-height:92vh;overflow:auto;border:1px solid #dce7ea;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(9,33,43,.24)}
+.cg-month-header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:20px 22px;border-bottom:1px solid #e7eef0}
+.cg-month-header h2{margin:4px 0;color:#203d4b;font-size:20px}
+.cg-month-header p{margin:0;color:#72848c;font-size:11px;line-height:1.5}
+.cg-month-body{padding:20px 22px}
+.cg-month-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cg-month-fields label{display:flex;flex-direction:column;gap:6px;color:#617781;font-size:10px;font-weight:800;text-transform:uppercase}
+.cg-month-fields select,.cg-month-fields input{height:41px;padding:0 11px;border:1px solid #d4e0e4;border-radius:8px;background:#fff;color:#294653;font:inherit;font-size:13px}
+.cg-month-preview{margin-top:15px}
+.cg-month-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.cg-month-metric{padding:12px 13px;border:1px solid #e0e9ec;border-radius:10px;background:#f8fbfc}
+.cg-month-metric span{display:block;color:#6b818b;font-size:10px;font-weight:800;text-transform:uppercase}
+.cg-month-metric strong{display:block;margin-top:5px;color:#203f4b;font-size:22px;font-weight:850}
+.cg-month-metric.main{background:#e8f7f3;border-color:#cce9df}
+.cg-month-metric.main strong{color:#13795f}
+.cg-month-info{margin:12px 0 0;color:#71838c;font-size:11px;line-height:1.6}
+.cg-month-warning{padding:12px 13px;border:1px solid #f1d79d;border-radius:9px;background:#fff9ed;color:#7d5e1d;font-size:11px;line-height:1.55}
+.cg-month-status{min-height:18px;margin-top:12px;font-size:12px;font-weight:700;line-height:1.5}
+.cg-month-status.success{color:#13795f}
+.cg-month-status.error{color:#b42332}
+.cg-month-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:17px;flex-wrap:wrap}
+@media(max-width:650px){
+ .cg-head-actions{width:100%;justify-content:space-between}
+ .cg-head-actions .cg-btn{flex:1}
+ .cg-month-dialog{width:100%;max-height:96vh;border-radius:12px}
+ .cg-month-header,.cg-month-body{padding:15px}
+ .cg-month-fields{gap:8px}
+ .cg-month-grid{gap:7px}
+ .cg-month-metric{padding:10px}
+ .cg-month-metric strong{font-size:19px}
+ .cg-month-actions{flex-direction:column-reverse}
+ .cg-month-actions .cg-btn{width:100%}
+}
+
 .cg-mail-modal[hidden]{display:none!important}
 .cg-mail-modal{position:fixed;inset:0;z-index:1800;display:flex;align-items:center;justify-content:center;padding:18px}
 .cg-mail-backdrop{position:absolute;inset:0;background:rgba(17,34,43,.62);backdrop-filter:blur(3px)}
@@ -131,6 +171,9 @@
         </div>
         <div class="cg-head-actions">
             <div class="cg-iva-note">IVA aplicado a servicios: {{ porcentaje_iva|floatformat:2 }}%</div>
+            <button type="button" class="cg-btn cg-btn-monthly" id="cg-open-monthly">
+                <i class="fi fi-rr-calendar"></i> Generar servicios mensuales
+            </button>
             <button type="button" class="cg-btn cg-btn-mail" id="cg-open-mail">
                 <i class="fi fi-rr-envelope"></i> Enviar cobranza por correo
             </button>
@@ -138,6 +181,51 @@
     </header>
 
     <form id="cg-mail-csrf" hidden>{% csrf_token %}</form>
+    <div class="cg-month-modal" id="cg-month-modal" hidden aria-hidden="true">
+        <div class="cg-month-backdrop" data-cg-month-close></div>
+        <section class="cg-month-dialog" role="dialog" aria-modal="true" aria-labelledby="cg-month-title">
+            <header class="cg-month-header">
+                <div>
+                    <span class="cg-kicker">Prefacturación · Proceso mensual</span>
+                    <h2 id="cg-month-title">Generar servicios mensuales</h2>
+                    <p>Se cargará el servicio correspondiente al mes elegido a clientes activos, mensuales y con procesamiento automatizado.</p>
+                </div>
+                <button type="button" class="cg-mail-close" data-cg-month-close aria-label="Cerrar">×</button>
+            </header>
+            <div class="cg-month-body">
+                <div class="cg-month-fields">
+                    <label for="cg-month-month">Mes
+                        <select id="cg-month-month">
+                            <option value="1" {% if mes_actual == 1 %}selected{% endif %}>Enero · 001</option>
+                            <option value="2" {% if mes_actual == 2 %}selected{% endif %}>Febrero · 002</option>
+                            <option value="3" {% if mes_actual == 3 %}selected{% endif %}>Marzo · 003</option>
+                            <option value="4" {% if mes_actual == 4 %}selected{% endif %}>Abril · 004</option>
+                            <option value="5" {% if mes_actual == 5 %}selected{% endif %}>Mayo · 005</option>
+                            <option value="6" {% if mes_actual == 6 %}selected{% endif %}>Junio · 006</option>
+                            <option value="7" {% if mes_actual == 7 %}selected{% endif %}>Julio · 007</option>
+                            <option value="8" {% if mes_actual == 8 %}selected{% endif %}>Agosto · 008</option>
+                            <option value="9" {% if mes_actual == 9 %}selected{% endif %}>Septiembre · 009</option>
+                            <option value="10" {% if mes_actual == 10 %}selected{% endif %}>Octubre · 010</option>
+                            <option value="11" {% if mes_actual == 11 %}selected{% endif %}>Noviembre · 011</option>
+                            <option value="12" {% if mes_actual == 12 %}selected{% endif %}>Diciembre · 012</option>
+                        </select>
+                    </label>
+                    <label for="cg-month-year">Año
+                        <input id="cg-month-year" type="number" min="2000" max="2099" step="1" value="{{ anio_actual }}">
+                    </label>
+                </div>
+                <div class="cg-month-preview" id="cg-month-preview">
+                    <p class="cg-month-info">Selecciona el mes y consulta la vista previa antes de generar.</p>
+                </div>
+                <div class="cg-month-status" id="cg-month-status" aria-live="polite"></div>
+                <div class="cg-month-actions">
+                    <button type="button" class="cg-btn cg-btn-light" data-cg-month-close>Cancelar</button>
+                    <button type="button" class="cg-btn cg-btn-primary" id="cg-month-preview-button">Consultar vista previa</button>
+                    <button type="button" class="cg-btn cg-btn-monthly" id="cg-month-confirm" disabled>Generar prefacturas</button>
+                </div>
+            </div>
+        </section>
+    </div>
     <div class="cg-mail-modal" id="cg-mail-modal" hidden aria-hidden="true">
         <div class="cg-mail-backdrop" data-cg-mail-close></div>
         <section class="cg-mail-dialog" role="dialog" aria-modal="true" aria-labelledby="cg-mail-title">
@@ -311,6 +399,148 @@
     </section>
 </div>
 
+<script>
+(function(){
+ const openButton=document.getElementById('cg-open-monthly');
+ const modal=document.getElementById('cg-month-modal');
+ const monthSelect=document.getElementById('cg-month-month');
+ const yearInput=document.getElementById('cg-month-year');
+ const previewButton=document.getElementById('cg-month-preview-button');
+ const confirmButton=document.getElementById('cg-month-confirm');
+ const preview=document.getElementById('cg-month-preview');
+ const status=document.getElementById('cg-month-status');
+ const csrfForm=document.getElementById('cg-mail-csrf');
+ if(openButton&&modal&&monthSelect&&yearInput&&previewButton&&confirmButton&&preview&&status&&csrfForm){
+  const previewUrl="{% url 'admin_prefacturacion_mensual_previsualizar' %}";
+  const generateUrl="{% url 'admin_prefacturacion_mensual_generar' %}";
+  let previewReady=false;
+  let lastPeriod='';
+  const close=()=>{
+   modal.hidden=true;
+   modal.setAttribute('aria-hidden','true');
+   document.body.style.overflow='';
+  };
+  const period=()=>({mes:monthSelect.value,anio:yearInput.value.trim()});
+  const clearPreview=()=>{
+   previewReady=false;
+   lastPeriod='';
+   confirmButton.disabled=true;
+   preview.replaceChildren();
+   const note=document.createElement('p');
+   note.className='cg-month-info';
+   note.textContent='Selecciona el mes y consulta la vista previa antes de generar.';
+   preview.appendChild(note);
+  };
+  const showMetric=(label,value,main)=>{
+   const item=document.createElement('div');
+   item.className='cg-month-metric'+(main?' main':'');
+   const caption=document.createElement('span');
+   caption.textContent=label;
+   const number=document.createElement('strong');
+   number.textContent=String(value);
+   item.append(caption,number);
+   return item;
+  };
+  const loadPreview=async()=>{
+   const selected=period();
+   previewReady=false;
+   lastPeriod='';
+   confirmButton.disabled=true;
+   previewButton.disabled=true;
+   previewButton.textContent='Consultando…';
+   status.textContent='';
+   status.className='cg-month-status';
+   preview.replaceChildren();
+   const params=new URLSearchParams(selected);
+   try{
+    const response=await fetch(previewUrl+'?'+params.toString(),{
+     headers:{'X-Requested-With':'XMLHttpRequest'}
+    });
+    const data=await response.json();
+    if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo consultar la generación mensual.');
+    const grid=document.createElement('div');
+    grid.className='cg-month-grid';
+    grid.append(
+     showMetric('Clientes activos y mensuales',data.clientes_mensuales,false),
+     showMetric('Ya tienen el servicio',data.ya_generados,false),
+     showMetric('Servicios por generar',data.por_generar,true),
+     showMetric('Total de tarifas',Number(data.total_tarifas).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}),false)
+    );
+    preview.replaceChildren(grid);
+    const description=document.createElement('p');
+    description.className='cg-month-info';
+    description.textContent='Servicio: '+data.codigo_mes+' · '+data.descripcion+'. Se insertará una línea por cliente, con cantidad 1 y tarifa registrada en su ficha. El valor se guarda antes de IVA.';
+    preview.appendChild(description);
+    previewReady=data.por_generar>0;
+    lastPeriod=selected.mes+'-'+selected.anio;
+    confirmButton.disabled=!previewReady;
+    status.textContent=data.por_generar>0
+     ?'La vista previa está lista. Confirma únicamente después de revisar la cantidad y el total.'
+     :'No hay registros nuevos para este mes. Los servicios existentes no se duplicarán.';
+    confirmButton.textContent=previewReady?'Generar '+data.por_generar+' prefactura(s)':'Nada por generar';
+   }catch(error){
+    preview.replaceChildren();
+    const failure=document.createElement('p');
+    failure.className='cg-month-warning';
+    failure.textContent=error.message||'No se pudo consultar la generación mensual.';
+    preview.appendChild(failure);
+    confirmButton.disabled=true;
+    confirmButton.textContent='Generar prefacturas';
+   }finally{
+    previewButton.disabled=false;
+    previewButton.textContent='Consultar vista previa';
+   }
+  };
+  openButton.addEventListener('click',async()=>{
+   modal.hidden=false;
+   modal.setAttribute('aria-hidden','false');
+   document.body.style.overflow='hidden';
+   clearPreview();
+   await loadPreview();
+  });
+  modal.querySelectorAll('[data-cg-month-close]').forEach(button=>button.addEventListener('click',close));
+  previewButton.addEventListener('click',loadPreview);
+  monthSelect.addEventListener('change',clearPreview);
+  yearInput.addEventListener('input',clearPreview);
+  confirmButton.addEventListener('click',async()=>{
+   const selected=period();
+   if(!previewReady||lastPeriod!==selected.mes+'-'+selected.anio)return;
+   const label=monthSelect.options[monthSelect.selectedIndex].text+' de '+selected.anio;
+   if(!window.confirm('¿Confirmas generar los servicios mensuales de '+label+'? Se crearán únicamente los registros faltantes para clientes activos, mensuales y automatizados.'))return;
+   confirmButton.disabled=true;
+   previewButton.disabled=true;
+   confirmButton.textContent='Generando…';
+   status.textContent='';
+   try{
+    const formData=new FormData(csrfForm);
+    formData.set('mes',selected.mes);
+    formData.set('anio',selected.anio);
+    const response=await fetch(generateUrl,{
+     method:'POST',
+     body:formData,
+     headers:{'X-Requested-With':'XMLHttpRequest'}
+    });
+    const data=await response.json();
+    if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo generar la prefacturación.');
+    status.classList.add('success');
+    status.textContent=data.mensaje+' Consecutivos: '+(data.numdetfac_inicial??'—')+' a '+(data.numdetfac_final??'—')+'.';
+    confirmButton.textContent='Generación completada';
+    previewReady=false;
+    window.setTimeout(()=>window.location.reload(),2200);
+   }catch(error){
+    status.classList.add('error');
+    status.textContent=error.message||'No se pudo generar la prefacturación.';
+    confirmButton.disabled=false;
+    confirmButton.textContent='Volver a intentar';
+    previewButton.disabled=false;
+   }
+  });
+  document.addEventListener('keydown',event=>{
+   if(event.key==='Escape'&&!modal.hidden)close();
+  });
+ }
+})();
+</script>
 <script>
 (function(){
  const openButton=document.getElementById('cg-open-mail');
