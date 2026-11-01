@@ -2933,7 +2933,12 @@ def admin_rebefics(request, ruc):
         registros = [item for item in registros if item['anio'] == anio_filtro]
 
     anio_actual = timezone.localdate().year
-    anios_formulario = sorted(anios_disponibles | {anio_actual, anio_actual - 1}, reverse=True)
+    anios_carga = (
+        set(range(2000, anio_actual + 1))
+        if es_rdep
+        else {anio_actual, anio_actual - 1}
+    )
+    anios_formulario = sorted(anios_disponibles | anios_carga, reverse=True)
     return render(request, 'admin/rebefics.html', {
         'cliente': cliente, 'registros': registros,
         'anios': sorted(anios_disponibles, reverse=True),
