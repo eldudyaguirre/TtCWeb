@@ -3797,11 +3797,19 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre):
         activo=True,
     ).first()
     nombre_descarga = registro.nombre_original if registro else nombre
+    es_pdf = Path(nombre_descarga).suffix.lower() == '.pdf'
+    abrir_en_navegador = (
+        es_pdf
+        and str(modulo).lower() == 'rdep'
+        and request.GET.get('inline') == '1'
+    )
     return FileResponse(
         ruta.open('rb'),
-        as_attachment=True,
+        as_attachment=not abrir_en_navegador,
         filename=nombre_descarga,
-        content_type=mimetypes.guess_type(nombre_descarga)[0] or 'application/octet-stream',
+        content_type='application/pdf' if es_pdf else (
+            mimetypes.guess_type(nombre_descarga)[0] or 'application/octet-stream'
+        ),
     )
 
 
