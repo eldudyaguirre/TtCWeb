@@ -27,6 +27,7 @@ def admin_cobranza_general(request):
     if tipo not in {"todos", "facturas", "servicios"}:
         tipo = "todos"
 
+    servicios_sin_cliente = 0
     try:
         conexion = _db()
         conexion.ensure_connection()
@@ -161,12 +162,62 @@ def admin_cobranza_general(request):
             resumen["total_servicios"] += total_servicios
             resumen["total_general"] += total_general
 
+        # El total de servicios debe salir directamente de prefactura.
+        # El resumen por cliente anterior puede omitir filas cuyo RUC todavía
+        # no está registrado o no coincide con public.clientes.
+        servicios_sin_cliente = 0
+        filtro_servicios = ""
+        parametros_servicios = []
+        if busqueda:
+            filtro_servicios = """
+                WHERE (
+                    COALESCE(c.nomclient, '') ILIKE %s
+                    OR COALESCE(p.ruc::text, '') ILIKE %s
+                )
+            """
+            termino_servicios = f"%{busqueda}%"
+            parametros_servicios.extend([termino_servicios, termino_servicios])
+
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                f"""
+                SELECT
+                    COUNT(*) AS cantidad,
+                    COALESCE(
+                        SUM(COALESCE(p.canfactur, 0) * COALESCE(p.preitefac, 0)),
+                        0
+                    ) AS subtotal,
+                    COUNT(*) FILTER (WHERE c.ruccedcli IS NULL) AS sin_cliente
+                FROM public.prefactura p
+                LEFT JOIN public.clientes c
+                    ON LPAD(TRIM(COALESCE(c.ruccedcli::text, '')), 13, '0')
+                     = LPAD(TRIM(COALESCE(p.ruc::text, '')), 13, '0')
+                {filtro_servicios}
+                """,
+                parametros_servicios,
+            )
+            cantidad_servicios_global, subtotal_servicios_global, servicios_sin_cliente = cursor.fetchone()
+
+        subtotal_servicios_global = Decimal(str(subtotal_servicios_global or 0)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+        iva_servicios_global = (
+            subtotal_servicios_global * porcentaje_iva / Decimal("100")
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        total_servicios_global = subtotal_servicios_global + iva_servicios_global
+
+        resumen["servicios"] = int(cantidad_servicios_global or 0)
+        resumen["subtotal_servicios"] = subtotal_servicios_global
+        resumen["iva_servicios"] = iva_servicios_global
+        resumen["total_servicios"] = total_servicios_global
+
         if tipo == "facturas":
             resumen["servicios"] = 0
             resumen["subtotal_servicios"] = Decimal("0.00")
             resumen["iva_servicios"] = Decimal("0.00")
             resumen["total_servicios"] = Decimal("0.00")
             resumen["total_general"] = resumen["saldo_facturas"]
+            servicios_sin_cliente = 0
         elif tipo == "servicios":
             resumen["facturas"] = 0
             resumen["facturas_vencidas"] = 0
@@ -194,6 +245,7 @@ def admin_cobranza_general(request):
         "filas": filas,
         "resumen": resumen,
         "porcentaje_iva": porcentaje_iva,
+        "servicios_sin_cliente": servicios_sin_cliente,
         "busqueda": busqueda,
         "tipo": tipo,
         "error": error,
