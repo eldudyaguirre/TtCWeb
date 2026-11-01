@@ -330,7 +330,7 @@
  };
  const editor=()=>document.getElementById('cobPrefacturaEditor');
  const formEditor=()=>document.getElementById('cobPrefacturaForm');
- const hideEditor=()=>{const box=editor();if(box)box.hidden=true;};
+ const hideEditor=()=>{const box=editor();if(box){box.hidden=true;box.style.display='none';}};
  const initEditor=()=>{
   const form=formEditor();if(!form)return;
   const code=form.querySelector('#prefactura-codigo');
@@ -416,6 +416,7 @@
    (Number(form.querySelector('#prefactura-precio').value)||0)
   ).toFixed(2);
   box.hidden=false;
+  box.style.display='flex';
   select.focus();
  };
  const submitDelete=async button=>{
@@ -432,6 +433,25 @@
    await loadServicios();
   }catch(err){window.alert(err.message||'No se pudo eliminar el servicio.');}
  };
+
+ // Función pública del popup: los botones HTML la llaman directamente.
+ window.totalCountsPrefacturaAction=async function(action,button){
+  try{
+   if(action==='agregar'||action==='editar'){
+    const box=editor(),form=formEditor();
+    if(!box||!form){
+     window.alert('No se pudo abrir el formulario de servicios. Cierra y vuelve a abrir el popup.');
+     return;
+    }
+    openEditor(action,button);
+   }else if(action==='eliminar'){
+    await submitDelete(button);
+   }
+  }catch(err){
+   console.error('Error en acción de prefactura:',err);
+   window.alert(err.message||'No se pudo ejecutar la acción del servicio.');
+  }
+ };
  content.addEventListener('click',e=>{
   const menuButton=e.target.closest('.cob-actions-trigger');
   if(!menuButton||!content.contains(menuButton))return;
@@ -447,26 +467,7 @@
 
  // Document-level delegation works for every dynamically loaded service row and the
  // top-level Add button, even after the popup contents are replaced.
- document.addEventListener('click',async e=>{
-  const actionButton=e.target.closest('[data-prefactura-action]');
-  if(actionButton&&modal.contains(actionButton)){
-   e.preventDefault();
-   e.stopPropagation();
-   const action=actionButton.dataset.prefacturaAction;
-   content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
-   content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
-   if(action==='agregar'||action==='editar'){
-    const form=formEditor(),box=editor();
-    if(!form||!box){
-     content.insertAdjacentHTML('afterbegin','<p class="cob-modal-error">No se pudo inicializar el formulario de servicios. Cierra y vuelve a abrir el popup.</p>');
-     return;
-    }
-    openEditor(action,actionButton);
-   }else if(action==='eliminar'){
-    await submitDelete(actionButton);
-   }
-   return;
-  }
+ document.addEventListener('click',e=>{
   if(!content.contains(e.target)){
    content.querySelectorAll('.cob-actions-dropdown').forEach(item=>item.hidden=true);
    content.querySelectorAll('.cob-actions-trigger').forEach(item=>item.setAttribute('aria-expanded','false'));
