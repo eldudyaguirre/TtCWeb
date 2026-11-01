@@ -1,0 +1,175 @@
+{% extends "admin/base.html" %}
+{% block title %}Cobranza general | TotalCounts{% endblock %}
+{% block extra_head %}
+<style>
+.cg-page{max-width:1600px;margin:0 auto}
+.cg-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.cg-kicker{display:block;color:#159ba8;font-size:10px;font-weight:850;letter-spacing:.13em;text-transform:uppercase}
+.cg-head h1{margin:5px 0;color:#203d4b;font-size:27px;font-weight:800}
+.cg-head p{margin:0;color:#71838c;font-size:13px}
+.cg-iva-note{padding:8px 11px;border:1px solid #dce8eb;border-radius:9px;background:#f7fbfc;color:#5b737e;font-size:11px;font-weight:700}
+.cg-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:17px}
+.cg-stat{min-width:0;padding:16px 18px;border:1px solid #e1e9ec;border-radius:13px;background:linear-gradient(135deg,#fff,#f4fafb);box-shadow:0 4px 14px rgba(24,62,78,.045)}
+.cg-stat span{display:block;color:#6b818b;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.cg-stat strong{display:block;margin-top:6px;color:#20465e;font-size:23px;font-weight:850;letter-spacing:-.035em;overflow-wrap:anywhere}
+.cg-stat small{display:block;margin-top:4px;color:#87969d;font-size:10px}
+.cg-stat.cg-stat-invoice strong{color:#a12634}
+.cg-stat.cg-stat-service strong{color:#128f9a}
+.cg-stat.cg-stat-total{background:linear-gradient(135deg,#eaf8f8,#dff2f3);border-color:#c9e8ea}
+.cg-stat.cg-stat-total strong{color:#123f4c}
+.cg-panel{overflow:hidden;border:1px solid #e0e8eb;border-radius:13px;background:#fff;box-shadow:0 5px 20px rgba(25,47,57,.04)}
+.cg-toolbar{display:flex;align-items:end;gap:11px;flex-wrap:wrap;padding:15px 17px;border-bottom:1px solid #e7eef0;background:#f8fbfc}
+.cg-field{display:flex;flex-direction:column;gap:5px}
+.cg-field label{color:#617781;font-size:10px;font-weight:800;text-transform:uppercase}
+.cg-field input,.cg-field select{height:39px;min-width:190px;padding:0 11px;border:1px solid #d4e0e4;border-radius:8px;background:#fff;color:#294653;font:inherit;font-size:12px;outline:none}
+.cg-field input:focus,.cg-field select:focus{border-color:#159ba8;box-shadow:0 0 0 3px rgba(21,155,168,.1)}
+.cg-search{flex:1 1 280px}
+.cg-search input{width:100%;min-width:250px;box-sizing:border-box}
+.cg-actions{display:flex;align-items:center;gap:8px}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:39px;padding:9px 14px;border:1px solid transparent;border-radius:8px;text-decoration:none;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.cg-btn-primary{background:#159ba8;border-color:#159ba8;color:#fff}
+.cg-btn-primary:hover{background:#087f8a;color:#fff}
+.cg-btn-light{background:#fff;border-color:#d5e0e4;color:#526a75}
+.cg-btn-light:hover{background:#f1f7f8;color:#294653}
+.cg-note{padding:10px 17px;border-bottom:1px solid #e8eef0;background:#fff;color:#6b7e87;font-size:11px;line-height:1.5}
+.cg-error{margin:16px;padding:13px 15px;border:1px solid #f2c8c8;border-radius:9px;background:#fff6f6;color:#a52a32;font-size:12px}
+.cg-table-wrap{overflow:auto}
+.cg-table{width:100%;min-width:1050px;border-collapse:separate;border-spacing:0}
+.cg-table th{padding:12px 11px;background:#203944;color:#fff;text-align:left;font-size:9px;font-weight:850;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.cg-table th.num,.cg-table td.num{text-align:right}
+.cg-table td{padding:12px 11px;border-bottom:1px solid #edf1f2;color:#344b56;font-size:11px;vertical-align:middle}
+.cg-table tbody tr:hover{background:#f8fcfc}
+.cg-table tbody tr:last-child td{border-bottom:0}
+.cg-client-name{display:block;color:#203d4b;font-size:12px;font-weight:800;white-space:normal;min-width:180px}
+.cg-client-ruc{display:block;margin-top:3px;color:#819098;font-size:10px}
+.cg-count{display:inline-flex;align-items:center;justify-content:center;min-width:26px;padding:4px 7px;border-radius:20px;background:#eef5f6;color:#34515e;font-size:10px;font-weight:800}
+.cg-overdue{display:block;margin-top:4px;color:#b42d3c;font-size:9px;font-weight:800}
+.cg-money{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700;color:#304b56}
+.cg-money-strong{font-size:12px;font-weight:850;color:#183e4d}
+.cg-total-cell{background:#f2f9f9}
+.cg-status{display:inline-block;padding:4px 7px;border-radius:20px;font-size:9px;font-weight:800}
+.cg-status.active{background:#e7f7ed;color:#178246}
+.cg-status.inactive{background:#f0f2f3;color:#718087}
+.cg-manage{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:33px;padding:7px 10px;border:1px solid #159ba8;border-radius:7px;background:#fff;color:#118894;text-decoration:none;font-size:10px;font-weight:850;white-space:nowrap}
+.cg-manage:hover{background:#159ba8;color:#fff}
+.cg-empty{padding:42px 20px!important;text-align:center;color:#7a8b92!important;font-size:12px!important}
+.cg-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 17px;border-top:1px solid #e8eef0;color:#7a8b92;font-size:10px}
+@media(max-width:1100px){.cg-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.cg-head h1{font-size:22px}.cg-stats{grid-template-columns:1fr 1fr;gap:8px}.cg-stat{padding:12px}.cg-stat strong{font-size:18px}.cg-toolbar{align-items:stretch;flex-direction:column}.cg-field input,.cg-field select{width:100%;min-width:0;box-sizing:border-box}.cg-actions .cg-btn{flex:1}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="cg-page">
+    <header class="cg-head">
+        <div>
+            <span class="cg-kicker">Administración · BdTotal</span>
+            <h1>Cobranza general</h1>
+            <p>Control consolidado de facturas pendientes de cobro y servicios pendientes de facturar.</p>
+        </div>
+        <div class="cg-iva-note">IVA aplicado a servicios: {{ porcentaje_iva|floatformat:2 }}%</div>
+    </header>
+
+    {% if error %}
+    <div class="cg-error"><strong>No se pudo cargar la cobranza general.</strong><br>{{ error }}</div>
+    {% else %}
+    <section class="cg-stats">
+        <article class="cg-stat">
+            <span>Clientes con pendientes</span>
+            <strong>{{ resumen.clientes }}</strong>
+            <small>Clientes incluidos en el resultado</small>
+        </article>
+        {% if tipo != "servicios" %}
+        <article class="cg-stat cg-stat-invoice">
+            <span>Facturas por cobrar</span>
+            <strong>{{ resumen.facturas }}</strong>
+            <small>{{ resumen.facturas_vencidas }} facturas vencidas · $ {{ resumen.saldo_facturas|floatformat:2 }}</small>
+        </article>
+        {% endif %}
+        {% if tipo != "facturas" %}
+        <article class="cg-stat cg-stat-service">
+            <span>Servicios por facturar</span>
+            <strong>{{ resumen.servicios }}</strong>
+            <small>Subtotal: $ {{ resumen.subtotal_servicios|floatformat:2 }} · IVA: $ {{ resumen.iva_servicios|floatformat:2 }}</small>
+        </article>
+        {% endif %}
+        <article class="cg-stat cg-stat-total">
+            <span>{% if tipo == "facturas" %}Total por cobrar{% elif tipo == "servicios" %}Total servicios con IVA{% else %}Total de valores pendientes{% endif %}</span>
+            <strong>$ {{ resumen.total_general|floatformat:2 }}</strong>
+            <small>{% if tipo == "facturas" %}Solo facturas realizadas{% elif tipo == "servicios" %}Solo servicios por facturar{% else %}Facturas pendientes + servicios con IVA{% endif %}</small>
+        </article>
+    </section>
+
+    <section class="cg-panel">
+        <form class="cg-toolbar" method="get">
+            <div class="cg-field cg-search">
+                <label for="cg-q">Buscar cliente o RUC</label>
+                <input id="cg-q" name="q" type="search" value="{{ busqueda }}" placeholder="Escribe el nombre, razón social o RUC...">
+            </div>
+            <div class="cg-field">
+                <label for="cg-tipo">Mostrar</label>
+                <select id="cg-tipo" name="tipo">
+                    <option value="todos" {% if tipo == "todos" %}selected{% endif %}>Toda la cobranza</option>
+                    <option value="facturas" {% if tipo == "facturas" %}selected{% endif %}>Facturas por cobrar</option>
+                    <option value="servicios" {% if tipo == "servicios" %}selected{% endif %}>Servicios por facturar</option>
+                </select>
+            </div>
+            <div class="cg-actions">
+                <button type="submit" class="cg-btn cg-btn-primary"><i class="fi fi-rr-search"></i> Buscar</button>
+                <a href="{% url 'admin_cobranza_general' %}" class="cg-btn cg-btn-light">Limpiar</a>
+            </div>
+        </form>
+        <div class="cg-note">
+            Los saldos de facturas se consultan desde <strong>cuentascobrar</strong>. Los servicios se consultan desde <strong>prefactura</strong> y se muestran con IVA calculado según los parámetros de BdTotal.
+        </div>
+        <div class="cg-table-wrap">
+            <table class="cg-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Estado</th>
+                        {% if tipo != "servicios" %}
+                        <th class="num">Facturas</th>
+                        <th class="num">Saldo facturas</th>
+                        {% endif %}
+                        {% if tipo != "facturas" %}
+                        <th class="num">Servicios</th>
+                        <th class="num">Subtotal servicios</th>
+                        <th class="num">IVA</th>
+                        <th class="num">Total servicios</th>
+                        {% endif %}
+                        <th class="num">{% if tipo == "facturas" %}Total por cobrar{% elif tipo == "servicios" %}Total servicios{% else %}Total pendiente{% endif %}</th>
+                        <th>Gestión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in filas %}
+                    <tr>
+                        <td><span class="cg-client-name">{{ fila.cliente }}</span><span class="cg-client-ruc">{{ fila.ruc }}</span></td>
+                        <td><span class="cg-status {% if fila.activo %}active{% else %}inactive{% endif %}">{% if fila.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
+                        {% if tipo != "servicios" %}
+                        <td class="num"><span class="cg-count">{{ fila.cantidad_facturas }}</span>{% if fila.cantidad_facturas_vencidas %}<span class="cg-overdue">{{ fila.cantidad_facturas_vencidas }} vencidas</span>{% endif %}</td>
+                        <td class="num cg-money">$ {{ fila.saldo_facturas|floatformat:2 }}</td>
+                        {% endif %}
+                        {% if tipo != "facturas" %}
+                        <td class="num"><span class="cg-count">{{ fila.cantidad_servicios }}</span></td>
+                        <td class="num cg-money">$ {{ fila.subtotal_servicios|floatformat:2 }}</td>
+                        <td class="num cg-money">$ {{ fila.iva_servicios|floatformat:2 }}</td>
+                        <td class="num cg-money">$ {{ fila.total_servicios|floatformat:2 }}</td>
+                        {% endif %}
+                        <td class="num cg-total-cell cg-money-strong">$ {% if tipo == "facturas" %}{{ fila.saldo_facturas|floatformat:2 }}{% elif tipo == "servicios" %}{{ fila.total_servicios|floatformat:2 }}{% else %}{{ fila.total_general|floatformat:2 }}{% endif %}</td>
+                        <td><a class="cg-manage" href="{% url 'admin_cobranza_cliente' ruc=fila.ruc %}"><i class="fi fi-rr-arrow-up-right-from-square"></i> Gestionar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10" class="cg-empty">No hay pendientes que coincidan con los filtros seleccionados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <footer class="cg-footer">
+            <span>{{ filas|length }} clientes encontrados</span>
+            <span>Los valores de servicios se presentan antes y después de IVA.</span>
+        </footer>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
