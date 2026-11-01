@@ -453,10 +453,12 @@ def _reporte_cobranza_pdf(cliente, datos):
             Paragraph("<b>" + moneda(datos["resumen_servicios"]["total_a_pagar"]) + "</b>", estilos["PendientesCellRight"]),
         ],
     ]
+    # El bloque de totales ocupa el mismo ancho que las tablas del reporte
+    # (269 mm), de modo que sus bordes izquierdo y derecho queden alineados.
     tabla_totales = Table(
         filas_totales,
-        colWidths=[68 * mm, 38 * mm],
-        hAlign="RIGHT",
+        colWidths=[200 * mm, 69 * mm],
+        hAlign="LEFT",
     )
     tabla_totales.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.white),
@@ -466,12 +468,13 @@ def _reporte_cobranza_pdf(cliente, datos):
         ("BOX", (0, 0), (-1, -1), 0.5, gris_linea),
         ("LINEABOVE", (0, 2), (-1, 2), 0.6, azul),
         ("LINEABOVE", (0, 3), (-1, 3), 1, azul),
+        ("ALIGN", (0, 0), (0, -1), "LEFT"),
         ("ALIGN", (1, 0), (1, -1), "RIGHT"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
         ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
     historia.append(tabla_totales)
 
