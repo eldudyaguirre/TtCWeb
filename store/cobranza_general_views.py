@@ -487,6 +487,149 @@ def admin_cobranza_masivo_reintentar(request, envio_id):
     })
 
 
+def _auditar_columnas_prefactura(cursor):
+    """Inspecciona todas las columnas reales y determina cómo quedará cada una."""
+    cursor.execute(
+        """
+        SELECT
+            column_name,
+            data_type,
+            is_nullable,
+            column_default,
+            is_identity,
+            is_generated
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'prefactura'
+        ORDER BY ordinal_position
+        """
+    )
+    filas = cursor.fetchall()
+    if not filas:
+        raise RuntimeError("No se encontró la tabla public.prefactura o no hay permisos para leer su estructura.")
+
+    expresiones = {
+        "numdetfac": "Consecutivo numdetfac",
+        "ruc": "Identificación exacta de clientes.ruccedcli",
+        "coditeinv": "Código del mes (001 a 012)",
+        "desiteinv": "Descripción de public.items",
+        "canfactur": "Cantidad 1",
+        "preitefac": "Tarifa del cliente",
+        "año": "Año seleccionado",
+        "creadopor": "Usuario administrativo",
+        "fecha": "Fecha de generación",
+        "dscitefac": "Descuento 0",
+        "totitefac": "Cantidad × tarifa (antes de IVA)",
+    }
+    requeridas = {
+        "numdetfac", "ruc", "coditeinv", "desiteinv",
+        "canfactur", "preitefac", "año", "creadopor", "fecha",
+    }
+    existentes = {fila[0] for fila in filas}
+    incumplimientos = []
+    resultado = []
+
+    for nombre, tipo, nullable, default, identidad, generada in filas:
+        if nombre in expresiones:
+            estado = "Valor asignado por el proceso"
+            detalle = expresiones[nombre]
+        elif identidad == "YES" or generada not in ("NEVER", None):
+            estado = "Generada por la base de datos"
+            detalle = "Columna identity o generada"
+        elif default is not None:
+            estado = "Valor por defecto de la base de datos"
+            detalle = str(default)
+        elif nullable == "YES":
+            estado = "Sin valor explícito (se guarda NULL)"
+            detalle = "La columna permite NULL"
+        else:
+            estado = "FALTA VALOR OBLIGATORIO"
+            detalle = "No tiene valor asignado, DEFAULT, identity ni permite NULL"
+            incumplimientos.append(nombre)
+
+        resultado.append({
+            "nombre": nombre,
+            "tipo": tipo,
+            "nullable": nullable == "YES",
+            "estado": estado,
+            "detalle": detalle,
+        })
+
+    ausentes = sorted(requeridas - existentes)
+    for nombre in ausentes:
+        incumplimientos.append(nombre)
+        resultado.append({
+            "nombre": nombre,
+            "tipo": "No existe",
+            "nullable": False,
+            "estado": "FALTA COLUMNA REQUERIDA",
+            "detalle": "La generación mensual necesita esta columna.",
+        })
+
+    return {
+        "columnas": resultado,
+        "incumplimientos": sorted(set(incumplimientos)),
+        "puede_generar": not incumplimientos,
+    }
+
+
+def _insertar_prefacturas_mensuales(
+    cursor, columnas, consecutivo, codigo_mes, descripcion, anio, usuario, fecha_generacion
+):
+    """Inserta todos los campos que el proceso conoce y detecta columnas no cubiertas."""
+    disponibles = {columna["nombre"] for columna in columnas["columnas"]}
+    expresiones = {
+        "numdetfac": ("%s + candidatos.orden", [consecutivo]),
+        "ruc": ("candidatos.ruccedcli", []),
+        "coditeinv": ("%s", [codigo_mes]),
+        "desiteinv": ("%s", [descripcion]),
+        "canfactur": ("1", []),
+        "preitefac": ("candidatos.tarifa", []),
+        "año": ("%s", [anio]),
+        "creadopor": ("%s", [usuario]),
+        "fecha": ("%s", [fecha_generacion]),
+        "dscitefac": ("0", []),
+        "totitefac": (
+            "ROUND(COALESCE(candidatos.tarifa, 0)::numeric, 2)::double precision",
+            [],
+        ),
+    }
+    campos = [nombre for nombre in expresiones if nombre in disponibles]
+    columnas_sql = ", ".join('"' + nombre.replace('"', '""') + '"' for nombre in campos)
+    expresiones_sql = ", ".join(expresiones[nombre][0] for nombre in campos)
+    parametros_sql = [codigo_mes, anio]
+    for nombre in campos:
+        parametros_sql.extend(expresiones[nombre][1])
+
+    cursor.execute(
+        f"""
+        WITH candidatos AS (
+            SELECT
+                c.ruccedcli,
+                COALESCE(c.tarifa, 0) AS tarifa,
+                ROW_NUMBER() OVER (ORDER BY c.ruccedcli) AS orden
+            FROM public.clientes c
+            WHERE c.activo IS TRUE
+              AND c.automatizado IS TRUE
+              AND UPPER(TRIM(COALESCE(c.semensual, ''))) = 'MENSUAL'
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM public.prefactura p
+                  WHERE p.ruc = c.ruccedcli
+                    AND p.coditeinv = %s
+                    AND p."año" = %s
+              )
+        )
+        INSERT INTO public.prefactura ({columnas_sql})
+        SELECT {expresiones_sql}
+        FROM candidatos
+        ORDER BY candidatos.ruccedcli
+        """,
+        parametros_sql,
+    )
+    return cursor.rowcount
+
+
 def _validar_periodo_prefacturacion(mes, anio):
     try:
         mes = int(mes)
@@ -591,11 +734,13 @@ def admin_prefacturacion_mensual_previsualizar(request):
                 )
             resumen = _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes)
             resumen["consecutivo_actual"] = int(parametros[0][0])
+            auditoria = _auditar_columnas_prefactura(cursor)
         return JsonResponse({
             "ok": True,
             "mes": mes,
             "anio": anio,
             **resumen,
+            **auditoria,
         })
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
@@ -645,61 +790,22 @@ def admin_prefacturacion_mensual_generar(request):
                 resumen = _resumen_prefacturacion_mensual(
                     cursor, mes, anio, codigo_mes
                 )
-                cursor.execute(
-                    """
-                    WITH candidatos AS (
-                        SELECT
-                            c.ruccedcli,
-                            COALESCE(c.tarifa, 0) AS tarifa,
-                            ROW_NUMBER() OVER (ORDER BY c.ruccedcli) AS orden
-                        FROM public.clientes c
-                        WHERE c.activo IS TRUE
-                          AND c.automatizado IS TRUE
-                          AND UPPER(TRIM(COALESCE(c.semensual, ''))) = 'MENSUAL'
-                          AND NOT EXISTS (
-                              SELECT 1
-                              FROM public.prefactura p
-                              WHERE p.ruc = c.ruccedcli
-                                AND p.coditeinv = %s
-                                AND p."año" = %s
-                          )
+                auditoria = _auditar_columnas_prefactura(cursor)
+                if not auditoria["puede_generar"]:
+                    raise RuntimeError(
+                        "No se puede generar porque existen columnas obligatorias sin cubrir: "
+                        + ", ".join(auditoria["incumplimientos"])
                     )
-                    INSERT INTO public.prefactura (
-                        numdetfac,
-                        ruc,
-                        coditeinv,
-                        desiteinv,
-                        canfactur,
-                        preitefac,
-                        "año",
-                        creadopor,
-                        fecha
-                    )
-                    SELECT
-                        %s + candidatos.orden,
-                        candidatos.ruccedcli,
-                        %s,
-                        %s,
-                        1,
-                        candidatos.tarifa,
-                        %s,
-                        %s,
-                        %s
-                    FROM candidatos
-                    ORDER BY candidatos.ruccedcli
-                    """,
-                    [
-                        codigo_mes,
-                        anio,
-                        consecutivo,
-                        codigo_mes,
-                        resumen["descripcion"],
-                        anio,
-                        usuario,
-                        fecha_generacion,
-                    ],
+                cantidad_generada = _insertar_prefacturas_mensuales(
+                    cursor=cursor,
+                    columnas=auditoria,
+                    consecutivo=int(consecutivo),
+                    codigo_mes=codigo_mes,
+                    descripcion=resumen["descripcion"],
+                    anio=anio,
+                    usuario=usuario,
+                    fecha_generacion=fecha_generacion,
                 )
-                cantidad_generada = cursor.rowcount
 
                 if cantidad_generada:
                     nuevo_consecutivo = int(consecutivo) + cantidad_generada
