@@ -61,6 +61,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/configuracion/', parametros_cliente_admin_views.admin_parametros_cliente, name='admin_parametros_cliente'),
     path('totalcounts/clientes/<str:ruc>/usuarios/', usuarios_cliente_admin_views.admin_usuarios_cliente, name='admin_usuarios_cliente'),
     path('totalcounts/clientes/<str:ruc>/cobranza/', cobranza_cliente_views.admin_cobranza_cliente, name='admin_cobranza_cliente'),
+    path('totalcounts/clientes/<str:ruc>/cobranza/servicios/accion/', cobranza_cliente_views.admin_prefactura_servicio_accion, name='admin_prefactura_servicio_accion'),
     path('totalcounts/clientes/<str:ruc>/cobranza/factura/<str:numfactur>/detalle/', cobranza_cliente_views.admin_factura_detalle_cobranza, name='admin_factura_detalle_cobranza'),
     path('totalcounts/clientes/<str:ruc>/cobranza/factura/<str:numfactur>/retencion/', cobranza_cliente_views.admin_factura_retencion_cobranza, name='admin_factura_retencion_cobranza'),
     path('totalcounts/clientes/<str:ruc>/cobranza/factura/<str:numfactur>/pago/', cobranza_cliente_views.admin_factura_pago_cobranza, name='admin_factura_pago_cobranza'),
