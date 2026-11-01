@@ -31,6 +31,384 @@ def _fecha_filtro(valor, defecto):
         return defecto
 
 
+def _reporte_datos_cobranza(cliente):
+    """Obtiene la cartera pendiente y la prefactura para el reporte del cliente."""
+    conexion = _conexion_cliente(cliente.ruccedcli)
+    conexion.ensure_connection()
+    hoy = timezone.localdate()
+    ruc = cliente.ruccedcli
+
+    with conexion.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                COUNT(DISTINCT cc.numfactur),
+                COUNT(DISTINCT cc.numfactur) FILTER (
+                    WHERE cc.fecvencim::date < %s::date
+                ),
+                COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0)
+            FROM public.cuentascobrar cc
+            WHERE LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+              AND UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
+              AND COALESCE(cc.valpagpar, 0) > 0
+            """,
+            [hoy.isoformat(), ruc],
+        )
+        agregado = cursor.fetchone()
+        resumen_facturas = {
+            "cantidad": int(agregado[0] or 0),
+            "vencidas": int(agregado[1] or 0),
+            "total": Decimal(str(agregado[2] or 0)),
+        }
+
+        cursor.execute(
+            """
+            WITH facturas_cabecera AS (
+                SELECT numfactur::text AS numfactur,
+                       MAX(fecfactur) AS fecha_factura,
+                       MAX(totfactur) AS total_factura
+                FROM public.facturas
+                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                GROUP BY numfactur::text
+            )
+            SELECT
+                cc.numfactur::text AS numfactur,
+                COALESCE(fc.fecha_factura, MIN(cc.fecinicio)) AS fecha_factura,
+                MIN(cc.fecvencim) AS fecha_vencimiento,
+                COALESCE(fc.total_factura, 0) AS total_factura,
+                COALESCE(SUM(COALESCE(cc.valpagpar, 0)), 0) AS saldo_pendiente,
+                COUNT(*) AS cuotas_pendientes
+            FROM public.cuentascobrar cc
+            LEFT JOIN facturas_cabecera fc ON fc.numfactur = cc.numfactur::text
+            WHERE LPAD(TRIM(COALESCE(cc.ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+              AND UPPER(TRIM(COALESCE(cc.estpagcue, ''))) = 'PENDIENTE'
+              AND COALESCE(cc.valpagpar, 0) > 0
+            GROUP BY cc.numfactur::text, fc.fecha_factura, fc.total_factura
+            ORDER BY MIN(cc.fecvencim) ASC NULLS LAST, cc.numfactur::text
+            """,
+            [ruc, ruc],
+        )
+        columnas = [col[0] for col in cursor.description]
+        facturas = [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
+
+    servicios = []
+    servicios_disponibles = True
+    resumen_servicios = {"cantidad": 0, "total": Decimal("0.00")}
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT numdetfac, fecha, coditeinv, desiteinv,
+                       COALESCE(canfactur, 0) AS cantidad,
+                       COALESCE(preitefac, 0) AS precio,
+                       COALESCE(canfactur, 0) * COALESCE(preitefac, 0) AS total
+                FROM public.prefactura
+                WHERE ruc = %s
+                ORDER BY fecha ASC NULLS LAST, numdetfac ASC
+                """,
+                [ruc],
+            )
+            columnas = [col[0] for col in cursor.description]
+            servicios = [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
+            cursor.execute(
+                """
+                SELECT COUNT(*),
+                       COALESCE(SUM(COALESCE(canfactur, 0) * COALESCE(preitefac, 0)), 0)
+                FROM public.prefactura
+                WHERE ruc = %s
+                """,
+                [ruc],
+            )
+            cantidad, total = cursor.fetchone()
+            resumen_servicios = {
+                "cantidad": int(cantidad or 0),
+                "total": Decimal(str(total or 0)),
+            }
+    except Exception:
+        conexion.rollback()
+        servicios_disponibles = False
+        logger.exception("No se pudo consultar prefactura para el reporte de cobranza: ruc=%s", ruc)
+
+    for factura in facturas:
+        factura["saldo_pendiente"] = Decimal(str(factura.get("saldo_pendiente") or 0))
+        factura["total_factura"] = Decimal(str(factura.get("total_factura") or 0))
+        vencimiento = factura.get("fecha_vencimiento")
+        vencimiento_fecha = vencimiento.date() if hasattr(vencimiento, "date") else vencimiento
+        factura["vencida"] = bool(
+            vencimiento_fecha and vencimiento_fecha < hoy and factura["saldo_pendiente"] > 0
+        )
+    for servicio in servicios:
+        servicio["cantidad"] = Decimal(str(servicio.get("cantidad") or 0))
+        servicio["precio"] = Decimal(str(servicio.get("precio") or 0))
+        servicio["total"] = Decimal(str(servicio.get("total") or 0))
+
+    return {
+        "facturas": facturas,
+        "servicios": servicios,
+        "resumen_facturas": resumen_facturas,
+        "resumen_servicios": resumen_servicios,
+        "servicios_disponibles": servicios_disponibles,
+        "fecha_reporte": timezone.localtime(),
+    }
+
+
+def _reporte_cobranza_pdf(cliente, datos):
+    """Construye el PDF adjuntable/descargable con las dos secciones de cobranza."""
+    from io import BytesIO
+    from xml.sax.saxutils import escape
+
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    def moneda(valor):
+        numero = Decimal(str(valor or 0))
+        texto = format(numero, ",.2f").replace(",", "X").replace(".", ",").replace("X", ".")
+        return "$ " + texto
+
+    def fecha(valor):
+        return valor.strftime("%d/%m/%Y") if hasattr(valor, "strftime") else "—"
+
+    buffer = BytesIO()
+    documento = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=13 * mm,
+        leftMargin=13 * mm,
+        topMargin=14 * mm,
+        bottomMargin=16 * mm,
+        title="Reporte de cobranza - " + str(cliente.nomclient or cliente.ruccedcli),
+        author="TotalCounts",
+    )
+    estilos = getSampleStyleSheet()
+    estilos.add(ParagraphStyle(
+        name="CobTitle", parent=estilos["Title"], fontName="Helvetica-Bold",
+        fontSize=17, leading=21, textColor=colors.HexColor("#20465e"),
+        alignment=TA_CENTER, spaceAfter=5,
+    ))
+    estilos.add(ParagraphStyle(
+        name="CobSub", parent=estilos["Normal"], fontSize=9, leading=13,
+        textColor=colors.HexColor("#607b8c"), alignment=TA_CENTER, spaceAfter=3,
+    ))
+    estilos.add(ParagraphStyle(
+        name="CobSection", parent=estilos["Heading2"], fontSize=11, leading=14,
+        textColor=colors.HexColor("#20465e"), spaceBefore=12, spaceAfter=6,
+    ))
+    estilos.add(ParagraphStyle(
+        name="CobCell", parent=estilos["BodyText"], fontSize=7.5, leading=9,
+    ))
+    estilos.add(ParagraphStyle(
+        name="CobCellRight", parent=estilos["CobCell"], alignment=TA_RIGHT,
+    ))
+
+    historia = [
+        Paragraph("REPORTE DE COBRANZA", estilos["CobTitle"]),
+        Paragraph(escape(str(cliente.nomclient or "Cliente")), estilos["CobSub"]),
+        Paragraph(
+            "RUC / C.I.: " + escape(str(cliente.ruccedcli))
+            + "  |  Fecha de emisión: " + fecha(datos["fecha_reporte"]),
+            estilos["CobSub"],
+        ),
+        Spacer(1, 7),
+    ]
+
+    resumen = [
+        ["CONCEPTO", "REGISTROS", "VALOR"],
+        ["Facturas por cobrar", str(datos["resumen_facturas"]["cantidad"]), moneda(datos["resumen_facturas"]["total"])],
+        ["Servicios por facturar", str(datos["resumen_servicios"]["cantidad"]), moneda(datos["resumen_servicios"]["total"])],
+    ]
+    tabla_resumen = Table(resumen, colWidths=[105 * mm, 35 * mm, 45 * mm], repeatRows=1)
+    tabla_resumen.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#223944")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#f4f8f9")),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#dce5e8")),
+        ("ALIGN", (1, 1), (-1, -1), "RIGHT"),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+    ]))
+    historia.extend([tabla_resumen])
+
+    historia.append(Paragraph("FACTURAS PENDIENTES DE COBRO", estilos["CobSection"]))
+    filas_facturas = [[
+        "Factura", "Fecha", "Vencimiento más próximo", "Cuotas", "Total factura", "Saldo pendiente"
+    ]]
+    for factura in datos["facturas"]:
+        filas_facturas.append([
+            str(factura.get("numfactur") or ""),
+            fecha(factura.get("fecha_factura")),
+            fecha(factura.get("fecha_vencimiento")),
+            str(factura.get("cuotas_pendientes") or 0),
+            moneda(factura.get("total_factura")),
+            moneda(factura.get("saldo_pendiente")),
+        ])
+    if not datos["facturas"]:
+        filas_facturas.append(["No existen facturas pendientes.", "", "", "", "", ""])
+    tabla_facturas = Table(
+        filas_facturas,
+        colWidths=[42 * mm, 27 * mm, 43 * mm, 20 * mm, 34 * mm, 38 * mm],
+        repeatRows=1,
+    )
+    tabla_facturas.setStyle(_estilo_tabla_reporte(colors))
+
+    historia.extend([tabla_facturas, Paragraph("SERVICIOS PENDIENTES DE FACTURAR", estilos["CobSection"])])
+    filas_servicios = [[
+        "Código", "Descripción", "Fecha", "Cantidad", "Precio unitario", "Total"
+    ]]
+    for servicio in datos["servicios"]:
+        filas_servicios.append([
+            str(servicio.get("coditeinv") or ""),
+            Paragraph(escape(str(servicio.get("desiteinv") or "")), estilos["CobCell"]),
+            fecha(servicio.get("fecha")),
+            str(servicio.get("cantidad") or 0),
+            moneda(servicio.get("precio")),
+            moneda(servicio.get("total")),
+        ])
+    if not datos["servicios"]:
+        filas_servicios.append(["No existen servicios pendientes.", "", "", "", "", ""])
+    tabla_servicios = Table(
+        filas_servicios,
+        colWidths=[25 * mm, 105 * mm, 27 * mm, 22 * mm, 35 * mm, 35 * mm],
+        repeatRows=1,
+    )
+    tabla_servicios.setStyle(_estilo_tabla_reporte(colors))
+    historia.append(tabla_servicios)
+
+    def pie(canvas, doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 7)
+        canvas.setFillColor(colors.HexColor("#71838c"))
+        canvas.drawString(13 * mm, 8 * mm, "TotalCounts · Reporte informativo de cobranza")
+        canvas.drawRightString(landscape(A4)[0] - 13 * mm, 8 * mm, f"Página {doc.page}")
+        canvas.restoreState()
+
+    documento.build(historia, onFirstPage=pie, onLaterPages=pie)
+    return buffer.getvalue()
+
+
+def _estilo_tabla_reporte(colors):
+    from reportlab.platypus import TableStyle
+
+    return TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#223944")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 7.2),
+        ("LEADING", (0, 0), (-1, -1), 9),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#dce5e8")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f4f8f9")]),
+        ("ALIGN", (3, 1), (-1, -1), "RIGHT"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+    ])
+
+
+@admin_required
+def admin_cobranza_reporte_popup(request, ruc):
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    try:
+        datos = _reporte_datos_cobranza(cliente)
+    except Exception:
+        logger.exception("No se pudo preparar el reporte de cobranza: ruc=%s", cliente.ruccedcli)
+        return render(request, "admin/reporte_cobranza_popup.html", {
+            "cliente": cliente,
+            "error": "No se pudo consultar la información de cobranza. Verifica la conexión con BdTotal.",
+        })
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+
+    correo = (cliente.corelectr or "").strip()
+    try:
+        validate_email(correo)
+        correo_valido = True
+    except ValidationError:
+        correo_valido = False
+    return render(request, "admin/reporte_cobranza_popup.html", {
+        "cliente": cliente,
+        "datos": datos,
+        "correo_cliente": correo,
+        "correo_valido": correo_valido,
+        "servicios_disponibles": datos["servicios_disponibles"],
+    })
+
+
+@admin_required
+def admin_cobranza_reporte_pdf(request, ruc):
+    from django.http import HttpResponse
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    try:
+        datos = _reporte_datos_cobranza(cliente)
+        pdf = _reporte_cobranza_pdf(cliente, datos)
+        nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{nombre}"'
+        return response
+    except Exception:
+        logger.exception("No se pudo generar el PDF de cobranza: ruc=%s", cliente.ruccedcli)
+        return HttpResponse("No se pudo generar el PDF del reporte de cobranza.", status=500)
+
+
+@admin_required
+def admin_cobranza_reporte_enviar(request, ruc):
+    from django.core.mail import EmailMessage
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    from django.http import JsonResponse
+
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    correo = (cliente.corelectr or "").strip()
+    try:
+        validate_email(correo)
+    except ValidationError:
+        return JsonResponse({
+            "ok": False,
+            "error": "El cliente no tiene un correo electrónico válido registrado. Actualiza sus datos antes de enviar el reporte.",
+        }, status=400)
+
+    try:
+        datos = _reporte_datos_cobranza(cliente)
+        pdf = _reporte_cobranza_pdf(cliente, datos)
+        nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
+        mensaje = EmailMessage(
+            subject=f"Reporte de cobranza - {cliente.nomclient or cliente.ruccedcli}",
+            body=(
+                f"Estimado/a {cliente.nomclient or 'cliente'}:\n\n"
+                "Adjuntamos el reporte actualizado de facturas pendientes de cobro "
+                "y servicios pendientes de facturar.\n\n"
+                "Saludos cordiales,\nTotalCounts"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[correo],
+        )
+        mensaje.attach(nombre, pdf, "application/pdf")
+        enviados = mensaje.send(fail_silently=False)
+        if enviados != 1:
+            raise RuntimeError("El servidor de correo no confirmó el envío.")
+        return JsonResponse({"ok": True, "mensaje": f"Reporte enviado correctamente a {correo}."})
+    except Exception:
+        logger.exception("No se pudo enviar el reporte de cobranza: ruc=%s correo=%s", cliente.ruccedcli, correo)
+        return JsonResponse({
+            "ok": False,
+            "error": "No se pudo enviar el correo. Verifica la configuración del servicio de correo e inténtalo nuevamente.",
+        }, status=500)
+
+
+@admin_required
+def admin_cobranza_cliente(request, ruc):
+
 @admin_required
 def admin_cobranza_cliente(request, ruc):
     """Panel de cobranza consultando la base central BdTotal."""
