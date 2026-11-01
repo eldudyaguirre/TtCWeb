@@ -3395,7 +3395,7 @@ ANEXOS_CLIENTE = {
     'rdep': {
         'titulo': 'RDEP',
         'nombre': 'Anexo de Relación de Dependencia',
-        'descripcion': 'Carga, consulta y descarga archivos RDEP del cliente.',
+        'descripcion': 'Carga, consulta y descarga el XML RDEP, la Grilla PDF, el Talón de resumen y los Formularios 107 de cada trabajador, organizados por periodo fiscal.',
         'carpeta': 'rdep',
     },
     'dpt': {
