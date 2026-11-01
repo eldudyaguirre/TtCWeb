@@ -303,6 +303,7 @@ def admin_cobranza_cliente(request, ruc):
             "resumen_servicios": resumen_servicios,
             "items_catalogo": items_catalogo,
             "servicios_accion_url": f"/totalcounts/clientes/{cliente.ruccedcli}/cobranza/servicios/accion/",
+            "hoy": hoy,
             "resumen": resumen,
             "db_error": db_error,
             "filtros": {
