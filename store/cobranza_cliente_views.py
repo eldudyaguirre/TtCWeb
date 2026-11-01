@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.conf import settings
 from django.contrib import messages
@@ -62,6 +62,18 @@ def _reporte_datos_cobranza(cliente):
         }
 
         cursor.execute(
+            "SELECT poriva FROM public.parametros ORDER BY id LIMIT 1"
+        )
+        fila_parametros = cursor.fetchone()
+        if fila_parametros is None:
+            raise RuntimeError("No existe un registro en public.parametros para obtener el porcentaje de IVA.")
+        porcentaje_iva = Decimal(str(
+            fila_parametros[0] if fila_parametros[0] is not None else 15
+        ))
+        if not porcentaje_iva.is_finite() or porcentaje_iva < 0 or porcentaje_iva > 100:
+            raise RuntimeError("El porcentaje de IVA configurado en public.parametros.poriva no es válido.")
+
+        cursor.execute(
             """
             WITH facturas_cabecera AS (
                 SELECT numfactur::text AS numfactur,
@@ -93,7 +105,14 @@ def _reporte_datos_cobranza(cliente):
 
     servicios = []
     servicios_disponibles = True
-    resumen_servicios = {"cantidad": 0, "total": Decimal("0.00")}
+    resumen_servicios = {
+        "cantidad": 0,
+        "subtotal": Decimal("0.00"),
+        "porcentaje_iva": Decimal("0.00"),
+        "iva": Decimal("0.00"),
+        "total": Decimal("0.00"),
+        "total_a_pagar": resumen_facturas["total"],
+    }
     try:
         with conexion.cursor() as cursor:
             cursor.execute(
@@ -120,14 +139,26 @@ def _reporte_datos_cobranza(cliente):
                 [ruc],
             )
             cantidad, total = cursor.fetchone()
+
+            subtotal_servicios = Decimal(str(total or 0)).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            iva_servicios = (subtotal_servicios * porcentaje_iva / Decimal("100")).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            total_servicios = subtotal_servicios + iva_servicios
             resumen_servicios = {
                 "cantidad": int(cantidad or 0),
-                "total": Decimal(str(total or 0)),
+                "subtotal": subtotal_servicios,
+                "porcentaje_iva": porcentaje_iva,
+                "iva": iva_servicios,
+                "total": total_servicios,
+                "total_a_pagar": resumen_facturas["total"] + total_servicios,
             }
     except Exception:
         conexion.rollback()
         servicios_disponibles = False
-        logger.exception("No se pudo consultar prefactura para el reporte de cobranza: ruc=%s", ruc)
+        logger.exception("No se pudo consultar prefactura o calcular el IVA para el reporte de cobranza: ruc=%s", ruc)
 
     for factura in facturas:
         factura["saldo_pendiente"] = Decimal(str(factura.get("saldo_pendiente") or 0))
