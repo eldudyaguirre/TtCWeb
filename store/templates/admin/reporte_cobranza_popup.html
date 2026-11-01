@@ -40,19 +40,18 @@
         </div>
         <div class="cob-report-table-wrap">
             <table class="cob-ec-table cob-report-table">
-                <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento más próximo</th><th>Cuotas</th><th>Total factura</th><th class="num">Saldo pendiente</th></tr></thead>
+                <thead><tr><th>Factura</th><th>Fecha</th><th>Vencimiento más próximo</th><th>Total factura</th><th class="num">Saldo pendiente</th></tr></thead>
                 <tbody>
                 {% for factura in datos.facturas %}
                     <tr>
                         <td><strong>{{ factura.numfactur }}</strong></td>
                         <td>{{ factura.fecha_factura|date:"d/m/Y"|default:"—" }}</td>
                         <td>{% if factura.vencida %}<span class="cob-report-overdue">{{ factura.fecha_vencimiento|date:"d/m/Y" }}</span>{% else %}{{ factura.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% endif %}</td>
-                        <td>{{ factura.cuotas_pendientes }}</td>
                         <td class="num">$ {{ factura.total_factura|floatformat:2 }}</td>
                         <td class="num"><strong>$ {{ factura.saldo_pendiente|floatformat:2 }}</strong></td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6" class="cob-ec-empty">No existen facturas pendientes de cobro.</td></tr>
+                    <tr><td colspan="5" class="cob-ec-empty">No existen facturas pendientes de cobro.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
