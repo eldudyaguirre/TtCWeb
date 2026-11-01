@@ -5,7 +5,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.db import connections
+from django.db import connections, transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -483,3 +483,256 @@ def admin_cobranza_masivo_reintentar(request, envio_id):
         "ok": True,
         "mensaje": f"Se pusieron en cola {len(pendientes)} destinatario(s) para reintento.",
     })
+
+
+def _validar_periodo_prefacturacion(mes, anio):
+    try:
+        mes = int(mes)
+    except (TypeError, ValueError):
+        raise ValueError("Selecciona un mes válido.")
+
+    anio = str(anio or "").strip()
+    if mes < 1 or mes > 12:
+        raise ValueError("El mes debe estar entre 1 y 12.")
+    if len(anio) != 4 or not anio.isdigit() or int(anio) < 2000:
+        raise ValueError("Indica un año válido de cuatro dígitos.")
+
+    return mes, anio, str(mes).zfill(3)
+
+
+def _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes):
+    cursor.execute(
+        "SELECT coditem, desitem FROM public.items WHERE coditem = %s",
+        [codigo_mes],
+    )
+    item = cursor.fetchone()
+    if item is None:
+        raise ValueError(
+            f"No existe el servicio mensual con código {codigo_mes} en el catálogo de items."
+        )
+
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) AS clientes_mensuales,
+            COUNT(*) FILTER (
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM public.prefactura p
+                    WHERE p.ruc = c.ruccedcli
+                      AND p.coditeinv = %s
+                      AND p."año" = %s
+                )
+            ) AS ya_generados,
+            COUNT(*) FILTER (
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM public.prefactura p
+                    WHERE p.ruc = c.ruccedcli
+                      AND p.coditeinv = %s
+                      AND p."año" = %s
+                )
+            ) AS por_generar,
+            COALESCE(
+                SUM(COALESCE(c.tarifa, 0)) FILTER (
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM public.prefactura p
+                        WHERE p.ruc = c.ruccedcli
+                          AND p.coditeinv = %s
+                          AND p."año" = %s
+                    )
+                ),
+                0
+            ) AS total_tarifas
+        FROM public.clientes c
+        WHERE c.activo IS TRUE
+          AND c.automatizado IS TRUE
+          AND UPPER(TRIM(COALESCE(c.semensual, ''))) = 'MENSUAL'
+        """,
+        [
+            codigo_mes, anio,
+            codigo_mes, anio,
+            codigo_mes, anio,
+        ],
+    )
+    clientes_mensuales, ya_generados, por_generar, total_tarifas = cursor.fetchone()
+    return {
+        "codigo_mes": codigo_mes,
+        "descripcion": item[1],
+        "clientes_mensuales": int(clientes_mensuales or 0),
+        "ya_generados": int(ya_generados or 0),
+        "por_generar": int(por_generar or 0),
+        "total_tarifas": Decimal(str(total_tarifas or 0)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        ),
+    }
+
+
+@admin_required
+def admin_prefacturacion_mensual_previsualizar(request):
+    if request.method != "GET":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+    try:
+        mes, anio, codigo_mes = _validar_periodo_prefacturacion(
+            request.GET.get("mes"),
+            request.GET.get("anio"),
+        )
+        conexion = _db()
+        conexion.ensure_connection()
+        with conexion.cursor() as cursor:
+            resumen = _resumen_prefacturacion_mensual(cursor, mes, anio, codigo_mes)
+        return JsonResponse({
+            "ok": True,
+            "mes": mes,
+            "anio": anio,
+            **resumen,
+        })
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+    except Exception:
+        logger.exception("No se pudo preparar la generación de prefacturación mensual.")
+        return JsonResponse({
+            "ok": False,
+            "error": "No se pudo consultar clientes, catálogo o consecutivo de prefacturación.",
+        }, status=500)
+
+
+@admin_required
+def admin_prefacturacion_mensual_generar(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    try:
+        mes, anio, codigo_mes = _validar_periodo_prefacturacion(
+            request.POST.get("mes"),
+            request.POST.get("anio"),
+        )
+        conexion = _db()
+        conexion.ensure_connection()
+        fecha_generacion = timezone.localdate()
+        usuario = (
+            request.session.get("admin_username")
+            or request.session.get("admin_name")
+            or "ADMIN"
+        )[:150]
+
+        with transaction.atomic(using=DB_ALIAS):
+            with conexion.cursor() as cursor:
+                # Bloquea el único registro de parámetros para serializar
+                # ejecuciones simultáneas y proteger numdetprefac.
+                cursor.execute(
+                    "SELECT numdetprefac FROM public.parametros FOR UPDATE"
+                )
+                parametros = cursor.fetchall()
+                if len(parametros) != 1:
+                    raise RuntimeError(
+                        "Se esperaba un único registro en public.parametros para bloquear numdetprefac."
+                    )
+                consecutivo = parametros[0][0]
+                if consecutivo is None:
+                    raise RuntimeError("El consecutivo numdetprefac no está configurado.")
+
+                resumen = _resumen_prefacturacion_mensual(
+                    cursor, mes, anio, codigo_mes
+                )
+                cursor.execute(
+                    """
+                    WITH candidatos AS (
+                        SELECT
+                            c.ruccedcli,
+                            COALESCE(c.tarifa, 0) AS tarifa,
+                            ROW_NUMBER() OVER (ORDER BY c.ruccedcli) AS orden
+                        FROM public.clientes c
+                        WHERE c.activo IS TRUE
+                          AND c.automatizado IS TRUE
+                          AND UPPER(TRIM(COALESCE(c.semensual, ''))) = 'MENSUAL'
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM public.prefactura p
+                              WHERE p.ruc = c.ruccedcli
+                                AND p.coditeinv = %s
+                                AND p."año" = %s
+                          )
+                    )
+                    INSERT INTO public.prefactura (
+                        numdetfac,
+                        ruc,
+                        coditeinv,
+                        desiteinv,
+                        canfactur,
+                        preitefac,
+                        "año",
+                        creadopor,
+                        fecha
+                    )
+                    SELECT
+                        %s + candidatos.orden,
+                        candidatos.ruccedcli,
+                        %s,
+                        %s,
+                        1,
+                        candidatos.tarifa,
+                        %s,
+                        %s,
+                        %s
+                    FROM candidatos
+                    ORDER BY candidatos.ruccedcli
+                    """,
+                    [
+                        codigo_mes,
+                        anio,
+                        consecutivo,
+                        codigo_mes,
+                        resumen["descripcion"],
+                        anio,
+                        usuario,
+                        fecha_generacion,
+                    ],
+                )
+                cantidad_generada = cursor.rowcount
+
+                if cantidad_generada:
+                    nuevo_consecutivo = int(consecutivo) + cantidad_generada
+                    cursor.execute(
+                        "UPDATE public.parametros SET numdetprefac = %s",
+                        [nuevo_consecutivo],
+                    )
+                    if cursor.rowcount != 1:
+                        raise RuntimeError(
+                            "No se pudo actualizar de forma única el consecutivo numdetprefac."
+                        )
+                    consecutivo_inicial = int(consecutivo) + 1
+                    consecutivo_final = nuevo_consecutivo
+                else:
+                    consecutivo_inicial = None
+                    consecutivo_final = None
+                    nuevo_consecutivo = int(consecutivo)
+
+        return JsonResponse({
+            "ok": True,
+            "cantidad_generada": cantidad_generada,
+            "numdetfac_inicial": consecutivo_inicial,
+            "numdetfac_final": consecutivo_final,
+            "codigo_mes": codigo_mes,
+            "descripcion": resumen["descripcion"],
+            "mes": mes,
+            "anio": anio,
+            "ya_generados": resumen["ya_generados"],
+            "consecutivo_actualizado": nuevo_consecutivo,
+            "mensaje": (
+                f"Se generaron {cantidad_generada} servicio(s) de "
+                f"{resumen['descripcion']} para {mes:02d}/{anio}."
+                if cantidad_generada
+                else f"No había servicios pendientes de generar para {mes:02d}/{anio}. "
+                     "Los clientes ya tenían el servicio registrado."
+            ),
+        })
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+    except Exception:
+        logger.exception("Error al generar prefacturación mensual.")
+        return JsonResponse({
+            "ok": False,
+            "error": "No se pudo generar la prefacturación mensual. Revisa el registro del servidor.",
+        }, status=500)
