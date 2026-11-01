@@ -373,12 +373,30 @@ def admin_cobranza_masivo_previsualizar(request):
         return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
     try:
         destinatarios, resumen = _destinatarios_cobranza_masiva()
+        if destinatarios:
+            if not (settings.DEFAULT_FROM_EMAIL or "").strip():
+                raise RuntimeError("DEFAULT_FROM_EMAIL no está configurado en Django.")
+
+            # Prueba una generación real antes de permitir encolar toda la campaña.
+            from types import SimpleNamespace
+            from .cobranza_cliente_views import _reporte_datos_cobranza, _reporte_cobranza_pdf
+
+            primero = destinatarios[0]
+            cliente_prueba = SimpleNamespace(
+                ruccedcli=primero["ruc"],
+                nomclient=primero["cliente"],
+            )
+            datos_prueba = _reporte_datos_cobranza(cliente_prueba)
+            if not datos_prueba.get("servicios_disponibles"):
+                raise RuntimeError("No se pudo consultar prefactura para generar el reporte de prueba.")
+            _reporte_cobranza_pdf(cliente_prueba, datos_prueba)
+
         return JsonResponse({"ok": True, **resumen})
-    except Exception:
+    except Exception as exc:
         logger.exception("No se pudo preparar la vista previa del envío masivo de cobranza.")
         return JsonResponse({
             "ok": False,
-            "error": "No se pudo consultar la cartera y los correos de los clientes.",
+            "error": f"No se puede iniciar el envío masivo porque falló la validación previa: {exc}",
         }, status=500)
 
 
