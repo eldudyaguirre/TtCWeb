@@ -380,6 +380,7 @@ def _reporte_cobranza_pdf(cliente, datos):
 
 
 def _estilo_tabla_reporte(azul, gris_linea, gris_fondo):
+    from reportlab.lib import colors
     from reportlab.platypus import TableStyle
 
     return TableStyle([
