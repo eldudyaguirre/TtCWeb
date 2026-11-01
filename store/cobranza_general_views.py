@@ -28,6 +28,7 @@ def admin_cobranza_general(request):
         tipo = "todos"
 
     servicios_sin_cliente = 0
+    servicios_sin_cliente = 0
     try:
         conexion = _db()
         conexion.ensure_connection()
@@ -187,7 +188,6 @@ def admin_cobranza_general(request):
         # El total de servicios debe salir directamente de prefactura.
         # El resumen por cliente anterior puede omitir filas cuyo RUC todavía
         # no está registrado o no coincide con public.clientes.
-        servicios_sin_cliente = 0
         filtro_servicios = ""
         parametros_servicios = []
         if busqueda:
@@ -245,6 +245,8 @@ def admin_cobranza_general(request):
             resumen["facturas_vencidas"] = 0
             resumen["saldo_facturas"] = Decimal("0.00")
             resumen["total_general"] = resumen["total_servicios"]
+        else:
+            resumen["total_general"] = resumen["saldo_facturas"] + resumen["total_servicios"]
 
         error = ""
     except Exception as exc:
