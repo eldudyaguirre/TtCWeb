@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -24,8 +25,8 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.add_argument("--mes", type=int, help="Mes a generar (1-12). Por defecto usa el mes actual de Ecuador.")
-        parser.add_argument("--anio", type=int, help="Año a generar. Por defecto usa el año actual de Ecuador.")
+        parser.add_argument("--mes", type=int, help="Mes a generar (1-12). Por defecto usa el mes anterior al actual en Ecuador.")
+        parser.add_argument("--anio", type=int, help="Año a generar. Por defecto usa el año del mes anterior en Ecuador.")
         parser.add_argument(
             "--dry-run",
             action="store_true",
@@ -45,8 +46,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         hoy = timezone.localdate()
-        mes_solicitado = options.get("mes") or hoy.month
-        anio_solicitado = options.get("anio") or hoy.year
+        # La prefacturación se genera siempre con un mes de atraso:
+        # el día 1 se procesa el mes calendario que acaba de terminar.
+        primer_dia_mes_actual = hoy.replace(day=1)
+        ultimo_dia_mes_anterior = primer_dia_mes_actual - timedelta(days=1)
+
+        if options.get("mes") is None and options.get("anio") is None:
+            mes_solicitado = ultimo_dia_mes_anterior.month
+            anio_solicitado = ultimo_dia_mes_anterior.year
+        else:
+            # Permite ejecutar manualmente un periodo específico sin alterar
+            # la regla predeterminada de la tarea mensual.
+            mes_solicitado = options.get("mes") or hoy.month
+            anio_solicitado = options.get("anio") or hoy.year
 
         try:
             mes, anio, codigo_mes = _validar_periodo_prefacturacion(
@@ -65,7 +77,7 @@ class Command(BaseCommand):
                         raise RuntimeError("No existe un único consecutivo numdetprefac configurado.")
 
                 mensaje = (
-                    f"Vista previa {mes:02d}/{anio}: "
+                    f"Vista previa del periodo {mes:02d}/{anio}: "
                     f"{resumen['por_generar']} servicio(s) pendientes; "
                     f"{resumen['ya_generados']} ya registrados; "
                     f"total de tarifas: {resumen['total_tarifas']}. "
@@ -101,7 +113,7 @@ class Command(BaseCommand):
             raise
         except Exception as exc:
             mensaje = (
-                f"Falló la generación automática del periodo "
+                f"Falló la generación automática del periodo atrasado "
                 f"{mes_solicitado:02d}/{anio_solicitado}: {type(exc).__name__}: {exc}"
             )
             logger.exception("Falló la generación automática de servicios mensuales.")
