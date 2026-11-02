@@ -8,6 +8,29 @@
     <link rel="shortcut icon" href="{% static 'images/icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin.css' %}?v=20261030-05">
+    <style>
+      /* Estilo uniforme de selección de archivos en las pantallas administrativas. */
+      .admin-shell input[type="file"]::file-selector-button {
+        margin-right: 12px;
+        padding: 9px 14px;
+        border: 0;
+        border-radius: 7px;
+        background: #e8f5f6;
+        color: #087f8b;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease;
+      }
+      .admin-shell input[type="file"]::file-selector-button:hover {
+        background: #1596a3;
+        color: #fff;
+      }
+      .admin-shell input[type="file"]:focus-visible {
+        outline: 3px solid rgba(21,150,163,.25);
+        outline-offset: 2px;
+      }
+    </style>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
     {% block extra_head %}{% endblock %}
 </head>
