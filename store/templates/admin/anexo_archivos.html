@@ -97,6 +97,12 @@
 .ats-field label,.ats-filter label{font-size:13px;font-weight:600;color:var(--admin-dark)}
 .ats-field select,.ats-field input,.ats-filter select{width:100%;box-sizing:border-box;border:1px solid var(--admin-border);border-radius:8px;padding:11px 12px;background:#fff;color:var(--admin-dark);font:inherit}
 .ats-field small{font-size:11px;color:var(--admin-muted);line-height:1.5}
+.ats-field input[type="file"]{padding:8px;border:1px solid var(--admin-border);border-radius:9px;background:#fff;color:var(--admin-muted);font-size:12px;cursor:pointer}
+.ats-field input[type="file"]::file-selector-button{margin-right:12px;padding:9px 14px;border:0;border-radius:7px;background:#e8f5f6;color:#087f8b;font:600 12px inherit;cursor:pointer;transition:background .2s ease,color .2s ease}
+.ats-field input[type="file"]::file-selector-button:hover{background:#1596a3;color:#fff}
+.ats-field input[type="file"]:focus-visible{outline:3px solid rgba(21,150,163,.2);outline-offset:2px}
+.ats-field input[type="file"]::-webkit-file-upload-button{margin-right:12px;padding:9px 14px;border:0;border-radius:7px;background:#e8f5f6;color:#087f8b;font-weight:600;cursor:pointer}
+.ats-field input[type="file"]::-webkit-file-upload-button:hover{background:#1596a3;color:#fff}
 .ats-submit,.ats-filter-button{border:0;border-radius:8px;background:#1596a3;color:#fff;padding:12px 16px;font-weight:600;cursor:pointer}
 .ats-submit{display:flex;justify-content:center;align-items:center;gap:9px}
 .ats-message{padding:12px 15px;border-radius:8px;margin-top:15px;font-size:13px}
