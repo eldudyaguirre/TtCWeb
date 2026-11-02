@@ -6,6 +6,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ZonaEcuador = "SA Pacific Standard Time"
+$ZonaServidor = [System.TimeZoneInfo]::Local.Id
+if ($ZonaServidor -ne $ZonaEcuador) {
+    throw "La zona horaria de Windows es '$ZonaServidor'. Configura el servidor en '$ZonaEcuador' (Ecuador, UTC-05:00) antes de registrar la tarea para garantizar las 06:00 de Ecuador."
+}
+
 $ProjectRoot = (Resolve-Path $ProjectRoot).Path
 $ManagePath = Join-Path $ProjectRoot "manage.py"
 
