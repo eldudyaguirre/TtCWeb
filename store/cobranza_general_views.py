@@ -765,131 +765,133 @@ def admin_prefacturacion_mensual_previsualizar(request):
         }, status=500)
 
 
-@admin_required
-def admin_prefacturacion_mensual_generar(request):
-    if request.method != "POST":
-        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+def _ejecutar_prefacturacion_mensual(mes, anio, usuario="AUTOMATICO"):
+    """Genera servicios mensuales con las mismas reglas para portal y tarea programada."""
+    mes, anio, codigo_mes = _validar_periodo_prefacturacion(mes, anio)
+    conexion = _db()
+    conexion.ensure_connection()
+    fecha_generacion = timezone.localdate()
+    usuario = (str(usuario or "AUTOMATICO"))[:20]
 
-    try:
-        mes, anio, codigo_mes = _validar_periodo_prefacturacion(
-            request.POST.get("mes"),
-            request.POST.get("anio"),
-        )
-        conexion = _db()
-        conexion.ensure_connection()
-        fecha_generacion = timezone.localdate()
-        usuario = (
-            request.session.get("admin_username")
-            or request.session.get("admin_name")
-            or "ADMIN"
-        )[:20]
+    with transaction.atomic(using=DB_ALIAS):
+        with conexion.cursor() as cursor:
+            # Bloquea parámetros para serializar altas manuales y automáticas.
+            cursor.execute(
+                "SELECT numdetprefac FROM public.parametros FOR UPDATE"
+            )
+            parametros = cursor.fetchall()
+            if len(parametros) != 1:
+                raise RuntimeError(
+                    "Se esperaba un único registro en public.parametros para bloquear numdetprefac."
+                )
+            consecutivo = parametros[0][0]
+            if consecutivo is None:
+                raise RuntimeError("El consecutivo numdetprefac no está configurado.")
+            consecutivo = int(consecutivo)
+            cursor.execute(
+                "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
+            )
+            maximo_prefactura = int(cursor.fetchone()[0] or 0)
+            consecutivo_original = consecutivo
+            consecutivo = max(consecutivo, maximo_prefactura)
 
-        with transaction.atomic(using=DB_ALIAS):
-            with conexion.cursor() as cursor:
-                # Bloquea el único registro de parámetros para serializar
-                # ejecuciones simultáneas y proteger numdetprefac.
+            resumen = _resumen_prefacturacion_mensual(
+                cursor, mes, anio, codigo_mes
+            )
+            auditoria = _auditar_columnas_prefactura(cursor)
+            if not auditoria["puede_generar"]:
+                raise RuntimeError(
+                    "No se puede generar porque existen columnas obligatorias sin cubrir: "
+                    + ", ".join(auditoria["incumplimientos"])
+                )
+            cantidad_generada = _insertar_prefacturas_mensuales(
+                cursor=cursor,
+                columnas=auditoria,
+                consecutivo=int(consecutivo),
+                codigo_mes=codigo_mes,
+                descripcion=resumen["descripcion"],
+                anio=anio,
+                usuario=usuario,
+                fecha_generacion=fecha_generacion,
+            )
+
+            if cantidad_generada:
+                nuevo_consecutivo = int(consecutivo) + cantidad_generada
                 cursor.execute(
-                    "SELECT numdetprefac FROM public.parametros FOR UPDATE"
+                    "UPDATE public.parametros SET numdetprefac = %s",
+                    [nuevo_consecutivo],
                 )
-                parametros = cursor.fetchall()
-                if len(parametros) != 1:
+                if cursor.rowcount != 1:
                     raise RuntimeError(
-                        "Se esperaba un único registro en public.parametros para bloquear numdetprefac."
+                        "No se pudo actualizar de forma única el consecutivo numdetfac."
                     )
-                consecutivo = parametros[0][0]
-                if consecutivo is None:
-                    raise RuntimeError("El consecutivo numdetprefac no está configurado.")
-                consecutivo = int(consecutivo)
-                cursor.execute(
-                    "SELECT COALESCE(MAX(numdetfac), 0) FROM public.prefactura"
-                )
-                maximo_prefactura = int(cursor.fetchone()[0] or 0)
-                # Si el parámetro quedó atrás por inserciones históricas,
-                # se alinea con el mayor ID real antes de asignar nuevas líneas.
-                consecutivo_original = consecutivo
-                consecutivo = max(consecutivo, maximo_prefactura)
-
-                resumen = _resumen_prefacturacion_mensual(
-                    cursor, mes, anio, codigo_mes
-                )
-                auditoria = _auditar_columnas_prefactura(cursor)
-                if not auditoria["puede_generar"]:
-                    raise RuntimeError(
-                        "No se puede generar porque existen columnas obligatorias sin cubrir: "
-                        + ", ".join(auditoria["incumplimientos"])
-                    )
-                cantidad_generada = _insertar_prefacturas_mensuales(
-                    cursor=cursor,
-                    columnas=auditoria,
-                    consecutivo=int(consecutivo),
-                    codigo_mes=codigo_mes,
-                    descripcion=resumen["descripcion"],
-                    anio=anio,
-                    usuario=usuario,
-                    fecha_generacion=fecha_generacion,
-                )
-
-                if cantidad_generada:
-                    nuevo_consecutivo = int(consecutivo) + cantidad_generada
+                consecutivo_inicial = int(consecutivo) + 1
+                consecutivo_final = nuevo_consecutivo
+            else:
+                consecutivo_inicial = None
+                consecutivo_final = None
+                nuevo_consecutivo = int(consecutivo)
+                if consecutivo != consecutivo_original:
                     cursor.execute(
                         "UPDATE public.parametros SET numdetprefac = %s",
                         [nuevo_consecutivo],
                     )
                     if cursor.rowcount != 1:
                         raise RuntimeError(
-                            "No se pudo actualizar de forma única el consecutivo numdetfac."
+                            "No se pudo sincronizar el consecutivo numdetprefac."
                         )
-                    consecutivo_inicial = int(consecutivo) + 1
-                    consecutivo_final = nuevo_consecutivo
-                else:
-                    consecutivo_inicial = None
-                    consecutivo_final = None
-                    nuevo_consecutivo = int(consecutivo)
-                    if consecutivo != consecutivo_original:
-                        cursor.execute(
-                            "UPDATE public.parametros SET numdetprefac = %s",
-                            [nuevo_consecutivo],
-                        )
-                        if cursor.rowcount != 1:
-                            raise RuntimeError(
-                                "No se pudo sincronizar el consecutivo numdetprefac."
-                            )
 
-        logger.info(
-            "Prefacturación mensual %02d/%s: generados=%s consecutivos=%s-%s usuario=%s",
-            mes,
-            anio,
-            cantidad_generada,
-            consecutivo_inicial,
-            consecutivo_final,
-            usuario,
+    resultado = {
+        "ok": True,
+        "cantidad_generada": cantidad_generada,
+        "numdetfac_inicial": consecutivo_inicial,
+        "numdetfac_final": consecutivo_final,
+        "codigo_mes": codigo_mes,
+        "descripcion": resumen["descripcion"],
+        "mes": mes,
+        "anio": anio,
+        "ya_generados": resumen["ya_generados"],
+        "consecutivo_actualizado": nuevo_consecutivo,
+        "consecutivo_sincronizado": consecutivo != consecutivo_original,
+        "maximo_prefactura": maximo_prefactura,
+    }
+    resultado["mensaje"] = (
+        (
+            f"Se generaron {cantidad_generada} servicio(s) de "
+            f"{resumen['descripcion']} para {mes:02d}/{anio}."
+            if cantidad_generada
+            else f"No había servicios pendientes de generar para {mes:02d}/{anio}. "
+                 "Los clientes ya tenían el servicio registrado."
         )
-        return JsonResponse({
-            "ok": True,
-            "cantidad_generada": cantidad_generada,
-            "numdetfac_inicial": consecutivo_inicial,
-            "numdetfac_final": consecutivo_final,
-            "codigo_mes": codigo_mes,
-            "descripcion": resumen["descripcion"],
-            "mes": mes,
-            "anio": anio,
-            "ya_generados": resumen["ya_generados"],
-            "consecutivo_actualizado": nuevo_consecutivo,
-            "consecutivo_sincronizado": consecutivo != consecutivo_original,
-            "mensaje": (
-                (
-                    f"Se generaron {cantidad_generada} servicio(s) de "
-                    f"{resumen['descripcion']} para {mes:02d}/{anio}."
-                    if cantidad_generada
-                    else f"No había servicios pendientes de generar para {mes:02d}/{anio}. "
-                         "Los clientes ya tenían el servicio registrado."
-                )
-                + (
-                    f" El consecutivo se sincronizó con el máximo existente ({maximo_prefactura})."
-                    if consecutivo != consecutivo_original else ""
-                )
-            ),
-        })
+        + (
+            f" El consecutivo se sincronizó con el máximo existente ({maximo_prefactura})."
+            if consecutivo != consecutivo_original else ""
+        )
+    )
+    logger.info(
+        "Prefacturación mensual %02d/%s: generados=%s consecutivos=%s-%s usuario=%s",
+        mes, anio, cantidad_generada, consecutivo_inicial, consecutivo_final, usuario,
+    )
+    return resultado
+
+
+@admin_required
+def admin_prefacturacion_mensual_generar(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    try:
+        mes, anio, _ = _validar_periodo_prefacturacion(
+            request.POST.get("mes"),
+            request.POST.get("anio"),
+        )
+        usuario = (
+            request.session.get("admin_username")
+            or request.session.get("admin_name")
+            or "ADMIN"
+        )[:20]
+        resultado = _ejecutar_prefacturacion_mensual(mes, anio, usuario)
+        return JsonResponse(resultado)
     except ValueError as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
     except Exception as exc:
