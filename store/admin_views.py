@@ -2933,7 +2933,11 @@ def admin_rebefics(request, ruc):
         registros = [item for item in registros if item['anio'] == anio_filtro]
 
     anio_actual = timezone.localdate().year
-    anios_formulario = sorted(anios_disponibles | {anio_actual, anio_actual - 1}, reverse=True)
+    # Permite cargar ATS de los últimos ocho ejercicios fiscales, además de conservar años históricos disponibles.
+    anios_formulario = sorted(
+        anios_disponibles | set(range(anio_actual - 7, anio_actual + 1)),
+        reverse=True,
+    )
     return render(request, 'admin/rebefics.html', {
         'cliente': cliente, 'registros': registros,
         'anios': sorted(anios_disponibles, reverse=True),
