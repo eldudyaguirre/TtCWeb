@@ -68,7 +68,7 @@ class Command(BaseCommand):
                     f"Vista previa {mes:02d}/{anio}: "
                     f"{resumen['por_generar']} servicio(s) pendientes; "
                     f"{resumen['ya_generados']} ya registrados; "
-                    f"total de tarifas \${resumen['total_tarifas']}. "
+                    f"total de tarifas: {resumen['total_tarifas']}. "
                     f"Catálogo: {resumen['descripcion']}."
                 )
                 if not auditoria["puede_generar"]:
