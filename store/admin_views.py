@@ -3730,10 +3730,12 @@ def admin_anexo_archivos(request, ruc, modulo):
     if anio_filtro:
         registros = [item for item in registros if item['anio'] == anio_filtro]
 
+    # Ofrecer los últimos ocho años para cargar documentación histórica.
+    # En RDEP se mantiene su límite fiscal específico de siete años anteriores.
     anios_carga = (
         set(range(anio_minimo_rdep, anio_actual + 1))
         if es_rdep
-        else {anio_actual, anio_actual - 1}
+        else set(range(anio_actual - 7, anio_actual + 1))
     )
     anios_formulario = sorted(anios_disponibles | anios_carga, reverse=True)
 
