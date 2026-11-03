@@ -1747,11 +1747,13 @@ def sri_anexos(request):
         {'nombre': 'Anexo ICE', 'carpetas': ('aice', 'ice'), 'icono': 'fi-rr-box'},
         {'nombre': 'Anexo ADI', 'carpetas': ('adi',), 'icono': 'fi-rr-folder'},
         {'nombre': 'Anexo REBEFICS', 'carpetas': ('rebefics',), 'icono': 'fi-rr-file'},
-        {'nombre': 'Declaraciones de IVA', 'carpeta': 'declaraciones_iva', 'icono': 'fi-rr-file-invoice-dollar'},
-        {'nombre': 'Declaraciones de Impuesto a la Renta', 'carpeta': 'declaraciones_renta', 'icono': 'fi-rr-file-invoice'},
+        {'nombre': 'Declaraciones de IVA', 'carpetas': ('declaraciones_iva',), 'icono': 'fi-rr-file-invoice-dollar'},
+        {'nombre': 'Declaraciones de Impuesto a la Renta', 'carpetas': ('declaraciones_renta',), 'icono': 'fi-rr-file-invoice'},
     ]
     if solo_declaraciones:
-        tipos = [tipo for tipo in tipos if tipo['carpeta'] in {'declaraciones_iva', 'declaraciones_renta'}]
+        tipos = [tipo for tipo in tipos if tipo['carpetas'][0] in {'declaraciones_iva', 'declaraciones_renta'}]
+    else:
+        tipos = [tipo for tipo in tipos if tipo['carpetas'][0] not in {'declaraciones_iva', 'declaraciones_renta'}]
 
     nombres_meses = {
         '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
