@@ -9,6 +9,48 @@
 .portal-stat:hover{transform:translateY(-2px);border-color:#d5e3e6;box-shadow:0 9px 24px rgba(33,51,62,.09)}.portal-stat:hover::before{opacity:1}
 .portal-stat-icon,.dashboard-kpi-icon{width:48px;height:48px;min-width:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:#eaf5f6;color:#118b97;font-size:20px;box-shadow:inset 0 0 0 1px rgba(21,150,163,.06)}.portal-stat-label{font-size:11px;color:#77858d;margin-bottom:5px;font-weight:700;letter-spacing:.055em;text-transform:uppercase}.portal-stat-value{font-size:25px;font-weight:750;color:#21333e;line-height:1.2}
 
+/* Tarjetas de resumen con color de fondo completo para distinguir los pendientes. */
+.portal-content .portal-summary .portal-stat:nth-child(1){
+    background:linear-gradient(135deg,#a92532 0%,#c63b43 58%,#922b39 100%) !important;
+    border:1px solid #b72e3b !important;
+    color:#fff !important;
+    box-shadow:0 9px 22px rgba(169,37,50,.18) !important;
+}
+.portal-content .portal-summary .portal-stat:nth-child(1)::before{
+    width:4px;background:#ffc0c4;opacity:1;
+}
+.portal-content .portal-summary .portal-stat:nth-child(1) .portal-stat-icon{
+    background:rgba(255,255,255,.17) !important;color:#fff !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.22) !important;
+}
+.portal-content .portal-summary .portal-stat:nth-child(1) .portal-stat-label,
+.portal-content .portal-summary .portal-stat:nth-child(1) .portal-stat-value{color:#fff !important}
+.portal-content .portal-summary .portal-stat:nth-child(1):hover{
+    background:linear-gradient(135deg,#92212d 0%,#b32e39 58%,#7e2431 100%) !important;
+    border-color:#f08b91 !important;
+    box-shadow:0 13px 26px rgba(146,33,45,.25) !important;
+}
+.portal-content .portal-summary .portal-stat:nth-child(2){
+    background:linear-gradient(135deg,#bd641b 0%,#df842b 58%,#a94c16 100%) !important;
+    border:1px solid #cf7623 !important;
+    color:#fff !important;
+    box-shadow:0 9px 22px rgba(189,100,27,.18) !important;
+}
+.portal-content .portal-summary .portal-stat:nth-child(2)::before{
+    width:4px;background:#ffdfb8;opacity:1;
+}
+.portal-content .portal-summary .portal-stat:nth-child(2) .portal-stat-icon{
+    background:rgba(255,255,255,.17) !important;color:#fff !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.22) !important;
+}
+.portal-content .portal-summary .portal-stat:nth-child(2) .portal-stat-label,
+.portal-content .portal-summary .portal-stat:nth-child(2) .portal-stat-value{color:#fff !important}
+.portal-content .portal-summary .portal-stat:nth-child(2):hover{
+    background:linear-gradient(135deg,#a95417 0%,#c87520 58%,#914012 100%) !important;
+    border-color:#ffc078 !important;
+    box-shadow:0 13px 26px rgba(169,84,23,.25) !important;
+}
+
 /* Indicadores pendientes: rojo para saldos y naranja para servicios por facturar. */
 .portal-summary .portal-stat:nth-child(1)::before{background:#c93636}
 .portal-summary .portal-stat:nth-child(1):hover{border-color:#f0cccc}
