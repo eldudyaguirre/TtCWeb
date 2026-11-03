@@ -55,7 +55,7 @@
 
     <div class="admin-documentacion-seccion-titulo admin-documentacion-seccion-sri"><span>02</span><div><h2>Declaraciones tributarias</h2><p>Declaraciones de IVA e Impuesto a la Renta</p></div></div>
 
-    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri admin-documentacion-card-iva">
+    <a href="{% url 'admin_declaraciones_iva' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice-dollar"></i></span>
         <div>
             <strong>Declaraciones IVA</strong>
@@ -64,7 +64,7 @@
         <i class="fi fi-rr-angle-right admin-documentacion-arrow"></i>
     </a>
 
-    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri admin-documentacion-card-renta">
+    <a href="{% url 'admin_declaraciones_renta' ruc=cliente.ruccedcli %}" class="admin-documentacion-card admin-documentacion-card-sri">
         <span class="admin-documentacion-icon"><i class="fi fi-rr-file-invoice"></i></span>
         <div>
             <strong>Declaraciones Renta</strong>
@@ -565,38 +565,6 @@
     .admin-documentacion-card div span{font-size:10px;line-height:1.35;overflow-wrap:anywhere}
     .admin-documentacion-icon{width:42px;height:42px;flex:0 0 42px;font-size:20px}
     .admin-documentacion-arrow{position:absolute;right:10px;top:18px;font-size:12px}
-}
-
-/* Colores completos por carpeta de declaraciones: IVA rojo y Renta naranja. */
-.admin-documentacion-card-iva{
-    background:linear-gradient(135deg,#a92532 0%,#c63b43 58%,#922b39 100%);
-    border-color:#b72e3b;
-    border-top:3px solid #f08b91;
-    box-shadow:0 9px 22px rgba(169,37,50,.20);
-}
-.admin-documentacion-card-iva:hover{
-    background:linear-gradient(135deg,#92212d 0%,#b32e39 58%,#7e2431 100%);
-    border-color:#f08b91;
-    border-top-color:#f08b91;
-    box-shadow:0 13px 26px rgba(146,33,45,.27);
-}
-.admin-documentacion-card-renta{
-    background:linear-gradient(135deg,#bd641b 0%,#df842b 58%,#a94c16 100%);
-    border-color:#cf7623;
-    border-top:3px solid #ffc078;
-    box-shadow:0 9px 22px rgba(189,100,27,.20);
-}
-.admin-documentacion-card-renta:hover{
-    background:linear-gradient(135deg,#a95417 0%,#c87520 58%,#914012 100%);
-    border-color:#ffc078;
-    border-top-color:#ffc078;
-    box-shadow:0 13px 26px rgba(169,84,23,.27);
-}
-.admin-documentacion-card-iva .admin-documentacion-icon,
-.admin-documentacion-card-renta .admin-documentacion-icon{
-    background:rgba(255,255,255,.18);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.20);
 }
 
 </style>
