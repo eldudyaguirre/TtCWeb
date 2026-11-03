@@ -3819,6 +3819,68 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False):
     )
 
 
+@admin_required
+def admin_anexo_ver(request, ruc, modulo, anio, nombre):
+    """Muestra un archivo de anexos en el navegador cuando el formato lo permite."""
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+
+    config = ANEXOS_CLIENTE.get(str(modulo).lower())
+    if config is None:
+        raise Http404('Módulo de anexos no válido.')
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if not 2000 <= int(anio) <= 2100 or Path(nombre).name != nombre:
+        raise Http404('Archivo o año no válido.')
+    if Path(nombre).suffix.lower() not in {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}:
+        raise Http404('Tipo de archivo no válido.')
+
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    ruta = (data_root() / relativo).resolve()
+    raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / config['carpeta']).resolve()
+    if not ruta.is_relative_to(raiz) or not ruta.is_file():
+        raise Http404('El archivo ya no está disponible.')
+
+    from .models.archivo import Archivo
+    registro = Archivo.objects.filter(cliente=cliente, ruta_relativa=relativo, activo=True).first()
+    nombre_visible = registro.nombre_original if registro else nombre
+    mime_type = registro.mime_type if registro and registro.mime_type else (mimetypes.guess_type(nombre_visible)[0] or 'application/octet-stream')
+    response = FileResponse(ruta.open('rb'), as_attachment=False, filename=nombre_visible, content_type=mime_type)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@admin_required
+def admin_anexo_eliminar(request, ruc, modulo, anio, nombre):
+    """Elimina un archivo del módulo tributario después de validar cliente y ruta."""
+    from pathlib import Path
+    from django.views.decorators.http import require_POST
+    from .services.archivos.storage import data_root
+    from .models.archivo import Archivo
+
+    if request.method != 'POST':
+        return HttpResponse('Método no permitido.', status=405)
+    config = ANEXOS_CLIENTE.get(str(modulo).lower())
+    if config is None:
+        raise Http404('Módulo de anexos no válido.')
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if not 2000 <= int(anio) <= 2100 or Path(nombre).name != nombre:
+        raise Http404('Archivo o año no válido.')
+
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    ruta = (data_root() / relativo).resolve()
+    raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / config['carpeta']).resolve()
+    if not ruta.is_relative_to(raiz) or not ruta.is_file():
+        raise Http404('El archivo ya no está disponible.')
+
+    registro = Archivo.objects.filter(cliente=cliente, ruta_relativa=relativo, activo=True).first()
+    ruta.unlink()
+    if registro:
+        registro.activo = False
+        registro.save(update_fields=['activo'])
+    messages.success(request, f'El archivo {nombre} fue eliminado correctamente.')
+    return redirect('admin_anexo_archivos', ruc=ruc, modulo=modulo)
+
+
 
 @admin_required
 def admin_workers(request):
