@@ -57,17 +57,17 @@
             <td>{{ archivo.tamano|filesizeformat }}</td>
             <td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td>
             <td class="ats-actions-cell">
-              {% if archivo.nombre_fisico|lower|slice:"-4:" == ".pdf" %}
               <details class="ats-file-menu">
-                <summary class="ats-menu-trigger" aria-label="Opciones del archivo PDF" title="Opciones"><i class="fi fi-rr-menu-dots" aria-hidden="true"></i></summary>
+                <summary class="ats-menu-trigger" aria-label="Opciones del archivo" title="Opciones"><i class="fi fi-rr-menu-dots" aria-hidden="true"></i></summary>
                 <div class="ats-menu-options">
-                  <a href="{% url 'admin_anexo_abrir' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Abrir</a>
+                  <a href="{% url 'admin_anexo_ver' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Ver</a>
                   <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
+                  <form method="post" action="{% url 'admin_anexo_eliminar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" onsubmit="return confirm('¿Eliminar este archivo definitivamente?');">
+                    {% csrf_token %}
+                    <button type="submit"><i class="fi fi-rr-trash"></i> Eliminar</button>
+                  </form>
                 </div>
               </details>
-              {% else %}
-              <a class="ats-download" href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
-              {% endif %}
             </td>
           </tr>
           {% endfor %}
@@ -80,7 +80,19 @@
     {% elif registros %}
     <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th><th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
       {% for archivo in registros %}
-      <tr><td><strong>{{ archivo.nombre }}</strong><small>{{ config.titulo }} · Documento del cliente</small></td><td>{{ archivo.anio }}</td><td>{{ archivo.tamano|filesizeformat }}</td><td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td><td><a class="ats-download" href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a></td></tr>
+      <tr><td><strong>{{ archivo.nombre }}</strong><small>{{ config.titulo }} · Documento del cliente</small></td><td>{{ archivo.anio }}</td><td>{{ archivo.tamano|filesizeformat }}</td><td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td><td class="ats-actions-cell">
+        <details class="ats-file-menu">
+          <summary class="ats-menu-trigger" aria-label="Opciones del archivo" title="Opciones"><i class="fi fi-rr-menu-dots" aria-hidden="true"></i></summary>
+          <div class="ats-menu-options">
+            <a href="{% url 'admin_anexo_ver' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Ver</a>
+            <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
+            <form method="post" action="{% url 'admin_anexo_eliminar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" onsubmit="return confirm('¿Eliminar este archivo definitivamente?');">
+              {% csrf_token %}
+              <button type="submit"><i class="fi fi-rr-trash"></i> Eliminar</button>
+            </form>
+          </div>
+        </details>
+      </td></tr>
       {% endfor %}
     </tbody></table></div>
     {% else %}<div class="ats-empty"><i class="fi fi-rr-folder-open"></i><strong>No hay archivos disponibles</strong><span>Cuando cargues un documento, aparecerá aquí para su descarga.</span></div>{% endif %}
