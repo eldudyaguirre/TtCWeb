@@ -1726,12 +1726,13 @@ def sri_anexos(request):
         return redirect('portal')
 
     from pathlib import Path
+    from .services.archivos.storage import data_root
 
     # Los anexos y las declaraciones se mantienen en carpetas distintas.
     nombre_ruta = getattr(request.resolver_match, 'url_name', '') if request.resolver_match else ''
     solo_declaraciones = nombre_ruta == 'sri_declaraciones'
     carpeta_base = 'documentos' if solo_declaraciones else 'anexos'
-    raiz_cliente = Path(settings.TOTALCOUNTS_DATA_ROOT) / str(cliente.ruccedcli).strip() / carpeta_base
+    raiz_cliente = data_root() / str(cliente.ruccedcli).strip() / carpeta_base
 
     if solo_declaraciones:
         # Si aún quedan declaraciones del despliegue anterior bajo anexos,
@@ -1740,12 +1741,12 @@ def sri_anexos(request):
         _migrar_declaraciones_legacy(str(cliente.ruccedcli).strip(), 'declaraciones_iva')
         _migrar_declaraciones_legacy(str(cliente.ruccedcli).strip(), 'declaraciones_renta')
     tipos = [
-        {'nombre': 'Anexo Transaccional Simplificado', 'carpeta': 'ats', 'icono': 'fi-rr-document'},
-        {'nombre': 'Anexo Relación Dependencia', 'carpeta': 'relacion_dependencia', 'icono': 'fi-rr-users'},
-        {'nombre': 'Anexo Patrimonial', 'carpeta': 'patrimonial', 'icono': 'fi-rr-building'},
-        {'nombre': 'Anexo ICE', 'carpeta': 'ice', 'icono': 'fi-rr-box'},
-        {'nombre': 'Anexo ADI', 'carpeta': 'adi', 'icono': 'fi-rr-folder'},
-        {'nombre': 'Anexo REBEFICS', 'carpeta': 'rebefics', 'icono': 'fi-rr-file'},
+        {'nombre': 'Anexo Transaccional Simplificado', 'carpetas': ('ats',), 'icono': 'fi-rr-document'},
+        {'nombre': 'Anexo Relación Dependencia', 'carpetas': ('rdep', 'relacion_dependencia'), 'icono': 'fi-rr-users'},
+        {'nombre': 'Anexo Patrimonial', 'carpetas': ('dpt', 'patrimonial'), 'icono': 'fi-rr-building'},
+        {'nombre': 'Anexo ICE', 'carpetas': ('aice', 'ice'), 'icono': 'fi-rr-box'},
+        {'nombre': 'Anexo ADI', 'carpetas': ('adi',), 'icono': 'fi-rr-folder'},
+        {'nombre': 'Anexo REBEFICS', 'carpetas': ('rebefics',), 'icono': 'fi-rr-file'},
         {'nombre': 'Declaraciones de IVA', 'carpeta': 'declaraciones_iva', 'icono': 'fi-rr-file-invoice-dollar'},
         {'nombre': 'Declaraciones de Impuesto a la Renta', 'carpeta': 'declaraciones_renta', 'icono': 'fi-rr-file-invoice'},
     ]
@@ -1761,10 +1762,15 @@ def sri_anexos(request):
     anios = set()
 
     for tipo in tipos:
-        carpeta_tipo = raiz_cliente / tipo['carpeta']
         archivos_por_anio = {}
 
-        if carpeta_tipo.is_dir():
+        # Buscar en las carpetas reales de cada módulo. Se conservan rutas
+        # antiguas como alias para no perder documentos históricos.
+        for nombre_carpeta in tipo['carpetas']:
+            carpeta_tipo = raiz_cliente / nombre_carpeta
+            if not carpeta_tipo.is_dir():
+                continue
+
             for archivo in carpeta_tipo.rglob('*'):
                 if not archivo.is_file():
                     continue
@@ -1776,15 +1782,11 @@ def sri_anexos(request):
 
                 partes = relativo.parts
                 if not partes or not partes[0].isdigit() or len(partes[0]) != 4:
-                    # Solo mostrar archivos organizados bajo una carpeta de año.
                     continue
 
                 anio = partes[0]
                 anios.add(anio)
 
-                # Si el archivo está dentro de una carpeta mensual numérica,
-                # agruparlo por mes. Si está directamente en el año (o en una
-                # subcarpeta no mensual), mostrarlo bajo "General".
                 mes = '00'
                 if len(partes) >= 3:
                     if partes[1] in {'S1', 'S2'}:
