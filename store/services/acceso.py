@@ -92,6 +92,14 @@ def obtener_resumen_cliente(cliente):
                     SELECT COUNT(*)
                     FROM prefactura
                     WHERE ruc = clientes.ruccedcli
+                ),
+                (
+                    SELECT COALESCE(
+                        SUM(COALESCE(canfactur, 0) * COALESCE(preitefac, 0)),
+                        0
+                    )
+                    FROM prefactura
+                    WHERE ruc = clientes.ruccedcli
                 )
             FROM clientes
             WHERE ruccedcli = %s
@@ -104,9 +112,11 @@ def obtener_resumen_cliente(cliente):
         return {
             'salcuenta': 0,
             'prefacturas_pendientes': 0,
+            'subtotal_servicios_pendientes': 0,
         }
 
     return {
         'salcuenta': row[0] or 0,
         'prefacturas_pendientes': row[1] or 0,
+        'subtotal_servicios_pendientes': row[2] or 0,
     }
