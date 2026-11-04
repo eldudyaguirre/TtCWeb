@@ -3107,6 +3107,63 @@ def admin_ats_descargar(request, ruc, nombre):
 
 
 @admin_required
+def admin_ats_ver(request, ruc, nombre):
+    """Abre un XML ATS en el navegador después de validar su ruta."""
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if Path(nombre).name != nombre or not nombre.upper().startswith('AT-') or not nombre.lower().endswith('.xml'):
+        raise Http404('Archivo ATS no válido.')
+    anio = nombre[-8:-4]
+    mes = nombre[3:5]
+    if not anio.isdigit() or not mes.isdigit() or not 1 <= int(mes) <= 12:
+        raise Http404('Nombre de ATS no válido.')
+
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'ats' / anio / nombre).as_posix()
+    ruta = (data_root() / relativo).resolve()
+    raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / 'ats').resolve()
+    if not ruta.is_relative_to(raiz) or not ruta.is_file():
+        raise Http404('El archivo ATS ya no está disponible.')
+    response = FileResponse(ruta.open('rb'), content_type='application/xml')
+    response['Content-Disposition'] = f'inline; filename="{nombre}"'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@admin_required
+def admin_ats_eliminar(request, ruc, nombre):
+    """Elimina un XML ATS tras validar cliente, nombre y método POST."""
+    from pathlib import Path
+    from .services.archivos.storage import data_root
+    from .models.archivo import Archivo
+
+    if request.method != 'POST':
+        return HttpResponse('Método no permitido.', status=405)
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    if Path(nombre).name != nombre or not nombre.upper().startswith('AT-') or not nombre.lower().endswith('.xml'):
+        raise Http404('Archivo ATS no válido.')
+    anio = nombre[-8:-4]
+    mes = nombre[3:5]
+    if not anio.isdigit() or not mes.isdigit() or not 1 <= int(mes) <= 12:
+        raise Http404('Nombre de ATS no válido.')
+
+    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / 'ats' / anio / nombre).as_posix()
+    ruta = (data_root() / relativo).resolve()
+    raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / 'ats').resolve()
+    if not ruta.is_relative_to(raiz) or not ruta.is_file():
+        raise Http404('El archivo ATS ya no está disponible.')
+
+    registro = Archivo.objects.filter(cliente=cliente, ruta_relativa=relativo, activo=True).first()
+    ruta.unlink()
+    if registro:
+        registro.activo = False
+        registro.save(update_fields=['activo'])
+    messages.success(request, f'El archivo {nombre} fue eliminado correctamente.')
+    return redirect('admin_ats', ruc=ruc)
+
+
+@admin_required
 def admin_rebefics_socios(request, ruc):
     """Administra la base de datos reutilizable de socios y beneficiarios finales."""
     cliente = get_object_or_404(Cliente, pk=ruc)
