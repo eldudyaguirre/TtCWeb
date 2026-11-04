@@ -7,11 +7,20 @@ from django.contrib import messages
 from django.db import connections
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.text import slugify
 
 from .admin_views import admin_required
 from .models import Cliente
 
 logger = logging.getLogger(__name__)
+
+
+def _nombre_archivo_reporte_cobranza(cliente):
+    """Construye el nombre descargable del reporte usando el nombre del cliente."""
+    nombre_cliente = slugify(str(cliente.nomclient or "").strip(), allow_unicode=False)
+    if not nombre_cliente:
+        nombre_cliente = "cliente"
+    return f"reporte_cobranza_{nombre_cliente}.pdf"
 
 
 def _conexion_cliente(ruc=None):
@@ -593,7 +602,7 @@ def admin_cobranza_reporte_pdf(request, ruc):
                 status=503,
             )
         pdf = _reporte_cobranza_pdf(cliente, datos)
-        nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
+        nombre = _nombre_archivo_reporte_cobranza(cliente)
         response = HttpResponse(pdf, content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{nombre}"'
         return response
@@ -647,7 +656,7 @@ def admin_cobranza_reporte_enviar(request, ruc):
                 "error": "No se pudo consultar la lista de servicios pendientes. No se envió el reporte.",
             }, status=503)
         pdf = _reporte_cobranza_pdf(cliente, datos)
-        nombre = f"reporte_cobranza_{cliente.ruccedcli}.pdf"
+        nombre = _nombre_archivo_reporte_cobranza(cliente)
         mensaje = EmailMessage(
             subject=f"Reporte de cobranza - {cliente.nomclient or cliente.ruccedcli}",
             body=(
