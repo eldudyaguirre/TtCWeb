@@ -135,8 +135,9 @@ def _reporte_datos_cobranza(cliente):
                 FROM public.prefactura
                 WHERE ruc = %s
                 ORDER BY
-                     CASE
-                         WHEN COALESCE(TRIM(coditeinv::text), '') ~ '^[0-9]+
+                    LPAD(TRIM(COALESCE(coditeinv::text, '')), 12, '0') ASC,
+                    TRIM(COALESCE(coditeinv::text, '')) ASC,
+                    numdetfac ASC
                 """,
                 [ruc],
             )
@@ -893,8 +894,9 @@ def admin_cobranza_cliente(request, ruc):
                     FROM public.prefactura
                     WHERE ruc = %s
                     ORDER BY
-                        CASE
-                            WHEN COALESCE(TRIM(coditeinv::text), '') ~ '^[0-9]+
+                        LPAD(TRIM(COALESCE(coditeinv::text, '')), 12, '0') ASC,
+                        TRIM(COALESCE(coditeinv::text, '')) ASC,
+                        numdetfac ASC
                     LIMIT 500
                     """,
                     [cliente.ruccedcli],
