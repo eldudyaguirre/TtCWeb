@@ -567,5 +567,28 @@
     .admin-documentacion-arrow{position:absolute;right:10px;top:18px;font-size:12px}
 }
 
+/* Entrada escalonada para las tarjetas del centro de documentación. */
+.admin-documentacion-grid>.admin-documentacion-card{
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+    animation:adminDocCardEntrance .55s cubic-bezier(.2,.75,.25,1) forwards;
+}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(2){animation-delay:.06s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(3){animation-delay:.12s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(4){animation-delay:.18s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(5){animation-delay:.24s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(7){animation-delay:.30s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(8){animation-delay:.36s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(10){animation-delay:.42s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(11){animation-delay:.48s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(12){animation-delay:.54s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(13){animation-delay:.60s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(14){animation-delay:.66s}
+.admin-documentacion-grid>.admin-documentacion-card:nth-of-type(15){animation-delay:.72s}
+@keyframes adminDocCardEntrance{to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+    .admin-documentacion-grid>.admin-documentacion-card{opacity:1;transform:none;animation:none}
+}
+
 </style>
 {% endblock %}
