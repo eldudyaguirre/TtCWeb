@@ -131,12 +131,6 @@
         <i class="fi fi-rr-folder-open"></i>
         <strong>No hay declaraciones de Renta archivadas para {{ anio }}.</strong>
         <span>Pulsa «Sincronizar Renta {{ anio }}» para consultar el SRI.</span>
-        <div class="declaraciones-diagnostico">
-            <strong>Diagnóstico de almacenamiento</strong>
-            <span>Carpeta consultada: <code>{{ diagnostico_ruta }}</code></span>
-            <span>Carpeta encontrada: {% if diagnostico_directorio_existe %}Sí{% else %}No{% endif %}</span>
-            <span>Archivos: {{ diagnostico_archivos }} · PDF detectados: {{ diagnostico_pdfs }} · PDF no válidos: {{ diagnostico_pdf_invalidos }}</span>
-        </div>
     </div>
     {% endif %}
 </section>
