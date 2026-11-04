@@ -21535,7 +21535,7 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         'anios': (
             list(range(anio_maximo, anio_maximo - 10, -1))
             if tipo == 'renta'
-            else list(range(anio_maximo, 2010, -1))
+            else list(range(anio_maximo, anio_maximo - 8, -1))
         ),
         'archivos': archivos,
         'total_archivos': len(archivos),
