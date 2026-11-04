@@ -16,11 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 def _nombre_archivo_reporte_cobranza(cliente):
-    """Construye el nombre descargable del reporte usando el nombre del cliente."""
-    nombre_cliente = slugify(str(cliente.nomclient or "").strip(), allow_unicode=False)
+    """Construye el nombre del PDF con la razón social en mayúsculas."""
+    nombre_cliente = " ".join(str(cliente.nomclient or "").split()).upper()
+    # Evita caracteres no válidos en nombres de archivo sin alterar los espacios.
+    for caracter in '<>:"/\\|?*':
+        nombre_cliente = nombre_cliente.replace(caracter, "")
+    nombre_cliente = nombre_cliente.strip(" .")
     if not nombre_cliente:
-        nombre_cliente = "cliente"
-    return f"reporte_cobranza_{nombre_cliente}.pdf"
+        nombre_cliente = "CLIENTE"
+    return f"{nombre_cliente}.pdf"
 
 
 def _conexion_cliente(ruc=None):
