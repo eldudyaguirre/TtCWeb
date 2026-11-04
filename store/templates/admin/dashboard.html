@@ -12,6 +12,23 @@
 </div>
 
 <style>
+/* Entrada escalonada de las tarjetas principales del panel. */
+.admin-content .admin-kpis>.admin-kpi{
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+    animation:adminKpiEntrance .55s cubic-bezier(.2,.75,.25,1) forwards;
+}
+.admin-content .admin-kpis>.admin-kpi:nth-child(1){animation-delay:.05s}
+.admin-content .admin-kpis>.admin-kpi:nth-child(2){animation-delay:.13s}
+.admin-content .admin-kpis>.admin-kpi:nth-child(3){animation-delay:.21s}
+.admin-content .admin-kpis>.admin-kpi:nth-child(4){animation-delay:.29s}
+.admin-content .admin-kpis>.admin-kpi:nth-child(6){animation-delay:.37s}
+.admin-content .admin-kpis>.admin-kpi:nth-child(7){animation-delay:.45s}
+@keyframes adminKpiEntrance{to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+    .admin-content .admin-kpis>.admin-kpi{opacity:1;transform:none;animation:none}
+}
+
 /* Tarjetas KPI coloridas inspiradas en el dashboard de referencia */
 .admin-content .admin-kpis{
     display:grid!important;
@@ -319,6 +336,45 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Anima los valores de las seis tarjetas principales desde cero hasta su total real.
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('.admin-content .admin-kpis>.admin-kpi strong').forEach((element, index) => {
+        const original = element.textContent.trim();
+        const match = original.match(/^([^0-9-]*)(-?[0-9][0-9.,]*)(.*)$/);
+        if (!match) return;
+
+        const prefix = match[1];
+        const numericText = match[2];
+        const suffix = match[3];
+        const decimals = numericText.includes(',') ? numericText.length - numericText.lastIndexOf(',') - 1 : 0;
+        const normalized = numericText.replace(/\./g, '').replace(',', '.');
+        const target = Number(normalized);
+        if (!Number.isFinite(target)) return;
+
+        const formatter = new Intl.NumberFormat('es-EC', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+        if (prefersReducedMotion) {
+            element.textContent = prefix + formatter.format(target) + suffix;
+            return;
+        }
+
+        const duration = 1150;
+        const delay = 180 + index * 110;
+        const start = performance.now() + delay;
+        element.textContent = prefix + formatter.format(0) + suffix;
+
+        function animateValue(now) {
+            const elapsed = Math.max(0, now - start);
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 4);
+            element.textContent = prefix + formatter.format(target * eased) + suffix;
+            if (progress < 1) requestAnimationFrame(animateValue);
+        }
+        requestAnimationFrame(animateValue);
+    });
+
     const values = [
         {% for dia in grafica_visitas %}{{ dia.total }}{% if not forloop.last %},{% endif %}{% endfor %}
     ];
