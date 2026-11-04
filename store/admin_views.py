@@ -21532,7 +21532,11 @@ def _admin_declaraciones_contexto(request, ruc, tipo, plantilla):
         'tipo_declaracion': tipo,
         'titulo_declaracion': 'Declaraciones IVA' if tipo == 'iva' else 'Declaraciones Renta',
         'anio': anio,
-        'anios': list(range(anio_maximo, 2010, -1)),
+        'anios': (
+            list(range(anio_maximo, anio_maximo - 10, -1))
+            if tipo == 'renta'
+            else list(range(anio_maximo, 2010, -1))
+        ),
         'archivos': archivos,
         'total_archivos': len(archivos),
         'diagnostico_ruta': str(carpeta_anio),
