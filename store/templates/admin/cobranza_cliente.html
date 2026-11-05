@@ -94,7 +94,7 @@
   <div class="cob-client-data-grid">
    <div>
     <label for="cobTarifa">Tarifa mensual a cobrar ($)</label>
-    <input id="cobTarifa" name="tarifa" type="number" min="0" step="0.01" value="{{ tarifa_cliente|floatformat:2|unlocalize }}" required>
+    <input id="cobTarifa" name="tarifa" type="number" min="0" step="0.01" value="{{ tarifa_cliente|stringformat:'s' }}" required>
     <small class="cob-client-data-help">Valor antes de IVA.</small>
    </div>
    <div>
