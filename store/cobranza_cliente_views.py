@@ -731,6 +731,23 @@ def admin_cobranza_cliente(request, ruc):
         "retenciones": Decimal("0.00"),
     }
     db_error = ""
+    tarifa_cliente = Decimal("0.00")
+    observaciones_cliente = ""
+
+    # Tarifa y observaciones pertenecen a public.clientes de BdTotal.
+    try:
+        with _conexion_cliente().cursor() as cursor:
+            cursor.execute(
+                "SELECT COALESCE(tarifa, 0), COALESCE(antperson, '') "
+                "FROM public.clientes WHERE ruccedcli = %s",
+                [cliente.ruccedcli],
+            )
+            datos_cliente = cursor.fetchone()
+            if datos_cliente:
+                tarifa_cliente = Decimal(str(datos_cliente[0] or 0))
+                observaciones_cliente = str(datos_cliente[1] or "")
+    except Exception:
+        logger.exception("No se pudo consultar tarifa/observaciones del cliente %s", cliente.ruccedcli)
 
     try:
         conexion = _conexion_cliente(cliente.ruccedcli)
@@ -958,6 +975,8 @@ def admin_cobranza_cliente(request, ruc):
 
     contexto = {
             "cliente": cliente,
+            "tarifa_cliente": tarifa_cliente,
+            "observaciones_cliente": observaciones_cliente,
             "facturas": facturas,
             "servicios_pendientes": servicios_pendientes,
             "resumen_servicios": resumen_servicios,
@@ -980,6 +999,52 @@ def admin_cobranza_cliente(request, ruc):
         return render(request, "admin/facturas_pendientes_popup.html", contexto)
     return render(request, "admin/cobranza_cliente.html", contexto)
 
+
+
+@admin_required
+def admin_cobranza_cliente_datos_guardar(request, ruc):
+    """Guarda tarifa mensual y observaciones del cliente en BdTotal.public.clientes."""
+    from decimal import Decimal, InvalidOperation
+    from django.http import JsonResponse
+    from django.views.decorators.http import require_POST
+
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido."}, status=405)
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    tarifa_texto = (request.POST.get("tarifa") or "").strip().replace(",", ".")
+    observaciones = (request.POST.get("antperson") or "").strip()
+    if len(observaciones) > 20000:
+        return JsonResponse({"ok": False, "error": "Las observaciones no pueden superar 20.000 caracteres."}, status=400)
+    try:
+        tarifa = Decimal(tarifa_texto or "0")
+        if not tarifa.is_finite() or tarifa < 0 or tarifa > Decimal("999999999"):
+            raise InvalidOperation
+        tarifa = tarifa.quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError):
+        return JsonResponse({"ok": False, "error": "Ingresa una tarifa válida, mayor o igual a cero."}, status=400)
+
+    try:
+        with _conexion_cliente().cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE public.clientes
+                SET tarifa = %s, antperson = %s
+                WHERE ruccedcli = %s
+                RETURNING ruccedcli
+                """,
+                [float(tarifa), observaciones, cliente.ruccedcli],
+            )
+            if cursor.fetchone() is None:
+                return JsonResponse({"ok": False, "error": "No se encontró el cliente en BdTotal."}, status=404)
+        return JsonResponse({
+            "ok": True,
+            "mensaje": "Datos del cliente guardados correctamente.",
+            "tarifa": f"{tarifa:.2f}",
+        })
+    except Exception:
+        logger.exception("Error guardando tarifa y observaciones de cobranza: ruc=%s", cliente.ruccedcli)
+        return JsonResponse({"ok": False, "error": "No se pudieron guardar los datos del cliente."}, status=500)
 
 
 @admin_required
