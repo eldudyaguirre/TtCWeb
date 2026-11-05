@@ -28,8 +28,8 @@ def _nombre_archivo_reporte_cobranza(cliente):
 
 
 def _conexion_cliente(ruc=None):
-    """Conecta a la base central BdTotal; la cobranza no vive en la BD del cliente."""
-    alias = "bdtotal_cobranza"
+    """Conecta a la misma conexión central BdTotal usada por Cobranza general."""
+    alias = "bdtotal_cobranza_general"
     if alias not in connections.databases:
         config = settings.DATABASES["default"].copy()
         config["NAME"] = "BdTotal"
@@ -739,8 +739,9 @@ def admin_cobranza_cliente(request, ruc):
         with _conexion_cliente().cursor() as cursor:
             cursor.execute(
                 "SELECT COALESCE(tarifa, 0), COALESCE(antperson, '') "
-                "FROM public.clientes WHERE ruccedcli = %s",
-                [cliente.ruccedcli],
+                "FROM public.clientes "
+                "WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')",
+                [str(cliente.ruccedcli).strip()],
             )
             datos_cliente = cursor.fetchone()
             if datos_cliente:
@@ -1030,10 +1031,10 @@ def admin_cobranza_cliente_datos_guardar(request, ruc):
                 """
                 UPDATE public.clientes
                 SET tarifa = %s, antperson = %s
-                WHERE ruccedcli = %s
+                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
                 RETURNING ruccedcli
                 """,
-                [float(tarifa), observaciones, cliente.ruccedcli],
+                [float(tarifa), observaciones, str(cliente.ruccedcli).strip()],
             )
             if cursor.fetchone() is None:
                 return JsonResponse({"ok": False, "error": "No se encontró el cliente en BdTotal."}, status=404)
