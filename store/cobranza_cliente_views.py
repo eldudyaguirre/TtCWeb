@@ -740,7 +740,8 @@ def admin_cobranza_cliente(request, ruc):
             cursor.execute(
                 "SELECT COALESCE(tarifa, 0), COALESCE(antperson, '') "
                 "FROM public.clientes "
-                "WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')",
+                "WHERE regexp_replace(COALESCE(ruccedcli::text, ''), '[^0-9]', '', 'g') = "
+                "regexp_replace(%s, '[^0-9]', '', 'g')",
                 [str(cliente.ruccedcli).strip()],
             )
             datos_cliente = cursor.fetchone()
@@ -1031,7 +1032,8 @@ def admin_cobranza_cliente_datos_guardar(request, ruc):
                 """
                 UPDATE public.clientes
                 SET tarifa = %s, antperson = %s
-                WHERE LPAD(TRIM(COALESCE(ruccedcli::text, '')), 13, '0') = LPAD(%s, 13, '0')
+                WHERE regexp_replace(COALESCE(ruccedcli::text, ''), '[^0-9]', '', 'g') =
+                      regexp_replace(%s, '[^0-9]', '', 'g')
                 RETURNING ruccedcli
                 """,
                 [float(tarifa), observaciones, str(cliente.ruccedcli).strip()],
