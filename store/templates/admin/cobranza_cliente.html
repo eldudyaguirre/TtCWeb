@@ -94,12 +94,12 @@
    <div>
     <label for="cobTarifa">Tarifa mensual a cobrar ($)</label>
     <input id="cobTarifa" name="tarifa" type="number" min="0" step="0.01" value="{{ tarifa_cliente|floatformat:2 }}" required>
-    <small class="cob-client-data-help">Valor mensual registrado en clientes.tarifa.</small>
+    <small class="cob-client-data-help">Valor antes de IVA.</small>
    </div>
    <div>
     <label for="cobAntperson">Observaciones</label>
     <textarea id="cobAntperson" name="antperson" maxlength="20000" placeholder="Información adicional del cliente...">{{ observaciones_cliente }}</textarea>
-    <small class="cob-client-data-help">Este contenido se obtiene y se guarda en clientes.antperson.</small>
+    <small class="cob-client-data-help">Datos Adicionales informativos.</small>
    </div>
   </div>
   <div class="cob-client-data-actions">
