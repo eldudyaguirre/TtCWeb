@@ -734,27 +734,38 @@ def admin_cobranza_cliente(request, ruc):
     tarifa_cliente = Decimal("0.00")
     observaciones_cliente = ""
 
-    # Tarifa y observaciones pertenecen a public.clientes de BdTotal.
-    try:
-        with _conexion_cliente().cursor() as cursor:
-            cursor.execute(
-                "SELECT COALESCE(tarifa, 0), COALESCE(antperson, '') "
-                "FROM public.clientes "
-                "WHERE regexp_replace(COALESCE(ruccedcli::text, ''), '[^0-9]', '', 'g') = "
-                "regexp_replace(%s, '[^0-9]', '', 'g')",
-                [str(cliente.ruccedcli).strip()],
-            )
-            datos_cliente = cursor.fetchone()
-            if datos_cliente:
-                tarifa_cliente = Decimal(str(datos_cliente[0] or 0))
-                observaciones_cliente = str(datos_cliente[1] or "")
-    except Exception:
-        logger.exception("No se pudo consultar tarifa/observaciones del cliente %s", cliente.ruccedcli)
-
     try:
         conexion = _conexion_cliente(cliente.ruccedcli)
         conexion.ensure_connection()
         with conexion.cursor() as cursor:
+            # Leer tarifa y observaciones desde la misma conexión BdTotal usada por el panel.
+            # Primero se intenta el RUC exacto; luego se compara solo por dígitos.
+            cursor.execute(
+                """
+                SELECT tarifa, antperson
+                FROM public.clientes
+                WHERE TRIM(ruccedcli::text) = TRIM(%s)
+                LIMIT 1
+                """,
+                [str(cliente.ruccedcli).strip()],
+            )
+            datos_cliente = cursor.fetchone()
+            if not datos_cliente:
+                cursor.execute(
+                    """
+                    SELECT tarifa, antperson
+                    FROM public.clientes
+                    WHERE regexp_replace(COALESCE(ruccedcli::text, ''), '[^0-9]', '', 'g') =
+                          regexp_replace(%s, '[^0-9]', '', 'g')
+                    LIMIT 1
+                    """,
+                    [str(cliente.ruccedcli).strip()],
+                )
+                datos_cliente = cursor.fetchone()
+            if datos_cliente:
+                tarifa_cliente = Decimal(str(datos_cliente[0] or 0))
+                observaciones_cliente = str(datos_cliente[1] or "")
+
             # retencclient contiene las retenciones relacionadas con facturas de venta.
             # Si una base antigua aún no tiene esa tabla, se muestra la cobranza sin ese dato.
             try:
