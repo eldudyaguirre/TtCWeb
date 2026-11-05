@@ -1629,6 +1629,7 @@ def admin_conta(request):
     ruc = request.POST.get('ruc', '').strip() if request.method == 'POST' else request.GET.get('ruc', '').strip()
     anio = request.POST.get('anio', '').strip() if request.method == 'POST' else request.GET.get('anio', '').strip()
     mes = request.POST.get('mes', '').strip() if request.method == 'POST' else request.GET.get('mes', '').strip()
+    accion = request.POST.get('accion', '').strip() if request.method == 'POST' else request.GET.get('accion', '').strip()
 
     if not anio:
         anio = str(datetime.now().year)
@@ -1730,6 +1731,7 @@ def admin_conta(request):
             'ruc': ruc,
             'anio': anio,
             'mes': mes,
+            'accion': accion,
             'resultado': resultado,
             'sri_job': sri_job,
             'respuesta_ia': respuesta_ia,
