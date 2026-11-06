@@ -617,10 +617,17 @@
             content.innerHTML = '<p class="cob-modal-error">No se pudieron cargar los movimientos. Cierra la ventana e inténtalo nuevamente.</p>';
         }
     };
-    trigger.addEventListener('click', async () => {
-        modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('cob-modal-open');
+    trigger.onclick = async (event) => {
+        event.preventDefault();
+        if (!trigger.dataset.url) {
+            content.innerHTML = '<p class="cob-modal-error">No se encontró la dirección del estado de cuenta.</p>';
+            return;
+        }
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('cob-modal-open');
         await load(trigger.dataset.url);
-    });
+    };
     modal.querySelectorAll('[data-cob-modal-close]').forEach(el => el.addEventListener('click', close));
     document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
 })();
