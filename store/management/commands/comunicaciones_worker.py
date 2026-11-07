@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.core.validators import validate_email
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import close_old_connections, transaction
 from django.utils import timezone
 from django.utils.html import strip_tags
 
@@ -65,7 +65,6 @@ class Command(BaseCommand):
             try:
                 # El worker es un proceso de larga duración. No conservar conexiones
                 # viejas después de una caída/reinicio de PostgreSQL.
-                from django.db import close_old_connections
                 close_old_connections()
                 procesada = self.procesar_una()
             except Exception as exc:
