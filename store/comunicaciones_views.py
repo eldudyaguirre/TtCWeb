@@ -143,7 +143,7 @@ def _encolar(c, lista):
 def admin_comunicaciones(request):
     if request.method == "POST":
         accion = request.POST.get("accion")
-        if accion in ("guardar", "prueba"):
+        if accion in ("guardar", "prueba", "enviar"):
             form = ComunicacionClienteForm(request.POST, request.FILES)
             if form.is_valid():
                 if accion == "prueba":
@@ -167,20 +167,16 @@ def admin_comunicaciones(request):
                     c = form.save(commit=False)
                     c.creado_por = request.session.get("admin_name") or request.session.get("admin_username", "")
                     c.save()
-                    messages.success(request, "Comunicación guardada como borrador.")
+                    if accion == "enviar":
+                        lista = _lista_para_comunicacion(c)
+                        if not lista:
+                            messages.error(request, "No existen destinatarios válidos para esta comunicación. Se guardó como borrador.")
+                        else:
+                            _encolar(c, lista)
+                            messages.success(request, f"Comunicación puesta en cola para {len(lista)} destinatario(s).")
+                    else:
+                        messages.success(request, "Comunicación guardada como borrador.")
                     return redirect("admin_comunicaciones")
-        elif accion == "enviar":
-            c = get_object_or_404(ComunicacionCliente, pk=request.POST.get("comunicacion_id"))
-            if c.estado not in (ComunicacionCliente.Estado.BORRADOR, ComunicacionCliente.Estado.ERROR):
-                messages.error(request, "Esta comunicación ya está en proceso o fue enviada.")
-            else:
-                lista = _lista_para_comunicacion(c)
-                if not lista:
-                    messages.error(request, "No existen destinatarios válidos para esta comunicación.")
-                else:
-                    _encolar(c, lista)
-                    messages.success(request, f"Comunicación puesta en cola para {len(lista)} destinatario(s).")
-            return redirect("admin_comunicaciones")
     else:
         form = ComunicacionClienteForm()
     return render(request, "admin/comunicaciones.html", {
