@@ -133,7 +133,7 @@ def _encolar(c, lista):
         c.destinatarios = len(lista)
         c.enviados = 0
         c.fallidos = 0
-    c.correos_pendientes = "\\n".join(lista)
+    c.correos_pendientes = "\n".join(lista)
     c.error_detalle = ""
     c.enviado_en = None
     c.save(update_fields=["estado", "destinatarios", "correos_pendientes", "error_detalle", "enviado_en", "enviados", "fallidos"])
