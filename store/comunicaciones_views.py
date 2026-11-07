@@ -7,6 +7,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils.html import escape, strip_tags
 import mimetypes
+import re
 
 from .admin_views import admin_required
 from .models.cliente import Cliente
@@ -89,7 +90,22 @@ def _destinatarios():
 
 def _lista_para_comunicacion(c):
     if c.estado == ComunicacionCliente.Estado.ERROR and c.correos_pendientes:
-        return [e.strip() for e in c.correos_pendientes.splitlines() if e.strip()]
+        # Recupera direcciones incluso si un registro antiguo contiene los
+        # separadores literales "\\n" en vez de saltos de línea reales.
+        patron = r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+"
+        encontrados = re.findall(patron, c.correos_pendientes)
+        lista = []
+        vistos = set()
+        for correo in encontrados:
+            correo = correo.strip().lower()
+            try:
+                validate_email(correo)
+            except ValidationError:
+                continue
+            if correo not in vistos:
+                vistos.add(correo)
+                lista.append(correo)
+        return lista
     if c.destinatario_tipo == ComunicacionCliente.TipoDestinatario.INDIVIDUAL:
         correo = (c.destinatario_email or "").strip().lower()
         try:
