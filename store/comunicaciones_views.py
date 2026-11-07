@@ -92,7 +92,7 @@ def _lista_para_comunicacion(c):
     if c.estado == ComunicacionCliente.Estado.ERROR and c.correos_pendientes:
         # Recupera direcciones incluso si un registro antiguo contiene los
         # separadores literales "\\n" en vez de saltos de línea reales.
-        patron = r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+"
+        patron = r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+"
         encontrados = re.findall(patron, c.correos_pendientes)
         lista = []
         vistos = set()
