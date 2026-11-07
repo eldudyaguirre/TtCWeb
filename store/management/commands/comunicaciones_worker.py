@@ -2,6 +2,7 @@ import json
 import re
 import time
 import mimetypes
+import traceback
 from types import SimpleNamespace
 
 from django.conf import settings
@@ -61,7 +62,33 @@ class Command(BaseCommand):
         interval = max(1, options["interval"])
         self.stdout.write(self.style.SUCCESS("Comunicaciones worker iniciado."))
         while True:
-            procesada = self.procesar_una()
+            try:
+                # El worker es un proceso de larga duración. No conservar conexiones
+                # viejas después de una caída/reinicio de PostgreSQL.
+                from django.db import close_old_connections
+                close_old_connections()
+                procesada = self.procesar_una()
+            except Exception as exc:
+                self.stderr.write(self.style.ERROR(
+                    f"Error no controlado en comunicaciones_worker: {exc!r}"
+                ))
+                traceback.print_exc(file=self.stderr)
+                try:
+                    close_old_connections()
+                except Exception:
+                    pass
+                if once:
+                    raise
+                # Evita un ciclo de reintentos agresivo si la BD o un servicio externo
+                # todavía no está disponible. El proceso permanece vivo y vuelve a intentar.
+                time.sleep(interval)
+                continue
+            finally:
+                try:
+                    close_old_connections()
+                except Exception:
+                    pass
+
             if once:
                 return
             if not procesada:
