@@ -65,17 +65,24 @@
     ));
     const texts = candidates.map(el => (el.innerText || el.textContent || "").trim()).filter(Boolean);
     const bodyText = (document.body?.innerText || "").slice(0, 12000);
-    const combined = texts.join(" | ") + " | " + bodyText;
+    // Normalizamos acentos y espacios para reconocer mensajes como
+    // "Clave inválida / inactiva. Intento fallido 1 de 5".
+    const combined = (texts.join(" | ") + " | " + bodyText)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
     const patterns = [
-      /usuario\s*(?:o|y)\s*(?:clave|contraseñ[ao])\s*(?:es|son)?\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
-      /(?:clave|contraseñ[ao])\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
-      /(?:credenciales|datos de acceso)\s*(?:son|est[aá]n)?\s*(?:incorrect[ao]s?|inv[aá]lid[ao]s?)/i,
-      /usuario\s*(?:incorrect[ao]|inv[aá]lid[ao])/i,
-      /no se pudo iniciar sesi[oó]n/i,
+      /usuario\s*(?:o|y)\s*(?:clave|contrasena)\s*(?:es|son)?\s*(?:incorrect[ao]s?|invalid[ao]s?)/i,
+      /(?:clave|contrasena)\s*(?:incorrect[ao]|invalid[ao])/i,
+      /clave.{0,50}inactiv[ao]/i,
+      /(?:credenciales|datos de acceso)\s*(?:son|estan)?\s*(?:incorrect[ao]s?|invalid[ao]s?)/i,
+      /usuario\s*(?:incorrect[ao]|invalid[ao])/i,
+      /no se pudo iniciar sesion/i,
       /ha excedido.{0,60}intentos|cuenta.{0,60}bloquead[ao]/i
     ];
     return patterns.some(pattern => pattern.test(combined))
-      ? (texts.find(text => patterns.some(pattern => pattern.test(text))) || "El SRI rechazó las credenciales o bloqueó el acceso.")
+      ? "El SRI rechazó la clave o indicó que está inválida/inactiva. Se detuvo el acceso automático."
       : "";
   }
 
@@ -101,7 +108,7 @@
       document.documentElement.appendChild(notice);
     }
     notice.textContent = "TotalCounts: el SRI rechazó el acceso. Se detuvo el inicio automático después de este único intento. Verifica la clave registrada antes de volver a intentarlo.";
-    console.warn("[TotalCounts SRI] Acceso rechazado. No se realizarán más intentos en esta pestaña.", message);
+    console.warn("[TotalCounts SRI] Acceso rechazado. No se realizarán más intentos en esta pestaña.");
   }
 
   function monitorCredentialResult() {
