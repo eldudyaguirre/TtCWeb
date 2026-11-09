@@ -99,21 +99,6 @@
         </tbody>
     </table>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.admin-passwords-sri-login').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const ruc = button.dataset.ruc || '';
-            const clave = button.dataset.clave || '';
-            if (!ruc || !clave) {
-                alert('Este cliente no tiene una clave SRI registrada.');
-                return;
-            }
-            alert('Para rellenar automáticamente los campos en tu laptop, instala y habilita la extensión TotalCounts - Ingreso SRI en Chrome y vuelve a cargar esta página.');
-        });
-    });
-});
-</script>
 {% else %}
 <div class="admin-table-wrap admin-passwords-table-wrap">
     <table class="admin-table admin-passwords-table">
