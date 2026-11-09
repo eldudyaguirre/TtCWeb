@@ -2,7 +2,7 @@
   if (window.__ttcAccessExtensionReady) return;
   window.__ttcAccessExtensionReady = true;
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const sriButton = event.target.closest(".admin-passwords-sri-login");
     const iessButton = event.target.closest(".admin-passwords-iess-login");
     const button = sriButton || iessButton;
