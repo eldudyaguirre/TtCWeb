@@ -1,3 +1,9 @@
+  async function ttcFingerprint(value, salt) {
+    if (!salt || !globalThis.crypto?.subtle) return "no-disponible";
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + value));
+    return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 16);
+  }
+
 const DESTINATIONS = {
   SRI: {
     url: "https://srienlinea.sri.gob.ec/sri-en-linea/contribuyente/perfil",
@@ -50,7 +56,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Sin esta marca, varias cargas pueden programar varios clics en Ingresar.
       deliveryInProgress = true;
       const attemptId = crypto.randomUUID();
-      chrome.tabs.sendMessage(tabId, { type: destination.message, usuario, ruc: usuario, clave, attemptId }, () => {
+      const backgroundFingerprint = await ttcFingerprint(clave, message.diagnosticSalt);
+      console.info("[TotalCounts SRI diagnóstico] Background:", { longitud: clave.length, huella: backgroundFingerprint, coincideOrigen: backgroundFingerprint === message.sourceFingerprint });
+      chrome.tabs.sendMessage(tabId, {
+        type: destination.message, usuario, ruc: usuario, clave, attemptId,
+        diagnosticSalt: message.diagnosticSalt, sourceFingerprint: message.sourceFingerprint, backgroundFingerprint
+      }, () => {
         if (chrome.runtime.lastError) {
           deliveryInProgress = false;
           if (Date.now() >= deadline) chrome.tabs.onUpdated.removeListener(listener);
