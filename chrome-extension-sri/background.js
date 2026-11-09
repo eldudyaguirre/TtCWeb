@@ -48,19 +48,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const deadline = Date.now() + 30000;
     const attemptId = crypto.randomUUID();
     let backgroundFingerprint = "";
+    let fingerprintReady = false;
     ttcFingerprint(clave, message.diagnosticSalt).then(value => {
       backgroundFingerprint = value;
+      fingerprintReady = true;
       console.info("[TotalCounts SRI diagnóstico] Background:", {
         longitud: clave.length,
         huella: backgroundFingerprint,
         coincideOrigen: backgroundFingerprint === message.sourceFingerprint
       });
-    }).catch(() => {});
+    }).catch(error => {
+      fingerprintReady = true;
+      console.warn("[TotalCounts SRI diagnóstico] No se pudo calcular la huella en background.", error);
+    });
 
     // El content script se inyecta en document_idle. Reintentar evita perder
     // el primer mensaje si la pestaña termina de cargar antes de estar listo.
     const deliveryTimer = setInterval(() => {
-      if (delivered || deliveryInProgress) return;
+      if (delivered || deliveryInProgress || !fingerprintReady) return;
       if (Date.now() >= deadline) {
         clearInterval(deliveryTimer);
         return;
@@ -79,12 +84,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           type: destination.message, usuario, ruc: usuario, clave, attemptId,
           diagnosticSalt: message.diagnosticSalt,
           sourceFingerprint: message.sourceFingerprint,
-          backgroundFingerprint
+          backgroundFingerprint,
+          diagnosticOnly: Boolean(message.diagnosticOnly)
         }, () => {
           if (chrome.runtime.lastError) {
+            console.warn("[TotalCounts SRI diagnóstico] No se pudo entregar el mensaje al portal:", chrome.runtime.lastError.message);
             deliveryInProgress = false;
             return;
           }
+          console.info("[TotalCounts SRI diagnóstico] Mensaje entregado al portal.", {
+            modoDiagnostico: Boolean(message.diagnosticOnly)
+          });
           delivered = true;
           clearInterval(deliveryTimer);
         });
