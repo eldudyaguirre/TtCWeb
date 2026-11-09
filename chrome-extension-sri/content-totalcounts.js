@@ -2,9 +2,23 @@
   if (window.__ttcAccessExtensionReady) return;
   window.__ttcAccessExtensionReady = true;
 
+  async function ttcFingerprint(value, salt) {
+    if (!salt || !globalThis.crypto?.subtle) return "no-disponible";
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(salt + ":" + value)
+    );
+    return Array.from(new Uint8Array(digest))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 16);
+  }
+
   document.addEventListener("click", async (event) => {
-    const sriButton = event.target.closest(".admin-passwords-sri-login");
-    const iessButton = event.target.closest(".admin-passwords-iess-login");
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    if (!target) return;
+    const sriButton = target.closest(".admin-passwords-sri-login");
+    const iessButton = target.closest(".admin-passwords-iess-login");
     const button = sriButton || iessButton;
     if (!button) return;
 
@@ -22,7 +36,12 @@
     }
 
     const diagnosticSalt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(byte => byte.toString(16).padStart(2, "0")).join("");
-    const sourceFingerprint = await ttcFingerprint(clave, diagnosticSalt);
+    let sourceFingerprint = "no-disponible";
+    try {
+      sourceFingerprint = await ttcFingerprint(clave, diagnosticSalt);
+    } catch (error) {
+      console.warn("[TotalCounts SRI diagnóstico] No se pudo calcular la huella de origen.", error);
+    }
     console.info("[TotalCounts SRI diagnóstico] Origen:", { longitud: clave.length, huella: sourceFingerprint });
     chrome.runtime.sendMessage({
       type: isIESS ? "TTCWEB_OPEN_IESS" : "TTCWEB_OPEN_SRI",
