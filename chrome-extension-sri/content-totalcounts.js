@@ -21,11 +21,12 @@
       return;
     }
 
+    const diagnosticSalt = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(byte => byte.toString(16).padStart(2, "0")).join("");
+    const sourceFingerprint = await ttcFingerprint(clave, diagnosticSalt);
+    console.info("[TotalCounts SRI diagnóstico] Origen:", { longitud: clave.length, huella: sourceFingerprint });
     chrome.runtime.sendMessage({
       type: isIESS ? "TTCWEB_OPEN_IESS" : "TTCWEB_OPEN_SRI",
-      usuario,
-      ruc: usuario,
-      clave
+      usuario, ruc: usuario, clave, diagnosticSalt, sourceFingerprint
     }, response => {
       if (chrome.runtime.lastError || !response?.ok) {
         alert("No se pudo abrir el portal. " +
