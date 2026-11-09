@@ -201,13 +201,6 @@
             coincideBackground: inputFingerprint === credentials.backgroundFingerprint
           });
 
-          const inputFingerprint = await ttcFingerprint(currentPassword.value, credentials.diagnosticSalt);
-          console.info("[TotalCounts SRI diagnóstico] Campo antes de enviar:", {
-            longitud: currentPassword.value.length, huella: inputFingerprint,
-            coincideOrigen: inputFingerprint === credentials.sourceFingerprint,
-            coincideBackground: inputFingerprint === credentials.backgroundFingerprint
-          });
-
           // Bloqueo persistente antes del clic: máximo un envío automático
           // por pestaña, incluso si el portal rechaza la clave y se recarga.
           sessionSet(SESSION_LOCK_KEY, String(Date.now()));
