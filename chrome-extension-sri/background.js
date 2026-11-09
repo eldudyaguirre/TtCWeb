@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     let delivered = false;
     let deliveryInProgress = false;
     const deadline = Date.now() + 30000;
-    const listener = (updatedTabId, changeInfo, updatedTab) => {
+    const listener = async (updatedTabId, changeInfo, updatedTab) => {
       if (updatedTabId !== tabId || delivered || deliveryInProgress) return;
       const url = updatedTab?.url || "";
       if (url && !url.startsWith(destination.allowed)) return;
