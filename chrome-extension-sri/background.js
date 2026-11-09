@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const isIESS = message?.type === "TTCWEB_OPEN_IESS";
   if (!isSRI && !isIESS) return;
 
-  if (!sender.tab?.url || !sender.tab.url.startsWith("https://totalcounts.com.ec/totalcounts/")) {
+  if (!sender.tab?.url || !(/^https:\/\/(?:www\.)?totalcounts\.com\.ec\/totalcounts\//).test(sender.tab.url)) {
     sendResponse({ ok: false, error: "Origen no autorizado." });
     return;
   }
@@ -46,32 +46,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     let delivered = false;
     let deliveryInProgress = false;
     const deadline = Date.now() + 30000;
-    const listener = async (updatedTabId, changeInfo, updatedTab) => {
-      if (updatedTabId !== tabId || delivered || deliveryInProgress) return;
-      const url = updatedTab?.url || "";
-      if (url && !url.startsWith(destination.allowed)) return;
-      if (changeInfo.status !== "complete" && Date.now() < deadline) return;
+    const attemptId = crypto.randomUUID();
+    let backgroundFingerprint = "";
+    ttcFingerprint(clave, message.diagnosticSalt).then(value => {
+      backgroundFingerprint = value;
+      console.info("[TotalCounts SRI diagnóstico] Background:", {
+        longitud: clave.length,
+        huella: backgroundFingerprint,
+        coincideOrigen: backgroundFingerprint === message.sourceFingerprint
+      });
+    }).catch(() => {});
 
-      // Bloquea eventos onUpdated concurrentes antes de enviar el mensaje.
-      // Sin esta marca, varias cargas pueden programar varios clics en Ingresar.
+    // El content script se inyecta en document_idle. Reintentar evita perder
+    // el primer mensaje si la pestaña termina de cargar antes de estar listo.
+    const deliveryTimer = setInterval(() => {
+      if (delivered || deliveryInProgress) return;
+      if (Date.now() >= deadline) {
+        clearInterval(deliveryTimer);
+        return;
+      }
       deliveryInProgress = true;
-      const attemptId = crypto.randomUUID();
-      const backgroundFingerprint = await ttcFingerprint(clave, message.diagnosticSalt);
-      console.info("[TotalCounts SRI diagnóstico] Background:", { longitud: clave.length, huella: backgroundFingerprint, coincideOrigen: backgroundFingerprint === message.sourceFingerprint });
-      chrome.tabs.sendMessage(tabId, {
-        type: destination.message, usuario, ruc: usuario, clave, attemptId,
-        diagnosticSalt: message.diagnosticSalt, sourceFingerprint: message.sourceFingerprint, backgroundFingerprint
-      }, () => {
-        if (chrome.runtime.lastError) {
+      chrome.tabs.get(tabId, currentTab => {
+        if (chrome.runtime.lastError || !currentTab?.url?.startsWith(destination.allowed)) {
           deliveryInProgress = false;
-          if (Date.now() >= deadline) chrome.tabs.onUpdated.removeListener(listener);
           return;
         }
-        delivered = true;
-        chrome.tabs.onUpdated.removeListener(listener);
+        if (currentTab.status !== "complete") {
+          deliveryInProgress = false;
+          return;
+        }
+        chrome.tabs.sendMessage(tabId, {
+          type: destination.message, usuario, ruc: usuario, clave, attemptId,
+          diagnosticSalt: message.diagnosticSalt,
+          sourceFingerprint: message.sourceFingerprint,
+          backgroundFingerprint
+        }, () => {
+          if (chrome.runtime.lastError) {
+            deliveryInProgress = false;
+            return;
+          }
+          delivered = true;
+          clearInterval(deliveryTimer);
+        });
       });
-    };
-    chrome.tabs.onUpdated.addListener(listener);
+    }, 500);
     sendResponse({ ok: true });
   });
   return true;
