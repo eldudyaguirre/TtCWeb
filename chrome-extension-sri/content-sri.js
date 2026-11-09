@@ -51,6 +51,12 @@
     }) || null;
   }
 
+  async function ttcFingerprint(value, salt) {
+    if (!salt || !globalThis.crypto?.subtle) return "no-disponible";
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + value));
+    return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 16);
+  }
+
   function setNativeValue(input, value) {
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
     if (setter) setter.call(input, value);
@@ -195,6 +201,13 @@
             coincideBackground: inputFingerprint === credentials.backgroundFingerprint
           });
 
+          const inputFingerprint = await ttcFingerprint(currentPassword.value, credentials.diagnosticSalt);
+          console.info("[TotalCounts SRI diagnóstico] Campo antes de enviar:", {
+            longitud: currentPassword.value.length, huella: inputFingerprint,
+            coincideOrigen: inputFingerprint === credentials.sourceFingerprint,
+            coincideBackground: inputFingerprint === credentials.backgroundFingerprint
+          });
+
           // Bloqueo persistente antes del clic: máximo un envío automático
           // por pestaña, incluso si el portal rechaza la clave y se recarga.
           sessionSet(SESSION_LOCK_KEY, String(Date.now()));
@@ -219,7 +232,19 @@
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type !== "TTCWEB_FILL_SRI_CREDENTIALS") return;
     if (fillLoopStarted || submissionScheduled || loginSubmitted || sessionGet(SESSION_LOCK_KEY)) return;
-    credentials = { ruc: String(message.ruc || ""), clave: String(message.clave || "") };
+    credentials = {
+      ruc: String(message.ruc || ""), clave: String(message.clave || ""),
+      diagnosticSalt: String(message.diagnosticSalt || ""),
+      sourceFingerprint: String(message.sourceFingerprint || ""),
+      backgroundFingerprint: String(message.backgroundFingerprint || "")
+    };
+    ttcFingerprint(credentials.clave, credentials.diagnosticSalt).then(fingerprint => {
+      console.info("[TotalCounts SRI diagnóstico] Recepción portal:", {
+        longitud: credentials.clave.length, huella: fingerprint,
+        coincideOrigen: fingerprint === credentials.sourceFingerprint,
+        coincideBackground: fingerprint === credentials.backgroundFingerprint
+      });
+    }).catch(() => console.warn("[TotalCounts SRI diagnóstico] Huella no disponible en recepción."));
     if (!/^\d{13}$/.test(credentials.ruc) || !credentials.clave) {
       document.documentElement.dataset.ttcSriFillStatus = "invalid-credentials";
       return;
