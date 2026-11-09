@@ -166,7 +166,7 @@
         document.documentElement.dataset.ttcSriFillStatus = "filled";
         if (submissionScheduled || loginSubmitted) return;
         submissionScheduled = true;
-        setTimeout(() => {
+        setTimeout(async () => {
           if (loginSubmitted || sessionGet(SESSION_LOCK_KEY)) return;
           const currentUser = findUserInput();
           const currentPassword = Array.from(document.querySelectorAll('input[type="password"]')).find(visible);
@@ -186,6 +186,14 @@
             console.warn("[TotalCounts SRI] Campos rellenados, pero no se encontró el botón Ingresar.");
             return;
           }
+
+          const inputFingerprint = await ttcFingerprint(currentPassword.value, credentials.diagnosticSalt);
+          console.info("[TotalCounts SRI diagnóstico] Campo antes de enviar:", {
+            longitud: currentPassword.value.length,
+            huella: inputFingerprint,
+            coincideOrigen: inputFingerprint === credentials.sourceFingerprint,
+            coincideBackground: inputFingerprint === credentials.backgroundFingerprint
+          });
 
           // Bloqueo persistente antes del clic: máximo un envío automático
           // por pestaña, incluso si el portal rechaza la clave y se recarga.
