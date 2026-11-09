@@ -218,7 +218,8 @@
           document.documentElement.dataset.ttcSriFillStatus = "submitting";
           monitorCredentialResult();
           submit.click();
-        }, 400);
+        }, 10000);
+        console.info("[TotalCounts SRI diagnóstico] Envío automático programado en 10 segundos para permitir abrir DevTools y Network.");
         return;
       }
     }
