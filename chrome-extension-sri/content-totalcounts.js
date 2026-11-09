@@ -46,7 +46,7 @@
     chrome.runtime.sendMessage({
       type: isIESS ? "TTCWEB_OPEN_IESS" : "TTCWEB_OPEN_SRI",
       usuario, ruc: usuario, clave, diagnosticSalt, sourceFingerprint,
-      diagnosticOnly: !isIESS
+      diagnosticOnly: false
     }, response => {
       if (chrome.runtime.lastError || !response?.ok) {
         alert("No se pudo abrir el portal. " +
@@ -55,7 +55,7 @@
       }
       alert(isIESS
         ? "Se abrió el IESS para " + nombre + ". La extensión rellenará los datos y pulsará Ingresar."
-        : "Modo diagnóstico: se abrirá el SRI y se rellenarán los campos, pero NO se pulsará Ingresar.");
+        : "Se abrió el SRI para " + nombre + ". La extensión rellenará los datos e intentará ingresar una sola vez.");
     });
   }, true);
 })();
