@@ -9,6 +9,7 @@
   ],
   "host_permissions": [
     "https://totalcounts.com.ec/*",
+    "https://www.totalcounts.com.ec/*",
     "https://srienlinea.sri.gob.ec/*",
     "https://www.iess.gob.ec/*"
   ],
@@ -18,7 +19,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://totalcounts.com.ec/totalcounts/*"
+        "https://totalcounts.com.ec/totalcounts/*",
+        "https://www.totalcounts.com.ec/totalcounts/*"
       ],
       "js": [
         "content-totalcounts.js"
