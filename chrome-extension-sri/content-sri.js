@@ -194,12 +194,20 @@
           }
 
           const inputFingerprint = await ttcFingerprint(currentPassword.value, credentials.diagnosticSalt);
-          console.info("[TotalCounts SRI diagnóstico] Campo antes de enviar:", {
+          console.info("[TotalCounts SRI diagnóstico] Campo verificado:", {
             longitud: currentPassword.value.length,
             huella: inputFingerprint,
             coincideOrigen: inputFingerprint === credentials.sourceFingerprint,
             coincideBackground: inputFingerprint === credentials.backgroundFingerprint
           });
+
+          if (credentials.diagnosticOnly) {
+            document.documentElement.dataset.ttcSriFillStatus = "diagnostic-ready";
+            console.info("[TotalCounts SRI diagnóstico] MODO SEGURO: campos rellenados y verificados; no se pulsó Ingresar.");
+            credentials = null;
+            submissionScheduled = true;
+            return;
+          }
 
           // Bloqueo persistente antes del clic: máximo un envío automático
           // por pestaña, incluso si el portal rechaza la clave y se recarga.
@@ -229,7 +237,8 @@
       ruc: String(message.ruc || ""), clave: String(message.clave || ""),
       diagnosticSalt: String(message.diagnosticSalt || ""),
       sourceFingerprint: String(message.sourceFingerprint || ""),
-      backgroundFingerprint: String(message.backgroundFingerprint || "")
+      backgroundFingerprint: String(message.backgroundFingerprint || ""),
+      diagnosticOnly: Boolean(message.diagnosticOnly)
     };
     ttcFingerprint(credentials.clave, credentials.diagnosticSalt).then(fingerprint => {
       console.info("[TotalCounts SRI diagnóstico] Recepción portal:", {
