@@ -108,6 +108,7 @@
                             </button>
                             <button type="button" class="admin-compras-row-delete"
                                     data-numcompra="{{ row.15|escapejs }}"
+                                    data-proveedor-ruc="{{ row.2|escapejs }}"
                                     data-documento="{{ row.5|escapejs }}"
                                     data-autorizacion="{{ row.6|escapejs }}">
                                 <i class="fi fi-rr-trash"></i> Eliminar
@@ -650,9 +651,47 @@ document.getElementById('compraEditForm').addEventListener('submit',async functi
  try{const r=await fetch("{% url 'admin_compras_editar' ruc=cliente.ruccedcli %}",{method:'POST',body:fd,headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value||'', 'X-Requested-With':'XMLHttpRequest'}}); const d=await r.json(); if(!d.ok){alert(d.error||'No se pudo guardar.');return} alert('Compra actualizada correctamente.'); location.reload();}catch(e){alert('No se pudo guardar la compra.')}
 });
 document.querySelectorAll('.admin-compras-row-delete').forEach(function(btn){
-    btn.addEventListener('click',function(){
-        if(confirm('¿Deseas eliminar el comprobante '+btn.dataset.documento+'?')){
-            alert('La eliminación se habilitará sobre el comprobante seleccionado.');
+    btn.addEventListener('click', async function(){
+        const documento = btn.dataset.documento || '(sin número)';
+        if(!confirm('¿Deseas eliminar definitivamente el comprobante '+documento+'? Esta acción no se puede deshacer.')) return;
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.textContent = 'Eliminando...';
+        const csrf = document.querySelector('#compraEditForm [name=csrfmiddlewaretoken]')?.value
+            || document.querySelector('[name=csrfmiddlewaretoken]')?.value
+            || '';
+
+        try {
+            const body = new URLSearchParams({
+                numcompra: btn.dataset.numcompra || '',
+                proveedor_ruc: btn.dataset.proveedorRuc || '',
+                documento: btn.dataset.documento || '',
+                autorizacion: btn.dataset.autorizacion || ''
+            });
+            const response = await fetch("{% url 'admin_compras_eliminar' ruc=cliente.ruccedcli %}", {
+                method: 'POST',
+                body,
+                headers: {
+                    'X-CSRFToken': csrf,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+            if(!response.ok || !data.ok) {
+                alert(data.error || 'No se pudo eliminar el comprobante.');
+                return;
+            }
+            alert(data.message || 'Comprobante eliminado correctamente.');
+            window.location.reload();
+        } catch(error) {
+            console.error('ERROR ELIMINAR COMPRA:', error);
+            alert('No se pudo completar la eliminación. Revisa la conexión e inténtalo nuevamente.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         }
     });
 });
