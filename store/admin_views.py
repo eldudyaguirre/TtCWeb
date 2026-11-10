@@ -764,6 +764,88 @@ def admin_compras_editar(request, ruc):
 
 
 @admin_required
+def admin_compras_eliminar(request, ruc):
+    """Elimina un comprobante de compras seleccionado desde el reporte administrativo."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+
+    cliente = get_object_or_404(Cliente, pk=ruc)
+    numcompra = request.POST.get('numcompra', '').strip()
+    proveedor_ruc = request.POST.get('proveedor_ruc', '').strip()
+    documento = request.POST.get('documento', '').strip()
+    autorizacion = request.POST.get('autorizacion', '').strip()
+
+    if not numcompra and not (proveedor_ruc and documento):
+        return JsonResponse({'ok': False, 'error': 'No se recibió un identificador suficiente para eliminar la compra.'}, status=400)
+
+    alias = f'cliente_{cliente.ruccedcli}'
+    db = None
+    try:
+        if alias not in connections.databases:
+            base = settings.DATABASES['default'].copy()
+            base['NAME'] = cliente.ruccedcli
+            connections.databases[alias] = base
+        db = connections[alias]
+        with db.cursor() as cursor:
+            cursor.execute("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema='public' AND table_name='comprasnue'
+            """)
+            cols = {row[0] for row in cursor.fetchall()}
+            if not cols:
+                return JsonResponse({'ok': False, 'error': 'No se encontró la tabla comprasnue.'}, status=404)
+
+            conditions = []
+            params = []
+            if numcompra and 'numcompra' in cols:
+                conditions.append('"numcompra"::text=%s')
+                params.append(numcompra)
+
+            if proveedor_ruc and 'ruccedprovee' in cols:
+                conditions.append('"ruccedprovee"::text=%s')
+                params.append(proveedor_ruc)
+
+            if documento:
+                partes = documento.split('-')
+                if len(partes) != 3:
+                    return JsonResponse({'ok': False, 'error': 'El número de factura no tiene el formato esperado.'}, status=400)
+                for column, value in zip(('numest', 'numptoemi', 'numsec'), partes):
+                    if column not in cols:
+                        return JsonResponse({'ok': False, 'error': f'No existe el campo {column} en comprasnue.'}, status=500)
+                    conditions.append(f'"{column}"::text=%s')
+                    params.append(value.strip())
+
+            if autorizacion and 'numaut' in cols:
+                conditions.append('"numaut"::text=%s')
+                params.append(autorizacion)
+
+            if not conditions:
+                return JsonResponse({'ok': False, 'error': 'No se pudo construir un identificador seguro para la compra.'}, status=400)
+
+            where = ' AND '.join(conditions)
+            cursor.execute(f'DELETE FROM comprasnue WHERE {where} RETURNING numcompra', params)
+            deleted = cursor.fetchall()
+
+            if not deleted:
+                db.rollback()
+                return JsonResponse({'ok': False, 'error': 'No se encontró el comprobante; no se eliminó ningún registro.'}, status=404)
+            if len(deleted) != 1:
+                db.rollback()
+                return JsonResponse({'ok': False, 'error': f'El identificador coincide con {len(deleted)} registros. No se eliminó ninguno para evitar borrar compras adicionales.'}, status=409)
+
+        db.commit()
+        return JsonResponse({'ok': True, 'message': 'Comprobante eliminado correctamente.'})
+    except Exception as exc:
+        if db is not None:
+            try:
+                db.rollback()
+            except Exception:
+                pass
+        return JsonResponse({'ok': False, 'error': f'No se pudo eliminar el comprobante: {type(exc).__name__}: {exc}'}, status=500)
+
+
+@admin_required
 def admin_compras_excel(request, ruc):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
