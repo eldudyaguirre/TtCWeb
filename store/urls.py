@@ -117,6 +117,7 @@ urlpatterns = [
     path('totalcounts/clientes/<str:ruc>/documentacion/ventas/editar/', admin_views.admin_ventas_editar, name='admin_ventas_editar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ventas/excel/', admin_views.admin_ventas_excel, name='admin_ventas_excel'),
     path('totalcounts/clientes/<str:ruc>/documentacion/ventas/pdf/', admin_views.admin_ventas_pdf, name='admin_ventas_pdf'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/compras/eliminar/', admin_views.admin_compras_eliminar, name='admin_compras_eliminar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/editar/', admin_views.admin_compras_editar, name='admin_compras_editar'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/excel/', admin_views.admin_compras_excel, name='admin_compras_excel'),
     path('totalcounts/clientes/<str:ruc>/documentacion/compras/pdf/', admin_views.admin_compras_pdf, name='admin_compras_pdf'),
