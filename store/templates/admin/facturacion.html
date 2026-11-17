@@ -58,6 +58,13 @@
   <div class="fac-stat"><span>Último secuencial definitivo</span><strong>{{ parametros.numfactur|default:"0" }}</strong></div>
   <div class="fac-stat"><span>Contador temporal</span><strong>{{ parametros.numfactem|default:"0" }}</strong></div>
  </div>
+ <form method="get" class="fac-filter" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e0e7ea;border-radius:12px;padding:16px;margin-bottom:18px">
+  <div style="display:flex;flex-direction:column;gap:6px"><label for="fecha_desde" style="font-size:12px;color:#52666d;font-weight:700">Fecha desde</label><input type="date" id="fecha_desde" name="fecha_desde" value="{{ fecha_desde }}" style="border:1px solid #d5dfe3;border-radius:7px;padding:10px;min-width:175px"></div>
+  <div style="display:flex;flex-direction:column;gap:6px"><label for="fecha_hasta" style="font-size:12px;color:#52666d;font-weight:700">Fecha hasta</label><input type="date" id="fecha_hasta" name="fecha_hasta" value="{{ fecha_hasta }}" style="border:1px solid #d5dfe3;border-radius:7px;padding:10px;min-width:175px"></div>
+  <button type="submit" class="fac-btn fac-primary"><i class="fi fi-rr-search"></i> Buscar</button>
+  <a class="fac-btn" href="{% url 'admin_facturacion' %}" style="background:#f0f4f5;color:#40545e">Limpiar</a>
+  <span style="font-size:12px;color:#71808a;margin-left:auto"> {{ page_obj.paginator.count }} factura(s) encontradas</span>
+ </form>
  <section class="fac-card">
   <div class="fac-note">Primera etapa: las facturas nuevas se guardan como <strong>PENDIENTE</strong> con número temporal. Todavía no se procesan ni se envían al SRI.</div>
   <div class="fac-table-wrap">
@@ -73,6 +80,20 @@
      {% empty %}<tr><td colspan="8" class="fac-empty">Todavía no hay facturas registradas.</td></tr>{% endfor %}
     </tbody>
    </table>
+  </div>
+  <div class="fac-pagination" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:15px 16px;border-top:1px solid #e8eef0">
+   <span style="font-size:12px;color:#71808a">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · 15 facturas por página</span>
+   <div style="display:flex;gap:6px;align-items:center">
+    {% if page_obj.has_previous %}
+     <a class="fac-btn" style="background:#f0f4f5;color:#40545e" href="?fecha_desde={{ fecha_desde|urlencode }}&fecha_hasta={{ fecha_hasta|urlencode }}&page=1">Primera</a>
+     <a class="fac-btn" style="background:#f0f4f5;color:#40545e" href="?fecha_desde={{ fecha_desde|urlencode }}&fecha_hasta={{ fecha_hasta|urlencode }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+    {% endif %}
+    <span style="padding:8px 11px;background:#eaf5f4;border-radius:7px;color:#167d79;font-weight:800;font-size:12px">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+     <a class="fac-btn" style="background:#f0f4f5;color:#40545e" href="?fecha_desde={{ fecha_desde|urlencode }}&fecha_hasta={{ fecha_hasta|urlencode }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+     <a class="fac-btn" style="background:#f0f4f5;color:#40545e" href="?fecha_desde={{ fecha_desde|urlencode }}&fecha_hasta={{ fecha_hasta|urlencode }}&page={{ page_obj.paginator.num_pages }}">Última</a>
+    {% endif %}
+   </div>
   </div>
  </section>
 </div>
