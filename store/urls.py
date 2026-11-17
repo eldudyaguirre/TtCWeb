@@ -59,6 +59,7 @@ urlpatterns = [
     path('totalcounts/cobranza/envio-masivo/encolar/', cobranza_general_views.admin_cobranza_masivo_encolar, name='admin_cobranza_masivo_encolar'),
     path('totalcounts/cobranza/envio-masivo/<int:envio_id>/reintentar/', cobranza_general_views.admin_cobranza_masivo_reintentar, name='admin_cobranza_masivo_reintentar'),
     path('totalcounts/facturacion/', facturacion_admin_views.admin_facturacion, name='admin_facturacion'),
+    path('totalcounts/facturacion/<str:numfactur>/detalle/', facturacion_admin_views.admin_factura_detalle, name='admin_factura_detalle'),
     path('totalcounts/facturacion/nueva/', facturacion_admin_views.admin_factura_nueva, name='admin_factura_nueva'),
     path('totalcounts/servicios-venta/', servicios_venta_views.admin_servicios_venta, name='admin_servicios_venta'),
     path('totalcounts/servicios-venta/nuevo/', servicios_venta_views.admin_servicio_venta_form, name='admin_servicio_venta_nuevo'),
