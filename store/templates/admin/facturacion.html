@@ -1,8 +1,33 @@
 {% extends "admin/base.html" %}
-{% block title %}Facturación | TotalCounts{% endblock %}
+{% block title %}Facturación | TotalCounts 
+<div class="fac-modal-backdrop" id="fac-detail-backdrop" aria-hidden="true">
+ <section class="fac-modal" role="dialog" aria-modal="true" aria-labelledby="fac-detail-title">
+  <div class="fac-modal-head"><h2 id="fac-detail-title">Detalle de factura</h2><button type="button" class="fac-modal-close" id="fac-detail-close" aria-label="Cerrar">&times;</button></div>
+  <div class="fac-modal-body" id="fac-detail-content"><div class="fac-modal-message">Selecciona una factura para consultar su detalle.</div></div>
+ </section>
+</div>
+<script>
+(function(){
+ const backdrop=document.getElementById('fac-detail-backdrop');
+ const content=document.getElementById('fac-detail-content');
+ const closeBtn=document.getElementById('fac-detail-close');
+ if(!backdrop || !content) return;
+ const money=value=>{
+   const n=Number(value||0);
+   return '
 {% block extra_head %}
 <style>
-.fac-page{max-width:1500px;margin:0 auto}.fac-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.fac-head h1{font-size:27px;margin:5px 0;color:#203440}.fac-head p{margin:0;color:#71808a;font-size:13px}.fac-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.fac-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.fac-primary{background:#168c88;color:#fff}.fac-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);overflow:hidden}.fac-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.fac-stat{padding:18px;background:#fff;border:1px solid #e0e7ea;border-radius:12px}.fac-stat span{font-size:11px;color:#71808a}.fac-stat strong{display:block;font-size:20px;color:#203440;margin-top:5px}.fac-note{padding:13px 16px;color:#52666d;font-size:12px;background:#f3f8f8;border-bottom:1px solid #dceaea}.fac-table-wrap{overflow:auto}.fac-table{width:100%;border-collapse:collapse;min-width:900px}.fac-table th{background:#f3f6f7;color:#65747d;font-size:10px;text-transform:uppercase;text-align:left;padding:13px 14px}.fac-table td{font-size:12px;color:#30434d;padding:12px 14px;border-top:1px solid #eef2f3;white-space:nowrap}.fac-status{display:inline-block;border-radius:99px;padding:5px 8px;background:#fff5df;color:#8b6414;font-size:10px;font-weight:800}.fac-status-procesada{background:#dcfce7;color:#166534}.fac-empty{padding:40px;text-align:center;color:#71808a}@media(max-width:700px){.fac-stats{grid-template-columns:1fr}.fac-head h1{font-size:22px}}
+.fac-page{max-width:1500px;margin:0 auto}.fac-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.fac-head h1{font-size:27px;margin:5px 0;color:#203440}.fac-head p{margin:0;color:#71808a;font-size:13px}.fac-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.fac-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.fac-primary{background:#168c88;color:#fff}.fac-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);overflow:hidden}.fac-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.fac-stat{padding:18px;background:#fff;border:1px solid #e0e7ea;border-radius:12px}.fac-stat span{font-size:11px;color:#71808a}.fac-stat strong{display:block;font-size:20px;color:#203440;margin-top:5px}.fac-note{padding:13px 16px;color:#52666d;font-size:12px;background:#f3f8f8;border-bottom:1px solid #dceaea}.fac-table-wrap{overflow:auto}.fac-table{width:100%;border-collapse:collapse;min-width:900px}.fac-table th{background:#f3f6f7;color:#65747d;font-size:10px;text-transform:uppercase;text-align:left;padding:13px 14px}.fac-table td{font-size:12px;color:#30434d;padding:12px 14px;border-top:1px solid #eef2f3;white-space:nowrap}
+.fac-row{cursor:pointer}.fac-row:hover{background:#f0fafa}.fac-row:focus{outline:2px solid #168c88;outline-offset:-2px}
+.fac-modal-backdrop{position:fixed;inset:0;background:rgba(15,31,40,.58);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.fac-modal-backdrop.is-open{display:flex}.fac-modal{width:min(900px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.28)}
+.fac-modal-head{position:sticky;top:0;background:#203440;color:#fff;padding:17px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1}
+.fac-modal-head h2{margin:0;font-size:18px}.fac-modal-close{border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}
+.fac-modal-body{padding:20px}.fac-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.fac-detail-field{background:#f5f8f9;border:1px solid #e6edef;border-radius:8px;padding:10px}.fac-detail-field span{display:block;font-size:10px;color:#71808a;margin-bottom:4px}.fac-detail-field strong{font-size:13px;color:#203440;overflow-wrap:anywhere}
+.fac-detail-table{width:100%;border-collapse:collapse;min-width:650px}.fac-detail-table th,.fac-detail-table td{padding:10px;border-bottom:1px solid #e8eef0;text-align:left;font-size:12px}.fac-detail-table th{background:#f2f6f7;color:#53646c;text-transform:uppercase;font-size:10px}
+.fac-detail-total{text-align:right;font-size:18px;font-weight:800;color:#203440;margin-top:16px}.fac-modal-message{padding:20px;text-align:center;color:#60727a}
+@media(max-width:650px){.fac-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fac-modal-backdrop{padding:8px}.fac-modal-body{padding:12px}}.fac-status{display:inline-block;border-radius:99px;padding:5px 8px;background:#fff5df;color:#8b6414;font-size:10px;font-weight:800}.fac-status-procesada{background:#dcfce7;color:#166534}.fac-empty{padding:40px;text-align:center;color:#71808a}@media(max-width:700px){.fac-stats{grid-template-columns:1fr}.fac-head h1{font-size:22px}}
 </style>
 {% endblock %}
 {% block content %}
@@ -10,7 +35,81 @@
  <div class="fac-head"><div><div class="fac-kicker">Administrativo · BdTotal</div><h1>Facturación</h1><p>Facturas registradas en TotalCounts.</p></div><a class="fac-btn fac-primary" href="{% url 'admin_factura_nueva' %}"><i class="fi fi-rr-plus"></i> Nueva factura</a></div>
  <div class="fac-stats"><div class="fac-stat"><span>Serie configurada</span><strong>{{ parametros.numserfac|default:"—" }}</strong></div><div class="fac-stat"><span>Último secuencial definitivo</span><strong>{{ parametros.numfactur|default:"0" }}</strong></div><div class="fac-stat"><span>Contador temporal</span><strong>{{ parametros.numfactem|default:"0" }}</strong></div></div>
  <section class="fac-card"><div class="fac-note">Primera etapa: las facturas nuevas se guardan como <strong>PENDIENTE</strong> con número temporal. Todavía no se procesan ni se envían al SRI.</div><div class="fac-table-wrap"><table class="fac-table"><thead><tr><th>Número actual</th><th>Serie</th><th>Fecha</th><th>RUC / cédula</th><th>Cliente</th><th>Total</th><th>Proceso</th><th>Estado electrónico</th></tr></thead><tbody>
- {% for f in facturas %}<tr><td>{{ f.numfactur }}</td><td>{{ f.numserfac }}</td><td>{{ f.fecfactur|date:"d/m/Y" }}</td><td>{{ f.ruccedcli }}</td><td>{{ f.nomclient|default:"—" }}</td><td>${{ f.totfactur|floatformat:2 }}</td><td><span class="fac-status{% if f.estprofac == "PROCESADA" %} fac-status-procesada{% endif %}">{{ f.estprofac|default:"PENDIENTE" }}</span></td><td>{{ f.autorizacion|default:"SIN AUTORIZAR" }}</td></tr>{% empty %}<tr><td colspan="8" class="fac-empty">Todavía no hay facturas registradas.</td></tr>{% endfor %}
+ {% for f in facturas %}<tr class="fac-row" tabindex="0" role="button" aria-label="Ver detalle de factura {{ f.numfactur }}" data-detail-url="{% url 'admin_factura_detalle' numfactur=f.numfactur %}"><td>{{ f.numfactur }}</td><td>{{ f.numserfac }}</td><td>{{ f.fecfactur|date:"d/m/Y" }}</td><td>{{ f.ruccedcli }}</td><td>{{ f.nomclient|default:"—" }}</td><td>${{ f.totfactur|floatformat:2 }}</td><td><span class="fac-status{% if f.estprofac == "PROCESADA" %} fac-status-procesada{% endif %}">{{ f.estprofac|default:"PENDIENTE" }}</span></td><td>{{ f.autorizacion|default:"SIN AUTORIZAR" }}</td></tr>{% empty %}<tr><td colspan="8" class="fac-empty">Todavía no hay facturas registradas.</td></tr>{% endfor %}
+ </tbody></table></div></section>
+</div>
+{% endblock %}
++n.toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+ };
+ const field=(label,value)=>'<div class="fac-detail-field"><span>'+label+'</span><strong></strong></div>';
+ function addField(grid,label,value){
+   const box=document.createElement('div');box.className='fac-detail-field';
+   const span=document.createElement('span');span.textContent=label;
+   const strong=document.createElement('strong');strong.textContent=value||'—';
+   box.append(span,strong);grid.appendChild(box);
+ }
+ function close(){backdrop.classList.remove('is-open');backdrop.setAttribute('aria-hidden','true');}
+ closeBtn.addEventListener('click',close);
+ backdrop.addEventListener('click',e=>{if(e.target===backdrop)close();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&backdrop.classList.contains('is-open'))close();});
+ async function openRow(row){
+   backdrop.classList.add('is-open');backdrop.setAttribute('aria-hidden','false');
+   content.replaceChildren();
+   const loading=document.createElement('div');loading.className='fac-modal-message';loading.textContent='Consultando detalle de factura…';content.appendChild(loading);
+   try{
+     const response=await fetch(row.dataset.detailUrl,{headers:{'X-Requested-With':'XMLHttpRequest'},credentials:'same-origin'});
+     const data=await response.json();
+     if(!response.ok||!data.ok)throw new Error(data.error||'No se pudo cargar el detalle.');
+     const f=data.factura,grid=document.createElement('div');grid.className='fac-detail-grid';
+     addField(grid,'Número',f.numfactur);addField(grid,'Serie',f.numserfac);addField(grid,'Fecha',f.fecfactur);
+     addField(grid,'RUC / cédula',f.ruccedcli);addField(grid,'Cliente',f.nomclient);addField(grid,'Forma de pago',f.forpagfac);
+     addField(grid,'Estado de proceso',f.estprofac);addField(grid,'Estado de pago',f.estpagfac);addField(grid,'Autorización',f.autorizacion);
+     content.appendChild(grid);
+     const wrap=document.createElement('div');wrap.className='fac-table-wrap';
+     const table=document.createElement('table');table.className='fac-detail-table';
+     table.innerHTML='<thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio unit.</th><th>Descuento %</th><th>Total</th></tr></thead>';
+     const tbody=document.createElement('tbody');
+     (data.detalles||[]).forEach(d=>{
+       const tr=document.createElement('tr');
+       [d.coditeinv,d.desiteinv,d.canfactur,d.preitefac?money(d.preitefac):money(0),d.dscitefac,d.totitefac?money(d.totitefac):money(0)].forEach(value=>{
+         const td=document.createElement('td');td.textContent=value==null?'':String(value);tr.appendChild(td);
+       });
+       tbody.appendChild(tr);
+     });
+     if(!(data.detalles||[]).length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Esta factura no tiene líneas de detalle registradas.';tr.appendChild(td);tbody.appendChild(tr);}
+     table.appendChild(tbody);wrap.appendChild(table);content.appendChild(wrap);
+     const totals=document.createElement('div');totals.className='fac-detail-total';totals.textContent='Total factura: '+money(f.totfactur);content.appendChild(totals);
+     if(f.observ){const obs=document.createElement('p');obs.style.marginTop='14px';obs.textContent='Observación: '+f.observ;content.appendChild(obs);}
+   }catch(error){content.replaceChildren();const msg=document.createElement('div');msg.className='fac-modal-message';msg.textContent=error.message;content.appendChild(msg);}
+ }
+ document.querySelectorAll('.fac-row').forEach(row=>{
+   row.addEventListener('click',()=>openRow(row));
+   row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openRow(row);}});
+ });
+})();
+</script>
+{% endblock %}
+{% block extra_head %}
+<style>
+.fac-page{max-width:1500px;margin:0 auto}.fac-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}.fac-head h1{font-size:27px;margin:5px 0;color:#203440}.fac-head p{margin:0;color:#71808a;font-size:13px}.fac-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#159eaa;font-weight:800}.fac-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:11px 16px;text-decoration:none;font-size:13px;font-weight:750;cursor:pointer}.fac-primary{background:#168c88;color:#fff}.fac-card{background:#fff;border:1px solid #e0e7ea;border-radius:13px;box-shadow:0 5px 20px rgba(25,47,57,.04);overflow:hidden}.fac-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.fac-stat{padding:18px;background:#fff;border:1px solid #e0e7ea;border-radius:12px}.fac-stat span{font-size:11px;color:#71808a}.fac-stat strong{display:block;font-size:20px;color:#203440;margin-top:5px}.fac-note{padding:13px 16px;color:#52666d;font-size:12px;background:#f3f8f8;border-bottom:1px solid #dceaea}.fac-table-wrap{overflow:auto}.fac-table{width:100%;border-collapse:collapse;min-width:900px}.fac-table th{background:#f3f6f7;color:#65747d;font-size:10px;text-transform:uppercase;text-align:left;padding:13px 14px}.fac-table td{font-size:12px;color:#30434d;padding:12px 14px;border-top:1px solid #eef2f3;white-space:nowrap}
+.fac-row{cursor:pointer}.fac-row:hover{background:#f0fafa}.fac-row:focus{outline:2px solid #168c88;outline-offset:-2px}
+.fac-modal-backdrop{position:fixed;inset:0;background:rgba(15,31,40,.58);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.fac-modal-backdrop.is-open{display:flex}.fac-modal{width:min(900px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.28)}
+.fac-modal-head{position:sticky;top:0;background:#203440;color:#fff;padding:17px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1}
+.fac-modal-head h2{margin:0;font-size:18px}.fac-modal-close{border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}
+.fac-modal-body{padding:20px}.fac-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.fac-detail-field{background:#f5f8f9;border:1px solid #e6edef;border-radius:8px;padding:10px}.fac-detail-field span{display:block;font-size:10px;color:#71808a;margin-bottom:4px}.fac-detail-field strong{font-size:13px;color:#203440;overflow-wrap:anywhere}
+.fac-detail-table{width:100%;border-collapse:collapse;min-width:650px}.fac-detail-table th,.fac-detail-table td{padding:10px;border-bottom:1px solid #e8eef0;text-align:left;font-size:12px}.fac-detail-table th{background:#f2f6f7;color:#53646c;text-transform:uppercase;font-size:10px}
+.fac-detail-total{text-align:right;font-size:18px;font-weight:800;color:#203440;margin-top:16px}.fac-modal-message{padding:20px;text-align:center;color:#60727a}
+@media(max-width:650px){.fac-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fac-modal-backdrop{padding:8px}.fac-modal-body{padding:12px}}.fac-status{display:inline-block;border-radius:99px;padding:5px 8px;background:#fff5df;color:#8b6414;font-size:10px;font-weight:800}.fac-status-procesada{background:#dcfce7;color:#166534}.fac-empty{padding:40px;text-align:center;color:#71808a}@media(max-width:700px){.fac-stats{grid-template-columns:1fr}.fac-head h1{font-size:22px}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fac-page">
+ <div class="fac-head"><div><div class="fac-kicker">Administrativo · BdTotal</div><h1>Facturación</h1><p>Facturas registradas en TotalCounts.</p></div><a class="fac-btn fac-primary" href="{% url 'admin_factura_nueva' %}"><i class="fi fi-rr-plus"></i> Nueva factura</a></div>
+ <div class="fac-stats"><div class="fac-stat"><span>Serie configurada</span><strong>{{ parametros.numserfac|default:"—" }}</strong></div><div class="fac-stat"><span>Último secuencial definitivo</span><strong>{{ parametros.numfactur|default:"0" }}</strong></div><div class="fac-stat"><span>Contador temporal</span><strong>{{ parametros.numfactem|default:"0" }}</strong></div></div>
+ <section class="fac-card"><div class="fac-note">Primera etapa: las facturas nuevas se guardan como <strong>PENDIENTE</strong> con número temporal. Todavía no se procesan ni se envían al SRI.</div><div class="fac-table-wrap"><table class="fac-table"><thead><tr><th>Número actual</th><th>Serie</th><th>Fecha</th><th>RUC / cédula</th><th>Cliente</th><th>Total</th><th>Proceso</th><th>Estado electrónico</th></tr></thead><tbody>
+ {% for f in facturas %}<tr class="fac-row" tabindex="0" role="button" aria-label="Ver detalle de factura {{ f.numfactur }}" data-detail-url="{% url 'admin_factura_detalle' numfactur=f.numfactur %}"><td>{{ f.numfactur }}</td><td>{{ f.numserfac }}</td><td>{{ f.fecfactur|date:"d/m/Y" }}</td><td>{{ f.ruccedcli }}</td><td>{{ f.nomclient|default:"—" }}</td><td>${{ f.totfactur|floatformat:2 }}</td><td><span class="fac-status{% if f.estprofac == "PROCESADA" %} fac-status-procesada{% endif %}">{{ f.estprofac|default:"PENDIENTE" }}</span></td><td>{{ f.autorizacion|default:"SIN AUTORIZAR" }}</td></tr>{% empty %}<tr><td colspan="8" class="fac-empty">Todavía no hay facturas registradas.</td></tr>{% endfor %}
  </tbody></table></div></section>
 </div>
 {% endblock %}
