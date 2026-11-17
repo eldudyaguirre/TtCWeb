@@ -4,7 +4,8 @@ from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.contrib import messages
 from django.db import connections, transaction
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from .admin_views import admin_required
@@ -61,6 +62,51 @@ def admin_facturacion(request):
         return render(request, "admin/facturacion.html", {
             "facturas": [], "parametros": {}, "load_error": True,
         })
+
+
+@admin_required
+@require_http_methods(["GET"])
+def admin_factura_detalle(request, numfactur):
+    """Devuelve cabecera y líneas de una factura para el popup del módulo de facturación."""
+    try:
+        cabeceras = _rows("""
+            SELECT f.numfactur, f.numserfac, f.fecfactur, f.ruccedcli,
+                   c.nomclient, f.subtotfac, f.valdescue, f.porivafac,
+                   f.valivafac, f.totfactur, f.forpagfac, f.estpagfac,
+                   f.estprofac, f.autorizacion, f.observ
+            FROM public.facturas f
+            LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+            WHERE f.numfactur::text = %s
+            LIMIT 1
+        """, [str(numfactur)])
+        if not cabeceras:
+            return JsonResponse({"ok": False, "error": "No se encontró la factura solicitada."}, status=404)
+
+        lineas = _rows("""
+            SELECT numdetfac, coditeinv, desiteinv, canfactur,
+                   preitefac, dscitefac, totitefac
+            FROM public.detallefacturas
+            WHERE numfactur::text = %s
+            ORDER BY numdetfac
+        """, [str(numfactur)])
+
+        def serializar(valor):
+            if valor is None:
+                return ""
+            if hasattr(valor, "isoformat"):
+                return valor.isoformat()
+            return str(valor)
+
+        return JsonResponse({
+            "ok": True,
+            "factura": {k: serializar(v) for k, v in cabeceras[0].items()},
+            "detalles": [{k: serializar(v) for k, v in linea.items()} for linea in lineas],
+        })
+    except Exception as exc:
+        return JsonResponse({
+            "ok": False,
+            "error": f"No se pudo consultar el detalle de la factura: {type(exc).__name__}: {exc}",
+        }, status=500)
 
 
 @admin_required
