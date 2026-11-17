@@ -7,6 +7,8 @@ from django.db import connections, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator
+from django.utils.dateparse import parse_date
 
 from .admin_views import admin_required
 
@@ -41,20 +43,47 @@ def _siguiente_parametro(cursor, nombre):
 @require_http_methods(["GET"])
 def admin_facturacion(request):
     try:
-        facturas = _rows("""
+        fecha_desde = request.GET.get("fecha_desde", "").strip()
+        fecha_hasta = request.GET.get("fecha_hasta", "").strip()
+        desde = parse_date(fecha_desde) if fecha_desde else None
+        hasta = parse_date(fecha_hasta) if fecha_hasta else None
+
+        if fecha_desde and desde is None:
+            raise ValueError("La fecha inicial no tiene un formato válido.")
+        if fecha_hasta and hasta is None:
+            raise ValueError("La fecha final no tiene un formato válido.")
+        if desde and hasta and desde > hasta:
+            raise ValueError("La fecha inicial no puede ser posterior a la fecha final.")
+
+        where = []
+        params_sql = []
+        if desde:
+            where.append("f.fecfactur >= %s")
+            params_sql.append(desde)
+        if hasta:
+            where.append("f.fecfactur < %s")
+            params_sql.append(hasta.fromordinal(hasta.toordinal() + 1))
+
+        where_sql = ("WHERE " + " AND ".join(where)) if where else ""
+        facturas = _rows(f"""
             SELECT f.numfactur, f.numserfac, f.fecfactur, f.ruccedcli,
                    c.nomclient, f.totfactur, f.estprofac, f.autorizacion
             FROM public.facturas f
             LEFT JOIN public.clientes c ON c.ruccedcli = f.ruccedcli
+            {where_sql}
             ORDER BY f.fecfactur DESC NULLS LAST, f.numfactur DESC
-            LIMIT 100
-        """)
+        """, params_sql)
+        paginator = Paginator(facturas, 15)
+        page_obj = paginator.get_page(request.GET.get("page"))
         datos = _rows("""
             SELECT numserfac, numfactur, numfactem, poriva
             FROM public.parametros ORDER BY id LIMIT 1
         """)
         return render(request, "admin/facturacion.html", {
-            "facturas": facturas,
+            "facturas": page_obj.object_list,
+            "page_obj": page_obj,
+            "fecha_desde": fecha_desde,
+            "fecha_hasta": fecha_hasta,
             "parametros": datos[0] if datos else {},
         })
     except Exception as exc:
