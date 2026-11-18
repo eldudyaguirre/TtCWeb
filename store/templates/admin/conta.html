@@ -81,6 +81,7 @@
                     <option value="validar_ventas" {% if accion == "validar_ventas" %}selected{% endif %}>05 - Validar Ventas</option>
                     <option value="sincronizar_notas_credito_emitidas" {% if accion == "sincronizar_notas_credito_emitidas" %}selected{% endif %}>06 - Notas de Crédito emitidas</option>
                     <option value="sincronizar_retenciones_recibidas" {% if accion == "sincronizar_retenciones_recibidas" %}selected{% endif %}>07 - Retenciones recibidas</option>
+                    <option value="validar_notas_credito_emitidas" {% if accion == "validar_notas_credito_emitidas" %}selected{% endif %}>08 - Validar Notas de Crédito emitidas</option>
                 </select>
                 
             </div>
@@ -394,7 +395,7 @@
                 estado.style.color = "";
             }
 
-            const esValidador = data.operacion === "ventas_validar" || Number(data.dias_revisados || 0) > 0;
+            const esValidador = ["ventas_validar", "notas_credito_emitidas_validar"].includes(data.operacion) || Number(data.dias_revisados || 0) > 0;
             if (esValidador) {
                 validador.style.display = "block";
                 valDias.textContent = data.dias_revisados ?? 0;
@@ -428,14 +429,16 @@
                     });
                 }
                 const diferenciasPendientes = valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]').length;
-                repararBtn.style.display = "inline-block";
+                repararBtn.style.display = data.operacion === "ventas_validar" ? "inline-block" : "none";
                 repararBtn.disabled = data.estado !== "finalizado";
                 repararBtn.textContent = data.estado !== "finalizado"
                     ? "⏳ Espera a que termine la validación"
                     : "🛠 Revisar y corregir valores tributarios del mes";
-                repararAyuda.textContent = data.estado !== "finalizado"
-                    ? "El botón estará disponible cuando termine la validación."
-                    : "Revisará todas las facturas del mes y corregirá únicamente bases e IVA distintos del SRI. Días con diferencias de cantidad: " + diferenciasPendientes + ".";
+                repararAyuda.textContent = data.operacion === "notas_credito_emitidas_validar"
+                    ? "Las notas faltantes se recuperan automáticamente al detectar diferencias; no se eliminan registros locales."
+                    : (data.estado !== "finalizado"
+                        ? "El botón estará disponible cuando termine la validación."
+                        : "Revisará todas las facturas del mes y corregirá únicamente bases e IVA distintos del SRI. Días con diferencias de cantidad: " + diferenciasPendientes + ".");
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
