@@ -138,11 +138,11 @@ class Command(BaseCommand):
         entradas = page.locator("input[type='text'], input:not([type])")
         if entradas.count() < 2:
             raise RuntimeError("No se encontraron los campos Desde y Hasta del período.")
-        entradas.nth(0).fill(f"{job.anio}-01")
-        entradas.nth(1).fill(f"{job.anio}-12")
-        aceptar = page.get_by_role("button", name="Aceptar")
-        if not aceptar.count():
-            aceptar = page.locator("input[type='submit'], input[type='button']").filter(has_text="Aceptar")
+        # El primer campo es "Cédula del Afiliado"; no lo modificamos.
+        # Los dos últimos campos de texto corresponden a Desde y Hasta.
+        entradas.nth(entradas.count() - 2).fill(f"{job.anio}-01")
+        entradas.last.fill(f"{job.anio}-12")
+        aceptar = page.locator("input[type=submit][value*=Aceptar], input[type=button][value*=Aceptar], button:has-text(Aceptar), a:has-text(Aceptar)")
         if not aceptar.count():
             raise RuntimeError("No se encontró el botón Aceptar de la consulta.")
         aceptar.first.click()
@@ -164,7 +164,10 @@ class Command(BaseCommand):
         archivo = descarga.value
         destino_dir = data_root() / str(cliente.ruccedcli).strip() / "anexos" / "rdep" / str(job.anio)
         destino_dir.mkdir(parents=True, exist_ok=True)
-        nombre = f"IESS_RDEP_PLANILLAS__{job.anio}.xlsx"
+        extension = Path(archivo.suggested_filename or "").suffix.lower()
+        if extension not in {".xls", ".xlsx"}:
+            extension = ".xls"
+        nombre = f"IESS_RDEP_PLANILLAS__{job.anio}{extension}"
         destino = destino_dir / nombre
         archivo.save_as(str(destino))
         if not destino.is_file() or destino.stat().st_size < 100:
@@ -179,8 +182,11 @@ class Command(BaseCommand):
                 "tipo": Archivo.Tipo.DOCUMENTO,
                 "nombre_original": nombre,
                 "nombre_fisico": nombre,
-                "extension": ".xlsx",
-                "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "extension": extension,
+                                "mime_type": (
+                    "application/vnd.ms-excel" if extension == ".xls"
+                    else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ),
                 "tamano": destino.stat().st_size,
                 "sha256": digest,
                 "creado_por": None,
