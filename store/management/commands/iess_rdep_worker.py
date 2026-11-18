@@ -3,6 +3,8 @@ import os
 import socket
 import time
 import traceback
+import shutil
+import uuid
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
@@ -87,10 +89,25 @@ class Command(BaseCommand):
             raise_job_error(job, "Playwright no está instalado en el entorno de TtCWeb.")
             return
 
+        # Perfil IESS exclusivo: nunca reutilizar el perfil Chrome de Conta/SRI.
+        # Se crea un directorio distinto por trabajo, con identificador único.
+        profile_root = data_root() / "_iess_rdep_profiles"
+        profile_root.mkdir(parents=True, exist_ok=True)
+        profile_dir = profile_root / f"iess_rdep_{job.pk}_{uuid.uuid4().hex}"
+        profile_dir.mkdir(parents=False, exist_ok=False)
+        logger.info(
+            "Iniciando navegador IESS aislado | job=%s | worker=%s | pid=%s | perfil=%s",
+            job.pk, self.worker_id, os.getpid(), profile_dir,
+        )
+
         try:
             with sync_playwright() as p:
-                browser = p.chromium.launch(headless=not self.headful)
-                context = browser.new_context(accept_downloads=True, viewport={"width": 1365, "height": 900})
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=str(profile_dir),
+                    headless=not self.headful,
+                    accept_downloads=True,
+                    viewport={"width": 1365, "height": 900},
+                )
                 page = context.new_page()
                 page.set_default_timeout(25000)
                 page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -121,10 +138,19 @@ class Command(BaseCommand):
                     raise RuntimeError("La sesión IESS no quedó autenticada; revisar credenciales o verificación.")
                 self.consultar_y_descargar(page, job, cliente)
                 context.close()
-                browser.close()
+                logger.info("Navegador IESS cerrado | job=%s | perfil=%s", job.pk, profile_dir)
         except Exception as exc:
             logger.exception("Falló job IESS RDEP %s (cliente %s, año %s).", job.pk, cliente.pk, job.anio)
             raise_job_error(job, f"{type(exc).__name__}: {exc}")
+        finally:
+            # El perfil IESS solo puede eliminarse dentro de su propio directorio.
+            try:
+                resolved_root = profile_root.resolve()
+                resolved_profile = profile_dir.resolve()
+                if resolved_profile.parent == resolved_root and resolved_profile.name.startswith("iess_rdep_"):
+                    shutil.rmtree(resolved_profile, ignore_errors=True)
+            except Exception:
+                logger.warning("No se pudo limpiar el perfil temporal IESS del job %s.", job.pk, exc_info=True)
 
     def consultar_y_descargar(self, page, job, cliente):
         # El portal es JSF y sus controles pueden cambiar. Se usan etiquetas visibles
