@@ -8,6 +8,21 @@
 </div>
 {% if error_anexo %}<div class="ats-message ats-error">{{ error_anexo }}</div>{% endif %}
 {% if exito_anexo %}<div class="ats-message ats-success">{{ exito_anexo }}</div>{% endif %}
+{% if es_rdep %}
+<section class="admin-card" style="padding:20px;margin-top:20px">
+ <div class="ats-card-heading"><span class="admin-documentacion-icon"><i class="fi fi-rr-cloud-download"></i></span><div><h2>Consultar planillas del IESS</h2><p>El servidor inicia sesión con las credenciales IESS del cliente, consulta las planillas consolidadas y descarga el Excel del periodo fiscal.</p></div></div>
+ <form method="post" action="{% url 'iess_rdep_iniciar' ruc=cliente.ruccedcli %}" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap">
+  {% csrf_token %}
+  <div class="ats-field" style="min-width:180px"><label for="iess-rdep-anio">Periodo fiscal</label><select id="iess-rdep-anio" name="anio" required>{% for year in anios_formulario %}<option value="{{ year }}" {% if year == anio_actual %}selected{% endif %}>{{ year }}</option>{% endfor %}</select></div>
+  <button type="submit" class="ats-submit"><i class="fi fi-rr-cloud-download"></i> Encolar consulta IESS</button>
+ </form>
+ {% if trabajos_iess %}
+ <div class="ats-table-wrap" style="margin-top:16px"><table class="ats-table"><thead><tr><th>Periodo</th><th>Estado</th><th>Mensaje</th><th>Solicitado</th></tr></thead><tbody>
+ {% for job in trabajos_iess %}<tr><td>{{ job.anio }}</td><td>{{ job.get_estado_display }}</td><td>{{ job.mensaje|default:job.error_detalle|default:"En espera" }}</td><td>{{ job.creado_en|date:"d/m/Y H:i" }}</td></tr>{% endfor %}
+ </tbody></table></div>
+ {% endif %}
+</section>
+{% endif %}
 <section class="ats-grid">
   <article class="admin-card ats-card">
     <div class="ats-card-heading"><span class="admin-documentacion-icon"><i class="fi fi-rr-cloud-upload"></i></span><div><h2>Cargar archivo</h2><p>{% if es_rdep %}Selecciona el tipo de documento y el periodo fiscal al que corresponde.{% else %}Guarda documentos del módulo para el año seleccionado.{% endif %}</p></div></div>
