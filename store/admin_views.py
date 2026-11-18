@@ -3027,7 +3027,8 @@ def admin_rebefics(request, ruc):
         'anios': sorted(anios_disponibles, reverse=True),
         'anios_formulario': anios_formulario, 'anio_filtro': anio_filtro,
         'anio_actual': anio_actual, 'error_rebefics': error, 'exito_rebefics': exito,
-        'total_registros': len(registros), 'total_socios': total_socios,
+        'total_registros': len(registros),
+        'trabajos_iess': trabajos_iess, 'total_socios': total_socios,
     })
 
 
@@ -3899,6 +3900,12 @@ def admin_anexo_archivos(request, ruc, modulo):
                 'titulo': titulo,
                 'registros': [item for item in registros if item['categoria'] == titulo],
             })
+
+    from .models.iess_rdep_job import IessRdepJob
+    trabajos_iess = (
+        IessRdepJob.objects.filter(cliente=cliente)
+        .order_by('-creado_en')[:8]
+    ) if es_rdep else []
 
     return render(request, 'admin/anexo_archivos.html', {
         'cliente': cliente,
