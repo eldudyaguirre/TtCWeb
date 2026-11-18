@@ -81,6 +81,7 @@
                     <option value="validar_ventas" {% if accion == "validar_ventas" %}selected{% endif %}>05 - Validar Ventas</option>
                     <option value="sincronizar_notas_credito_emitidas" {% if accion == "sincronizar_notas_credito_emitidas" %}selected{% endif %}>06 - Notas de Crédito emitidas</option>
                     <option value="sincronizar_retenciones_recibidas" {% if accion == "sincronizar_retenciones_recibidas" %}selected{% endif %}>07 - Retenciones recibidas</option>
+                    <option value="validar_notas_credito_emitidas" {% if accion == "validar_notas_credito_emitidas" %}selected{% endif %}>08 - Validar Notas de Crédito emitidas</option>
                 </select>
                 
             </div>
@@ -323,7 +324,8 @@
     async function consultar() {
         // Mientras se consulta el estado, dejamos visible que el trabajo fue iniciado.
         if (validador.style.display === "block") {
-            mensaje.textContent = "🔎 Validando ventas contra el SRI... Iniciando comparación del 01/" + String("{{ mes|escapejs }}").padStart(2, "0") + "/{{ anio|escapejs }}.";
+            const etiquetaProceso = "{{ accion|escapejs }}" === "validar_notas_credito_emitidas" ? "notas de crédito emitidas" : "ventas";
+            mensaje.textContent = "🔎 Validando " + etiquetaProceso + " contra el SRI... Iniciando comparación del 01/" + String("{{ mes|escapejs }}").padStart(2, "0") + "/{{ anio|escapejs }}.";
         }
         try {
             // El validador puede tardar en abrir sesión con el SRI.
@@ -394,7 +396,8 @@
                 estado.style.color = "";
             }
 
-            const esValidador = data.operacion === "ventas_validar" || Number(data.dias_revisados || 0) > 0;
+            const esValidadorNotasCredito = data.operacion === "notas_credito_emitidas_validar" || "{{ accion|escapejs }}" === "validar_notas_credito_emitidas";
+            const esValidador = data.operacion === "ventas_validar" || esValidadorNotasCredito || Number(data.dias_revisados || 0) > 0;
             if (esValidador) {
                 validador.style.display = "block";
                 valDias.textContent = data.dias_revisados ?? 0;
@@ -428,14 +431,20 @@
                     });
                 }
                 const diferenciasPendientes = valDetalle.querySelectorAll('tr[data-estado="DIFERENCIA"]').length;
-                repararBtn.style.display = "inline-block";
-                repararBtn.disabled = data.estado !== "finalizado";
-                repararBtn.textContent = data.estado !== "finalizado"
-                    ? "⏳ Espera a que termine la validación"
-                    : "🛠 Revisar y corregir valores tributarios del mes";
-                repararAyuda.textContent = data.estado !== "finalizado"
-                    ? "El botón estará disponible cuando termine la validación."
-                    : "Revisará todas las facturas del mes y corregirá únicamente bases e IVA distintos del SRI. Días con diferencias de cantidad: " + diferenciasPendientes + ".";
+                if (esValidadorNotasCredito) {
+                    repararBtn.style.display = "none";
+                    repararBtn.disabled = true;
+                    repararAyuda.textContent = "La validación compara las notas de crédito emitidas con ncventas y recupera las que falten. No modifica los procesos de ventas.";
+                } else {
+                    repararBtn.style.display = "inline-block";
+                    repararBtn.disabled = data.estado !== "finalizado";
+                    repararBtn.textContent = data.estado !== "finalizado"
+                        ? "⏳ Espera a que termine la validación"
+                        : "🛠 Revisar y corregir valores tributarios del mes";
+                    repararAyuda.textContent = data.estado !== "finalizado"
+                        ? "El botón estará disponible cuando termine la validación."
+                        : "Revisará todas las facturas del mes y corregirá únicamente bases e IVA distintos del SRI. Días con diferencias de cantidad: " + diferenciasPendientes + ".";
+                }
             }
             existentes.textContent = data.ya_existentes ?? 0;
             guardadas.textContent = data.guardadas ?? 0;
