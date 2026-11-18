@@ -11,7 +11,9 @@ def iniciar_consulta(request, ruc):
     if not request.session.get("admin_portal"):
         return redirect("admin_login")
 
-    cliente = get_object_or_404(Cliente, pk=ruc, activo=True)
+    # La consulta documental también puede ejecutarse para clientes inactivos.
+    # La disponibilidad del acceso se valida por las credenciales IESS configuradas.
+    cliente = get_object_or_404(Cliente, pk=ruc)
     if not str(cliente.cediess or "").strip() or not str(cliente.claveiess or "").strip():
         messages.error(request, "El cliente no tiene las credenciales IESS completas en su ficha.")
         return redirect("admin_anexo_archivos", ruc=ruc, modulo="rdep")
