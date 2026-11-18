@@ -14,6 +14,7 @@ from . import conta_certificado_views
 from . import usuarios_cliente_admin_views
 from . import cobranza_cliente_views
 from . import cobranza_general_views
+from . import iess_rdep_views
 
 
 urlpatterns = [
@@ -51,6 +52,7 @@ urlpatterns = [
     path('totalcounts/datos-usuario/', admin_views.admin_datos_usuario, name='admin_datos_usuario'),
     path('totalcounts/cambiar-contrasena/', admin_views.admin_cambiar_contrasena, name='admin_cambiar_contrasena'),
     path('totalcounts/workers/', admin_views.admin_workers, name='admin_workers'),
+    path('totalcounts/clientes/<str:ruc>/documentacion/anexos/rdep/iess/iniciar/', iess_rdep_views.iniciar_consulta, name='iess_rdep_iniciar'),
     path('totalcounts/parametros/', parametros_admin_views.admin_parametros, name='admin_parametros'),
     path('totalcounts/cobranza/', cobranza_general_views.admin_cobranza_general, name='admin_cobranza_general'),
     path('totalcounts/cobranza/prefacturacion-mensual/preview/', cobranza_general_views.admin_prefacturacion_mensual_previsualizar, name='admin_prefacturacion_mensual_previsualizar'),
