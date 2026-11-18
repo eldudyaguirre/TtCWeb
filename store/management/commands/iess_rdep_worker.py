@@ -101,7 +101,12 @@ class Command(BaseCommand):
         )
 
         context = None
+        resultado_descarga = None
         try:
+            # Estas actualizaciones se hacen antes de iniciar Playwright.
+            job.mensaje = "Iniciando sesión en el portal del IESS."
+            job.heartbeat_en = timezone.now()
+            job.save(update_fields=["mensaje", "heartbeat_en"])
             with sync_playwright() as p:
                 context = p.chromium.launch_persistent_context(
                     user_data_dir=str(profile_dir),
@@ -130,16 +135,17 @@ class Command(BaseCommand):
                 page.wait_for_timeout(1800)
                 if "principal.jsf" in page.url and page.locator("input[type='password']").count():
                     raise RuntimeError("El IESS no aceptó el acceso o solicitó una verificación adicional.")
-                job.mensaje = "Acceso realizado; abriendo consulta de planillas."
-                job.heartbeat_en = timezone.now()
-                job.save(update_fields=["mensaje", "heartbeat_en"])
                 page.goto(CONSULTA_URL, wait_until="domcontentloaded")
                 page.wait_for_timeout(1200)
                 if page.locator("input[type='password']").count():
                     raise RuntimeError("La sesión IESS no quedó autenticada; revisar credenciales o verificación.")
-                self.consultar_y_descargar(page, job, cliente)
+                resultado_descarga = self.consultar_y_descargar(page, job, cliente)
                 context.close()
+                context = None
                 logger.info("Navegador IESS cerrado | job=%s | perfil=%s", job.pk, profile_dir)
+
+            # IMPORTANTE: el ORM se ejecuta después de salir de sync_playwright().
+            self.registrar_descarga_y_completar(job, cliente, resultado_descarga)
         except Exception as exc:
             logger.exception("Falló job IESS RDEP %s (cliente %s, año %s).", job.pk, cliente.pk, job.anio)
             raise_job_error(job, f"{type(exc).__name__}: {exc}")
@@ -181,10 +187,6 @@ class Command(BaseCommand):
         aceptar.first.click()
         page.wait_for_load_state("domcontentloaded")
         page.wait_for_timeout(1500)
-        job.mensaje = "Consulta enviada; buscando la descarga Excel."
-        job.heartbeat_en = timezone.now()
-        job.save(update_fields=["mensaje", "heartbeat_en"])
-
         excel = page.get_by_role("link", name="XLS")
         if not excel.count():
             excel = page.locator("a, button").filter(has_text="XLS")
@@ -208,20 +210,34 @@ class Command(BaseCommand):
         relative = (Path(str(cliente.ruccedcli).strip()) / "anexos" / "rdep" / str(job.anio) / nombre).as_posix()
         import hashlib
         digest = hashlib.sha256(destino.read_bytes()).hexdigest()
+        return {
+            "relative": relative,
+            "nombre": nombre,
+            "extension": extension,
+            "tamano": destino.stat().st_size,
+            "sha256": digest,
+        }
+
+    def registrar_descarga_y_completar(self, job, cliente, resultado):
+        """Persiste el archivo y el estado cuando Playwright ya está cerrado."""
+        if not resultado:
+            raise RuntimeError("La descarga IESS no devolvió los datos del archivo.")
+
+        relative = resultado["relative"]
         Archivo.objects.update_or_create(
             ruta_relativa=relative,
             defaults={
                 "cliente": cliente,
                 "tipo": Archivo.Tipo.DOCUMENTO,
-                "nombre_original": nombre,
-                "nombre_fisico": nombre,
-                "extension": extension,
-                                "mime_type": (
-                    "application/vnd.ms-excel" if extension == ".xls"
+                "nombre_original": resultado["nombre"],
+                "nombre_fisico": resultado["nombre"],
+                "extension": resultado["extension"],
+                "mime_type": (
+                    "application/vnd.ms-excel" if resultado["extension"] == ".xls"
                     else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 ),
-                "tamano": destino.stat().st_size,
-                "sha256": digest,
+                "tamano": resultado["tamano"],
+                "sha256": resultado["sha256"],
                 "creado_por": None,
                 "activo": True,
             },
@@ -231,7 +247,11 @@ class Command(BaseCommand):
         job.mensaje = "Excel de planillas descargado y guardado correctamente."
         job.terminado_en = timezone.now()
         job.heartbeat_en = timezone.now()
-        job.save(update_fields=["estado", "archivo_relativo", "mensaje", "terminado_en", "heartbeat_en"])
+        job.error_detalle = ""
+        job.save(update_fields=[
+            "estado", "archivo_relativo", "mensaje", "terminado_en",
+            "heartbeat_en", "error_detalle",
+        ])
 
 
 def raise_job_error(job, message):
