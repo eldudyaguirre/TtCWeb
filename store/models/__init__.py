@@ -20,3 +20,5 @@ from .noticia import CategoriaNoticia, EtiquetaNoticia, Noticia
 
 from .comunicacion_cliente import ComunicacionCliente
 from .cobranza_envio_masivo import CobranzaEnvioMasivo
+
+from .iess_rdep_job import IessRdepJob
