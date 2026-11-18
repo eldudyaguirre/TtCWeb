@@ -100,6 +100,7 @@ class Command(BaseCommand):
             job.pk, self.worker_id, os.getpid(), profile_dir,
         )
 
+        context = None
         try:
             with sync_playwright() as p:
                 context = p.chromium.launch_persistent_context(
@@ -143,6 +144,12 @@ class Command(BaseCommand):
             logger.exception("Falló job IESS RDEP %s (cliente %s, año %s).", job.pk, cliente.pk, job.anio)
             raise_job_error(job, f"{type(exc).__name__}: {exc}")
         finally:
+            # Cerrar exclusivamente el contexto persistente de este job IESS.
+            if context is not None:
+                try:
+                    context.close()
+                except Exception:
+                    logger.warning("No se pudo cerrar el contexto IESS del job %s.", job.pk, exc_info=True)
             # El perfil IESS solo puede eliminarse dentro de su propio directorio.
             try:
                 resolved_root = profile_root.resolve()
