@@ -3682,6 +3682,8 @@ def admin_anexo_archivos(request, ruc, modulo):
             error = 'Selecciona un mes válido para el Anexo ICE.'
         elif es_rdep and categoria not in categorias_por_codigo:
             error = 'Selecciona el tipo de documento RDEP que vas a cargar.'
+        elif es_aice and len(archivos_subidos) != 1:
+            error = 'Para el Anexo ICE debes cargar un solo archivo por mes.'
         elif not archivos_subidos:
             error = 'Selecciona al menos un archivo para cargar.'
         elif es_rdep and not categorias_por_codigo[categoria]['multiple'] and len(archivos_subidos) != 1:
