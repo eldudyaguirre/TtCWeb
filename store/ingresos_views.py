@@ -93,16 +93,33 @@ def _ingresos_nc_base_sql():
             n.iva14,
             n.iva15,
             CASE
-                WHEN COALESCE(NULLIF(n.iva::text, ''), '0')::numeric <> 0
-                THEN COALESCE(NULLIF(n.iva::text, ''), '0')::numeric
-                ELSE (
+                WHEN (
+                    COALESCE(NULLIF(n.iva5::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva8::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva12::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva14::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva15::text, ''), '0')::numeric
+                ) <> 0
+                THEN (
                     COALESCE(NULLIF(n.iva5::text, ''), '0')::numeric
                     + COALESCE(NULLIF(n.iva8::text, ''), '0')::numeric
                     + COALESCE(NULLIF(n.iva12::text, ''), '0')::numeric
                     + COALESCE(NULLIF(n.iva14::text, ''), '0')::numeric
                     + COALESCE(NULLIF(n.iva15::text, ''), '0')::numeric
                 )
+                ELSE COALESCE(NULLIF(n.iva::text, ''), '0')::numeric
             END AS iva_calculado,
+            CASE
+                WHEN (
+                    COALESCE(NULLIF(n.iva5::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva8::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva12::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva14::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva15::text, ''), '0')::numeric
+                ) = 0
+                THEN COALESCE(NULLIF(n.iva::text, ''), '0')::numeric
+                ELSE 0
+            END AS iva_sin_desglose,
             n.numfac,
             n.fecfac
         FROM ncventas n
@@ -179,7 +196,8 @@ def _ingresos_nc_resumen(where, params, cliente):
             COALESCE(SUM(COALESCE(NULLIF(iva12::text, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(iva14::text, ''), '0')::numeric), 0),
             COALESCE(SUM(COALESCE(NULLIF(iva15::text, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(iva_calculado::text, ''), '0')::numeric), 0)
+            COALESCE(SUM(COALESCE(NULLIF(iva_calculado::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva_sin_desglose::text, ''), '0')::numeric), 0)
         FROM ({_ingresos_nc_base_sql()}) nc_reporte
         WHERE {where}
     """
@@ -189,7 +207,8 @@ def _ingresos_nc_resumen(where, params, cliente):
 
     (
         bases_sin, bases_con, baseiva5, baseiva8, baseiva12,
-        baseiva14, baseiva15, iva5, iva8, iva12, iva14, iva15, iva,
+        baseiva14, baseiva15, iva5, iva8, iva12, iva14, iva15,
+        iva, iva_sin_desglose,
     ) = [float(value or 0) for value in row]
 
     return {
@@ -206,6 +225,7 @@ def _ingresos_nc_resumen(where, params, cliente):
         'iva14': iva14,
         'iva15': iva15,
         'iva': iva,
+        'iva_sin_desglose': iva_sin_desglose,
         'total': bases_sin + bases_con + iva,
     }
 
