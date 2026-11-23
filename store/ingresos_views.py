@@ -87,6 +87,22 @@ def _ingresos_nc_base_sql():
             n.baseiva14,
             n.baseiva15,
             n.iva,
+            n.iva5,
+            n.iva8,
+            n.iva12,
+            n.iva14,
+            n.iva15,
+            CASE
+                WHEN COALESCE(NULLIF(n.iva::text, ''), '0')::numeric <> 0
+                THEN COALESCE(NULLIF(n.iva::text, ''), '0')::numeric
+                ELSE (
+                    COALESCE(NULLIF(n.iva5::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva8::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva12::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva14::text, ''), '0')::numeric
+                    + COALESCE(NULLIF(n.iva15::text, ''), '0')::numeric
+                )
+            END AS iva_calculado,
             n.numfac,
             n.fecfac
         FROM ncventas n
@@ -113,7 +129,7 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
             ) AS bases_con_iva,
-            COALESCE(NULLIF(iva::text, ''), '0')::numeric AS iva,
+            COALESCE(NULLIF(iva_calculado::text, ''), '0')::numeric AS iva,
             (
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
@@ -122,7 +138,7 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
-                + COALESCE(NULLIF(iva::text, ''), '0')::numeric
+                + COALESCE(NULLIF(iva_calculado::text, ''), '0')::numeric
             ) AS total,
             numfac AS fac_mod,
             fecfac AS fecha_factura
@@ -142,8 +158,10 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
 def _ingresos_nc_resumen(where, params, cliente):
     sql = f"""
         SELECT
-            COALESCE(SUM(COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
-                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+            ), 0),
             COALESCE(SUM(
                 COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
@@ -151,7 +169,17 @@ def _ingresos_nc_resumen(where, params, cliente):
                 + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
             ), 0),
-            COALESCE(SUM(COALESCE(NULLIF(iva::text, ''), '0')::numeric), 0)
+            COALESCE(SUM(COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva5::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva8::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva12::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva14::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva15::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(COALESCE(NULLIF(iva_calculado::text, ''), '0')::numeric), 0)
         FROM ({_ingresos_nc_base_sql()}) nc_reporte
         WHERE {where}
     """
@@ -159,10 +187,24 @@ def _ingresos_nc_resumen(where, params, cliente):
         cursor.execute(sql, params)
         row = cursor.fetchone()
 
-    bases_sin, bases_con, iva = [float(value or 0) for value in row]
+    (
+        bases_sin, bases_con, baseiva5, baseiva8, baseiva12,
+        baseiva14, baseiva15, iva5, iva8, iva12, iva14, iva15, iva,
+    ) = [float(value or 0) for value in row]
+
     return {
         'bases_sin_iva': bases_sin,
         'bases_con_iva': bases_con,
+        'baseiva5': baseiva5,
+        'baseiva8': baseiva8,
+        'baseiva12': baseiva12,
+        'baseiva14': baseiva14,
+        'baseiva15': baseiva15,
+        'iva5': iva5,
+        'iva8': iva8,
+        'iva12': iva12,
+        'iva14': iva14,
+        'iva15': iva15,
         'iva': iva,
         'total': bases_sin + bases_con + iva,
     }
