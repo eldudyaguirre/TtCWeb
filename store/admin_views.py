@@ -3587,6 +3587,7 @@ def admin_anexo_archivos(request, ruc, modulo):
     ruc_cliente = str(cliente.ruccedcli).strip()
     raiz = data_root() / ruc_cliente / 'anexos' / config['carpeta']
     es_rdep = str(modulo).lower() == 'rdep'
+    es_aice = str(modulo).lower() == 'aice'
     anio_actual = timezone.localdate().year
     anio_minimo_rdep = anio_actual - 7
     error = ''
@@ -3667,12 +3668,18 @@ def admin_anexo_archivos(request, ruc, modulo):
             anio = 0
 
         categoria = request.POST.get('categoria_rdep', '').strip().upper() if es_rdep else ''
+        try:
+            mes = int(request.POST.get('mes', '')) if es_aice else 0
+        except (TypeError, ValueError):
+            mes = 0
         archivos_subidos = request.FILES.getlist('archivo_anexo')
 
         if es_rdep and not anio_minimo_rdep <= anio <= anio_actual:
             error = f'El periodo fiscal RDEP debe estar entre {anio_minimo_rdep} y {anio_actual}.'
         elif not 2000 <= anio <= 2100:
             error = 'Selecciona un año válido.'
+        elif es_aice and not 1 <= mes <= 12:
+            error = 'Selecciona un mes válido para el Anexo ICE.'
         elif es_rdep and categoria not in categorias_por_codigo:
             error = 'Selecciona el tipo de documento RDEP que vas a cargar.'
         elif not archivos_subidos:
@@ -3686,7 +3693,7 @@ def admin_anexo_archivos(request, ruc, modulo):
                 else extensiones_generales
             )
             prefijo = categoria_config['prefijo'] if es_rdep else ''
-            carpeta = raiz / str(anio)
+            carpeta = raiz / str(anio) / (f'{mes:02d}' if es_aice else '')
             archivos_preparados = []
             nombres_destino = set()
 
@@ -3721,7 +3728,7 @@ def admin_anexo_archivos(request, ruc, modulo):
                 nombre_fisico = f'{prefijo}{nombre_seguro}{sufijo_unico}{extension_segura}'
                 relativo = (
                     Path(ruc_cliente) / 'anexos' / config['carpeta']
-                    / str(anio) / nombre_fisico
+                    / str(anio) / (f'{mes:02d}' if es_aice else '') / nombre_fisico
                 ).as_posix()
                 destino = carpeta / nombre_fisico
 
@@ -3733,7 +3740,7 @@ def admin_anexo_archivos(request, ruc, modulo):
                 if destino.exists() or Archivo.objects.filter(
                     ruta_relativa=relativo, activo=True
                 ).exists():
-                    error = f'Ya existe un archivo llamado {nombre_original} para {anio}.'
+                    error = f'Ya existe un archivo llamado {nombre_original} para {anio}/{mes:02d}.' if es_aice else f'Ya existe un archivo llamado {nombre_original} para {anio}.'
                     break
 
                 contenido = subido.read()
@@ -3815,6 +3822,8 @@ def admin_anexo_archivos(request, ruc, modulo):
                         f'Se cargó correctamente {len(archivos_preparados)} archivo(s) '
                         f'en {categoria_config["titulo"]} para el periodo {anio}.'
                     )
+                elif es_aice:
+                    exito = f'Se cargó correctamente el archivo para {mes:02d}/{anio}.'
                 else:
                     exito = f'El archivo {archivos_preparados[0]["nombre_original"]} se cargó correctamente.'
             elif not error:
@@ -3833,7 +3842,12 @@ def admin_anexo_archivos(request, ruc, modulo):
         if not ruta.is_file():
             continue
         try:
-            anio_archivo = int(ruta.parent.name)
+            if es_aice and ruta.parent.name.isdigit() and 1 <= int(ruta.parent.name) <= 12 and ruta.parent.parent.name.isdigit():
+                anio_archivo = int(ruta.parent.parent.name)
+                mes_archivo = int(ruta.parent.name)
+            else:
+                anio_archivo = int(ruta.parent.name)
+                mes_archivo = 0
         except ValueError:
             continue
         categoria_archivo, nombre_visible = clasificar_archivo(
@@ -3844,23 +3858,29 @@ def admin_anexo_archivos(request, ruc, modulo):
             'nombre_fisico': ruta.name,
             'categoria': categoria_archivo,
             'anio': anio_archivo,
+            'mes': mes_archivo,
             'tamano': archivo.tamano,
             'fecha': archivo.creado_en,
         })
-        vistos.add((anio_archivo, ruta.name))
+        vistos.add((anio_archivo, mes_archivo, ruta.name))
         anios_disponibles.add(anio_archivo)
 
     # Mantiene visibles los documentos históricos que ya están en almacenamiento,
     # aunque no tengan todavía un registro asociado en la tabla archivos.
     if raiz.is_dir():
-        for ruta in raiz.glob('*/*'):
+        for ruta in raiz.rglob('*'):
             if not ruta.is_file():
                 continue
             try:
-                anio_archivo = int(ruta.parent.name)
+                if es_aice and ruta.parent.name.isdigit() and 1 <= int(ruta.parent.name) <= 12 and ruta.parent.parent.name.isdigit():
+                    anio_archivo = int(ruta.parent.parent.name)
+                    mes_archivo = int(ruta.parent.name)
+                else:
+                    anio_archivo = int(ruta.parent.name)
+                    mes_archivo = 0
             except ValueError:
                 continue
-            if (anio_archivo, ruta.name) not in vistos:
+            if (anio_archivo, mes_archivo, ruta.name) not in vistos:
                 stat = ruta.stat()
                 categoria_archivo, nombre_visible = clasificar_archivo(
                     ruta.name, ruta.suffix
@@ -3870,13 +3890,14 @@ def admin_anexo_archivos(request, ruc, modulo):
                     'nombre_fisico': ruta.name,
                     'categoria': categoria_archivo,
                     'anio': anio_archivo,
+                    'mes': mes_archivo,
                     'tamano': stat.st_size,
                     'fecha': datetime.fromtimestamp(stat.st_mtime),
                 })
-                vistos.add((anio_archivo, ruta.name))
+                vistos.add((anio_archivo, mes_archivo, ruta.name))
             anios_disponibles.add(anio_archivo)
 
-    registros.sort(key=lambda item: (item['anio'], item['categoria'], item['nombre']), reverse=True)
+    registros.sort(key=lambda item: (item['anio'], item.get('mes', 0), item['categoria'], item['nombre']), reverse=True)
     try:
         anio_filtro = int(request.GET.get('anio', ''))
     except (TypeError, ValueError):
@@ -3920,6 +3941,7 @@ def admin_anexo_archivos(request, ruc, modulo):
         'config': config,
         'modulo': modulo,
         'es_rdep': es_rdep,
+        'es_aice': es_aice,
         'registros': registros,
         'grupos_archivos': grupos_archivos,
         'categorias_rdep': categorias_rdep if es_rdep else [],
@@ -3934,7 +3956,7 @@ def admin_anexo_archivos(request, ruc, modulo):
 
 
 @admin_required
-def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False):
+def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False, mes=None):
     """Descarga un archivo del módulo tributario indicado, validando su ruta."""
     from pathlib import Path
     from .services.archivos.storage import data_root
@@ -3947,7 +3969,12 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False):
         raise Http404('Archivo o año no válido.')
     if Path(nombre).suffix.lower() not in {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}:
         raise Http404('Tipo de archivo no válido.')
-    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    partes = [Path(str(cliente.ruccedcli).strip()), 'anexos', config['carpeta'], str(anio)]
+    if str(modulo).lower() == 'aice' and mes is not None:
+        if not 1 <= int(mes) <= 12:
+            raise Http404('Mes no válido.')
+        partes.append(f'{int(mes):02d}')
+    relativo = (Path(*partes) / nombre).as_posix()
     ruta = data_root() / relativo
     if not ruta.is_file():
         raise Http404('El archivo ya no está disponible.')
@@ -3976,7 +4003,7 @@ def admin_anexo_descargar(request, ruc, modulo, anio, nombre, inline=False):
 
 
 @admin_required
-def admin_anexo_ver(request, ruc, modulo, anio, nombre):
+def admin_anexo_ver(request, ruc, modulo, anio, nombre, mes=None):
     """Muestra un archivo de anexos en el navegador cuando el formato lo permite."""
     from pathlib import Path
     from .services.archivos.storage import data_root
@@ -3990,7 +4017,12 @@ def admin_anexo_ver(request, ruc, modulo, anio, nombre):
     if Path(nombre).suffix.lower() not in {'.xml', '.zip', '.pdf', '.xlsx', '.xls'}:
         raise Http404('Tipo de archivo no válido.')
 
-    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    partes = [Path(str(cliente.ruccedcli).strip()), 'anexos', config['carpeta'], str(anio)]
+    if str(modulo).lower() == 'aice' and mes is not None:
+        if not 1 <= int(mes) <= 12:
+            raise Http404('Mes no válido.')
+        partes.append(f'{int(mes):02d}')
+    relativo = (Path(*partes) / nombre).as_posix()
     ruta = (data_root() / relativo).resolve()
     raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / config['carpeta']).resolve()
     if not ruta.is_relative_to(raiz) or not ruta.is_file():
@@ -4006,7 +4038,7 @@ def admin_anexo_ver(request, ruc, modulo, anio, nombre):
 
 
 @admin_required
-def admin_anexo_eliminar(request, ruc, modulo, anio, nombre):
+def admin_anexo_eliminar(request, ruc, modulo, anio, nombre, mes=None):
     """Elimina un archivo del módulo tributario después de validar cliente y ruta."""
     from pathlib import Path
     from django.views.decorators.http import require_POST
@@ -4022,7 +4054,12 @@ def admin_anexo_eliminar(request, ruc, modulo, anio, nombre):
     if not 2000 <= int(anio) <= 2100 or Path(nombre).name != nombre:
         raise Http404('Archivo o año no válido.')
 
-    relativo = (Path(str(cliente.ruccedcli).strip()) / 'anexos' / config['carpeta'] / str(anio) / nombre).as_posix()
+    partes = [Path(str(cliente.ruccedcli).strip()), 'anexos', config['carpeta'], str(anio)]
+    if str(modulo).lower() == 'aice' and mes is not None:
+        if not 1 <= int(mes) <= 12:
+            raise Http404('Mes no válido.')
+        partes.append(f'{int(mes):02d}')
+    relativo = (Path(*partes) / nombre).as_posix()
     ruta = (data_root() / relativo).resolve()
     raiz = (data_root() / str(cliente.ruccedcli).strip() / 'anexos' / config['carpeta']).resolve()
     if not ruta.is_relative_to(raiz) or not ruta.is_file():
