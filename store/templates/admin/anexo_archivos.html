@@ -25,10 +25,13 @@
 {% endif %}
 <section class="ats-grid">
   <article class="admin-card ats-card">
-    <div class="ats-card-heading"><span class="admin-documentacion-icon"><i class="fi fi-rr-cloud-upload"></i></span><div><h2>Cargar archivo</h2><p>{% if es_rdep %}Selecciona el tipo de documento y el periodo fiscal al que corresponde.{% else %}Guarda documentos del módulo para el año seleccionado.{% endif %}</p></div></div>
+    <div class="ats-card-heading"><span class="admin-documentacion-icon"><i class="fi fi-rr-cloud-upload"></i></span><div><h2>Cargar archivo</h2><p>{% if es_rdep %}Selecciona el tipo de documento y el periodo fiscal al que corresponde.{% elif es_aice %}Carga el Anexo ICE correspondiente a un mes específico.{% else %}Guarda documentos del módulo para el año seleccionado.{% endif %}</p></div></div>
     <form method="post" enctype="multipart/form-data" class="ats-form" id="anexo-upload-form">
       {% csrf_token %}
       <div class="ats-field"><label for="anexo-anio">Año del documento / periodo fiscal</label><select id="anexo-anio" name="anio" required>{% for year in anios_formulario %}<option value="{{ year }}" {% if year == anio_actual %}selected{% endif %}>{{ year }}</option>{% endfor %}</select></div>
+      {% if es_aice %}
+      <div class="ats-field"><label for="anexo-mes">Mes del Anexo ICE</label><select id="anexo-mes" name="mes" required><option value="">Seleccionar mes…</option><option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select></div>
+      {% endif %}
       {% if es_rdep %}
       <div class="ats-field">
         <label for="anexo-categoria">Tipo de documento RDEP</label>
@@ -45,7 +48,7 @@
         <label for="anexo-archivo">{% if es_rdep %}Archivo(s){% else %}Archivo{% endif %}</label>
         <input id="anexo-archivo" type="file" name="archivo_anexo" accept="{% if es_rdep %}.xml,.zip{% else %}.xml,.zip,.pdf,.xlsx,.xls{% endif %}" required>
         <small id="anexo-archivo-ayuda">
-          {% if es_rdep %}El XML, la Grilla PDF y el Talón de resumen admiten un archivo por año. Formularios 107 permite cargar varios PDF, uno por trabajador. Tamaño máximo: 20 MB por archivo.{% else %}Formatos permitidos: XML, ZIP, PDF, XLSX y XLS. Tamaño máximo: 20 MB.{% endif %}
+          {% if es_rdep %}El XML, la Grilla PDF y el Talón de resumen admiten un archivo por año. Formularios 107 permite cargar varios PDF, uno por trabajador. Tamaño máximo: 20 MB por archivo.{% elif es_aice %}Formatos permitidos: XML, ZIP, PDF, XLSX y XLS. Se permite un archivo por mes y año. Tamaño máximo: 20 MB.{% else %}Formatos permitidos: XML, ZIP, PDF, XLSX y XLS. Tamaño máximo: 20 MB.{% endif %}
         </small>
       </div>
       <button type="submit" class="ats-submit" id="anexo-submit"><i class="fi fi-rr-upload"></i> Cargar archivo{% if es_rdep %}(s){% endif %}</button>
@@ -64,7 +67,7 @@
           <span>{{ grupo.registros|length }} archivo(s)</span>
         </div>
         {% if grupo.registros %}
-        <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th><th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
+        <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th>{% if es_aice %}<th>Mes</th>{% endif %}<th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
           {% for archivo in grupo.registros %}
           <tr>
             <td><strong>{{ archivo.nombre }}</strong><small>{{ grupo.titulo }}</small></td>
@@ -95,13 +98,19 @@
     {% elif registros %}
     <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th><th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
       {% for archivo in registros %}
-      <tr><td><strong>{{ archivo.nombre }}</strong><small>{{ config.titulo }} · Documento del cliente</small></td><td>{{ archivo.anio }}</td><td>{{ archivo.tamano|filesizeformat }}</td><td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td><td class="ats-actions-cell">
+      <tr><td><strong>{{ archivo.nombre }}</strong><small>{{ config.titulo }} · Documento del cliente</small></td><td>{{ archivo.anio }}</td>{% if es_aice %}<td>{% if archivo.mes %}{{ archivo.mes|stringformat:'02d' }}{% else %}Histórico{% endif %}</td>{% endif %}<td>{{ archivo.tamano|filesizeformat }}</td><td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td><td class="ats-actions-cell">
         <details class="ats-file-menu">
           <summary class="ats-menu-trigger" aria-label="Opciones del archivo" title="Opciones"><i class="fi fi-rr-menu-dots" aria-hidden="true"></i></summary>
           <div class="ats-menu-options">
+            {% if es_aice and archivo.mes %}
+            <a href="{% url 'admin_anexo_ver_mes' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio mes=archivo.mes nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Ver</a>
+            <a href="{% url 'admin_anexo_descargar_mes' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio mes=archivo.mes nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
+            <form method="post" action="{% url 'admin_anexo_eliminar_mes' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio mes=archivo.mes nombre=archivo.nombre_fisico %}" onsubmit="return confirm('¿Eliminar este archivo definitivamente?');">
+            {% else %}
             <a href="{% url 'admin_anexo_ver' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" target="_blank" rel="noopener"><i class="fi fi-rr-eye"></i> Ver</a>
             <a href="{% url 'admin_anexo_descargar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}"><i class="fi fi-rr-download"></i> Descargar</a>
             <form method="post" action="{% url 'admin_anexo_eliminar' ruc=cliente.ruccedcli modulo=modulo anio=archivo.anio nombre=archivo.nombre_fisico %}" onsubmit="return confirm('¿Eliminar este archivo definitivamente?');">
+            {% endif %}
               {% csrf_token %}
               <button type="submit"><i class="fi fi-rr-trash"></i> Eliminar</button>
             </form>
