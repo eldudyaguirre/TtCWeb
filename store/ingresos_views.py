@@ -81,7 +81,11 @@ def _ingresos_nc_base_sql():
             n.autorizacion,
             n.basenoobj,
             n.baseiva0,
+            n.baseiva5,
+            n.baseiva8,
             n.baseiva12,
+            n.baseiva14,
+            n.baseiva15,
             n.iva,
             n.numfac,
             n.fecfac
@@ -102,12 +106,22 @@ def _ingresos_nc_query(where, params, cliente, limit=None, offset=None):
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
             ) AS bases_sin_iva,
-            COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric AS bases_con_iva,
+            (
+                COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+            ) AS bases_con_iva,
             COALESCE(NULLIF(iva::text, ''), '0')::numeric AS iva,
             (
                 COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
                 + COALESCE(NULLIF(iva::text, ''), '0')::numeric
             ) AS total,
             numfac AS fac_mod,
@@ -130,7 +144,13 @@ def _ingresos_nc_resumen(where, params, cliente):
         SELECT
             COALESCE(SUM(COALESCE(NULLIF(basenoobj::text, ''), '0')::numeric
                 + COALESCE(NULLIF(baseiva0::text, ''), '0')::numeric), 0),
-            COALESCE(SUM(COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric), 0),
+            COALESCE(SUM(
+                COALESCE(NULLIF(baseiva5::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva8::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva12::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva14::text, ''), '0')::numeric
+                + COALESCE(NULLIF(baseiva15::text, ''), '0')::numeric
+            ), 0),
             COALESCE(SUM(COALESCE(NULLIF(iva::text, ''), '0')::numeric), 0)
         FROM ({_ingresos_nc_base_sql()}) nc_reporte
         WHERE {where}
