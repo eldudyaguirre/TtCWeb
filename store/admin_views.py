@@ -3785,6 +3785,13 @@ def admin_anexo_archivos(request, ruc, modulo):
                         f'para el periodo {anio}. No se permite duplicarlo.'
                     )
 
+            if not error and es_aice:
+                prefijo_periodo = (Path(ruc_cliente) / 'anexos' / config['carpeta'] / str(anio) / f'{mes:02d}').as_posix() + '/'
+                if (carpeta.is_dir() and any(carpeta.iterdir())) or Archivo.objects.filter(
+                    cliente=cliente, ruta_relativa__startswith=prefijo_periodo, activo=True
+                ).exists():
+                    error = f'Ya existe un archivo del Anexo ICE para el periodo {mes:02d}/{anio}. Solo se permite uno por mes.'
+
             if not error and archivos_preparados:
                 carpeta.mkdir(parents=True, exist_ok=True)
                 destinos_creados = []
