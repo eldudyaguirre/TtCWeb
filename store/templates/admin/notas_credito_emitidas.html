@@ -40,8 +40,29 @@
 <div class="grid">
 <div><span>Bases sin IVA</span><strong>$ {{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
 <div><span>Bases con IVA</span><strong>$ {{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
-<div><span>IVA</span><strong>$ {{ resumen.iva|floatformat:2 }}</strong></div>
+<div><span>IVA total</span><strong>$ {{ resumen.iva|floatformat:2 }}</strong></div>
 <div class="total"><span>Total</span><strong>$ {{ resumen.total|floatformat:2 }}</strong></div>
+</div>
+
+<div class="detail-title">BASES GRAVADAS POR TARIFA</div>
+<div class="detail-grid">
+<div><span>Base IVA 5%</span><strong>$ {{ resumen.baseiva5|floatformat:2 }}</strong></div>
+<div><span>Base IVA 8%</span><strong>$ {{ resumen.baseiva8|floatformat:2 }}</strong></div>
+<div><span>Base IVA 12%</span><strong>$ {{ resumen.baseiva12|floatformat:2 }}</strong></div>
+<div><span>Base IVA 14%</span><strong>$ {{ resumen.baseiva14|floatformat:2 }}</strong></div>
+<div><span>Base IVA 15%</span><strong>$ {{ resumen.baseiva15|floatformat:2 }}</strong></div>
+</div>
+
+<div class="detail-title">IVA POR TARIFA</div>
+<div class="detail-grid">
+<div><span>IVA 5%</span><strong>$ {{ resumen.iva5|floatformat:2 }}</strong></div>
+<div><span>IVA 8%</span><strong>$ {{ resumen.iva8|floatformat:2 }}</strong></div>
+<div><span>IVA 12%</span><strong>$ {{ resumen.iva12|floatformat:2 }}</strong></div>
+<div><span>IVA 14%</span><strong>$ {{ resumen.iva14|floatformat:2 }}</strong></div>
+<div><span>IVA 15%</span><strong>$ {{ resumen.iva15|floatformat:2 }}</strong></div>
+{% if resumen.iva_sin_desglose %}
+<div><span>IVA histórico sin desglose</span><strong>$ {{ resumen.iva_sin_desglose|floatformat:2 }}</strong></div>
+{% endif %}
 </div>
 </div>
 
@@ -79,14 +100,15 @@
 .empty{padding:25px!important}
 .nc-emit-summary{margin-top:18px;padding:18px;border:1px solid #dce5e7;border-radius:11px;background:#f7fafb}
 .nc-emit-summary .title{margin-bottom:12px;font-size:12px;font-weight:900;color:var(--admin-dark)}
-.nc-emit-summary .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.nc-emit-summary .grid>div{min-height:64px;padding:12px;border:1px solid #e0e7e9;border-radius:9px;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.nc-emit-summary .grid,.nc-emit-summary .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.nc-emit-summary .grid>div,.nc-emit-summary .detail-grid>div{min-height:64px;padding:12px;border:1px solid #e0e7e9;border-radius:9px;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.nc-emit-summary .detail-title{margin:18px 0 9px;font-size:11px;font-weight:900;letter-spacing:.04em;color:var(--admin-dark)}
 .nc-emit-summary span{color:var(--admin-muted);font-size:10px;font-weight:700}
 .nc-emit-summary strong{color:var(--admin-dark);font-size:14px}
 .nc-emit-summary .total{border-color:#1596a3;background:#eef9fa}
 .nc-emit-pagination{display:flex;justify-content:space-between;align-items:center;margin-top:18px;color:var(--admin-muted);font-size:12px}
 .nc-emit-pagination a{padding:9px 12px;border:1px solid #d5dee2;border-radius:8px;background:#fff;color:#526771;text-decoration:none;font-weight:800}
-@media(max-width:900px){.nc-emit-filters{grid-template-columns:1fr 1fr}.nc-emit-actions{grid-column:1/-1}.nc-emit-summary .grid{grid-template-columns:repeat(2,1fr)}.admin-compras-toolbar{align-items:flex-start;flex-direction:column;width:100%}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
-@media(max-width:700px){.nc-emit-filters{grid-template-columns:1fr}.nc-emit-actions{grid-column:auto}.nc-emit-actions button,.nc-emit-actions a{flex:1}.nc-emit-summary .grid{grid-template-columns:1fr}}
+@media(max-width:900px){.nc-emit-filters{grid-template-columns:1fr 1fr}.nc-emit-actions{grid-column:1/-1}.nc-emit-summary .grid,.nc-emit-summary .detail-grid{grid-template-columns:repeat(2,1fr)}.admin-compras-toolbar{align-items:flex-start;flex-direction:column;width:100%}.admin-compras-toolbar-actions{width:100%}.admin-compras-tool{flex:1}}
+@media(max-width:700px){.nc-emit-filters{grid-template-columns:1fr}.nc-emit-actions{grid-column:auto}.nc-emit-actions button,.nc-emit-actions a{flex:1}.nc-emit-summary .grid,.nc-emit-summary .detail-grid{grid-template-columns:1fr}}
 </style>
 {% endblock %}

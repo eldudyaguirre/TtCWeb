@@ -8,6 +8,14 @@
     .ingresos-nc-report-title h1 { margin-bottom: 6px; text-transform: uppercase; }
     .ingresos-nc-report-title p { margin: 2px 0; }
     .ingresos-nc-table-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .portal-nc-detail-title { margin: 18px 0 9px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-primary, #21333e); }
+    .portal-nc-detail-grid { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 10px; margin-top: 8px; }
+    .portal-nc-detail-grid > div { display: flex; flex-direction: column; gap: 5px; padding: 12px; border: 1px solid var(--border-color, #e0e7e9); border-radius: 9px; background: #fff; }
+    .portal-nc-detail-grid span { font-size: 11px; color: var(--text-muted, #68777d); }
+    .portal-nc-detail-grid strong { font-size: 14px; color: var(--text-primary, #21333e); }
+    @media(max-width: 900px) { .portal-nc-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media(max-width: 600px) { .portal-nc-detail-grid { grid-template-columns: 1fr; } }
+
     .ingresos-nc-table { min-width: 1250px; }
     .ingresos-nc-table th { position: sticky; top: 0; z-index: 2; }
     .ingresos-nc-export-btn {
@@ -96,8 +104,29 @@
                 <div class="portal-report-summary-grid">
                     <div><span>Bases sin IVA</span><strong>{{ resumen.bases_sin_iva|floatformat:2 }}</strong></div>
                     <div><span>Bases con IVA</span><strong>{{ resumen.bases_con_iva|floatformat:2 }}</strong></div>
-                    <div><span>IVA</span><strong>{{ resumen.iva|floatformat:2 }}</strong></div>
+                    <div><span>IVA total</span><strong>{{ resumen.iva|floatformat:2 }}</strong></div>
                     <div class="portal-report-total"><span>Total</span><strong>{{ resumen.total|floatformat:2 }}</strong></div>
+                </div>
+
+                <div class="portal-nc-detail-title">Bases gravadas por tarifa</div>
+                <div class="portal-nc-detail-grid">
+                    <div><span>Base IVA 5%</span><strong>{{ resumen.baseiva5|floatformat:2 }}</strong></div>
+                    <div><span>Base IVA 8%</span><strong>{{ resumen.baseiva8|floatformat:2 }}</strong></div>
+                    <div><span>Base IVA 12%</span><strong>{{ resumen.baseiva12|floatformat:2 }}</strong></div>
+                    <div><span>Base IVA 14%</span><strong>{{ resumen.baseiva14|floatformat:2 }}</strong></div>
+                    <div><span>Base IVA 15%</span><strong>{{ resumen.baseiva15|floatformat:2 }}</strong></div>
+                </div>
+
+                <div class="portal-nc-detail-title">IVA por tarifa</div>
+                <div class="portal-nc-detail-grid">
+                    <div><span>IVA 5%</span><strong>{{ resumen.iva5|floatformat:2 }}</strong></div>
+                    <div><span>IVA 8%</span><strong>{{ resumen.iva8|floatformat:2 }}</strong></div>
+                    <div><span>IVA 12%</span><strong>{{ resumen.iva12|floatformat:2 }}</strong></div>
+                    <div><span>IVA 14%</span><strong>{{ resumen.iva14|floatformat:2 }}</strong></div>
+                    <div><span>IVA 15%</span><strong>{{ resumen.iva15|floatformat:2 }}</strong></div>
+                    {% if resumen.iva_sin_desglose %}
+                    <div><span>IVA histórico sin desglose</span><strong>{{ resumen.iva_sin_desglose|floatformat:2 }}</strong></div>
+                    {% endif %}
                 </div>
             </div>
 
