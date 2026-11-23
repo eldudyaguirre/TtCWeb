@@ -96,7 +96,7 @@
       </section>
       {% endfor %}
     {% elif registros %}
-    <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th><th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
+    <div class="ats-table-wrap"><table class="ats-table"><thead><tr><th>Archivo</th><th>Año</th>{% if es_aice %}<th>Mes</th>{% endif %}<th>Tamaño</th><th>Fecha</th><th></th></tr></thead><tbody>
       {% for archivo in registros %}
       <tr><td><strong>{{ archivo.nombre }}</strong><small>{{ config.titulo }} · Documento del cliente</small></td><td>{{ archivo.anio }}</td>{% if es_aice %}<td>{% if archivo.mes %}{{ archivo.mes|stringformat:'02d' }}{% else %}Histórico{% endif %}</td>{% endif %}<td>{{ archivo.tamano|filesizeformat }}</td><td>{{ archivo.fecha|date:"d/m/Y H:i" }}</td><td class="ats-actions-cell">
         <details class="ats-file-menu">
