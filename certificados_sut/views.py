@@ -410,13 +410,12 @@ def generar_zip(request):
                 pdf_certificado = _crear_certificado(datos, trabajador, tema, horas)
                 archivo_zip.writestr(f"{carpeta}/Certificados/{nombre}_{trabajador['cedula']}.pdf", pdf_certificado)
                 total_certificados += 1
-            if participantes:
-                archivo_zip.writestr(f"{carpeta}/01_Planificacion.pdf", _crear_planificacion(datos, tema, participantes))
-                archivo_zip.writestr(f"{carpeta}/02_Registro_Asistencia.pdf", _crear_asistencia(datos, tema, participantes))
-                total_formatos += 2
+            archivo_zip.writestr(f"{carpeta}/01_Planificacion.pdf", _crear_planificacion(datos, tema, participantes))
+            archivo_zip.writestr(f"{carpeta}/02_Registro_Asistencia.pdf", _crear_asistencia(datos, tema, participantes))
+            total_formatos += 2
 
-    if not total_certificados:
-        return redirect("/totalcounts/certificados-sut/?error=No+hay+horas+mayores+a+cero+para+generar+documentos")
+    if not total_certificados and not total_formatos:
+        return redirect("/totalcounts/certificados-sut/?error=No+hay+temáticas+para+generar+documentos")
     respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
     respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
     respuesta["Content-Disposition"] = 'attachment; filename="certificados_sut.zip"'
