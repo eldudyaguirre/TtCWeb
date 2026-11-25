@@ -18,7 +18,7 @@ from .excel import leer_nomina
 
 CACHE_TTL = 60 * 60 * 2
 SESSION_KEY = "certificados_sut_token"
-TEMAS = 4
+TEMAS = 5
 
 
 def _es_sa(request):
