@@ -63,6 +63,8 @@ def inicio(request):
         "profesional": datos.get("profesional", PROFESIONAL_INICIAL),
         "responsable_uath": datos.get("responsable_uath", ""),
         "areas_text": datos.get("areas_text", ""),
+        "fecha_inicio": datos.get("fecha_inicio", ""),
+        "fecha_fin": datos.get("fecha_fin", ""),
         "error": request.GET.get("error", ""),
     })
 
@@ -89,6 +91,8 @@ def cargar_excel(request):
         "profesional": PROFESIONAL_INICIAL,
         "responsable_uath": "",
         "areas_text": "",
+        "fecha_inicio": "",
+        "fecha_fin": "",
     }
     cache.set(f"certificados_sut:{token}", datos, CACHE_TTL)
     request.session[SESSION_KEY] = token
@@ -102,6 +106,15 @@ def _guardar_formulario(request, datos):
     datos["profesional"] = request.POST.get("profesional", "").strip()
     datos["responsable_uath"] = request.POST.get("responsable_uath", "").strip()
     datos["areas_text"] = request.POST.get("areas_text", "").strip()
+    datos["fecha_inicio"] = request.POST.get("fecha_inicio", "").strip()
+    datos["fecha_fin"] = request.POST.get("fecha_fin", "").strip()
+    try:
+        inicio = date.fromisoformat(datos["fecha_inicio"])
+        fin = date.fromisoformat(datos["fecha_fin"])
+        if fin < inicio:
+            raise ValueError
+    except (ValueError, TypeError):
+        raise ValueError("Ingresa fechas válidas y verifica que la fecha final no sea anterior a la inicial.")
     areas_validas = [a.strip() for a in re.split(r"[\n,;]+", datos["areas_text"]) if a.strip()]
     datos["temas"] = [request.POST.get(f"tema_{i}", "").strip() for i in range(1, TEMAS + 1)]
 
@@ -197,6 +210,166 @@ def _crear_certificado(datos, trabajador, tema, horas):
     return buffer.getvalue()
 
 
+
+def _texto(canvas_pdf, texto, x, y, max_ancho, fuente="Helvetica", tam=8, interlineado=11):
+    """Dibuja texto con ajuste de línea y devuelve la siguiente coordenada Y."""
+    palabras = str(texto or "").split()
+    lineas, actual = [], ""
+    canvas_pdf.setFont(fuente, tam)
+    for palabra in palabras:
+        prueba = f"{actual} {palabra}".strip()
+        if canvas_pdf.stringWidth(prueba, fuente, tam) <= max_ancho:
+            actual = prueba
+        else:
+            if actual:
+                lineas.append(actual)
+            actual = palabra
+    if actual:
+        lineas.append(actual)
+    for linea in lineas:
+        canvas_pdf.drawString(x, y, linea)
+        y -= interlineado
+    return y
+
+
+def _encabezado_pdf(pdf, ancho, alto, titulo, datos, tema):
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.rect(0, alto - 12, ancho, 12, stroke=0, fill=1)
+    logo = _ruta_logo_mdt()
+    if logo:
+        try:
+            pdf.drawImage(logo, 32, alto - 92, width=205, height=62, preserveAspectRatio=True, mask="auto", anchor="c")
+        except Exception:
+            pass
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawRightString(ancho - 35, alto - 48, "MINISTERIO DEL TRABAJO")
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawRightString(ancho - 35, alto - 67, titulo.upper())
+    y = alto - 112
+    pdf.setFillColor(colors.black)
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(36, y, "EMPRESA:")
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(105, y, datos["empresa"][:100])
+    y -= 17
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(36, y, "TEMA:")
+    y = _texto(pdf, tema, 105, y, ancho - 145, "Helvetica", 9, 12) - 5
+    pdf.setFont("Helvetica", 8)
+    pdf.drawString(36, y, f"PERÍODO: {datos['fecha_inicio']}  AL  {datos['fecha_fin']}")
+    y -= 14
+    pdf.drawString(36, y, f"PROFESIONAL / FACILITADOR: {datos['profesional'][:95]}")
+    y -= 14
+    pdf.drawString(36, y, f"TELÉFONO: {datos['telefono'][:35]}    CORREO: {datos['email'][:75]}")
+    y -= 14
+    pdf.drawString(36, y, f"RESPONSABLE UATH: {datos['responsable_uath'][:100]}")
+    return y - 20
+
+
+def _crear_planificacion(datos, tema, participantes):
+    buffer = io.BytesIO()
+    pagina = A4
+    ancho, alto = pagina
+    pdf = canvas.Canvas(buffer, pagesize=pagina)
+    pdf.setTitle(f"Planificación - {tema}")
+    y = _encabezado_pdf(pdf, ancho, alto, "Planificación de capacitación con facilitadores internos", datos, tema)
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawString(36, y, "PLANIFICACIÓN DE LA CAPACITACIÓN")
+    y -= 24
+    campos = [
+        ("Objetivo", "Fortalecer los conocimientos y promover prácticas laborales con igualdad y sin discriminación, de acuerdo con la temática establecida."),
+        ("Modalidad / lugar", "_______________________________________________"),
+        ("Fecha(s) de ejecución", f"{datos['fecha_inicio']} al {datos['fecha_fin']}"),
+        ("Facilitador interno", datos["profesional"]),
+        ("Duración planificada", "Según las horas registradas para los participantes en esta temática."),
+        ("Metodología", "Exposición, diálogo participativo y revisión de situaciones relacionadas con la temática."),
+        ("Recursos", "Material de apoyo, presentación y registro de asistencia."),
+        ("Evaluación", "Verificación de participación y comprensión de los contenidos tratados."),
+    ]
+    for etiqueta, valor in campos:
+        pdf.setFillColor(colors.HexColor("#173B63"))
+        pdf.setFont("Helvetica-Bold", 8)
+        pdf.drawString(38, y, etiqueta.upper() + ":")
+        y = _texto(pdf, valor, 155, y, ancho - 190, "Helvetica", 8, 11) - 13
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(38, y, "PARTICIPANTES CON HORAS REGISTRADAS")
+    y -= 18
+    pdf.setFillColor(colors.HexColor("#E8EEF5"))
+    pdf.rect(36, y - 4, ancho - 72, 18, stroke=0, fill=1)
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.setFont("Helvetica-Bold", 7)
+    pdf.drawString(42, y + 2, "N°")
+    pdf.drawString(66, y + 2, "NOMBRE")
+    pdf.drawString(300, y + 2, "ÁREA")
+    pdf.drawRightString(ancho - 42, y + 2, "HORAS")
+    y -= 16
+    for i, t in enumerate(participantes, 1):
+        if y < 95:
+            pdf.showPage()
+            y = alto - 55
+        pdf.setFillColor(colors.black)
+        pdf.setFont("Helvetica", 7)
+        pdf.drawString(42, y, str(i))
+        pdf.drawString(66, y, t["nombre"][:43])
+        pdf.drawString(300, y, t["area"][:28])
+        pdf.drawRightString(ancho - 42, y, str(t["_horas"]))
+        pdf.setStrokeColor(colors.HexColor("#D5DDE6"))
+        pdf.line(36, y - 5, ancho - 36, y - 5)
+        y -= 17
+    y = min(y - 12, 85)
+    pdf.setStrokeColor(colors.HexColor("#555555"))
+    pdf.line(55, 55, 245, 55)
+    pdf.line(ancho - 245, 55, ancho - 55, 55)
+    pdf.setFont("Helvetica", 7)
+    pdf.drawCentredString(150, 43, "Firma del facilitador interno")
+    pdf.drawCentredString(ancho - 150, 43, "Firma Responsable UATH")
+    pdf.save()
+    return buffer.getvalue()
+
+
+def _crear_asistencia(datos, tema, participantes):
+    buffer = io.BytesIO()
+    pagina = landscape(A4)
+    ancho, alto = pagina
+    pdf = canvas.Canvas(buffer, pagesize=pagina)
+    pdf.setTitle(f"Registro de asistencia - {tema}")
+    y = _encabezado_pdf(pdf, ancho, alto, "Registro de asistencia", datos, tema)
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawString(36, y, "REGISTRO DE PARTICIPANTES")
+    y -= 22
+    xcols = [38, 65, 275, 405, 475, 590, 735]
+    headers = ["N°", "CÉDULA", "NOMBRES Y APELLIDOS", "ÁREA", "HORAS", "CORREO", "FIRMA"]
+    widths = [27, 210, 130, 68, 115, 145]
+    pdf.setFillColor(colors.HexColor("#173B63"))
+    pdf.rect(36, y - 5, ancho - 72, 22, stroke=0, fill=1)
+    pdf.setFillColor(colors.white)
+    pdf.setFont("Helvetica-Bold", 7)
+    for x, h in zip(xcols, headers):
+        pdf.drawString(x, y + 3, h)
+    y -= 23
+    for i, t in enumerate(participantes, 1):
+        if y < 55:
+            pdf.showPage()
+            y = alto - 45
+        pdf.setFillColor(colors.black)
+        pdf.setFont("Helvetica", 7)
+        vals = [str(i), t["cedula"], t["nombre"][:35], t["area"][:22], str(t["_horas"]), "SN", ""]
+        for x, val in zip(xcols, vals):
+            pdf.drawString(x, y, val)
+        pdf.setStrokeColor(colors.HexColor("#B8C4D1"))
+        pdf.line(36, y - 8, ancho - 36, y - 8)
+        y -= 30
+    pdf.setFont("Helvetica", 8)
+    pdf.drawString(38, 35, f"Facilitador: {datos['profesional'][:90]}")
+    pdf.drawRightString(ancho - 38, 35, f"Responsable UATH: {datos['responsable_uath'][:90]}")
+    pdf.save()
+    return buffer.getvalue()
+
+
 @require_POST
 def generar_zip(request):
     _proteger(request)
@@ -218,26 +391,37 @@ def generar_zip(request):
     token = request.session.get(SESSION_KEY)
     cache.set(f"certificados_sut:{token}", datos, CACHE_TTL)
     salida = io.BytesIO()
-    total = 0
+    total_certificados = 0
+    total_formatos = 0
     with zipfile.ZipFile(salida, "w", zipfile.ZIP_DEFLATED) as archivo_zip:
         for indice_tema, tema in enumerate(datos["temas"]):
             if not tema:
                 continue
             carpeta = _nombre_archivo(tema)
+            participantes = []
             for trabajador in datos["trabajadores"]:
                 horas = Decimal(trabajador.get("horas", ["0"] * TEMAS)[indice_tema])
                 if horas <= 0:
                     continue
+                participante = dict(trabajador)
+                participante["_horas"] = str(horas)
+                participantes.append(participante)
                 nombre = _nombre_archivo(trabajador["nombre"])
-                pdf = _crear_certificado(datos, trabajador, tema, horas)
-                archivo_zip.writestr(f"{carpeta}/{nombre}_{trabajador['cedula']}.pdf", pdf)
-                total += 1
+                pdf_certificado = _crear_certificado(datos, trabajador, tema, horas)
+                archivo_zip.writestr(f"{carpeta}/Certificados/{nombre}_{trabajador['cedula']}.pdf", pdf_certificado)
+                total_certificados += 1
+            if participantes:
+                archivo_zip.writestr(f"{carpeta}/01_Planificacion.pdf", _crear_planificacion(datos, tema, participantes))
+                archivo_zip.writestr(f"{carpeta}/02_Registro_Asistencia.pdf", _crear_asistencia(datos, tema, participantes))
+                total_formatos += 2
 
-    if not total:
-        return redirect("/totalcounts/certificados-sut/?error=No+hay+horas+mayores+a+cero+para+generar+certificados")
+    if not total_certificados:
+        return redirect("/totalcounts/certificados-sut/?error=No+hay+horas+mayores+a+cero+para+generar+documentos")
+    respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
     respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
     respuesta["Content-Disposition"] = 'attachment; filename="certificados_sut.zip"'
-    respuesta["X-Certificados-Generados"] = str(total)
+    respuesta["X-Certificados-Generados"] = str(total_certificados)
+    respuesta["X-Formatos-Generados"] = str(total_formatos)
     return respuesta
 
 
