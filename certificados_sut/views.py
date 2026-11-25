@@ -60,6 +60,7 @@ def inicio(request):
         "email": datos.get("email", ""),
         "profesional": datos.get("profesional", PROFESIONAL_INICIAL),
         "responsable_uath": datos.get("responsable_uath", ""),
+        "areas_text": datos.get("areas_text", ""),
         "error": request.GET.get("error", ""),
     })
 
@@ -85,6 +86,7 @@ def cargar_excel(request):
         "email": "",
         "profesional": PROFESIONAL_INICIAL,
         "responsable_uath": "",
+        "areas_text": "",
     }
     cache.set(f"certificados_sut:{token}", datos, CACHE_TTL)
     request.session[SESSION_KEY] = token
@@ -97,10 +99,16 @@ def _guardar_formulario(request, datos):
     datos["email"] = request.POST.get("email", "").strip()
     datos["profesional"] = request.POST.get("profesional", "").strip()
     datos["responsable_uath"] = request.POST.get("responsable_uath", "").strip()
+    datos["areas_text"] = request.POST.get("areas_text", "").strip()
+    areas_validas = [a.strip() for a in re.split(r"[\n,;]+", datos["areas_text"]) if a.strip()]
     datos["temas"] = [request.POST.get(f"tema_{i}", "").strip() for i in range(1, TEMAS + 1)]
 
     trabajadores = datos.get("trabajadores", [])
     for indice, trabajador in enumerate(trabajadores):
+        area = request.POST.get(f"area_{indice}", "").strip()
+        if area and area not in areas_validas:
+            raise ValueError(f"El área de {trabajador['nombre']} no está en la lista de áreas.")
+        trabajador["area"] = area
         horas = []
         for tema in range(1, TEMAS + 1):
             valor = request.POST.get(f"horas_{indice}_{tema}", "0").strip().replace(",", ".")
@@ -187,6 +195,8 @@ def generar_zip(request):
 
     if not datos["empresa"] or not datos["responsable_uath"]:
         return redirect("/totalcounts/certificados-sut/?error=Completa+la+empresa+y+el+responsable+UATH")
+    if any(not t.get("area") for t in datos["trabajadores"]):
+        return redirect("/totalcounts/certificados-sut/?error=Asigna+un+área+de+trabajo+a+cada+trabajador")
     if not any(datos["temas"]):
         return redirect("/totalcounts/certificados-sut/?error=Ingresa+al+menos+una+temática")
 
