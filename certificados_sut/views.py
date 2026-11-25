@@ -159,53 +159,102 @@ def _crear_certificado(datos, trabajador, tema, horas):
     pdf = canvas.Canvas(buffer, pagesize=pagina)
     pdf.setTitle(f"Certificado - {trabajador['nombre']}")
 
-    pdf.setStrokeColor(colors.HexColor("#173B63"))
-    pdf.setLineWidth(5)
-    pdf.rect(22, 22, ancho - 44, alto - 44, stroke=1, fill=0)
-    pdf.setStrokeColor(colors.HexColor("#C5A24A"))
-    pdf.setLineWidth(1.4)
-    pdf.rect(30, 30, ancho - 60, alto - 60, stroke=1, fill=0)
+    azul = colors.HexColor("#173B63")
+    azul_medio = colors.HexColor("#285783")
+    dorado = colors.HexColor("#C5A24A")
+    tinta = colors.HexColor("#263445")
+    gris = colors.HexColor("#667384")
+    celeste = colors.HexColor("#F1F6FB")
 
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawCentredString(ancho / 2, alto - 82, "CERTIFICADO DE CAPACITACIÓN")
-    pdf.setFillColor(colors.HexColor("#333333"))
-    pdf.setFont("Helvetica", 12)
-    pdf.drawCentredString(ancho / 2, alto - 125, "Se certifica que")
+    # Fondo limpio y marco institucional ligero.
+    pdf.setFillColor(colors.white)
+    pdf.rect(0, 0, ancho, alto, stroke=0, fill=1)
+    pdf.setStrokeColor(azul)
+    pdf.setLineWidth(3)
+    pdf.rect(20, 20, ancho - 40, alto - 40, stroke=1, fill=0)
+    pdf.setStrokeColor(dorado)
+    pdf.setLineWidth(0.8)
+    pdf.rect(27, 27, ancho - 54, alto - 54, stroke=1, fill=0)
 
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 22)
-    pdf.drawCentredString(ancho / 2, alto - 165, trabajador["nombre"][:90])
-    pdf.setFillColor(colors.HexColor("#333333"))
-    pdf.setFont("Helvetica", 11)
-    pdf.drawCentredString(ancho / 2, alto - 190, f"Cédula: {trabajador['cedula']}")
-    pdf.drawCentredString(ancho / 2, alto - 220, f"Ha participado en la capacitación organizada por {datos['empresa'][:100]}")
+    # Detalle superior y encabezado.
+    pdf.setFillColor(dorado)
+    pdf.roundRect(ancho / 2 - 34, alto - 62, 68, 4, 2, stroke=0, fill=1)
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", 17)
+    pdf.drawCentredString(ancho / 2, alto - 91, "CERTIFICADO DE CAPACITACIÓN")
+    pdf.setFillColor(gris)
+    pdf.setFont("Helvetica", 10)
+    pdf.drawCentredString(ancho / 2, alto - 119, "Se otorga el presente certificado a")
 
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 15)
-    texto_tema = tema[:150]
-    pdf.drawCentredString(ancho / 2, alto - 260, texto_tema)
-    pdf.setFillColor(colors.HexColor("#333333"))
-    pdf.setFont("Helvetica", 12)
-    pdf.drawCentredString(ancho / 2, alto - 290, f"Con una duración acreditada de {horas} horas.")
+    # Nombre del participante.
+    nombre = trabajador.get("nombre", "").strip()
+    tam_nombre = 22
+    while tam_nombre > 15 and pdf.stringWidth(nombre, "Helvetica-Bold", tam_nombre) > ancho - 130:
+        tam_nombre -= 1
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", tam_nombre)
+    pdf.drawCentredString(ancho / 2, alto - 158, nombre)
+    pdf.setFillColor(gris)
+    pdf.setFont("Helvetica", 9)
+    pdf.drawCentredString(ancho / 2, alto - 179, f"CÉDULA  {trabajador['cedula']}")
 
-    pdf.setStrokeColor(colors.HexColor("#555555"))
-    pdf.line(145, 72, 335, 72)
-    pdf.line(ancho - 335, 72, ancho - 145, 72)
+    # Texto de participación con ajuste automático.
+    empresa = datos.get("empresa", "").strip()
+    frase = f"Por su participación en la capacitación organizada por {empresa}"
+    lineas_empresa = _lineas(pdf, frase, "Helvetica", 10, ancho - 150)
+    pdf.setFillColor(tinta)
+    pdf.setFont("Helvetica", 10)
+    y_empresa = alto - 218
+    for linea in lineas_empresa[:2]:
+        pdf.drawCentredString(ancho / 2, y_empresa, linea)
+        y_empresa -= 14
 
-    # Nombres y cargos debajo de sus respectivos espacios de firma.
-    pdf.setFillColor(colors.HexColor("#333333"))
+    # Tema destacado en un panel suave, con texto adaptable.
+    panel_y = alto - 320
+    panel_h = 62
+    pdf.setFillColor(celeste)
+    pdf.roundRect(76, panel_y, ancho - 152, panel_h, 9, stroke=0, fill=1)
+    pdf.setFillColor(dorado)
+    pdf.roundRect(76, panel_y, 5, panel_h, 2, stroke=0, fill=1)
+    pdf.setFillColor(azul_medio)
+    pdf.setFont("Helvetica-Bold", 8)
+    pdf.drawCentredString(ancho / 2, panel_y + 43, "TEMÁTICA DE CAPACITACIÓN")
+    tema_lineas = _lineas(pdf, tema.strip(), "Helvetica-Bold", 12, ancho - 190)
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", 12)
+    if len(tema_lineas) > 2:
+        tema_lineas = _lineas(pdf, tema.strip(), "Helvetica-Bold", 10, ancho - 190)
+        pdf.setFont("Helvetica-Bold", 10)
+    inicio_tema = panel_y + (panel_h + (len(tema_lineas[:2]) - 1) * 13) / 2 - 4
+    for linea in tema_lineas[:2]:
+        pdf.drawCentredString(ancho / 2, inicio_tema, linea)
+        inicio_tema -= 13
+
+    # Duración acreditada en una cápsula.
+    pdf.setFillColor(azul)
+    pdf.roundRect(ancho / 2 - 105, alto - 365, 210, 27, 13, stroke=0, fill=1)
+    pdf.setFillColor(colors.white)
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawCentredString(ancho / 2, alto - 356, f"DURACIÓN ACREDITADA: {horas} HORAS")
+
+    # Firmas con jerarquía clara y nombres bajo cada línea.
+    y_firma = 83
+    pdf.setStrokeColor(colors.HexColor("#9AA8B6"))
+    pdf.setLineWidth(0.9)
+    pdf.line(125, y_firma, 350, y_firma)
+    pdf.line(ancho - 350, y_firma, ancho - 125, y_firma)
+    pdf.setFillColor(azul)
     pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawCentredString(240, 56, "Psi.Cli Hester Palacio Segovia")
-    pdf.drawCentredString(ancho - 240, 56, "Dudy Aguirre")
+    pdf.drawCentredString(237.5, 65, "Psi.Cli Hester Palacio Segovia")
+    pdf.drawCentredString(ancho - 237.5, 65, "Dudy Aguirre")
+    pdf.setFillColor(gris)
     pdf.setFont("Helvetica", 8)
-    pdf.drawCentredString(240, 43, "Profesional encargado")
-    pdf.drawCentredString(ancho - 240, 43, "Responsable UATH")
+    pdf.drawCentredString(237.5, 51, "Profesional encargado")
+    pdf.drawCentredString(ancho - 237.5, 51, "Responsable UATH")
+
     pdf.save()
     buffer.seek(0)
     return buffer.getvalue()
-
-
 
 def _lineas(pdf, texto, fuente, tam, ancho):
     palabras = str(texto or "").split()
