@@ -316,7 +316,14 @@ def _crear_certificado(datos, trabajador, tema, horas):
     pdf.setFillColor(tinta)
     pdf.setFont("Helvetica-Bold", 8)
     pdf.drawCentredString(240, 49, "Psi.Cli Hester Palacio Segovia")
-    pdf.drawCentredString(ancho - 240, 49, "Dudy Aguirre")
+    # El responsable UATH debe salir del campo editable del formulario,
+    # no de un nombre fijo. Ajustar el tamaño si el nombre es largo.
+    responsable_uath = str(datos.get("responsable_uath", "") or "").strip()
+    tam_responsable = 8
+    while tam_responsable > 6 and pdfmetrics.stringWidth(responsable_uath, "Helvetica-Bold", tam_responsable) > 190:
+        tam_responsable -= 0.5
+    pdf.setFont("Helvetica-Bold", tam_responsable)
+    pdf.drawCentredString(ancho - 240, 49, responsable_uath)
     pdf.setFillColor(gris)
     pdf.setFont("Helvetica", 7)
     pdf.drawCentredString(240, 37, "Profesional encargado")
