@@ -250,17 +250,21 @@ def _crear_certificado(datos, trabajador, tema, horas):
 
     # Canva: Bobby Jones Condensed, tamaño 64.5, interlineado 1.4 e interletrado 302.
     # En PDF se representa el interletrado 302 como 3.02 pt de separación entre caracteres.
-    def _centrar_con_interletrado(texto, fuente, tam, tracking, y):
+    def _centrar_con_interletrado(texto, fuente, tam, tracking, y, escala_x=100):
         objeto = pdf.beginText()
         objeto.setFont(fuente, tam)
         objeto.setCharSpace(tracking)
-        ancho_texto = pdfmetrics.stringWidth(texto, fuente, tam) + max(0, len(texto) - 1) * tracking
+        objeto.setHorizScale(escala_x)
+        ancho_base = pdfmetrics.stringWidth(texto, fuente, tam) + max(0, len(texto) - 1) * tracking
+        ancho_texto = ancho_base * escala_x / 100
         objeto.setTextOrigin((ancho - ancho_texto) / 2, y)
         objeto.textOut(texto)
         pdf.drawText(objeto)
 
-    _centrar_con_interletrado("CERTIFICADO", fuente_titulo, 64.5, 3.02, alto - 112)
-    # Segunda línea separada de acuerdo con el interlineado 1.4 de Canva.
+    # El original de Canva usa una caja tipográfica más ancha; aplicamos
+    # escala horizontal para igualar la proporción visual del título.
+    _centrar_con_interletrado("CERTIFICADO", fuente_titulo, 64.5, 3.02, alto - 112, escala_x=155)
+    # Distancia vertical basada en el interlineado 1.4 del diseño original.
     _centrar_ajustado("DE CAPACITACIÓN", fuente_titulo, 31, alto - 174, ancho - 220, 22)
     _centrar_ajustado("ESTE CERTIFICADO SE OTORGA A", fuente_titulo, 16, alto - 235, ancho - 250, 11)
 
@@ -278,19 +282,21 @@ def _crear_certificado(datos, trabajador, tema, horas):
 
     empresa = datos.get("empresa", "").strip()
     frase = f"EN RECONOCIMIENTO POR SU PARTICIPACIÓN EN LA CAPACITACIÓN ORGANIZADA POR {empresa}"
-    lineas_frase = _lineas(pdf, frase, fuente_titulo, 14, ancho - 190)
+    # Limitar el ancho real del texto y dividirlo en líneas antes de centrar.
+    # Se deja margen generoso para que ninguna razón social quede cortada.
+    lineas_frase = _lineas(pdf, frase, fuente_titulo, 12, ancho - 260)
     pdf.setFillColor(tinta)
     y = alto - 365
-    for linea in lineas_frase[:2]:
-        _centrar_ajustado(linea, fuente_titulo, 14, y, ancho - 190, 10)
-        y -= 19
+    for linea in lineas_frase[:3]:
+        _centrar_ajustado(linea, fuente_titulo, 12, y, ancho - 260, 9)
+        y -= 17
 
     tema = tema.strip()
-    lineas_tema = _lineas(pdf, tema, fuente_titulo, 17, ancho - 190)
-    y = alto - 420
+    lineas_tema = _lineas(pdf, tema, fuente_titulo, 16, ancho - 240)
+    y = alto - 430
     for linea in lineas_tema[:2]:
-        _centrar_ajustado(linea, fuente_titulo, 17, y, ancho - 190, 11)
-        y -= 20
+        _centrar_ajustado(linea, fuente_titulo, 16, y, ancho - 240, 10)
+        y -= 19
 
     pdf.setFillColor(gris)
     _centrar_ajustado(f"DURACIÓN ACREDITADA: {horas} HORAS", fuente_titulo, 15, alto - 472, ancho - 230, 10)
