@@ -74,7 +74,7 @@ def leer_nomina(nombre_archivo, contenido):
         trabajador = trabajadores.setdefault(cedula, {
             "cedula": cedula,
             "nombre": nombre.upper(),
-            "horas": ["0", "0", "0", "0"],
+            "horas": ["0", "0", "0", "0", "0"],
         })
         if len(nombre) > len(trabajador["nombre"]):
             trabajador["nombre"] = nombre.upper()
