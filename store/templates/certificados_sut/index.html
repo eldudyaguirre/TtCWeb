@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+{% block title %}Certificados SUT 2025 | TtCWeb{% endblock %}
+{% block extra_head %}
+<style>
+.sut-wrap{max-width:1500px;margin:auto}.sut-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.sut-heading h1{font-size:25px;font-weight:750;color:#173b63;margin:0}.sut-subtitle{color:#718096;margin:6px 0 0}.sut-card{background:#fff;border:1px solid #e5eaf0;border-radius:15px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px rgba(25,48,75,.04)}.sut-card h2{font-size:16px;color:#173b63;font-weight:750;margin:0 0 18px}.sut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.sut-field label{display:block;font-size:12px;font-weight:700;color:#526174;margin-bottom:6px}.sut-field input,.sut-field textarea{width:100%;border:1px solid #d8e0e9;border-radius:8px;padding:10px 12px;font-size:13px;min-height:42px}.sut-field input:focus,.sut-field textarea:focus{outline:2px solid #d5edf0;border-color:#1596a3}.sut-btn{border:0;border-radius:8px;background:#087f8b;color:#fff;padding:11px 17px;font-weight:700;font-size:13px;cursor:pointer}.sut-btn:hover{background:#066b75}.sut-btn.secondary{background:#e9eef4;color:#34465a}.sut-btn.danger{background:#fff0f0;color:#a83232;text-decoration:none}.sut-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.sut-upload input{font-size:13px}.sut-table-wrap{overflow:auto}.sut-table{width:100%;border-collapse:collapse;min-width:900px}.sut-table th{background:#f3f6f9;color:#526174;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:11px 9px;text-align:left}.sut-table td{padding:9px;border-bottom:1px solid #edf0f3;font-size:12px}.sut-table input{width:75px;padding:7px;border:1px solid #d8e0e9;border-radius:6px}.sut-muted{font-size:12px;color:#788697}.sut-alert{background:#fff5e8;color:#8a5414;border:1px solid #f1d6aa;border-radius:8px;padding:11px 14px;margin-bottom:15px}.sut-periods{font-size:12px;color:#617187;margin-top:10px}@media(max-width:800px){.sut-grid{grid-template-columns:1fr}.sut-heading{align-items:flex-start;flex-direction:column}.sut-card{padding:16px}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="sut-wrap">
+  <div class="sut-heading">
+    <div><h1>Certificados SUT 2025</h1><p class="sut-subtitle">Herramienta privada de generación de certificados de capacitación.</p></div>
+    {% if trabajadores %}<a class="sut-btn danger" href="{% url 'certificados_sut:limpiar' %}">Nueva ejecución</a>{% endif %}
+  </div>
+  {% if error %}<div class="sut-alert">{{ error }}</div>{% endif %}
+  <section class="sut-card">
+    <h2>1. Importar nómina del IESS</h2>
+    <form class="sut-upload" method="post" enctype="multipart/form-data" action="{% url 'certificados_sut:cargar' %}">
+      {% csrf_token %}<input type="file" name="archivo_iess" accept=".xls,.xlsx" required><button class="sut-btn" type="submit">Cargar Excel</button>
+    </form>
+    <p class="sut-muted">Se aceptan archivos .xls y .xlsx. Se agrupan los registros mensuales por cédula para obtener una sola fila por trabajador.</p>
+    {% if trabajadores %}<div class="sut-periods">{{ trabajadores|length }} trabajadores importados{% if datos.periodos %} · Períodos detectados: {{ datos.periodos|join:", " }}{% endif %}</div>{% endif %}
+  </section>
+  {% if trabajadores %}
+  <form method="post" action="{% url 'certificados_sut:generar' %}">
+    {% csrf_token %}
+    <section class="sut-card">
+      <h2>2. Datos de la empresa y responsables</h2>
+      <div class="sut-grid">
+        <div class="sut-field"><label>Nombre de la empresa</label><input name="empresa" value="{{ empresa }}" required></div>
+        <div class="sut-field"><label>Teléfono de contacto</label><input name="telefono" value="{{ telefono }}"></div>
+        <div class="sut-field"><label>Email</label><input type="email" name="email" value="{{ email }}"></div>
+        <div class="sut-field"><label>Profesional encargado</label><input name="profesional" value="{{ profesional }}"></div>
+        <div class="sut-field"><label>Nombre del Responsable UATH</label><input name="responsable_uath" value="{{ responsable_uath }}" required></div>
+      </div>
+    </section>
+    <section class="sut-card">
+      <h2>3. Temáticas de capacitación</h2>
+      <div class="sut-grid">
+        {% for tema in temas %}
+        <div class="sut-field"><label>Tema {{ forloop.counter }}</label><input name="tema_{{ forloop.counter }}" value="{{ tema }}" placeholder="Nombre de la temática"></div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="sut-card">
+      <h2>4. Horas acreditadas por trabajador</h2>
+      <p class="sut-muted">Ingresa manualmente las horas respaldadas para cada trabajador y temática. El sistema no calcula ni distribuye horas.</p>
+      <div class="sut-table-wrap">
+        <table class="sut-table">
+          <thead><tr><th>#</th><th>Cédula</th><th>Trabajador</th>{% for tema in temas %}<th>Horas tema {{ forloop.counter }}</th>{% endfor %}</tr></thead>
+          <tbody>
+          {% for trabajador in trabajadores %}
+            <tr><td>{{ forloop.counter }}</td><td>{{ trabajador.cedula }}</td><td>{{ trabajador.nombre }}</td>
+            {% for hora in trabajador.horas %}<td><input type="number" min="0" max="999" step="0.25" name="horas_{{ forloop.parentloop.counter0 }}_{{ forloop.counter }}" value="{{ hora }}"></td>{% endfor %}</tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <button class="sut-btn" type="submit">Generar certificados y descargar ZIP</button>
+  </form>
+  {% endif %}
+  <p class="sut-muted" style="margin-top:18px">Los datos de trabajo se mantienen temporalmente en memoria y caducan automáticamente. No se crean registros de empresas, trabajadores ni capacitaciones en PostgreSQL.</p>
+</div>
+{% endblock %}
