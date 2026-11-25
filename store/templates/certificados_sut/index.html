@@ -69,7 +69,7 @@
       const lista = document.getElementById("sut-areas");
       if (!lista) return;
       function actualizarAreas(){
-        const opciones = lista.value.split(/[\\n,;]+/).map(x => x.trim()).filter(Boolean);
+        const opciones = lista.value.split(/[\n,;]+/).map(x => x.trim()).filter(Boolean);
         document.querySelectorAll(".sut-area-select").forEach(select => {
           const actual = select.dataset.current || select.value;
           select.innerHTML = '<option value="">Seleccionar área...</option>';
