@@ -211,14 +211,12 @@ def _crear_certificado(datos, trabajador, tema, horas):
 
 
 
-def _texto(canvas_pdf, texto, x, y, max_ancho, fuente="Helvetica", tam=8, interlineado=11):
-    """Dibuja texto con ajuste de línea y devuelve la siguiente coordenada Y."""
+def _lineas(pdf, texto, fuente, tam, ancho):
     palabras = str(texto or "").split()
     lineas, actual = [], ""
-    canvas_pdf.setFont(fuente, tam)
     for palabra in palabras:
         prueba = f"{actual} {palabra}".strip()
-        if canvas_pdf.stringWidth(prueba, fuente, tam) <= max_ancho:
+        if pdf.stringWidth(prueba, fuente, tam) <= ancho:
             actual = prueba
         else:
             if actual:
@@ -226,146 +224,172 @@ def _texto(canvas_pdf, texto, x, y, max_ancho, fuente="Helvetica", tam=8, interl
             actual = palabra
     if actual:
         lineas.append(actual)
+    return lineas or [""]
+
+
+def _celda_texto(pdf, texto, x, y_centro, ancho, fuente="Helvetica", tam=7, color=colors.black):
+    lineas = _lineas(pdf, texto, fuente, tam, ancho - 8)
+    pdf.setFillColor(color)
+    pdf.setFont(fuente, tam)
+    alto_linea = tam + 2
+    y = y_centro + ((len(lineas) - 1) * alto_linea / 2) - tam * 0.35
     for linea in lineas:
-        canvas_pdf.drawString(x, y, linea)
-        y -= interlineado
-    return y
+        pdf.drawString(x + 4, y, linea)
+        y -= alto_linea
+    return len(lineas)
 
 
 def _encabezado_pdf(pdf, ancho, alto, titulo, datos, tema):
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.rect(0, alto - 12, ancho, 12, stroke=0, fill=1)
+    azul = colors.HexColor("#173B63")
+    pdf.setFillColor(azul)
+    pdf.rect(0, alto - 10, ancho, 10, stroke=0, fill=1)
     logo = _ruta_logo_mdt()
     if logo:
         try:
-            pdf.drawImage(logo, 32, alto - 92, width=205, height=62, preserveAspectRatio=True, mask="auto", anchor="c")
+            pdf.drawImage(logo, 32, alto - 88, width=175, height=55, preserveAspectRatio=True, mask="auto", anchor="c")
         except Exception:
             pass
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawRightString(ancho - 35, alto - 48, "MINISTERIO DEL TRABAJO")
+    pdf.setFillColor(azul)
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawRightString(ancho - 35, alto - 67, titulo.upper())
-    y = alto - 112
-    pdf.setFillColor(colors.black)
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(36, y, "EMPRESA:")
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(105, y, datos["empresa"][:100])
-    y -= 17
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(36, y, "TEMA:")
-    y = _texto(pdf, tema, 105, y, ancho - 145, "Helvetica", 9, 12) - 5
-    pdf.setFont("Helvetica", 8)
-    pdf.drawString(36, y, f"PERÍODO: {datos['fecha_inicio']}  AL  {datos['fecha_fin']}")
-    y -= 14
-    pdf.drawString(36, y, f"PROFESIONAL / FACILITADOR: {datos['profesional'][:95]}")
-    y -= 14
-    pdf.drawString(36, y, f"TELÉFONO: {datos['telefono'][:35]}    CORREO: {datos['email'][:75]}")
-    y -= 14
-    pdf.drawString(36, y, f"RESPONSABLE UATH: {datos['responsable_uath'][:100]}")
-    return y - 20
+    pdf.drawRightString(ancho - 32, alto - 43, "MINISTERIO DEL TRABAJO")
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawRightString(ancho - 32, alto - 61, titulo.upper())
+
+    y = alto - 105
+    campos = [
+        ("EMPRESA", datos.get("empresa", "")),
+        ("TEMA", tema),
+        ("PERÍODO", f"{datos.get('fecha_inicio','')}  AL  {datos.get('fecha_fin','')}"),
+        ("PROFESIONAL / FACILITADOR", datos.get("profesional", "")),
+        ("TELÉFONO", datos.get("telefono", "")),
+        ("CORREO", datos.get("email", "")),
+        ("RESPONSABLE UATH", datos.get("responsable_uath", "")),
+    ]
+    for etiqueta, valor in campos:
+        pdf.setFillColor(azul)
+        pdf.setFont("Helvetica-Bold", 7.5)
+        pdf.drawString(34, y, etiqueta + ":")
+        lineas = _lineas(pdf, valor, "Helvetica", 7.5, ancho - 190)
+        pdf.setFillColor(colors.black)
+        pdf.setFont("Helvetica", 7.5)
+        for j, linea in enumerate(lineas):
+            pdf.drawString(165, y - j * 9, linea)
+        y -= max(14, len(lineas) * 9 + 3)
+    return y - 8
 
 
 def _crear_planificacion(datos, tema, participantes):
     buffer = io.BytesIO()
-    pagina = A4
-    ancho, alto = pagina
-    pdf = canvas.Canvas(buffer, pagesize=pagina)
+    ancho, alto = A4
+    pdf = canvas.Canvas(buffer, pagesize=A4)
     pdf.setTitle(f"Planificación - {tema}")
     y = _encabezado_pdf(pdf, ancho, alto, "Planificación de capacitación con facilitadores internos", datos, tema)
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(36, y, "PLANIFICACIÓN DE LA CAPACITACIÓN")
-    y -= 24
+    azul = colors.HexColor("#173B63")
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(34, y, "PLANIFICACIÓN DE LA CAPACITACIÓN")
+    y -= 20
     campos = [
-        ("Objetivo", "Fortalecer los conocimientos y promover prácticas laborales con igualdad y sin discriminación, de acuerdo con la temática establecida."),
-        ("Modalidad / lugar", "_______________________________________________"),
-        ("Fecha(s) de ejecución", f"{datos['fecha_inicio']} al {datos['fecha_fin']}"),
-        ("Facilitador interno", datos["profesional"]),
-        ("Duración planificada", "Según las horas registradas para los participantes en esta temática."),
-        ("Metodología", "Exposición, diálogo participativo y revisión de situaciones relacionadas con la temática."),
-        ("Recursos", "Material de apoyo, presentación y registro de asistencia."),
-        ("Evaluación", "Verificación de participación y comprensión de los contenidos tratados."),
+        ("OBJETIVO", "Fortalecer los conocimientos y promover prácticas laborales con igualdad y sin discriminación, de acuerdo con la temática establecida."),
+        ("MODALIDAD / LUGAR", "_______________________________________________"),
+        ("FECHA(S) DE EJECUCIÓN", f"{datos['fecha_inicio']} al {datos['fecha_fin']}"),
+        ("FACILITADOR INTERNO", datos["profesional"]),
+        ("DURACIÓN PLANIFICADA", "Según las horas registradas para los participantes en esta temática."),
+        ("METODOLOGÍA", "Exposición, diálogo participativo y revisión de situaciones relacionadas con la temática."),
+        ("RECURSOS", "Material de apoyo, presentación y registro de asistencia."),
+        ("EVALUACIÓN", "Verificación de participación y comprensión de los contenidos tratados."),
     ]
     for etiqueta, valor in campos:
-        pdf.setFillColor(colors.HexColor("#173B63"))
-        pdf.setFont("Helvetica-Bold", 8)
-        pdf.drawString(38, y, etiqueta.upper() + ":")
-        y = _texto(pdf, valor, 155, y, ancho - 190, "Helvetica", 8, 11) - 13
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(38, y, "PARTICIPANTES CON HORAS REGISTRADAS")
-    y -= 18
-    pdf.setFillColor(colors.HexColor("#E8EEF5"))
-    pdf.rect(36, y - 4, ancho - 72, 18, stroke=0, fill=1)
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 7)
-    pdf.drawString(42, y + 2, "N°")
-    pdf.drawString(66, y + 2, "NOMBRE")
-    pdf.drawString(300, y + 2, "ÁREA")
-    pdf.drawRightString(ancho - 42, y + 2, "HORAS")
-    y -= 16
-    for i, t in enumerate(participantes, 1):
-        if y < 95:
-            pdf.showPage()
-            y = alto - 55
+        pdf.setFillColor(azul)
+        pdf.setFont("Helvetica-Bold", 7)
+        pdf.drawString(38, y, etiqueta + ":")
+        lineas = _lineas(pdf, valor, "Helvetica", 7, ancho - 190)
         pdf.setFillColor(colors.black)
         pdf.setFont("Helvetica", 7)
-        pdf.drawString(42, y, str(i))
-        pdf.drawString(66, y, t["nombre"][:43])
-        pdf.drawString(300, y, t["area"][:28])
-        pdf.drawRightString(ancho - 42, y, str(t["_horas"]))
-        pdf.setStrokeColor(colors.HexColor("#D5DDE6"))
-        pdf.line(36, y - 5, ancho - 36, y - 5)
-        y -= 17
-    y = min(y - 12, 85)
+        for j, linea in enumerate(lineas):
+            pdf.drawString(165, y - j * 9, linea)
+        y -= max(17, len(lineas) * 9 + 7)
+
+    y -= 4
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", 8)
+    pdf.drawString(34, y, "PARTICIPANTES Y HORAS REGISTRADAS")
+    y -= 15
+    # Tabla con anchos definidos; el texto largo se ajusta dentro de cada celda.
+    xs = [34, 58, 290, 420, 510]
+    ws = [24, 232, 130, 90, 51]
+    headers = ["N°", "NOMBRE", "ÁREA", "HORAS", ""]
+    h = 20
+    pdf.setFillColor(azul)
+    pdf.rect(34, y - h + 4, ancho - 68, h, stroke=0, fill=1)
+    for x, w, titulo in zip(xs, ws, headers):
+        _celda_texto(pdf, titulo, x, y - 6, w, "Helvetica-Bold", 7, colors.white)
+    y -= h
+    for i, t in enumerate(participantes, 1):
+        n1 = len(_lineas(pdf, t.get("nombre", ""), "Helvetica", 6.7, ws[1] - 8))
+        n2 = len(_lineas(pdf, t.get("area", ""), "Helvetica", 6.7, ws[2] - 8))
+        rh = max(20, max(n1, n2) * 9 + 8)
+        if y - rh < 72:
+            pdf.showPage()
+            y = alto - 45
+        pdf.setStrokeColor(colors.HexColor("#B9C5D2"))
+        pdf.rect(34, y - rh + 4, ancho - 68, rh, stroke=1, fill=0)
+        vals = [str(i), t["nombre"], t["area"], str(t["_horas"])]
+        for x, w, val in zip(xs, ws, vals):
+            _celda_texto(pdf, val, x, y - rh / 2 + 2, w, "Helvetica", 6.7)
+        for x in xs[1:]:
+            pdf.line(x, y - rh + 4, x, y + 4)
+        y -= rh
     pdf.setStrokeColor(colors.HexColor("#555555"))
-    pdf.line(55, 55, 245, 55)
-    pdf.line(ancho - 245, 55, ancho - 55, 55)
+    pdf.line(55, 48, 245, 48)
+    pdf.line(ancho - 245, 48, ancho - 55, 48)
     pdf.setFont("Helvetica", 7)
-    pdf.drawCentredString(150, 43, "Firma del facilitador interno")
-    pdf.drawCentredString(ancho - 150, 43, "Firma Responsable UATH")
+    pdf.drawCentredString(150, 37, "Firma del facilitador interno")
+    pdf.drawCentredString(ancho - 150, 37, "Firma Responsable UATH")
     pdf.save()
     return buffer.getvalue()
 
 
 def _crear_asistencia(datos, tema, participantes):
     buffer = io.BytesIO()
-    pagina = landscape(A4)
-    ancho, alto = pagina
-    pdf = canvas.Canvas(buffer, pagesize=pagina)
+    ancho, alto = landscape(A4)
+    pdf = canvas.Canvas(buffer, pagesize=landscape(A4))
     pdf.setTitle(f"Registro de asistencia - {tema}")
     y = _encabezado_pdf(pdf, ancho, alto, "Registro de asistencia", datos, tema)
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(36, y, "REGISTRO DE PARTICIPANTES")
-    y -= 22
-    xcols = [38, 65, 275, 405, 475, 590, 735]
-    headers = ["N°", "CÉDULA", "NOMBRES Y APELLIDOS", "ÁREA", "HORAS", "CORREO", "FIRMA"]
-    widths = [27, 210, 130, 68, 115, 145]
-    pdf.setFillColor(colors.HexColor("#173B63"))
-    pdf.rect(36, y - 5, ancho - 72, 22, stroke=0, fill=1)
-    pdf.setFillColor(colors.white)
-    pdf.setFont("Helvetica-Bold", 7)
-    for x, h in zip(xcols, headers):
-        pdf.drawString(x, y + 3, h)
-    y -= 23
+    azul = colors.HexColor("#173B63")
+    pdf.setFillColor(azul)
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawString(30, y, "REGISTRO DE PARTICIPANTES")
+    y -= 18
+
+    # Columnas proporcionales al ancho real de A4 horizontal (842 pt).
+    xs = [30, 55, 145, 365, 490, 555, 625, 785]
+    ws = [25, 90, 220, 125, 65, 70, 160, 27]
+    headers = ["N°", "CÉDULA", "NOMBRES Y APELLIDOS", "ÁREA", "HORAS", "CORREO", "FIRMA", ""]
+    hh = 23
+    pdf.setFillColor(azul)
+    pdf.rect(30, y - hh + 4, ancho - 60, hh, stroke=0, fill=1)
+    for x, w, titulo in zip(xs, ws, headers):
+        _celda_texto(pdf, titulo, x, y - hh / 2 + 2, w, "Helvetica-Bold", 6.5, colors.white)
+    y -= hh
     for i, t in enumerate(participantes, 1):
-        if y < 55:
+        nombre_lines = _lineas(pdf, t.get("nombre", ""), "Helvetica", 6.5, ws[2] - 8)
+        area_lines = _lineas(pdf, t.get("area", ""), "Helvetica", 6.5, ws[3] - 8)
+        rh = max(34, max(len(nombre_lines), len(area_lines)) * 9 + 12)
+        if y - rh < 48:
             pdf.showPage()
-            y = alto - 45
-        pdf.setFillColor(colors.black)
-        pdf.setFont("Helvetica", 7)
-        vals = [str(i), t["cedula"], t["nombre"][:35], t["area"][:22], str(t["_horas"]), "SN", ""]
-        for x, val in zip(xcols, vals):
-            pdf.drawString(x, y, val)
-        pdf.setStrokeColor(colors.HexColor("#B8C4D1"))
-        pdf.line(36, y - 8, ancho - 36, y - 8)
-        y -= 30
-    pdf.setFont("Helvetica", 8)
-    pdf.drawString(38, 35, f"Facilitador: {datos['profesional'][:90]}")
-    pdf.drawRightString(ancho - 38, 35, f"Responsable UATH: {datos['responsable_uath'][:90]}")
+            y = alto - 42
+        pdf.setStrokeColor(colors.HexColor("#AEBBC9"))
+        pdf.rect(30, y - rh + 4, ancho - 60, rh, stroke=1, fill=0)
+        vals = [str(i), t["cedula"], t["nombre"], t["area"], str(t["_horas"]), "SN", ""]
+        for x, w, val in zip(xs, ws, vals):
+            _celda_texto(pdf, val, x, y - rh / 2 + 2, w, "Helvetica", 6.5)
+        for x in xs[1:-1]:
+            pdf.line(x, y - rh + 4, x, y + 4)
+        y -= rh
+    pdf.setFont("Helvetica", 7)
+    pdf.drawString(30, 27, f"Facilitador: {datos['profesional'][:90]}")
+    pdf.drawRightString(ancho - 30, 27, f"Responsable UATH: {datos['responsable_uath'][:90]}")
     pdf.save()
     return buffer.getvalue()
 
