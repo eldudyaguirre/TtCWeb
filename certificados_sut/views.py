@@ -237,49 +237,51 @@ def _crear_certificado(datos, trabajador, tema, horas):
     gris = colors.HexColor("#46515B")
     centro = ancho / 2
 
-    # Títulos en Bobby Jones Condensed.
+    # Composición ampliada: proporciones más cercanas al arte original de Canva.
+    # El título y los textos condensados usan Bobby Jones; el nombre usa Ruthie.
     pdf.setFillColor(tinta)
-    pdf.setFont(fuente_titulo, 30)
-    pdf.drawCentredString(centro, alto - 139, "CERTIFICADO")
-    pdf.setFont(fuente_titulo, 21)
-    pdf.drawCentredString(centro, alto - 181, "DE CAPACITACIÓN")
-    pdf.setFont(fuente_titulo, 12)
-    pdf.drawCentredString(centro, alto - 252, "ESTE CERTIFICADO SE OTORGA A")
 
-    # Nombre en Ruthie Script.
+    def _centrar_ajustado(texto, fuente, tam, y, max_ancho, minimo=9):
+        actual = tam
+        while actual > minimo and pdfmetrics.stringWidth(texto, fuente, actual) > max_ancho:
+            actual -= 1
+        pdf.setFont(fuente, actual)
+        pdf.drawCentredString(centro, y, texto)
+
+    _centrar_ajustado("CERTIFICADO", fuente_titulo, 48, alto - 105, ancho - 180, 32)
+    _centrar_ajustado("DE CAPACITACIÓN", fuente_titulo, 31, alto - 148, ancho - 220, 22)
+    _centrar_ajustado("ESTE CERTIFICADO SE OTORGA A", fuente_titulo, 16, alto - 218, ancho - 250, 11)
+
+    # Nombre protagonista, como en la plantilla de referencia.
     nombre = trabajador.get("nombre", "").strip().title()
-    tam_nombre = 31
-    while tam_nombre > 18 and pdf.stringWidth(nombre, fuente_nombre, tam_nombre) > ancho - 180:
+    tam_nombre = 43
+    while tam_nombre > 27 and pdfmetrics.stringWidth(nombre, fuente_nombre, tam_nombre) > ancho - 180:
         tam_nombre -= 1
     pdf.setFillColor(colors.HexColor("#111111"))
     pdf.setFont(fuente_nombre, tam_nombre)
-    pdf.drawCentredString(centro, alto - 326, nombre)
+    pdf.drawCentredString(centro, alto - 292, nombre)
 
     pdf.setFillColor(gris)
-    pdf.setFont(fuente_titulo, 10)
-    pdf.drawCentredString(centro, alto - 348, f"CÉDULA: {trabajador['cedula']}")
+    _centrar_ajustado(f"CÉDULA: {trabajador['cedula']}", fuente_titulo, 12, alto - 318, ancho - 240, 9)
 
-    frase = f"EN RECONOCIMIENTO POR SU PARTICIPACIÓN EN LA CAPACITACIÓN ORGANIZADA POR {datos.get('empresa', '').strip()}"
-    lineas_frase = _lineas(pdf, frase, fuente_titulo, 11, ancho - 205)
+    empresa = datos.get("empresa", "").strip()
+    frase = f"EN RECONOCIMIENTO POR SU PARTICIPACIÓN EN LA CAPACITACIÓN ORGANIZADA POR {empresa}"
+    lineas_frase = _lineas(pdf, frase, fuente_titulo, 14, ancho - 190)
     pdf.setFillColor(tinta)
-    pdf.setFont(fuente_titulo, 11)
-    y = alto - 390
+    y = alto - 365
     for linea in lineas_frase[:2]:
-        pdf.drawCentredString(centro, y, linea)
-        y -= 14
+        _centrar_ajustado(linea, fuente_titulo, 14, y, ancho - 190, 10)
+        y -= 19
 
     tema = tema.strip()
-    lineas_tema = _lineas(pdf, tema, fuente_titulo, 13, ancho - 205)
-    pdf.setFillColor(tinta)
-    pdf.setFont(fuente_titulo, 13)
-    y = alto - 430
+    lineas_tema = _lineas(pdf, tema, fuente_titulo, 17, ancho - 190)
+    y = alto - 420
     for linea in lineas_tema[:2]:
-        pdf.drawCentredString(centro, y, linea)
-        y -= 15
+        _centrar_ajustado(linea, fuente_titulo, 17, y, ancho - 190, 11)
+        y -= 20
 
     pdf.setFillColor(gris)
-    pdf.setFont(fuente_titulo, 12)
-    pdf.drawCentredString(centro, alto - 472, f"DURACIÓN ACREDITADA: {horas} HORAS")
+    _centrar_ajustado(f"DURACIÓN ACREDITADA: {horas} HORAS", fuente_titulo, 15, alto - 472, ancho - 230, 10)
 
     # Dos espacios de firma y sus responsables.
     y_firma = 66
