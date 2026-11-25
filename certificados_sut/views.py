@@ -417,7 +417,6 @@ def generar_zip(request):
     if not total_certificados and not total_formatos:
         return redirect("/totalcounts/certificados-sut/?error=No+hay+temáticas+para+generar+documentos")
     respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
-    respuesta = HttpResponse(salida.getvalue(), content_type="application/zip")
     respuesta["Content-Disposition"] = 'attachment; filename="certificados_sut.zip"'
     respuesta["X-Certificados-Generados"] = str(total_certificados)
     respuesta["X-Formatos-Generados"] = str(total_formatos)
