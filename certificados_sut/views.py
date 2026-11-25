@@ -15,6 +15,8 @@ from django.contrib.staticfiles import finders
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from .excel import leer_nomina
 
@@ -153,14 +155,32 @@ def _ruta_logo_mdt():
 
 
 def _crear_certificado(datos, trabajador, tema, horas):
-    """Genera el certificado sobre la plantilla acuarela A4 horizontal."""
+    """Genera el certificado acuarela usando las fuentes Bobby Jones y Ruthie."""
     buffer = io.BytesIO()
     pagina = landscape(A4)
     ancho, alto = pagina
     pdf = canvas.Canvas(buffer, pagesize=pagina)
     pdf.setTitle(f"Certificado - {trabajador['nombre']}")
 
-    # La plantilla gráfica se guarda en static/images; no contiene datos variables.
+    # Cargar y registrar las fuentes TrueType para incrustarlas en el PDF.
+    def _registrar_fuente(nombre_registro, ruta_relativa):
+        if nombre_registro in pdfmetrics.getRegisteredFontNames():
+            return nombre_registro
+        ruta = finders.find(ruta_relativa)
+        if not ruta:
+            candidata = settings.BASE_DIR / "static" / ruta_relativa
+            ruta = str(candidata) if candidata.exists() else None
+        if ruta:
+            pdfmetrics.registerFont(TTFont(nombre_registro, ruta))
+            return nombre_registro
+        return None
+
+    fuente_bobby = _registrar_fuente("BobbyJonesCondensed", "fonts/bobby-jones-condensed.ttf")
+    fuente_ruthie = _registrar_fuente("RuthieScript", "fonts/Ruthie.ttf")
+    fuente_titulo = fuente_bobby or "Helvetica-Bold"
+    fuente_nombre = fuente_ruthie or "Times-Italic"
+
+    # Plantilla gráfica de fondo, sin datos variables.
     fondo = finders.find("images/certificado_sut_fondo.png")
     if not fondo:
         candidata = settings.BASE_DIR / "static" / "images" / "certificado_sut_fondo.png"
@@ -168,7 +188,6 @@ def _crear_certificado(datos, trabajador, tema, horas):
     if fondo:
         pdf.drawImage(fondo, 0, 0, width=ancho, height=alto, preserveAspectRatio=False, mask="auto")
     else:
-        # Fallback temporal si todavía no se ha instalado el recurso gráfico.
         pdf.setFillColor(colors.white)
         pdf.rect(0, 0, ancho, alto, stroke=0, fill=1)
 
@@ -176,18 +195,17 @@ def _crear_certificado(datos, trabajador, tema, horas):
     gris = colors.HexColor("#46515B")
     centro = ancho / 2
 
-    # Encabezado principal; las fuentes se mantienen intercambiables para
-    # incorporar archivos completos con licencia comercial cuando estén disponibles.
+    # Títulos en Bobby Jones Condensed.
     pdf.setFillColor(tinta)
-    pdf.setFont("Helvetica-Bold", 28)
+    pdf.setFont(fuente_titulo, 30)
     pdf.drawCentredString(centro, alto - 139, "CERTIFICADO")
-    pdf.setFont("Helvetica-Bold", 19)
+    pdf.setFont(fuente_titulo, 21)
     pdf.drawCentredString(centro, alto - 181, "DE CAPACITACIÓN")
-    pdf.setFont("Helvetica-Bold", 9)
+    pdf.setFont(fuente_titulo, 12)
     pdf.drawCentredString(centro, alto - 252, "ESTE CERTIFICADO SE OTORGA A")
 
+    # Nombre en Ruthie Script.
     nombre = trabajador.get("nombre", "").strip().title()
-    fuente_nombre = "Times-Italic"
     tam_nombre = 31
     while tam_nombre > 18 and pdf.stringWidth(nombre, fuente_nombre, tam_nombre) > ancho - 180:
         tam_nombre -= 1
@@ -196,32 +214,32 @@ def _crear_certificado(datos, trabajador, tema, horas):
     pdf.drawCentredString(centro, alto - 326, nombre)
 
     pdf.setFillColor(gris)
-    pdf.setFont("Helvetica", 8)
+    pdf.setFont(fuente_titulo, 10)
     pdf.drawCentredString(centro, alto - 348, f"CÉDULA: {trabajador['cedula']}")
 
     frase = f"EN RECONOCIMIENTO POR SU PARTICIPACIÓN EN LA CAPACITACIÓN ORGANIZADA POR {datos.get('empresa', '').strip()}"
-    lineas_frase = _lineas(pdf, frase, "Helvetica-Bold", 8.5, ancho - 205)
+    lineas_frase = _lineas(pdf, frase, fuente_titulo, 11, ancho - 205)
     pdf.setFillColor(tinta)
-    pdf.setFont("Helvetica-Bold", 8.5)
+    pdf.setFont(fuente_titulo, 11)
     y = alto - 390
     for linea in lineas_frase[:2]:
         pdf.drawCentredString(centro, y, linea)
         y -= 14
 
     tema = tema.strip()
-    lineas_tema = _lineas(pdf, tema, "Helvetica-Bold", 10, ancho - 205)
+    lineas_tema = _lineas(pdf, tema, fuente_titulo, 13, ancho - 205)
     pdf.setFillColor(tinta)
-    pdf.setFont("Helvetica-Bold", 10)
+    pdf.setFont(fuente_titulo, 13)
     y = alto - 430
     for linea in lineas_tema[:2]:
         pdf.drawCentredString(centro, y, linea)
-        y -= 14
+        y -= 15
 
     pdf.setFillColor(gris)
-    pdf.setFont("Helvetica-Bold", 9)
+    pdf.setFont(fuente_titulo, 12)
     pdf.drawCentredString(centro, alto - 472, f"DURACIÓN ACREDITADA: {horas} HORAS")
 
-    # Dos espacios de firma, con los nombres y cargos debajo.
+    # Dos espacios de firma y sus responsables.
     y_firma = 66
     pdf.setStrokeColor(colors.HexColor("#333333"))
     pdf.setLineWidth(0.7)
