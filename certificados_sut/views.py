@@ -251,18 +251,24 @@ def _crear_certificado(datos, trabajador, tema, horas):
     # Canva: Bobby Jones Condensed, tamaño 64.5, interlineado 1.4 e interletrado 302.
     # En PDF se representa el interletrado 302 como 3.02 pt de separación entre caracteres.
     def _centrar_con_interletrado(texto, fuente, tam, tracking, y, escala_x=100):
-        objeto = pdf.beginText()
-        objeto.setFont(fuente, tam)
-        objeto.setCharSpace(tracking)
-        objeto.setHorizScale(escala_x)
-        ancho_base = pdfmetrics.stringWidth(texto, fuente, tam) + max(0, len(texto) - 1) * tracking
-        ancho_texto = ancho_base * escala_x / 100
-        objeto.setTextOrigin((ancho - ancho_texto) / 2, y)
-        objeto.textOut(texto)
-        pdf.drawText(objeto)
+        # Aislar el estado tipográfico: Tc/Tz de PDF persisten entre objetos
+        # de texto si no se restaura el estado gráfico.
+        pdf.saveState()
+        try:
+            objeto = pdf.beginText()
+            objeto.setFont(fuente, tam)
+            objeto.setCharSpace(tracking)
+            objeto.setHorizScale(escala_x)
+            ancho_base = pdfmetrics.stringWidth(texto, fuente, tam) + max(0, len(texto) - 1) * tracking
+            ancho_texto = ancho_base * escala_x / 100
+            objeto.setTextOrigin((ancho - ancho_texto) / 2, y)
+            objeto.textOut(texto)
+            pdf.drawText(objeto)
+        finally:
+            pdf.restoreState()
 
-    # El original de Canva usa una caja tipográfica más ancha; aplicamos
-    # escala horizontal para igualar la proporción visual del título.
+    # Solo CERTIFICADO lleva el interletrado de Canva. El estado de texto
+    # se restaura inmediatamente para que los demás textos no hereden Tc/Tz.
     _centrar_con_interletrado("CERTIFICADO", fuente_titulo, 64.5, 3.02, alto - 112, escala_x=155)
     # Distancia vertical basada en el interlineado 1.4 del diseño original.
     _centrar_ajustado("DE CAPACITACIÓN", fuente_titulo, 31, alto - 174, ancho - 220, 22)
