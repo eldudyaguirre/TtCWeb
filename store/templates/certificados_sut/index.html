@@ -44,12 +44,18 @@
     <section class="sut-card">
       <h2>4. Horas acreditadas por trabajador</h2>
       <p class="sut-muted">Ingresa manualmente las horas respaldadas para cada trabajador y temática. El sistema no calcula ni distribuye horas.</p>
+      <div class="sut-field" style="margin-bottom:15px">
+        <label>Lista de áreas de trabajo (escribe una por línea)</label>
+        <textarea id="sut-areas" name="areas_text" rows="4" placeholder="Administración&#10;Producción&#10;Ventas">{{ areas_text }}</textarea>
+        <p class="sut-muted">Escribe las áreas disponibles. Luego selecciona el área correspondiente para cada trabajador.</p>
+      </div>
       <div class="sut-table-wrap">
         <table class="sut-table">
-          <thead><tr><th>#</th><th>Cédula</th><th>Trabajador</th>{% for tema in temas %}<th>Horas tema {{ forloop.counter }}</th>{% endfor %}</tr></thead>
+          <thead><tr><th>#</th><th>Cédula</th><th>Trabajador</th><th>Área de trabajo</th>{% for tema in temas %}<th>Horas tema {{ forloop.counter }}</th>{% endfor %}</tr></thead>
           <tbody>
           {% for trabajador in trabajadores %}
             <tr><td>{{ forloop.counter }}</td><td>{{ trabajador.cedula }}</td><td>{{ trabajador.nombre }}</td>
+            <td><select name="area_{{ forloop.counter0 }}" class="sut-area-select" data-current="{{ trabajador.area|default:'' }}" required><option value="">Seleccionar área...</option></select></td>
             {% for hora in trabajador.horas %}<td><input type="number" min="0" max="999" step="0.25" name="horas_{{ forloop.parentloop.counter0 }}_{{ forloop.counter }}" value="{{ hora }}"></td>{% endfor %}</tr>
           {% endfor %}
           </tbody>
@@ -58,6 +64,29 @@
     </section>
     <button class="sut-btn" type="submit">Generar certificados y descargar ZIP</button>
   </form>
+    <script>
+    (function(){
+      const lista = document.getElementById("sut-areas");
+      if (!lista) return;
+      function actualizarAreas(){
+        const opciones = lista.value.split(/[\\n,;]+/).map(x => x.trim()).filter(Boolean);
+        document.querySelectorAll(".sut-area-select").forEach(select => {
+          const actual = select.dataset.current || select.value;
+          select.innerHTML = '<option value="">Seleccionar área...</option>';
+          opciones.forEach(area => {
+            const option = document.createElement("option");
+            option.value = area;
+            option.textContent = area;
+            if (area === actual) option.selected = true;
+            select.appendChild(option);
+          });
+          select.dataset.current = select.value;
+        });
+      }
+      lista.addEventListener("input", actualizarAreas);
+      actualizarAreas();
+    })();
+    </script>
   {% endif %}
 </div>
 {% endblock %}
