@@ -153,153 +153,75 @@ def _ruta_logo_mdt():
 
 
 def _crear_certificado(datos, trabajador, tema, horas):
+    """Genera el certificado sobre la plantilla acuarela A4 horizontal."""
     buffer = io.BytesIO()
     pagina = landscape(A4)
     ancho, alto = pagina
     pdf = canvas.Canvas(buffer, pagesize=pagina)
     pdf.setTitle(f"Certificado - {trabajador['nombre']}")
 
-    azul = colors.HexColor("#253B55")
-    tinta = colors.HexColor("#18212B")
-    rosa = colors.HexColor("#E8BFCB")
-    celeste = colors.HexColor("#BFE3E9")
-    dorado = colors.HexColor("#D9B85B")
-    dorado_claro = colors.HexColor("#F4E3A0")
+    # La plantilla gráfica se guarda en static/images; no contiene datos variables.
+    fondo = finders.find("images/certificado_sut_fondo.png")
+    if not fondo:
+        candidata = settings.BASE_DIR / "static" / "images" / "certificado_sut_fondo.png"
+        fondo = str(candidata) if candidata.exists() else None
+    if fondo:
+        pdf.drawImage(fondo, 0, 0, width=ancho, height=alto, preserveAspectRatio=False, mask="auto")
+    else:
+        # Fallback temporal si todavía no se ha instalado el recurso gráfico.
+        pdf.setFillColor(colors.white)
+        pdf.rect(0, 0, ancho, alto, stroke=0, fill=1)
 
-    # Fondo blanco y marco fino de esquinas redondeadas.
-    pdf.setFillColor(colors.white)
-    pdf.rect(0, 0, ancho, alto, stroke=0, fill=1)
-    pdf.setStrokeColor(colors.HexColor("#252525"))
-    pdf.setLineWidth(0.8)
-    pdf.roundRect(8, 8, ancho - 16, alto - 16, 15, stroke=1, fill=0)
+    tinta = colors.HexColor("#101820")
+    gris = colors.HexColor("#46515B")
+    centro = ancho / 2
 
-    # Manchas suaves de acuarela en las esquinas (formas vectoriales originales).
-    def mancha(cx, cy, rx, ry, color, alpha):
-        try:
-            pdf.saveState()
-            pdf.setFillAlpha(alpha)
-        except Exception:
-            pdf.saveState()
-        pdf.setFillColor(color)
-        p = pdf.beginPath()
-        p.moveTo(cx - rx, cy)
-        p.curveTo(cx - rx * 1.2, cy + ry * 0.65, cx - rx * 0.45, cy + ry * 1.15, cx, cy + ry)
-        p.curveTo(cx + rx * 0.85, cy + ry * 1.1, cx + rx * 1.15, cy + ry * 0.35, cx + rx, cy)
-        p.curveTo(cx + rx * 1.1, cy - ry * 0.8, cx + rx * 0.35, cy - ry * 1.1, cx, cy - ry)
-        p.curveTo(cx - rx * 0.8, cy - ry * 1.05, cx - rx * 1.1, cy - ry * 0.35, cx - rx, cy)
-        p.close()
-        pdf.drawPath(p, stroke=0, fill=1)
-        pdf.restoreState()
-
-    for cx, cy, rx, ry, color, alpha in [
-        (22, alto - 30, 62, 42, rosa, 0.28),
-        (70, alto - 10, 45, 28, celeste, 0.30),
-        (ancho - 28, alto - 26, 55, 38, celeste, 0.25),
-        (ancho - 14, 38, 62, 42, rosa, 0.23),
-        (36, 24, 55, 34, celeste, 0.24),
-        (ancho - 72, alto - 5, 35, 24, rosa, 0.20),
-    ]:
-        mancha(cx, cy, rx, ry, color, alpha)
-
-    # Pequeñas salpicaduras alrededor de las manchas.
-    for x, y, r, color in [
-        (22, alto - 78, 3, rosa), (48, alto - 52, 2, celeste),
-        (82, alto - 28, 2.5, rosa), (ancho - 54, alto - 76, 2.5, rosa),
-        (ancho - 28, alto - 48, 2, celeste), (ancho - 78, 30, 2.5, rosa),
-        (ancho - 42, 66, 2, celeste), (48, 52, 2.5, rosa),
-        (25, 85, 2, celeste)
-    ]:
-        pdf.setFillColor(color)
-        pdf.circle(x, y, r, stroke=0, fill=1)
-
-    # Esquinas geométricas doradas y líneas finas, inspiradas en el modelo.
-    pdf.setFillColor(dorado_claro)
-    p = pdf.beginPath()
-    p.moveTo(ancho - 125, alto)
-    p.lineTo(ancho, alto)
-    p.lineTo(ancho, alto - 125)
-    p.close()
-    pdf.drawPath(p, stroke=0, fill=1)
-    p = pdf.beginPath()
-    p.moveTo(0, 0)
-    p.lineTo(115, 0)
-    p.lineTo(0, 115)
-    p.close()
-    pdf.drawPath(p, stroke=0, fill=1)
-
-    pdf.setStrokeColor(colors.HexColor("#222222"))
-    pdf.setLineWidth(0.8)
-    # Geometría superior derecha.
-    pdf.line(ancho - 215, alto - 18, ancho - 42, alto - 18)
-    pdf.line(ancho - 42, alto - 18, ancho - 42, alto - 145)
-    pdf.line(ancho - 195, alto - 28, ancho - 52, alto - 28)
-    pdf.line(ancho - 52, alto - 28, ancho - 52, alto - 128)
-    pdf.line(ancho - 145, alto - 18, ancho - 95, alto - 48)
-    # Geometría inferior izquierda.
-    pdf.line(18, 155, 18, 35)
-    pdf.line(28, 145, 28, 28)
-    pdf.line(28, 28, 170, 28)
-    pdf.line(38, 18, 190, 18)
-    pdf.line(18, 82, 48, 82)
-    pdf.line(48, 82, 48, 18)
-
-    # Encabezado y jerarquía tipográfica.
+    # Encabezado principal; las fuentes se mantienen intercambiables para
+    # incorporar archivos completos con licencia comercial cuando estén disponibles.
     pdf.setFillColor(tinta)
-    pdf.setFont("Helvetica-Bold", 27)
-    pdf.drawCentredString(ancho / 2, alto - 82, "CERTIFICADO")
-    pdf.setFont("Helvetica-Bold", 17)
-    pdf.drawCentredString(ancho / 2, alto - 111, "DE CAPACITACIÓN")
-    pdf.setFont("Helvetica", 9)
-    pdf.drawCentredString(ancho / 2, alto - 151, "ESTE CERTIFICADO SE OTORGA A")
+    pdf.setFont("Helvetica-Bold", 28)
+    pdf.drawCentredString(centro, alto - 139, "CERTIFICADO")
+    pdf.setFont("Helvetica-Bold", 19)
+    pdf.drawCentredString(centro, alto - 181, "DE CAPACITACIÓN")
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawCentredString(centro, alto - 252, "ESTE CERTIFICADO SE OTORGA A")
 
-    # Nombre destacado con una serif itálica elegante.
-    nombre = trabajador.get("nombre", "").strip()
+    nombre = trabajador.get("nombre", "").strip().title()
     fuente_nombre = "Times-Italic"
-    tam_nombre = 28
-    while tam_nombre > 17 and pdf.stringWidth(nombre, fuente_nombre, tam_nombre) > ancho - 190:
+    tam_nombre = 31
+    while tam_nombre > 18 and pdf.stringWidth(nombre, fuente_nombre, tam_nombre) > ancho - 180:
         tam_nombre -= 1
-    pdf.setFillColor(colors.HexColor("#17202A"))
+    pdf.setFillColor(colors.HexColor("#111111"))
     pdf.setFont(fuente_nombre, tam_nombre)
-    pdf.drawCentredString(ancho / 2, alto - 198, nombre.title())
-    pdf.setFillColor(colors.HexColor("#5D6873"))
-    pdf.setFont("Helvetica", 9)
-    pdf.drawCentredString(ancho / 2, alto - 220, f"CÉDULA: {trabajador['cedula']}")
+    pdf.drawCentredString(centro, alto - 326, nombre)
 
-    # Reconocimiento y tema con ajuste de línea.
+    pdf.setFillColor(gris)
+    pdf.setFont("Helvetica", 8)
+    pdf.drawCentredString(centro, alto - 348, f"CÉDULA: {trabajador['cedula']}")
+
     frase = f"EN RECONOCIMIENTO POR SU PARTICIPACIÓN EN LA CAPACITACIÓN ORGANIZADA POR {datos.get('empresa', '').strip()}"
+    lineas_frase = _lineas(pdf, frase, "Helvetica-Bold", 8.5, ancho - 205)
     pdf.setFillColor(tinta)
     pdf.setFont("Helvetica-Bold", 8.5)
-    lineas_frase = _lineas(pdf, frase, "Helvetica-Bold", 8.5, ancho - 210)
-    y = alto - 254
+    y = alto - 390
     for linea in lineas_frase[:2]:
-        pdf.drawCentredString(ancho / 2, y, linea)
-        y -= 13
+        pdf.drawCentredString(centro, y, linea)
+        y -= 14
 
     tema = tema.strip()
-    pdf.setFillColor(azul)
+    lineas_tema = _lineas(pdf, tema, "Helvetica-Bold", 10, ancho - 205)
+    pdf.setFillColor(tinta)
     pdf.setFont("Helvetica-Bold", 10)
-    lineas_tema = _lineas(pdf, tema, "Helvetica-Bold", 10, ancho - 230)
-    y_tema = alto - 294
+    y = alto - 430
     for linea in lineas_tema[:2]:
-        pdf.drawCentredString(ancho / 2, y_tema, linea)
-        y_tema -= 14
+        pdf.drawCentredString(centro, y, linea)
+        y -= 14
 
-    pdf.setFillColor(colors.HexColor("#4D5965"))
-    pdf.setFont("Helvetica", 10)
-    pdf.drawCentredString(ancho / 2, alto - 333, f"DURACIÓN ACREDITADA: {horas} HORAS")
+    pdf.setFillColor(gris)
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawCentredString(centro, alto - 472, f"DURACIÓN ACREDITADA: {horas} HORAS")
 
-    # Sello dorado decorativo, sin texto ni logotipos institucionales.
-    sello_x, sello_y = ancho - 78, 66
-    pdf.setFillColor(colors.HexColor("#B78B2F"))
-    pdf.circle(sello_x, sello_y, 25, stroke=0, fill=1)
-    pdf.setFillColor(dorado_claro)
-    pdf.circle(sello_x, sello_y, 21, stroke=0, fill=1)
-    pdf.setFillColor(dorado)
-    pdf.circle(sello_x, sello_y, 16, stroke=0, fill=1)
-    pdf.setFillColor(colors.HexColor("#F7E6A6"))
-    pdf.circle(sello_x - 5, sello_y + 6, 5, stroke=0, fill=1)
-
-    # Firmas conservadas en dos columnas, con nombres y cargos debajo.
+    # Dos espacios de firma, con los nombres y cargos debajo.
     y_firma = 66
     pdf.setStrokeColor(colors.HexColor("#333333"))
     pdf.setLineWidth(0.7)
@@ -309,7 +231,7 @@ def _crear_certificado(datos, trabajador, tema, horas):
     pdf.setFont("Helvetica-Bold", 8)
     pdf.drawCentredString(240, 49, "Psi.Cli Hester Palacio Segovia")
     pdf.drawCentredString(ancho - 240, 49, "Dudy Aguirre")
-    pdf.setFillColor(colors.HexColor("#58636F"))
+    pdf.setFillColor(gris)
     pdf.setFont("Helvetica", 7)
     pdf.drawCentredString(240, 37, "Profesional encargado")
     pdf.drawCentredString(ancho - 240, 37, "Responsable UATH")
