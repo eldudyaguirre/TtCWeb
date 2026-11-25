@@ -181,9 +181,9 @@ def _crear_certificado(datos, trabajador, tema, horas):
     fuente_nombre = fuente_ruthie or "Times-Italic"
 
     # Plantilla gráfica de fondo, sin datos variables.
-    fondo = finders.find("images/certificado_sut_fondo.png")
+    fondo = finders.find("images/Fondo-certificado.png")
     if not fondo:
-        candidata = settings.BASE_DIR / "static" / "images" / "certificado_sut_fondo.png"
+        candidata = settings.BASE_DIR / "static" / "images" / "Fondo-certificado.png"
         fondo = str(candidata) if candidata.exists() else None
     if fondo:
         pdf.drawImage(fondo, 0, 0, width=ancho, height=alto, preserveAspectRatio=False, mask="auto")
