@@ -31,6 +31,8 @@
         <div class="sut-field"><label>Email</label><input type="email" name="email" value="{{ email }}"></div>
         <div class="sut-field"><label>Profesional encargado</label><input name="profesional" value="{{ profesional }}"></div>
         <div class="sut-field"><label>Nombre del Responsable UATH</label><input name="responsable_uath" value="{{ responsable_uath }}" required></div>
+        <div class="sut-field"><label>Fecha de inicio de capacitación</label><input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" required></div>
+        <div class="sut-field"><label>Fecha de fin de capacitación</label><input type="date" name="fecha_fin" value="{{ fecha_fin }}" required></div>
       </div>
     </section>
     <section class="sut-card">
@@ -62,7 +64,7 @@
         </table>
       </div>
     </section>
-    <button class="sut-btn" type="submit">Generar certificados y descargar ZIP</button>
+    <button class="sut-btn" type="submit">Generar ZIP: certificados, planificaciones y asistencias</button>
   </form>
     <script>
     (function(){
