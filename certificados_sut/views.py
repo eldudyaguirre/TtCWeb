@@ -248,9 +248,21 @@ def _crear_certificado(datos, trabajador, tema, horas):
         pdf.setFont(fuente, actual)
         pdf.drawCentredString(centro, y, texto)
 
-    _centrar_ajustado("CERTIFICADO", fuente_titulo, 48, alto - 105, ancho - 180, 32)
-    _centrar_ajustado("DE CAPACITACIÓN", fuente_titulo, 31, alto - 148, ancho - 220, 22)
-    _centrar_ajustado("ESTE CERTIFICADO SE OTORGA A", fuente_titulo, 16, alto - 218, ancho - 250, 11)
+    # Canva: Bobby Jones Condensed, tamaño 64.5, interlineado 1.4 e interletrado 302.
+    # En PDF se representa el interletrado 302 como 3.02 pt de separación entre caracteres.
+    def _centrar_con_interletrado(texto, fuente, tam, tracking, y):
+        objeto = pdf.beginText()
+        objeto.setFont(fuente, tam)
+        objeto.setCharSpace(tracking)
+        ancho_texto = pdfmetrics.stringWidth(texto, fuente, tam) + max(0, len(texto) - 1) * tracking
+        objeto.setTextOrigin((ancho - ancho_texto) / 2, y)
+        objeto.textOut(texto)
+        pdf.drawText(objeto)
+
+    _centrar_con_interletrado("CERTIFICADO", fuente_titulo, 64.5, 3.02, alto - 112)
+    # Segunda línea separada de acuerdo con el interlineado 1.4 de Canva.
+    _centrar_ajustado("DE CAPACITACIÓN", fuente_titulo, 31, alto - 174, ancho - 220, 22)
+    _centrar_ajustado("ESTE CERTIFICADO SE OTORGA A", fuente_titulo, 16, alto - 235, ancho - 250, 11)
 
     # Nombre protagonista, como en la plantilla de referencia.
     nombre = trabajador.get("nombre", "").strip().title()
