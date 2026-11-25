@@ -188,8 +188,50 @@ def _crear_certificado(datos, trabajador, tema, horas):
     if fondo:
         pdf.drawImage(fondo, 0, 0, width=ancho, height=alto, preserveAspectRatio=False, mask="auto")
     else:
-        pdf.setFillColor(colors.white)
+        # Fondo de respaldo decorativo: nunca dejar el certificado completamente blanco.
+        pdf.setFillColor(colors.HexColor("#FBFDFE"))
         pdf.rect(0, 0, ancho, alto, stroke=0, fill=1)
+        pdf.saveState()
+        try:
+            pdf.setFillAlpha(0.28)
+        except Exception:
+            pass
+        pdf.setFillColor(colors.HexColor("#E8BFCB"))
+        pdf.ellipse(-45, alto - 95, 105, alto + 35, stroke=0, fill=1)
+        pdf.setFillColor(colors.HexColor("#BFE3E9"))
+        pdf.ellipse(15, alto - 68, 145, alto + 35, stroke=0, fill=1)
+        pdf.setFillColor(colors.HexColor("#E8BFCB"))
+        pdf.ellipse(ancho - 95, -38, ancho + 45, 92, stroke=0, fill=1)
+        pdf.setFillColor(colors.HexColor("#BFE3E9"))
+        pdf.ellipse(ancho - 145, -25, ancho - 5, 95, stroke=0, fill=1)
+        pdf.restoreState()
+        # Esquinas triangulares doradas y líneas geométricas finas.
+        pdf.setFillColor(colors.HexColor("#F3DE98"))
+        p = pdf.beginPath()
+        p.moveTo(ancho - 105, alto)
+        p.lineTo(ancho, alto)
+        p.lineTo(ancho, alto - 105)
+        p.close()
+        pdf.drawPath(p, stroke=0, fill=1)
+        p = pdf.beginPath()
+        p.moveTo(0, 0)
+        p.lineTo(105, 0)
+        p.lineTo(0, 105)
+        p.close()
+        pdf.drawPath(p, stroke=0, fill=1)
+        pdf.setStrokeColor(colors.HexColor("#202020"))
+        pdf.setLineWidth(0.7)
+        pdf.line(ancho - 210, alto - 18, ancho - 28, alto - 18)
+        pdf.line(ancho - 28, alto - 18, ancho - 28, alto - 155)
+        pdf.line(18, 155, 18, 18)
+        pdf.line(18, 18, 165, 18)
+        # Sello dorado inferior derecho.
+        pdf.setFillColor(colors.HexColor("#B78B2F"))
+        pdf.circle(ancho - 58, 62, 27, stroke=0, fill=1)
+        pdf.setFillColor(colors.HexColor("#F4D77C"))
+        pdf.circle(ancho - 58, 62, 22, stroke=0, fill=1)
+        pdf.setFillColor(colors.HexColor("#D6AD45"))
+        pdf.circle(ancho - 58, 62, 16, stroke=0, fill=1)
 
     tinta = colors.HexColor("#101820")
     gris = colors.HexColor("#46515B")
