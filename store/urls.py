@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 from . import ingresos_views
@@ -18,6 +18,7 @@ from . import iess_rdep_views
 
 
 urlpatterns = [
+    path('totalcounts/certificados-sut/', include('certificados_sut.urls')),
     path('', views.home, name='home'),
     path('suscribirse/', views.newsletter_subscribe, name='newsletter_subscribe'),
     path('signin/', views.do_signin, name='signin'),
