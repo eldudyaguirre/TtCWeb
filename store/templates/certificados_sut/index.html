@@ -17,8 +17,8 @@
     <form class="sut-upload" method="post" enctype="multipart/form-data" action="{% url 'certificados_sut:cargar' %}">
       {% csrf_token %}<input type="file" name="archivo_iess" accept=".xls,.xlsx" required><button class="sut-btn" type="submit">Cargar Excel</button>
     </form>
-    <p class="sut-muted">Se aceptan archivos .xls y .xlsx. Se agrupan los registros mensuales por cédula para obtener una sola fila por trabajador.</p>
-    {% if trabajadores %}<div class="sut-periods">{{ trabajadores|length }} trabajadores importados{% if datos.periodos %} · Períodos detectados: {{ datos.periodos|join:", " }}{% endif %}</div>{% endif %}
+    
+    {% if trabajadores %}<div class="sut-periods">{{ trabajadores|length }} trabajadores importados</div>{% endif %}
   </section>
   {% if trabajadores %}
   <form method="post" action="{% url 'certificados_sut:generar' %}">
