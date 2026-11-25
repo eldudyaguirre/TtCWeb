@@ -10,6 +10,8 @@ from django.core.cache import cache
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
+from django.conf import settings
+from django.contrib.staticfiles import finders
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
@@ -128,12 +130,25 @@ def _nombre_archivo(texto):
     return limpio[:80] or "documento"
 
 
+def _ruta_logo_mdt():
+    """Obtiene el logo del Ministerio desde static/images."""
+    ruta = finders.find("images/LOGO_MDT.png")
+    if ruta:
+        return ruta
+    candidata = settings.BASE_DIR / "static" / "images" / "LOGO_MDT.png"
+    return str(candidata) if candidata.exists() else None
+
+
 def _crear_certificado(datos, trabajador, tema, horas):
     buffer = io.BytesIO()
     pagina = landscape(A4)
     ancho, alto = pagina
     pdf = canvas.Canvas(buffer, pagesize=pagina)
     pdf.setTitle(f"Certificado - {trabajador['nombre']}")
+
+    logo = _ruta_logo_mdt()
+    if logo:
+        pdf.drawImage(logo, 28, alto - 78, width=190, height=48, preserveAspectRatio=True, mask="auto")
 
     pdf.setStrokeColor(colors.HexColor("#173B63"))
     pdf.setLineWidth(5)
