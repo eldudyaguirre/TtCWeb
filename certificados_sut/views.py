@@ -159,10 +159,6 @@ def _crear_certificado(datos, trabajador, tema, horas):
     pdf = canvas.Canvas(buffer, pagesize=pagina)
     pdf.setTitle(f"Certificado - {trabajador['nombre']}")
 
-    logo = _ruta_logo_mdt()
-    if logo:
-        pdf.drawImage(logo, 28, alto - 78, width=190, height=48, preserveAspectRatio=True, mask="auto")
-
     pdf.setStrokeColor(colors.HexColor("#173B63"))
     pdf.setLineWidth(5)
     pdf.rect(22, 22, ancho - 44, alto - 44, stroke=1, fill=0)
