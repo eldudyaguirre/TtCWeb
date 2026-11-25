@@ -19,6 +19,15 @@ from .excel import leer_nomina
 CACHE_TTL = 60 * 60 * 2
 SESSION_KEY = "certificados_sut_token"
 TEMAS = 5
+TEMAS_INICIALES = [
+    "DERECHOS LABORALES DE MUJERES Y HOMBRES",
+    "IGUALDAD DE GÉNERO",
+    "ERRADICACIÓN DE VIOLENCIA Y NO DISCRIMINACIÓN EN UNA EMPRESA O CENTRO DE TRABAJO",
+    "OTROS RELACIONADOS PARA ESTABLECER EL TRABAJO DE IGUAL VALOR",
+    "EL VALOR DE LOS TRABAJOS DESDE UNA PERSPECTIVA DE IGUALDAD DE GÉNERO Y SIN DISCRIMINACIÓN"
+]
+PROFESIONAL_INICIAL = "Psi.Cli Hester Palacio Segovia"
+HORAS_INICIALES = ["10", "10", "10", "10", "2"]
 
 
 def _es_sa(request):
@@ -45,11 +54,11 @@ def inicio(request):
     return render(request, "certificados_sut/index.html", {
         "datos": datos,
         "trabajadores": datos.get("trabajadores", []),
-        "temas": datos.get("temas", [""] * TEMAS),
+        "temas": datos.get("temas", TEMAS_INICIALES.copy()),
         "empresa": datos.get("empresa", ""),
         "telefono": datos.get("telefono", ""),
         "email": datos.get("email", ""),
-        "profesional": datos.get("profesional", ""),
+        "profesional": datos.get("profesional", PROFESIONAL_INICIAL),
         "responsable_uath": datos.get("responsable_uath", ""),
         "error": request.GET.get("error", ""),
     })
@@ -70,11 +79,11 @@ def cargar_excel(request):
     datos = {
         "trabajadores": trabajadores,
         "periodos": periodos,
-        "temas": [""] * TEMAS,
+        "temas": TEMAS_INICIALES.copy(),
         "empresa": "",
         "telefono": "",
         "email": "",
-        "profesional": "",
+        "profesional": PROFESIONAL_INICIAL,
         "responsable_uath": "",
     }
     cache.set(f"certificados_sut:{token}", datos, CACHE_TTL)
